@@ -411,3 +411,32 @@
 /* Course links remain keyboard-accessible on narrow screens instead of vanishing. */
 @media(max-width:760px){.hub-path-nav{display:flex;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;border-bottom:1px solid var(--line);padding:.6rem .2rem}.hub-path-nav a{flex:0 0 auto;min-height:42px;display:grid;place-items:center}.hub-path-label{display:inline-block}}
 @media(max-width:420px){.finish-overview .panel-heading,.finish-recovery .panel-heading{align-items:flex-start;flex-direction:column}.finish-overview,.finish-recovery,.finish-backup-preview{padding:1rem}.finish-shortcuts .button{min-height:44px}}
+
+/* P21: Original connected grammar teaching embedded in the existing course */
+.p21-companion{border:1px solid var(--line);background:var(--surface);padding:clamp(17px,2.4vw,29px);margin:22px 0;border-left:4px solid var(--accent)}
+.p21-companion-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.p21-companion-head h3{margin:2px 0 0;font-size:clamp(18px,2vw,24px);letter-spacing:-.025em}
+.p21-companion-pattern{display:inline-block;max-width:100%;font-weight:650;font-size:13px;color:var(--accent);background:var(--soft);padding:8px 11px;overflow-wrap:anywhere}
+.p21-companion-explain{max-width:760px;font-size:15px;line-height:1.65}
+.p21-context-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.p21-context-example{background:var(--background);border:1px solid var(--line);padding:14px;min-width:0}
+.p21-context-example>div:first-child{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.p21-context-index{font-size:10px;color:var(--muted);letter-spacing:.09em}
+.p21-context-example strong{font-weight:550;font-size:clamp(19px,2.5vw,26px);line-height:1.5;font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+.p21-context-example p{margin:4px 0 7px;font-size:13px}
+.p21-context-example .p21-context-pinyin{color:var(--sub);font-size:13px}
+.p21-companion-tip{border-top:1px solid var(--line);padding:12px 0 0;margin-top:4px}
+.p21-companion-tip strong{font-size:12px;color:var(--accent)}
+.p21-companion-tip p{font-size:13px;margin:5px 0 0;color:var(--sub)}
+.p21-companion.compact{padding:18px;margin:18px 0}
+.p21-companion-library{margin-top:22px}
+.p21-companion-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.p21-companion-tile{display:flex;gap:10px;align-items:center;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:12px;min-width:0;cursor:pointer}
+.p21-companion-tile:hover,.p21-companion-tile.selected{border-color:var(--accent);background:var(--soft)}
+.p21-companion-tile>span:first-child{font-family:"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;font-size:27px;color:var(--accent);flex:none}
+.p21-companion-tile>span:nth-child(2){min-width:0;flex:1}
+.p21-companion-tile strong,.p21-companion-tile small{display:block;overflow-wrap:anywhere}
+.p21-companion-tile strong{font-size:13px}.p21-companion-tile small{font-size:11px;color:var(--sub);margin-top:4px}
+.p21-companion-more summary{font-size:13px;color:var(--accent);font-weight:650;cursor:pointer;padding:10px 0}
+@media(max-width:1050px){.p21-companion-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.p21-companion{padding:15px;margin:16px 0}.p21-context-examples,.p21-companion-tiles{grid-template-columns:minmax(0,1fr)}.p21-companion-head{display:block}.p21-companion-pattern{margin-top:10px}.p21-context-example strong{font-size:23px}}

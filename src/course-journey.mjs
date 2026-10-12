@@ -5,6 +5,7 @@ import {DIALOGUES} from './dialogues.mjs';
 import {makeOptions,evaluateAnswer} from './exercises.mjs';
 import {toneExplanation} from './tone-coach.mjs';
 import {lessonGroups} from './study-groups.mjs';
+import {companionQuestion} from './course-companion.mjs';
 
 export const COURSE_STAGES=Object.freeze(['prepare','character','vocabulary','sentence','recall','followup']);
 const MAX_EVENTS=15000;
@@ -29,6 +30,9 @@ export function courseQuestion(j){if(!j)return null;const lesson=findLesson(j.le
  if(stage==='character'){const options=[lesson.meaning,...DEMO_LESSONS.filter(l=>l.id!==lesson.id).slice((lesson.order*3)%64,(lesson.order*3)%64+3).map(l=>l.meaning)];return {stage,kind:'choice',prompt:`What does ${lesson.hanzi} mean in this lesson?`,hanzi:lesson.hanzi,answer:lesson.meaning,options:[...new Set(options)].sort((a,b)=>((a.length*11+lesson.order)%17)-((b.length*11+lesson.order)%17)||a.localeCompare(b))};}
  if(stage==='vocabulary'){const word=lesson.words[j.wordIndex===1?1:0];return {stage,kind:'choice',prompt:`What does ${word.hanzi} mean in this word?`,hanzi:word.hanzi,answer:word.english,options:makeOptions(word.english,'word',lesson.id)};}
  if(stage==='sentence'){
+  // On the second journey, transfer from the original sentence to a new
+  // authored grammar-in-context example using the same checkpoint writer.
+  if(j.wordIndex===1){const grammar=companionQuestion(j.lessonId);if(grammar)return grammar;}
   const word=lesson.words.find(w=>lesson.sentence.hanzi.includes(w.hanzi));
   if(j.wordIndex===1&&word){
     const rivals=DEMO_LESSONS.filter(l=>l.id!==lesson.id).map(l=>l.words[0].hanzi).filter(w=>w!==word.hanzi&&w.length===word.hanzi.length).slice(lesson.order%10,lesson.order%10+3);
