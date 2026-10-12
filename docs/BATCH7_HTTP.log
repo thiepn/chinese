@@ -1,0 +1,10 @@
+/ 200 text/html; charset=utf-8
+/app.mjs 200 text/javascript; charset=utf-8
+/context-lab.mjs 200 text/javascript; charset=utf-8
+/stories.mjs 200 text/javascript; charset=utf-8
+/sw.js 200 text/javascript; charset=utf-8
+/styles.css 200 text/css; charset=utf-8
+headers:
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'

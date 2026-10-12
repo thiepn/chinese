@@ -1,0 +1,65 @@
+{
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 4080,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/index.html",
+      "status": 200,
+      "bytes": 4080,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/app.mjs",
+      "status": 200,
+      "bytes": 136197,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/course-journey.mjs",
+      "status": 200,
+      "bytes": 8982,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/course-continuation.mjs",
+      "status": 200,
+      "bytes": 7363,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/study.mjs",
+      "status": 200,
+      "bytes": 7840,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/study-storage.mjs",
+      "status": 200,
+      "bytes": 2592,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/styles.css",
+      "status": 200,
+      "bytes": 60446,
+      "content_type": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/sw.js",
+      "status": 200,
+      "bytes": 1686,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "bytes": 667,
+      "content_type": "application/manifest+json"
+    }
+  ],
+  "success": true
+}

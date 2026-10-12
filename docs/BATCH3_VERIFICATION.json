@@ -1,0 +1,76 @@
+{
+  "batch": "Character Study Major Build Batch 3",
+  "result": "SOURCE_AND_NODE_PASS__LIVE_BROWSER_NOT_TESTED",
+  "scope": "local-only, no official HSK content, no remote repository or deployment",
+  "content": {
+    "demonstrationLessons": 74,
+    "uniqueIndexedDemoWordEntries": 117,
+    "miniReadings": 12,
+    "newReadingSentences": 36,
+    "contextualExerciseModes": [
+      "comprehension",
+      "cloze",
+      "ordering",
+      "pronunciation"
+    ],
+    "reviewFocusModes": [
+      "all",
+      "meanings",
+      "pronunciation",
+      "sentences"
+    ]
+  },
+  "source_tree_sha256": "0f37cbd4a94d01a093cc6acb1f8689f2084111b338c9e9f7022d4b6e2a371134",
+  "tests": {
+    "node": {
+      "passed": 28,
+      "failed": 0,
+      "command": "npm test"
+    },
+    "build": {
+      "status": "PASS",
+      "assets": 15,
+      "command": "npm run build"
+    },
+    "asset_sha256": {
+      "status": "PASS",
+      "verifiedAssets": 15,
+      "command": "npm run verify"
+    },
+    "http_node_server": {
+      "status": "PASS",
+      "checks": "server HTTP 200, missing file 404 and CSP",
+      "evidence": "tests/server.test.mjs"
+    },
+    "chromium_live_origin": {
+      "status": "NOT TESTED",
+      "cause": "ERR_BLOCKED_BY_ADMINISTRATOR on http://127.0.0.1:4173/"
+    },
+    "indexeddb_reload": {
+      "status": "NOT TESTED",
+      "cause": "Browser navigation blocked"
+    },
+    "service_worker_offline_reload": {
+      "status": "NOT TESTED",
+      "cause": "Browser navigation blocked"
+    },
+    "real_assistive_technology": {
+      "status": "NOT TESTED",
+      "cause": "Not run"
+    }
+  },
+  "compatibility": {
+    "learnerVersion": 1,
+    "existingLearnedAndCards": "preserved by additive optional readingEvents array",
+    "oldBackup": "import supported under existing format v1",
+    "readingEvents": "validated, exported and independent of SRS"
+  },
+  "gates": {
+    "official_hsk_rights": "OPEN",
+    "full_hsk_inventory": "NOT VERIFIED",
+    "human_linguistic_review": "NOT TESTED",
+    "audio_rights_and_quality": "OPEN",
+    "visual_owner_approval": "PENDING",
+    "production": "NO GO"
+  }
+}

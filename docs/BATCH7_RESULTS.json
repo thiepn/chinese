@@ -1,0 +1,23 @@
+{
+  "batch": 7,
+  "source_fingerprint": "bedd9cc6a18b8fa56da91e68d79ac2f99fd7638d0a728aad862147f327c715e9",
+  "tests": {
+    "passed": 70,
+    "failed": 0
+  },
+  "built_assets_verified": 25,
+  "http_statuses": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "browser_origin": "NOT_TESTED",
+  "indexeddb_reload": "NOT_TESTED",
+  "service_worker_offline_reload": "NOT_TESTED",
+  "real_audio": "NOT_TESTED",
+  "hsK_distribution_rights": "OPEN",
+  "zip_crc": "PASS (checked by zipfile.testzip after archive)"
+}

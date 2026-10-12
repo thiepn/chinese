@@ -1,0 +1,76 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 4080,
+    "content_type": "text/html; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/index.html",
+    "status": 200,
+    "bytes": 4080,
+    "content_type": "text/html; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/app.mjs",
+    "status": 200,
+    "bytes": 128598,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/course-journey.mjs",
+    "status": 200,
+    "bytes": 8116,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/study-groups.mjs",
+    "status": 200,
+    "bytes": 515,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/styles.css",
+    "status": 200,
+    "bytes": 59557,
+    "content_type": "text/css; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/sw.js",
+    "status": 200,
+    "bytes": 1658,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "status": 200,
+    "bytes": 667,
+    "content_type": "application/manifest+json",
+    "csp": true
+  },
+  {
+    "path": "/demo-lessons.mjs",
+    "status": 200,
+    "bytes": 18321,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/study-storage.mjs",
+    "status": 200,
+    "bytes": 2592,
+    "content_type": "text/javascript; charset=utf-8",
+    "csp": true
+  },
+  {
+    "path": "/does-not-exist",
+    "status": 404
+  }
+]

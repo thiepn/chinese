@@ -1,0 +1,29 @@
+{
+  "canonical_manifest_format": "sorted relative paths + SHA256, joined with tab and newline; SHA-256 of complete manifest",
+  "source_tree_sha256": "0f37cbd4a94d01a093cc6acb1f8689f2084111b338c9e9f7022d4b6e2a371134",
+  "files": {
+    "package.json": "1796d37177d01015c17aedbfaa573235d36eb0365b55ba64586c97b7d91384e2",
+    "scripts/build.mjs": "bd5f636e749329e2e452cfd57a7744d203573f61b32389269b420f03a0e078e2",
+    "scripts/serve.mjs": "692e05f3a662216a5648396fd8671ae442b2b518df6f00d46a0538a42f6031fa",
+    "scripts/verify.mjs": "8f4e80bcddc274f009a832ee90d5dfa1ed2b1b42fb7d44d385320f0aea3f766b",
+    "src/app.mjs": "9c78bd256d065ee2ab5f7246ecbf77f76c05e1d1e8cd502943cbcc03d6abb5a3",
+    "src/demo-lessons.mjs": "e2e16fa5ec0a977d73c01fded2e3c76abb33b7c21358887a2d334bdedbe94250",
+    "src/exercises.mjs": "c499efdc019f2eaf5e0fd2f8c99dc68fc0178b601149f16c0fc89fbe5eda28ed",
+    "src/icons/icon-192.png": "a4f79f12eca2bcfef039773079410a13f427ee963260fe9167ef297a4066144f",
+    "src/icons/icon-512.png": "a2d783087169e218c625f66fb01390494634c6880b6424deb739b51ee19e36d2",
+    "src/icons/icon.svg": "4529b3801de0a429bdc48ff6a68469854d8c1dd1490cfa984e62cf2baedb7caf",
+    "src/index.html": "5d87599f685c22d38065bc8d51768deedc3a846578047ba62e5479dd64b8de20",
+    "src/lexicon.mjs": "35b239c7ba222926db90b7619e001da0e2aab5824276b7678874af0057150cfe",
+    "src/manifest.webmanifest": "28e3b091cc347c175416bf729211b293df430d5407f7655c1a9ec0b56b4bb088",
+    "src/reader-records.mjs": "5a2b9dc366a5f05c58bc57d4aaa5d75e6bfeb3c659a89988dccb449d4d614c84",
+    "src/stories.mjs": "bc69036917f0137c3bc2459036265cdc3bd05ef8620307d1b6417670d3a56318",
+    "src/study-storage.mjs": "7c47865d64587e8e1594976a0c77157d066adfb13c8448a334ab5cd6e6622857",
+    "src/study.mjs": "d0b3c1d3df88be73527f9a759c998762fa5915b5d775d1b7665098298adba766",
+    "src/styles.css": "6996166fdcef9ec4dd3aee1312d4191558409d45f64e8ae7c2a16e3f99aba1da",
+    "src/sw.js": "844e2d2a2c10835879f08c008a20e05d6ec43ddb7cb60e8218f876ea6bded120",
+    "tests/batch3.test.mjs": "63c68b71470684b97161973092bd9c436bdcdbd7ffb1576cafd5a77098073332",
+    "tests/exercises.test.mjs": "ec234977a82ea621b3ac880aa0e08ad7b8e1ee21d3cda7027605800f68dc34b8",
+    "tests/server.test.mjs": "1102db5a27437856bf50ab9d02f108633ca1e8feb82c95ab77c53e0c4ccf6d8b",
+    "tests/study.test.mjs": "0358c43cf18e2188c35d1a66b44df9ffd43cc21d20b51c5f0c4bebc895e5b502"
+  }
+}

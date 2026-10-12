@@ -1,0 +1,61 @@
+[
+  {
+    "path": "/",
+    "code": 200,
+    "bytes": 3978,
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/app.mjs",
+    "code": 200,
+    "bytes": 109283,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/styles.css",
+    "code": 200,
+    "bytes": 49570,
+    "contentType": "text/css; charset=utf-8"
+  },
+  {
+    "path": "/sense-lab.mjs",
+    "code": 200,
+    "bytes": 3868,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/sentence-workshop.mjs",
+    "code": 200,
+    "bytes": 2096,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/dialogue-missions.mjs",
+    "code": 200,
+    "bytes": 2649,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/tone-coach.mjs",
+    "code": 200,
+    "bytes": 2046,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/sw.js",
+    "code": 200,
+    "bytes": 1537,
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "code": 200,
+    "bytes": 667,
+    "contentType": "application/manifest+json"
+  },
+  {
+    "path": "/this-does-not-exist.js",
+    "code": 404,
+    "error": "HTTP Error 404: Not Found"
+  }
+]

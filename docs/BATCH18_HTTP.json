@@ -1,0 +1,251 @@
+{
+  "assets": {
+    "app.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "block-coach.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "connected-practice.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "context-lab.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "context-links.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "context-trail.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "course-continuation.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "course-journey.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "cross-lesson.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "daily-plan.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "demo-lessons.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "dialogue-missions.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "dialogues.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "drills.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "exercises.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "fluency-studio.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "guided-session.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "icons/icon-192.png": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "image/png"
+    },
+    "icons/icon-512.png": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "image/png"
+    },
+    "icons/icon.svg": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "image/svg+xml"
+    },
+    "index.html": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "insights.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "learning-bridge.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "learning-coach.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "lesson-guides.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "lexicon.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "manifest.webmanifest": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "application/manifest+json"
+    },
+    "pathways.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "placement.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "practice-records.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "progress-diagnostics.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "pronunciation-path.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "reader-records.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "recommendations.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "review-strategy.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "sense-contrast.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "sense-lab.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "sentence-assessment.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "sentence-ladder.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "sentence-workshop.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "stories.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "study-block.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "study-groups.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "study-storage.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "study.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "styles.css": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/css; charset=utf-8"
+    },
+    "sw.js": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "tone-coach.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "wordbook-lab.mjs": {
+      "status": 200,
+      "matches_build_sha256": true,
+      "content_type": "text/javascript; charset=utf-8"
+    }
+  },
+  "not_found_status": 404,
+  "environment": "local 127.0.0.1 Node HTTP; not a browser runtime"
+}

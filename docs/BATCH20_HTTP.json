@@ -1,0 +1,272 @@
+{
+  "assetsTotal": 53,
+  "http200": 53,
+  "missingResourceStatus": 404,
+  "assetResponses": [
+    {
+      "file": "app.mjs",
+      "http": 200,
+      "bytes": 201647
+    },
+    {
+      "file": "backup-preview.mjs",
+      "http": 200,
+      "bytes": 1657
+    },
+    {
+      "file": "block-coach.mjs",
+      "http": 200,
+      "bytes": 3903
+    },
+    {
+      "file": "connected-practice.mjs",
+      "http": 200,
+      "bytes": 4653
+    },
+    {
+      "file": "context-continuity.mjs",
+      "http": 200,
+      "bytes": 1412
+    },
+    {
+      "file": "context-lab.mjs",
+      "http": 200,
+      "bytes": 6017
+    },
+    {
+      "file": "context-links.mjs",
+      "http": 200,
+      "bytes": 749
+    },
+    {
+      "file": "context-trail.mjs",
+      "http": 200,
+      "bytes": 6166
+    },
+    {
+      "file": "course-continuation.mjs",
+      "http": 200,
+      "bytes": 7509
+    },
+    {
+      "file": "course-journey.mjs",
+      "http": 200,
+      "bytes": 9333
+    },
+    {
+      "file": "course-overview.mjs",
+      "http": 200,
+      "bytes": 3994
+    },
+    {
+      "file": "cross-lesson.mjs",
+      "http": 200,
+      "bytes": 1727
+    },
+    {
+      "file": "daily-plan.mjs",
+      "http": 200,
+      "bytes": 9344
+    },
+    {
+      "file": "demo-lessons.mjs",
+      "http": 200,
+      "bytes": 18321
+    },
+    {
+      "file": "dialogue-missions.mjs",
+      "http": 200,
+      "bytes": 2649
+    },
+    {
+      "file": "dialogues.mjs",
+      "http": 200,
+      "bytes": 7412
+    },
+    {
+      "file": "drills.mjs",
+      "http": 200,
+      "bytes": 3994
+    },
+    {
+      "file": "exercises.mjs",
+      "http": 200,
+      "bytes": 6128
+    },
+    {
+      "file": "fluency-studio.mjs",
+      "http": 200,
+      "bytes": 10329
+    },
+    {
+      "file": "guided-session.mjs",
+      "http": 200,
+      "bytes": 9080
+    },
+    {
+      "file": "icons/icon-192.png",
+      "http": 200,
+      "bytes": 1142
+    },
+    {
+      "file": "icons/icon-512.png",
+      "http": 200,
+      "bytes": 2934
+    },
+    {
+      "file": "icons/icon.svg",
+      "http": 200,
+      "bytes": 468
+    },
+    {
+      "file": "index.html",
+      "http": 200,
+      "bytes": 4513
+    },
+    {
+      "file": "insights.mjs",
+      "http": 200,
+      "bytes": 2429
+    },
+    {
+      "file": "learning-bridge.mjs",
+      "http": 200,
+      "bytes": 4860
+    },
+    {
+      "file": "learning-coach.mjs",
+      "http": 200,
+      "bytes": 2901
+    },
+    {
+      "file": "learning-hub.mjs",
+      "http": 200,
+      "bytes": 4971
+    },
+    {
+      "file": "lesson-guides.mjs",
+      "http": 200,
+      "bytes": 4558
+    },
+    {
+      "file": "lexicon.mjs",
+      "http": 200,
+      "bytes": 1562
+    },
+    {
+      "file": "manifest.webmanifest",
+      "http": 200,
+      "bytes": 667
+    },
+    {
+      "file": "pathways.mjs",
+      "http": 200,
+      "bytes": 1940
+    },
+    {
+      "file": "placement.mjs",
+      "http": 200,
+      "bytes": 2964
+    },
+    {
+      "file": "practice-records.mjs",
+      "http": 200,
+      "bytes": 2935
+    },
+    {
+      "file": "progress-diagnostics.mjs",
+      "http": 200,
+      "bytes": 1740
+    },
+    {
+      "file": "pronunciation-path.mjs",
+      "http": 200,
+      "bytes": 1569
+    },
+    {
+      "file": "reader-records.mjs",
+      "http": 200,
+      "bytes": 1666
+    },
+    {
+      "file": "recommendations.mjs",
+      "http": 200,
+      "bytes": 1960
+    },
+    {
+      "file": "review-strategy.mjs",
+      "http": 200,
+      "bytes": 1548
+    },
+    {
+      "file": "sense-contrast.mjs",
+      "http": 200,
+      "bytes": 1268
+    },
+    {
+      "file": "sense-lab.mjs",
+      "http": 200,
+      "bytes": 3868
+    },
+    {
+      "file": "sentence-assessment.mjs",
+      "http": 200,
+      "bytes": 1672
+    },
+    {
+      "file": "sentence-ladder.mjs",
+      "http": 200,
+      "bytes": 9068
+    },
+    {
+      "file": "sentence-workshop.mjs",
+      "http": 200,
+      "bytes": 2096
+    },
+    {
+      "file": "stories.mjs",
+      "http": 200,
+      "bytes": 13082
+    },
+    {
+      "file": "study-block.mjs",
+      "http": 200,
+      "bytes": 10372
+    },
+    {
+      "file": "study-groups.mjs",
+      "http": 200,
+      "bytes": 515
+    },
+    {
+      "file": "study-storage.mjs",
+      "http": 200,
+      "bytes": 2788
+    },
+    {
+      "file": "study.mjs",
+      "http": 200,
+      "bytes": 8638
+    },
+    {
+      "file": "styles.css",
+      "http": 200,
+      "bytes": 82902
+    },
+    {
+      "file": "sw.js",
+      "http": 200,
+      "bytes": 1977
+    },
+    {
+      "file": "tone-coach.mjs",
+      "http": 200,
+      "bytes": 3164
+    },
+    {
+      "file": "wordbook-lab.mjs",
+      "http": 200,
+      "bytes": 3227
+    }
+  ]
+}

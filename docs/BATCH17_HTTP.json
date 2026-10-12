@@ -1,0 +1,247 @@
+{
+  "files": [
+    {
+      "file": "app.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "block-coach.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "connected-practice.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "context-lab.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "context-links.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "context-trail.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "course-continuation.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "course-journey.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "cross-lesson.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "demo-lessons.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "dialogue-missions.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "dialogues.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "drills.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "exercises.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "fluency-studio.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "guided-session.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "icons/icon-192.png",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "icons/icon-512.png",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "icons/icon.svg",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "insights.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "learning-bridge.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "learning-coach.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "lesson-guides.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "lexicon.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "manifest.webmanifest",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "pathways.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "placement.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "practice-records.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "progress-diagnostics.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "pronunciation-path.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "reader-records.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "recommendations.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "review-strategy.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sense-contrast.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sense-lab.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sentence-assessment.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sentence-ladder.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sentence-workshop.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "stories.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "study-block.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "study-groups.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "study-storage.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "study.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "sw.js",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "tone-coach.mjs",
+      "status": 200,
+      "hash_match": true
+    },
+    {
+      "file": "wordbook-lab.mjs",
+      "status": 200,
+      "hash_match": true
+    }
+  ],
+  "asset_pass": 48,
+  "asset_fail": 0,
+  "missing_route_status": 404
+}

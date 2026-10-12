@@ -1,0 +1,16 @@
+{
+  "phase": "major-build-batch6",
+  "test_pass": 59,
+  "test_fail": 0,
+  "build": "PASS",
+  "asset_verify": "24/24 PASS",
+  "http": "4/4 PASS",
+  "chromium_exit": 124,
+  "chromium_acceptance": "NOT_TESTED",
+  "indexeddb_reload": "NOT_TESTED",
+  "service_worker_offline_reload": "NOT_TESTED",
+  "hsk_rights": "OPEN",
+  "visual_owner_approval": "PENDING",
+  "remote_changes": false,
+  "production_changes": false
+}

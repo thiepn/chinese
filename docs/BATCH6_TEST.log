@@ -1,0 +1,368 @@
+
+> character-study-local-working-build@1.3.0-local-batch6 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: twelve original readings contain 36 complete, auditable demonstration sentences
+ok 1 - twelve original readings contain 36 complete, auditable demonstration sentences
+  ---
+  duration_ms: 5.487248
+  type: 'test'
+  ...
+# Subtest: four reading exercise modes have explicit answer keys and legitimate content
+ok 2 - four reading exercise modes have explicit answer keys and legitimate content
+  ---
+  duration_ms: 5.392647
+  type: 'test'
+  ...
+# Subtest: vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+ok 3 - vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+  ---
+  duration_ms: 7.253293
+  type: 'test'
+  ...
+# Subtest: supplementary reading attempts do not create scheduled review successes
+ok 4 - supplementary reading attempts do not create scheduled review successes
+  ---
+  duration_ms: 3.700827
+  type: 'test'
+  ...
+# Subtest: legacy learning histories and backups preserve old review events after adding reading events
+ok 5 - legacy learning histories and backups preserve old review events after adding reading events
+  ---
+  duration_ms: 2.19298
+  type: 'test'
+  ...
+# Subtest: invalid and fabricated reading history is rejected before persistence/import
+ok 6 - invalid and fabricated reading history is rejected before persistence/import
+  ---
+  duration_ms: 0.951894
+  type: 'test'
+  ...
+# Subtest: all 74 lessons offer six distinct valid synthetic exercise formats
+ok 7 - all 74 lessons offer six distinct valid synthetic exercise formats
+  ---
+  duration_ms: 56.161139
+  type: 'test'
+  ...
+# Subtest: deep lesson notes provide safe, non-etymological teaching explanations
+ok 8 - deep lesson notes provide safe, non-etymological teaching explanations
+  ---
+  duration_ms: 1.017231
+  type: 'test'
+  ...
+# Subtest: supplemental drill record is deduplicated and does not change scheduled mastery
+ok 9 - supplemental drill record is deduplicated and does not change scheduled mastery
+  ---
+  duration_ms: 6.024737
+  type: 'test'
+  ...
+# Subtest: old Batch 2 / Batch 3 backups without Batch 4 fields remain valid
+ok 10 - old Batch 2 / Batch 3 backups without Batch 4 fields remain valid
+  ---
+  duration_ms: 0.689285
+  type: 'test'
+  ...
+# Subtest: invalid drill events/bookmarks/reading size are rejected
+ok 11 - invalid drill events/bookmarks/reading size are rejected
+  ---
+  duration_ms: 1.071208
+  type: 'test'
+  ...
+# Subtest: bookmarks toggle, preserve existing history and survive backups
+ok 12 - bookmarks toggle, preserve existing history and survive backups
+  ---
+  duration_ms: 0.969931
+  type: 'test'
+  ...
+# Subtest: weak-skill priority is derived from attempts and does not fabricate progress
+ok 13 - weak-skill priority is derived from attempts and does not fabricate progress
+  ---
+  duration_ms: 1.867031
+  type: 'test'
+  ...
+# Subtest: UI wires practice route, larger reading, deep lessons, review-priority and retains legacy routes
+ok 14 - UI wires practice route, larger reading, deep lessons, review-priority and retains legacy routes
+  ---
+  duration_ms: 11.640549
+  type: 'test'
+  ...
+# Subtest: prior curriculum and readings retained, no official HSK memberships
+ok 15 - prior curriculum and readings retained, no official HSK memberships
+  ---
+  duration_ms: 1.152859
+  type: 'test'
+  ...
+# Subtest: recommendations prioritize real observed errors while preserving stable lesson IDs
+ok 16 - recommendations prioritize real observed errors while preserving stable lesson IDs
+  ---
+  duration_ms: 1.832387
+  type: 'test'
+  ...
+# Subtest: new practice sessions are structurally valid across limits and focus modes
+ok 17 - new practice sessions are structurally valid across limits and focus modes
+  ---
+  duration_ms: 12.053993
+  type: 'test'
+  ...
+# Subtest: guided question accepts exact correct answers, including character ordering and tonal pinyin
+ok 18 - guided question accepts exact correct answers, including character ordering and tonal pinyin
+  ---
+  duration_ms: 4.139714
+  type: 'test'
+  ...
+# Subtest: guided outcomes commit as supplemental events, can checkpoint and never credit scheduled cards
+ok 19 - guided outcomes commit as supplemental events, can checkpoint and never credit scheduled cards
+  ---
+  duration_ms: 4.721591
+  type: 'test'
+  ...
+# Subtest: answer reveal is assisted and never counted as independently correct
+ok 20 - answer reveal is assisted and never counted as independently correct
+  ---
+  duration_ms: 2.847464
+  type: 'test'
+  ...
+# Subtest: invalid sessions and duplicate answers rejected, without modifying original state
+ok 21 - invalid sessions and duplicate answers rejected, without modifying original state
+  ---
+  duration_ms: 1.328311
+  type: 'test'
+  ...
+# Subtest: legacy Batch 4 backups without a practiceSession remain importable
+ok 22 - legacy Batch 4 backups without a practiceSession remain importable
+  ---
+  duration_ms: 0.31501
+  type: 'test'
+  ...
+# Subtest: source contains new navigation, guided practice, reading and recovery states
+ok 23 - source contains new navigation, guided practice, reading and recovery states
+  ---
+  duration_ms: 1.984742
+  type: 'test'
+  ...
+# Subtest: complete authored content from previous five batches remains available
+ok 24 - complete authored content from previous five batches remains available
+  ---
+  duration_ms: 1.248243
+  type: 'test'
+  ...
+# Subtest: placement questions are stable six unique complete four-option questions
+ok 25 - placement questions are stable six unique complete four-option questions
+  ---
+  duration_ms: 0.45519
+  type: 'test'
+  ...
+# Subtest: placement works across resumable checkpointed answers without granting mastery
+ok 26 - placement works across resumable checkpointed answers without granting mastery
+  ---
+  duration_ms: 4.417485
+  type: 'test'
+  ...
+# Subtest: placement can be skipped without changing learner history
+ok 27 - placement can be skipped without changing learner history
+  ---
+  duration_ms: 0.210759
+  type: 'test'
+  ...
+# Subtest: invalid placement options and tampered backup fields fail closed
+ok 28 - invalid placement options and tampered backup fields fail closed
+  ---
+  duration_ms: 0.359517
+  type: 'test'
+  ...
+# Subtest: two distinct connected sentence tasks available across all 12 demo readings
+ok 29 - two distinct connected sentence tasks available across all 12 demo readings
+  ---
+  duration_ms: 1.098312
+  type: 'test'
+  ...
+# Subtest: sentence sessions grade correctly and store reading events without scheduled credit
+ok 30 - sentence sessions grade correctly and store reading events without scheduled credit
+  ---
+  duration_ms: 1.362054
+  type: 'test'
+  ...
+# Subtest: new guided session sentence-only mode and pronunciation mode remain valid
+ok 31 - new guided session sentence-only mode and pronunciation mode remain valid
+  ---
+  duration_ms: 6.443099
+  type: 'test'
+  ...
+# Subtest: weak focus specifically selects pinyin practice for observed pronunciation errors
+ok 32 - weak focus specifically selects pinyin practice for observed pronunciation errors
+  ---
+  duration_ms: 1.014187
+  type: 'test'
+  ...
+# Subtest: coaching uses actual mistakes across scheduled reviews and extra practice
+ok 33 - coaching uses actual mistakes across scheduled reviews and extra practice
+  ---
+  duration_ms: 1.290947
+  type: 'test'
+  ...
+# Subtest: weekly evidence keeps scheduled and supplemental attempts separate
+ok 34 - weekly evidence keeps scheduled and supplemental attempts separate
+  ---
+  duration_ms: 0.59624
+  type: 'test'
+  ...
+# Subtest: reading-mode extension preserves existing event history and rejects unsupported types
+ok 35 - reading-mode extension preserves existing event history and rejects unsupported types
+  ---
+  duration_ms: 0.361006
+  type: 'test'
+  ...
+# Subtest: new UI sections are connected to navigation, storage gating and lesson teaching
+ok 36 - new UI sections are connected to navigation, storage gating and lesson teaching
+  ---
+  duration_ms: 0.990386
+  type: 'test'
+  ...
+# Subtest: offline shell caches all imported batch6 modules and upgrades cache revision
+ok 37 - offline shell caches all imported batch6 modules and upgrades cache revision
+  ---
+  duration_ms: 0.203432
+  type: 'test'
+  ...
+# Subtest: tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+ok 38 - tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+  ---
+  duration_ms: 2.160387
+  type: 'test'
+  ...
+# Subtest: tone differs from syllable spelling and empty answers fail conservatively
+ok 39 - tone differs from syllable spelling and empty answers fail conservatively
+  ---
+  duration_ms: 0.441257
+  type: 'test'
+  ...
+# Subtest: meaning answers accept only reviewed textual senses, not arbitrary partial strings
+ok 40 - meaning answers accept only reviewed textual senses, not arbitrary partial strings
+  ---
+  duration_ms: 1.64484
+  type: 'test'
+  ...
+# Subtest: multiple-choice answers are evaluated literally, with deterministic options
+ok 41 - multiple-choice answers are evaluated literally, with deterministic options
+  ---
+  duration_ms: 1.341814
+  type: 'test'
+  ...
+# Subtest: cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+ok 42 - cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+  ---
+  duration_ms: 4.281869
+  type: 'test'
+  ...
+# Subtest: all 74 original lessons remain well-formed and contain two related words
+ok 43 - all 74 original lessons remain well-formed and contain two related words
+  ---
+  duration_ms: 0.357081
+  type: 'test'
+  ...
+# Subtest: local dev server serves actual application and rejects missing routes
+ok 44 - local dev server serves actual application and rejects missing routes
+  ---
+  duration_ms: 149.186219
+  type: 'test'
+  ...
+# Subtest: original content has no official HSK membership and all lessons have complete linked words and sentences
+ok 45 - original content has no official HSK membership and all lessons have complete linked words and sentences
+  ---
+  duration_ms: 2.139164
+  type: 'test'
+  ...
+# Subtest: non-approved/missing lesson cannot be published
+ok 46 - non-approved/missing lesson cannot be published
+  ---
+  duration_ms: 0.21044
+  type: 'test'
+  ...
+# Subtest: search supports hanzi, english and diacritic-free pinyin
+ok 47 - search supports hanzi, english and diacritic-free pinyin
+  ---
+  duration_ms: 7.533748
+  type: 'test'
+  ...
+# Subtest: learning registers independent recognition, pronunciation and lexical targets
+ok 48 - learning registers independent recognition, pronunciation and lexical targets
+  ---
+  duration_ms: 1.977195
+  type: 'test'
+  ...
+# Subtest: review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+ok 49 - review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+  ---
+  duration_ms: 1.816306
+  type: 'test'
+  ...
+# Subtest: different skills are not auto-credited and failures relearn
+ok 50 - different skills are not auto-credited and failures relearn
+  ---
+  duration_ms: 0.244686
+  type: 'test'
+  ...
+# Subtest: progress does not claim calibrated mastery
+ok 51 - progress does not claim calibrated mastery
+  ---
+  duration_ms: 0.492664
+  type: 'test'
+  ...
+# Subtest: backup roundtrips with strict curriculum origin
+ok 52 - backup roundtrips with strict curriculum origin
+  ---
+  duration_ms: 0.885958
+  type: 'test'
+  ...
+# Subtest: unknown target and malformed user history fail closed
+ok 53 - unknown target and malformed user history fail closed
+  ---
+  duration_ms: 0.463059
+  type: 'test'
+  ...
+# Subtest: offline source includes functional modules without external runtime dependencies
+ok 54 - offline source includes functional modules without external runtime dependencies
+  ---
+  duration_ms: 25.552765
+  type: 'test'
+  ...
+# Subtest: newly added independent pronunciation and sentence targets have distinct meanings
+ok 55 - newly added independent pronunciation and sentence targets have distinct meanings
+  ---
+  duration_ms: 2.564869
+  type: 'test'
+  ...
+# Subtest: legacy saved progress migrates additional targets with no fabricated grades
+ok 56 - legacy saved progress migrates additional targets with no fabricated grades
+  ---
+  duration_ms: 0.835079
+  type: 'test'
+  ...
+# Subtest: a revealed or incorrect attempt cannot earn a passing event
+ok 57 - a revealed or incorrect attempt cannot earn a passing event
+  ---
+  duration_ms: 1.036743
+  type: 'test'
+  ...
+# Subtest: six lesson units cover exactly each approved demo lesson
+ok 58 - six lesson units cover exactly each approved demo lesson
+  ---
+  duration_ms: 0.670683
+  type: 'test'
+  ...
+# Subtest: daily introduction goal distinguishes actual lesson completion from historical imported lessons
+ok 59 - daily introduction goal distinguishes actual lesson completion from historical imported lessons
+  ---
+  duration_ms: 0.884467
+  type: 'test'
+  ...
+1..59
+# tests 59
+# suites 0
+# pass 59
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 498.325494

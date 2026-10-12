@@ -1,0 +1,16 @@
+{
+  "batch": 19,
+  "node_tests": 285,
+  "node_pass": 285,
+  "node_fail": 0,
+  "asset_hashes_verified": 51,
+  "http_assets_pass": 51,
+  "http_assets_total": 51,
+  "http_missing": 404,
+  "source_sha256": "6a696422fe0f2ec4c3e262b1bb0d2de4b0d83d0fad7d47e3fbfde9f9108d455b",
+  "live_browser": "NOT_TESTED",
+  "browser_indexeddb": "NOT_TESTED",
+  "service_worker_offline_reload": "NOT_TESTED",
+  "curriculum": "original unreviewed demo, no official HSK data",
+  "repo_production": "unchanged"
+}

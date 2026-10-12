@@ -1,0 +1,5 @@
+{
+  "real_origin": "NOT_TESTED",
+  "reason": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:4173/\nCall log:\n  - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\n",
+  "checks": {}
+}

@@ -1,0 +1,55 @@
+{
+  "batch": "9",
+  "inputZip": "/mnt/data/character-study-batch8-working-app.zip",
+  "inputZipSha256": "31176beffcbce7a1ee05805360d2a51c719f7569faef61cb744a80a401169ab7",
+  "sourceTreeSha256": "1840d49988386458fbc596fc44d2759cc529f0e9224dabf85980f57266c3a76b",
+  "tests": {
+    "pass": 100,
+    "fail": 0,
+    "run": 100,
+    "status": "PASS"
+  },
+  "build": {
+    "status": "PASS",
+    "builtAssets": 34
+  },
+  "assetIntegrity": {
+    "status": "PASS",
+    "verifiedAssets": 34
+  },
+  "http": {
+    "healthyPaths": 9,
+    "missingPath404": true,
+    "status": "PASS"
+  },
+  "chromium": {
+    "status": "NOT_TESTED",
+    "exitCode": 124,
+    "reason": "Headless Chromium timed out without returning DOM; not an application acceptance result"
+  },
+  "indexedDbReload": {
+    "status": "NOT_TESTED"
+  },
+  "offlineServiceWorkerReload": {
+    "status": "NOT_TESTED"
+  },
+  "screenReader": {
+    "status": "NOT_TESTED"
+  },
+  "content": {
+    "demonstrationLessons": 74,
+    "shortReadings": 12,
+    "dialogues": 10,
+    "contextualSenseExamples": 12,
+    "sentenceTasks": 24,
+    "dialogueMissionSteps": 30,
+    "officialHskDataset": "NOT_INCLUDED"
+  },
+  "scope": {
+    "remoteRepository": "UNCHANGED",
+    "deployment": "NONE",
+    "credentials": "NONE",
+    "officialHSK": "NOT_IMPORTED",
+    "finalVisualApproval": "PENDING"
+  }
+}

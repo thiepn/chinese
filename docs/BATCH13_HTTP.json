@@ -1,0 +1,66 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "bytes": 4080
+  },
+  {
+    "route": "/app.mjs",
+    "status": 200,
+    "bytes": 140231
+  },
+  {
+    "route": "/learning-bridge.mjs",
+    "status": 200,
+    "bytes": 4860
+  },
+  {
+    "route": "/course-journey.mjs",
+    "status": 200,
+    "bytes": 9333
+  },
+  {
+    "route": "/course-continuation.mjs",
+    "status": 200,
+    "bytes": 7509
+  },
+  {
+    "route": "/styles.css",
+    "status": 200,
+    "bytes": 63356
+  },
+  {
+    "route": "/sw.js",
+    "status": 200,
+    "bytes": 1710
+  },
+  {
+    "route": "/manifest.webmanifest",
+    "status": 200,
+    "bytes": 667
+  },
+  {
+    "route": "/demo-lessons.mjs",
+    "status": 200,
+    "bytes": 18321
+  },
+  {
+    "route": "/study-storage.mjs",
+    "status": 200,
+    "bytes": 2592
+  },
+  {
+    "route": "/stories.mjs",
+    "status": 200,
+    "bytes": 13082
+  },
+  {
+    "route": "/dialogues.mjs",
+    "status": 200,
+    "bytes": 7412
+  },
+  {
+    "route": "/does-not-exist.invalid",
+    "status": 404
+  }
+]

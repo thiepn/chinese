@@ -1,0 +1,182 @@
+
+> character-study-local-working-build@1.0.0-local test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: twelve original readings contain 36 complete, auditable demonstration sentences
+ok 1 - twelve original readings contain 36 complete, auditable demonstration sentences
+  ---
+  duration_ms: 3.924247
+  type: 'test'
+  ...
+# Subtest: four reading exercise modes have explicit answer keys and legitimate content
+ok 2 - four reading exercise modes have explicit answer keys and legitimate content
+  ---
+  duration_ms: 6.439044
+  type: 'test'
+  ...
+# Subtest: vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+ok 3 - vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+  ---
+  duration_ms: 4.162515
+  type: 'test'
+  ...
+# Subtest: supplementary reading attempts do not create scheduled review successes
+ok 4 - supplementary reading attempts do not create scheduled review successes
+  ---
+  duration_ms: 2.531225
+  type: 'test'
+  ...
+# Subtest: legacy learning histories and backups preserve old review events after adding reading events
+ok 5 - legacy learning histories and backups preserve old review events after adding reading events
+  ---
+  duration_ms: 1.312478
+  type: 'test'
+  ...
+# Subtest: invalid and fabricated reading history is rejected before persistence/import
+ok 6 - invalid and fabricated reading history is rejected before persistence/import
+  ---
+  duration_ms: 0.751219
+  type: 'test'
+  ...
+# Subtest: tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+ok 7 - tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+  ---
+  duration_ms: 3.284536
+  type: 'test'
+  ...
+# Subtest: tone differs from syllable spelling and empty answers fail conservatively
+ok 8 - tone differs from syllable spelling and empty answers fail conservatively
+  ---
+  duration_ms: 0.227308
+  type: 'test'
+  ...
+# Subtest: meaning answers accept only reviewed textual senses, not arbitrary partial strings
+ok 9 - meaning answers accept only reviewed textual senses, not arbitrary partial strings
+  ---
+  duration_ms: 1.25223
+  type: 'test'
+  ...
+# Subtest: multiple-choice answers are evaluated literally, with deterministic options
+ok 10 - multiple-choice answers are evaluated literally, with deterministic options
+  ---
+  duration_ms: 1.071204
+  type: 'test'
+  ...
+# Subtest: cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+ok 11 - cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+  ---
+  duration_ms: 3.447578
+  type: 'test'
+  ...
+# Subtest: all 74 original lessons remain well-formed and contain two related words
+ok 12 - all 74 original lessons remain well-formed and contain two related words
+  ---
+  duration_ms: 0.2935
+  type: 'test'
+  ...
+# Subtest: local dev server serves actual application and rejects missing routes
+ok 13 - local dev server serves actual application and rejects missing routes
+  ---
+  duration_ms: 147.624381
+  type: 'test'
+  ...
+# Subtest: original content has no official HSK membership and all lessons have complete linked words and sentences
+ok 14 - original content has no official HSK membership and all lessons have complete linked words and sentences
+  ---
+  duration_ms: 1.927945
+  type: 'test'
+  ...
+# Subtest: non-approved/missing lesson cannot be published
+ok 15 - non-approved/missing lesson cannot be published
+  ---
+  duration_ms: 0.200303
+  type: 'test'
+  ...
+# Subtest: search supports hanzi, english and diacritic-free pinyin
+ok 16 - search supports hanzi, english and diacritic-free pinyin
+  ---
+  duration_ms: 4.114161
+  type: 'test'
+  ...
+# Subtest: learning registers independent recognition, pronunciation and lexical targets
+ok 17 - learning registers independent recognition, pronunciation and lexical targets
+  ---
+  duration_ms: 1.590332
+  type: 'test'
+  ...
+# Subtest: review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+ok 18 - review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+  ---
+  duration_ms: 1.450655
+  type: 'test'
+  ...
+# Subtest: different skills are not auto-credited and failures relearn
+ok 19 - different skills are not auto-credited and failures relearn
+  ---
+  duration_ms: 0.192026
+  type: 'test'
+  ...
+# Subtest: progress does not claim calibrated mastery
+ok 20 - progress does not claim calibrated mastery
+  ---
+  duration_ms: 0.524294
+  type: 'test'
+  ...
+# Subtest: backup roundtrips with strict curriculum origin
+ok 21 - backup roundtrips with strict curriculum origin
+  ---
+  duration_ms: 0.841057
+  type: 'test'
+  ...
+# Subtest: unknown target and malformed user history fail closed
+ok 22 - unknown target and malformed user history fail closed
+  ---
+  duration_ms: 0.50238
+  type: 'test'
+  ...
+# Subtest: offline source includes functional modules without external runtime dependencies
+ok 23 - offline source includes functional modules without external runtime dependencies
+  ---
+  duration_ms: 9.608447
+  type: 'test'
+  ...
+# Subtest: newly added independent pronunciation and sentence targets have distinct meanings
+ok 24 - newly added independent pronunciation and sentence targets have distinct meanings
+  ---
+  duration_ms: 0.247094
+  type: 'test'
+  ...
+# Subtest: legacy saved progress migrates additional targets with no fabricated grades
+ok 25 - legacy saved progress migrates additional targets with no fabricated grades
+  ---
+  duration_ms: 0.409385
+  type: 'test'
+  ...
+# Subtest: a revealed or incorrect attempt cannot earn a passing event
+ok 26 - a revealed or incorrect attempt cannot earn a passing event
+  ---
+  duration_ms: 0.228182
+  type: 'test'
+  ...
+# Subtest: six lesson units cover exactly each approved demo lesson
+ok 27 - six lesson units cover exactly each approved demo lesson
+  ---
+  duration_ms: 0.192535
+  type: 'test'
+  ...
+# Subtest: daily introduction goal distinguishes actual lesson completion from historical imported lessons
+ok 28 - daily introduction goal distinguishes actual lesson completion from historical imported lessons
+  ---
+  duration_ms: 0.265204
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 238.321975

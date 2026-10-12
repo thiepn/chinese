@@ -1,0 +1,24 @@
+[5012:5041:1012/144220.007441:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[5012:5041:1012/144220.028633:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5041:1012/144220.028675:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[5012:5041:1012/144220.028696:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[5012:5041:1012/144220.098620:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5041:1012/144220.155025:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.202655:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.204780:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.206658:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5012:1012/144220.213076:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.217165:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[5012:5012:1012/144220.218333:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.219182:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[5012:5041:1012/144220.284723:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.441185:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
+[5012:5012:1012/144220.446183:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.446357:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.471303:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.474003:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.478319:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.478464:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.479672:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[5012:5041:1012/144220.479834:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[5012:5012:1012/144220.482874:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 

@@ -1,0 +1,39 @@
+{
+  "batch": 14,
+  "date": "2026-10-12",
+  "source_tree_sha256": "0b9bf1f7361a2e64c3faa132932cc2f5906c4c2faab867249190f4bf34ba1d99",
+  "source_tree_files": 63,
+  "tests": {
+    "passed": 204,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "status": "PASS",
+    "evidence": "docs/BATCH14_NODE_TESTS.log"
+  },
+  "build": {
+    "status": "PASS",
+    "asset_count": 43,
+    "hash_verified": 43
+  },
+  "http": {
+    "status": "PASS",
+    "assets_checked": 43,
+    "successful_200": 43,
+    "missing_route_status": 404
+  },
+  "browser": {
+    "headless_chromium": "NOT_TESTED: command timed out after 9 seconds without rendered DOM",
+    "indexeddb_reload": "NOT_TESTED",
+    "service_worker_offline_reload": "NOT_TESTED",
+    "assistive_technology": "NOT_TESTED"
+  },
+  "rights": {
+    "official_hsk_content": "NONE",
+    "official_hsk_distribution_rights": "OPEN",
+    "human_linguistic_review": "OPEN",
+    "voice_quality": "NOT_TESTED",
+    "visual_owner_approval": "PENDING"
+  },
+  "history_boundary": "Guided ladder/sense evidence is separated from scheduled review grades; legacy v1 backups supported at source-test level."
+}

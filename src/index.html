@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#182a26">
+  <meta name="description" content="A local-first Mandarin character learning workspace with original demonstration lessons. No official HSK corpus included.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+  <title>Today | Character Study</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="app-frame">
+    <aside class="sidebar" aria-label="App navigation">
+      <a class="brand" href="#/today" aria-label="Character Study, home"><span class="brand-glyph" aria-hidden="true">字</span><span><strong>CHARACTER<br>STUDY</strong><small>Mandarin learning lab</small></span></a>
+      <div class="nav-heading">YOUR COURSE</div>
+      <nav class="desktop-nav" aria-label="Primary">
+        <a href="#/today" data-route="today"><span aria-hidden="true">◫</span>Today</a>
+        <a href="#/plan" data-route="plan"><span aria-hidden="true">◷</span>Study Plan</a>
+        <a href="#/learn" data-route="learn"><span aria-hidden="true">▤</span>Learn</a>
+        <a href="#/review" data-route="review"><span aria-hidden="true">↻</span>Review</a>
+        <a href="#/explore" data-route="explore"><span aria-hidden="true">⌕</span>Explore</a>
+        <details class="more-tools"><summary>More learning tools</summary><div class="more-tools-links">
+        <a href="#/fluency" data-route="fluency"><span aria-hidden="true">◎</span>Fluency Studio</a>
+        <a href="#/block" data-route="block"><span aria-hidden="true">▧</span>Study Blocks</a>
+        <a href="#/ladder" data-route="ladder"><span aria-hidden="true">▥</span>Sentence Ladder</a>
+        <a href="#/journey" data-route="journey"><span aria-hidden="true">◇</span>Daily Journey</a>
+        <a href="#/practice" data-route="practice"><span aria-hidden="true">◎</span>Practice Lab</a>
+        <a href="#/stories" data-route="stories"><span aria-hidden="true">▦</span>Readings</a>
+        <a href="#/dialogues" data-route="dialogues"><span aria-hidden="true">◧</span>Dialogues</a>
+        <a href="#/senses" data-route="senses"><span aria-hidden="true">≋</span>Word Senses</a>
+        <a href="#/workshop" data-route="workshop"><span aria-hidden="true">✎</span>Sentence Workshop</a>
+        <a href="#/wordbook" data-route="wordbook"><span aria-hidden="true">▣</span>My Wordbook</a>
+        </div></details>
+      </nav>
+      <div class="nav-heading secondary-heading">YOUR DATA</div>
+      <nav class="desktop-nav secondary-nav" aria-label="Account and preferences">
+        <a href="#/progress" data-route="progress"><span aria-hidden="true">▥</span>Progress</a>
+        <a href="#/settings" data-route="settings"><span aria-hidden="true">⚙</span>Settings</a>
+      </nav>
+      <div class="side-bottom"><div class="side-dot"></div><div><strong>Original demo lessons</strong><small>No official HSK curriculum installed</small></div></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><span class="top-caption">YOUR MANDARIN WORKSPACE</span><div class="top-actions"><span id="network-state" class="status-chip">Checking connection</span><button type="button" class="top-link" data-action="go-settings">Settings</button></div></header>
+      <main id="main" tabindex="-1" aria-label="Learning workspace">
+        <div id="alert-banner" role="status" aria-live="polite"></div>
+        <div id="app-content"><div class="loading"><span class="loading-glyph">字</span><p>Opening your learning workspace…</p></div></div>
+      </main>
+      <footer>Character Study · Local-first demo · Private practice and scheduled recall are tracked separately</footer>
+    </div>
+  </div>
+  <nav class="mobile-nav" aria-label="Primary mobile">
+    <a href="#/today" data-route="today"><span aria-hidden="true">◫</span>Today</a>
+    <a href="#/plan" data-route="plan"><span aria-hidden="true">◷</span>Plan</a>
+    <a href="#/learn" data-route="learn"><span aria-hidden="true">▤</span>Learn</a>
+    <a href="#/review" data-route="review"><span aria-hidden="true">↻</span>Review</a>
+    <a href="#/explore" data-route="explore"><span aria-hidden="true">⌕</span>Explore</a>
+  </nav>
+</body>
+</html>

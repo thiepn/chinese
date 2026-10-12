@@ -1,0 +1,1814 @@
+
+> character-study-local-working-build@1.17.0-local-batch20 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: original corpus retained; no claimed official HSK source
+ok 1 - original corpus retained; no claimed official HSK source
+  ---
+  duration_ms: 1.209099
+  type: 'test'
+  ...
+# Subtest: contextual question registry rejects unapproved IDs, steps and unsupported modes
+ok 2 - contextual question registry rejects unapproved IDs, steps and unsupported modes
+  ---
+  duration_ms: 0.710337
+  type: 'test'
+  ...
+# Subtest: all 12 contextual sense prompts have unique correct options, Chinese context and explanations
+ok 3 - all 12 contextual sense prompts have unique correct options, Chinese context and explanations
+  ---
+  duration_ms: 1.297164
+  type: 'test'
+  ...
+# Subtest: all 24 sentence tasks reconstruct Chinese instead of checking arbitrary translation
+ok 4 - all 24 sentence tasks reconstruct Chinese instead of checking arbitrary translation
+  ---
+  duration_ms: 1.362148
+  type: 'test'
+  ...
+# Subtest: all 30 dialogue mission stages are individually available and grade independently
+ok 5 - all 30 dialogue mission stages are individually available and grade independently
+  ---
+  duration_ms: 6.328013
+  type: 'test'
+  ...
+# Subtest: connected supplemental writes never mutate review events, cards, or lesson introductions
+ok 6 - connected supplemental writes never mutate review events, cards, or lesson introductions
+  ---
+  duration_ms: 4.566225
+  type: 'test'
+  ...
+# Subtest: weaknesses prefer actual independent misses to already independently resolved case
+ok 7 - weaknesses prefer actual independent misses to already independently resolved case
+  ---
+  duration_ms: 0.971943
+  type: 'test'
+  ...
+# Subtest: guided connected study creates valid resumable 5/10/20 question plans
+ok 8 - guided connected study creates valid resumable 5/10/20 question plans
+  ---
+  duration_ms: 1.038593
+  type: 'test'
+  ...
+# Subtest: balanced and weak sessions now include contextual types alongside legacy drills
+ok 9 - balanced and weak sessions now include contextual types alongside legacy drills
+  ---
+  duration_ms: 1.239679
+  type: 'test'
+  ...
+# Subtest: guided tone, exact-written-Chinese and meaning checks use correct question validation
+ok 10 - guided tone, exact-written-Chinese and meaning checks use correct question validation
+  ---
+  duration_ms: 0.718069
+  type: 'test'
+  ...
+# Subtest: hint state is durable through checkpoint and correct assisted answers do not count independent
+ok 11 - hint state is durable through checkpoint and correct assisted answers do not count independent
+  ---
+  duration_ms: 1.062759
+  type: 'test'
+  ...
+# Subtest: a genuine independent correct guided question increments only supplemental progress
+ok 12 - a genuine independent correct guided question increments only supplemental progress
+  ---
+  duration_ms: 0.438048
+  type: 'test'
+  ...
+# Subtest: v1 backup with existing guided session imports unchanged and accepts new contextual histories
+ok 13 - v1 backup with existing guided session imports unchanged and accepts new contextual histories
+  ---
+  duration_ms: 1.15393
+  type: 'test'
+  ...
+# Subtest: no invalid guided assistance type accepted from an imported backup
+ok 14 - no invalid guided assistance type accepted from an imported backup
+  ---
+  duration_ms: 0.276257
+  type: 'test'
+  ...
+# Subtest: pronunciation guidance has contour explanation for all lexical tones without acoustic claim
+ok 15 - pronunciation guidance has contour explanation for all lexical tones without acoustic claim
+  ---
+  duration_ms: 0.358443
+  type: 'test'
+  ...
+# Subtest: UI practice controls, context bridge, CSS and offline manifest include new local modules
+ok 16 - UI practice controls, context bridge, CSS and offline manifest include new local modules
+  ---
+  duration_ms: 2.980591
+  type: 'test'
+  ...
+# Subtest: dialogue and reading links use only actual indexed demo written forms, no HSK claims
+ok 17 - dialogue and reading links use only actual indexed demo written forms, no HSK claims
+  ---
+  duration_ms: 1.2598
+  type: 'test'
+  ...
+# Subtest: review queue avoids adjacent duplicate lesson and skill when alternatives exist, remains due-only
+ok 18 - review queue avoids adjacent duplicate lesson and skill when alternatives exist, remains due-only
+  ---
+  duration_ms: 1.302357
+  type: 'test'
+  ...
+# Subtest: Batch 11 retains all original content counts and explicitly non-official provenance
+ok 19 - Batch 11 retains all original content counts and explicitly non-official provenance
+  ---
+  duration_ms: 1.896473
+  type: 'test'
+  ...
+# Subtest: all 74 lessons have exactly six well-defined course stages and answerable independent checks
+ok 20 - all 74 lessons have exactly six well-defined course stages and answerable independent checks
+  ---
+  duration_ms: 27.309147
+  type: 'test'
+  ...
+# Subtest: begin journey creates a saved checkpoint without adding cards, introductions or review success
+ok 21 - begin journey creates a saved checkpoint without adding cards, introductions or review success
+  ---
+  duration_ms: 3.640335
+  type: 'test'
+  ...
+# Subtest: cannot advance an unanswered recall checkpoint or submit an empty answer
+ok 22 - cannot advance an unanswered recall checkpoint or submit an empty answer
+  ---
+  duration_ms: 1.1633
+  type: 'test'
+  ...
+# Subtest: each stage commits one typed result and advances only after persisted feedback
+ok 23 - each stage commits one typed result and advances only after persisted feedback
+  ---
+  duration_ms: 0.600081
+  type: 'test'
+  ...
+# Subtest: a revealed answer is always assisted and never an independent success
+ok 24 - a revealed answer is always assisted and never an independent success
+  ---
+  duration_ms: 0.555588
+  type: 'test'
+  ...
+# Subtest: hint state survives v1 backup and subsequent correct response remains assisted
+ok 25 - hint state survives v1 backup and subsequent correct response remains assisted
+  ---
+  duration_ms: 1.013201
+  type: 'test'
+  ...
+# Subtest: wrong tone is recorded as a miss while allowing learner to continue with reference feedback
+ok 26 - wrong tone is recorded as a miss while allowing learner to continue with reference feedback
+  ---
+  duration_ms: 2.517139
+  type: 'test'
+  ...
+# Subtest: course completion is explicit and cannot happen before follow-up
+ok 27 - course completion is explicit and cannot happen before follow-up
+  ---
+  duration_ms: 1.902287
+  type: 'test'
+  ...
+# Subtest: explicit introduction creates only new due cards, never passing grades or fake recall events
+ok 28 - explicit introduction creates only new due cards, never passing grades or fake recall events
+  ---
+  duration_ms: 2.298253
+  type: 'test'
+  ...
+# Subtest: completed already introduced journey does not replace earlier review event or scheduling
+ok 29 - completed already introduced journey does not replace earlier review event or scheduling
+  ---
+  duration_ms: 1.881782
+  type: 'test'
+  ...
+# Subtest: journey can be navigated away from and resumed with all checkpoints intact
+ok 30 - journey can be navigated away from and resumed with all checkpoints intact
+  ---
+  duration_ms: 0.728504
+  type: 'test'
+  ...
+# Subtest: discarded journey leaves previous course attempts intact but clears active checkpoint
+ok 31 - discarded journey leaves previous course attempts intact but clears active checkpoint
+  ---
+  duration_ms: 0.319865
+  type: 'test'
+  ...
+# Subtest: legacy v1 backup without any Batch 11 fields still imports and can start the journey
+ok 32 - legacy v1 backup without any Batch 11 fields still imports and can start the journey
+  ---
+  duration_ms: 1.136183
+  type: 'test'
+  ...
+# Subtest: course event duplicate IDs, fabricated lesson, invalid stages and invalid hint types are rejected
+ok 33 - course event duplicate IDs, fabricated lesson, invalid stages and invalid hint types are rejected
+  ---
+  duration_ms: 0.785774
+  type: 'test'
+  ...
+# Subtest: prerequisite hints do not create hidden locks, invent HSK assignments or reference later lessons
+ok 34 - prerequisite hints do not create hidden locks, invent HSK assignments or reference later lessons
+  ---
+  duration_ms: 6.606472
+  type: 'test'
+  ...
+# Subtest: content bridges link only literal approved-demo occurrences in story and dialogue
+ok 35 - content bridges link only literal approved-demo occurrences in story and dialogue
+  ---
+  duration_ms: 3.709713
+  type: 'test'
+  ...
+# Subtest: unit milestones count actual completed guided journeys, not mere exposure or review attempts
+ok 36 - unit milestones count actual completed guided journeys, not mere exposure or review attempts
+  ---
+  duration_ms: 1.745457
+  type: 'test'
+  ...
+# Subtest: recommended course lesson resumes active checkpoint ahead of proposed new curriculum lesson
+ok 37 - recommended course lesson resumes active checkpoint ahead of proposed new curriculum lesson
+  ---
+  duration_ms: 1.087159
+  type: 'test'
+  ...
+# Subtest: old guided practice, placement, review and saved word histories remain untouched by course checks
+ok 38 - old guided practice, placement, review and saved word histories remain untouched by course checks
+  ---
+  duration_ms: 0.62646
+  type: 'test'
+  ...
+# Subtest: new route, event handlers, offline asset manifest, and responsive access are wired
+ok 39 - new route, event handlers, offline asset manifest, and responsive access are wired
+  ---
+  duration_ms: 2.721529
+  type: 'test'
+  ...
+# Subtest: Batch 12 retains every old demo lesson and only original demonstration source status
+ok 40 - Batch 12 retains every old demo lesson and only original demonstration source status
+  ---
+  duration_ms: 1.896453
+  type: 'test'
+  ...
+# Subtest: fresh state has optional repair fields; legacy v1 backup omitting them is valid
+ok 41 - fresh state has optional repair fields; legacy v1 backup omitting them is valid
+  ---
+  duration_ms: 4.080895
+  type: 'test'
+  ...
+# Subtest: first course sees the first word, a repeated guided course assesses a different contextual word
+ok 42 - first course sees the first word, a repeated guided course assesses a different contextual word
+  ---
+  duration_ms: 8.788141
+  type: 'test'
+  ...
+# Subtest: an incorrect character checkpoint becomes independent remediation rather than scheduled mastery
+ok 43 - an incorrect character checkpoint becomes independent remediation rather than scheduled mastery
+  ---
+  duration_ms: 2.041527
+  type: 'test'
+  ...
+# Subtest: remediation picks the missed skill and provides answerable item
+ok 44 - remediation picks the missed skill and provides answerable item
+  ---
+  duration_ms: 3.108719
+  type: 'test'
+  ...
+# Subtest: independent remediation correct answer closes the weakness without scheduled review credit
+ok 45 - independent remediation correct answer closes the weakness without scheduled review credit
+  ---
+  duration_ms: 1.559182
+  type: 'test'
+  ...
+# Subtest: help and reveal are recorded as assisted and do not close weakness
+ok 46 - help and reveal are recorded as assisted and do not close weakness
+  ---
+  duration_ms: 2.129195
+  type: 'test'
+  ...
+# Subtest: reveal never creates independent success
+ok 47 - reveal never creates independent success
+  ---
+  duration_ms: 2.298471
+  type: 'test'
+  ...
+# Subtest: duplicate remediation event ids are rejected atomically
+ok 48 - duplicate remediation event ids are rejected atomically
+  ---
+  duration_ms: 1.783251
+  type: 'test'
+  ...
+# Subtest: resuming an unfinished repair retains the assistance flag and checkpoint in a v1 backup
+ok 49 - resuming an unfinished repair retains the assistance flag and checkpoint in a v1 backup
+  ---
+  duration_ms: 2.557448
+  type: 'test'
+  ...
+# Subtest: abandoning repair keeps historical learning events and prior cards
+ok 50 - abandoning repair keeps historical learning events and prior cards
+  ---
+  duration_ms: 1.682194
+  type: 'test'
+  ...
+# Subtest: repair may be interrupted while saved journey continues independently
+ok 51 - repair may be interrupted while saved journey continues independently
+  ---
+  duration_ms: 0.548187
+  type: 'test'
+  ...
+# Subtest: validators reject duplicate, forged, nonsensical or cross-history conflicting repair events
+ok 52 - validators reject duplicate, forged, nonsensical or cross-history conflicting repair events
+  ---
+  duration_ms: 1.794496
+  type: 'test'
+  ...
+# Subtest: invalid saved repair index, missing stage, or unusable hint is rejected
+ok 53 - invalid saved repair index, missing stage, or unusable hint is rejected
+  ---
+  duration_ms: 1.565843
+  type: 'test'
+  ...
+# Subtest: next-day study plan represents due cards but never assigns completion to new day
+ok 54 - next-day study plan represents due cards but never assigns completion to new day
+  ---
+  duration_ms: 2.594879
+  type: 'test'
+  ...
+# Subtest: a regular scheduled review event is not replaced by a supplemental remediation event
+ok 55 - a regular scheduled review event is not replaced by a supplemental remediation event
+  ---
+  duration_ms: 1.585601
+  type: 'test'
+  ...
+# Subtest: all 74 demo lessons offer answerable optional remediation checks
+ok 56 - all 74 demo lessons offer answerable optional remediation checks
+  ---
+  duration_ms: 11.238247
+  type: 'test'
+  ...
+# Subtest: app and service worker ship repair module and expose the course follow-up UI
+ok 57 - app and service worker ship repair module and expose the course follow-up UI
+  ---
+  duration_ms: 2.110157
+  type: 'test'
+  ...
+# Subtest: repeated journey tracks the second vocabulary word into later targeted correction
+ok 58 - repeated journey tracks the second vocabulary word into later targeted correction
+  ---
+  duration_ms: 2.060541
+  type: 'test'
+  ...
+# Subtest: second guided pass can use genuine contextual sentence cloze without exposing its missing word
+ok 59 - second guided pass can use genuine contextual sentence cloze without exposing its missing word
+  ---
+  duration_ms: 0.370375
+  type: 'test'
+  ...
+# Subtest: 74 characters have word and sentence teaching bridges without official HSK claims
+ok 60 - 74 characters have word and sentence teaching bridges without official HSK claims
+  ---
+  duration_ms: 2.240926
+  type: 'test'
+  ...
+# Subtest: unknown lesson fails closed
+ok 61 - unknown lesson fails closed
+  ---
+  duration_ms: 0.384148
+  type: 'test'
+  ...
+# Subtest: bridge positions locate target character rather than guessing tone alignment
+ok 62 - bridge positions locate target character rather than guessing tone alignment
+  ---
+  duration_ms: 0.217245
+  type: 'test'
+  ...
+# Subtest: sentence occurrence is evidenced by literal original text
+ok 63 - sentence occurrence is evidenced by literal original text
+  ---
+  duration_ms: 1.780322
+  type: 'test'
+  ...
+# Subtest: unstarted lesson shows four untried facets, no mastery
+ok 64 - unstarted lesson shows four untried facets, no mastery
+  ---
+  duration_ms: 0.93419
+  type: 'test'
+  ...
+# Subtest: completed guided lesson records four independent observations, not scheduled-review credits
+ok 65 - completed guided lesson records four independent observations, not scheduled-review credits
+  ---
+  duration_ms: 2.597061
+  type: 'test'
+  ...
+# Subtest: failed lesson facet appears as prioritized consolidation gap
+ok 66 - failed lesson facet appears as prioritized consolidation gap
+  ---
+  duration_ms: 1.138305
+  type: 'test'
+  ...
+# Subtest: revealed support cannot become independent, even if answer text is correct
+ok 67 - revealed support cannot become independent, even if answer text is correct
+  ---
+  duration_ms: 0.404829
+  type: 'test'
+  ...
+# Subtest: returning learner gets a fresh consolidation scope for the repeated lesson
+ok 68 - returning learner gets a fresh consolidation scope for the repeated lesson
+  ---
+  duration_ms: 1.743266
+  type: 'test'
+  ...
+# Subtest: older v1 backup missing new response reason remains valid
+ok 69 - older v1 backup missing new response reason remains valid
+  ---
+  duration_ms: 2.982362
+  type: 'test'
+  ...
+# Subtest: new answer feedback reason can be backed up and restored
+ok 70 - new answer feedback reason can be backed up and restored
+  ---
+  duration_ms: 2.153014
+  type: 'test'
+  ...
+# Subtest: nonsensical added feedback reason is rejected
+ok 71 - nonsensical added feedback reason is rejected
+  ---
+  duration_ms: 0.479167
+  type: 'test'
+  ...
+# Subtest: repair still stays separate from scheduled-review grade and content
+ok 72 - repair still stays separate from scheduled-review grade and content
+  ---
+  duration_ms: 2.846725
+  type: 'test'
+  ...
+# Subtest: typed pinyin mismatch identifies tone rather than speech correctness
+ok 73 - typed pinyin mismatch identifies tone rather than speech correctness
+  ---
+  duration_ms: 0.264603
+  type: 'test'
+  ...
+# Subtest: syllable mismatch has different remedial advice
+ok 74 - syllable mismatch has different remedial advice
+  ---
+  duration_ms: 0.109565
+  type: 'test'
+  ...
+# Subtest: tone-number equivalence counts as written match
+ok 75 - tone-number equivalence counts as written match
+  ---
+  duration_ms: 0.144425
+  type: 'test'
+  ...
+# Subtest: source includes consolidated UI, teaching links and content navigation
+ok 76 - source includes consolidated UI, teaching links and content navigation
+  ---
+  duration_ms: 1.70254
+  type: 'test'
+  ...
+# Subtest: all app modules offline cached with v13 cache
+ok 77 - all app modules offline cached with v13 cache
+  ---
+  duration_ms: 0.169999
+  type: 'test'
+  ...
+# Subtest: legacy v1 backup with no course fields still valid
+ok 78 - legacy v1 backup with no course fields still valid
+  ---
+  duration_ms: 0.500729
+  type: 'test'
+  ...
+# Subtest: second journey changes recall from isolated character to complete contextual word
+ok 79 - second journey changes recall from isolated character to complete contextual word
+  ---
+  duration_ms: 1.63752
+  type: 'test'
+  ...
+# Subtest: all 74 lessons have an assessable complete-word follow-up reading
+ok 80 - all 74 lessons have an assessable complete-word follow-up reading
+  ---
+  duration_ms: 0.671693
+  type: 'test'
+  ...
+# Subtest: all twelve teaching examples have one contrasting context with a different meaning
+ok 81 - all twelve teaching examples have one contrasting context with a different meaning
+  ---
+  duration_ms: 1.702225
+  type: 'test'
+  ...
+# Subtest: mistakes are prioritized, but old errors can be resolved independently
+ok 82 - mistakes are prioritized, but old errors can be resolved independently
+  ---
+  duration_ms: 1.06502
+  type: 'test'
+  ...
+# Subtest: assisted correct attempt remains unresolved
+ok 83 - assisted correct attempt remains unresolved
+  ---
+  duration_ms: 0.21568
+  type: 'test'
+  ...
+# Subtest: context comparison appears after feedback and is available offline
+ok 84 - context comparison appears after feedback and is available offline
+  ---
+  duration_ms: 1.524178
+  type: 'test'
+  ...
+# Subtest: 74 demonstrations retained and all four ladder tasks exist for each lesson
+ok 85 - 74 demonstrations retained and all four ladder tasks exist for each lesson
+  ---
+  duration_ms: 13.549432
+  type: 'test'
+  ...
+# Subtest: question identity follows selected word and full sentence context
+ok 86 - question identity follows selected word and full sentence context
+  ---
+  duration_ms: 0.351066
+  type: 'test'
+  ...
+# Subtest: entire ladder completes with independent evidence but no scheduled events or cards
+ok 87 - entire ladder completes with independent evidence but no scheduled events or cards
+  ---
+  duration_ms: 4.698578
+  type: 'test'
+  ...
+# Subtest: hint survives serialized checkpoint and forces assisted grading
+ok 88 - hint survives serialized checkpoint and forces assisted grading
+  ---
+  duration_ms: 0.673516
+  type: 'test'
+  ...
+# Subtest: reveal cannot be credited as independent success
+ok 89 - reveal cannot be credited as independent success
+  ---
+  duration_ms: 0.246919
+  type: 'test'
+  ...
+# Subtest: order selections persist through backup; undo remains reversible
+ok 90 - order selections persist through backup; undo remains reversible
+  ---
+  duration_ms: 0.572553
+  type: 'test'
+  ...
+# Subtest: incorrect sentence order is not accepted
+ok 91 - incorrect sentence order is not accepted
+  ---
+  duration_ms: 0.286285
+  type: 'test'
+  ...
+# Subtest: cannot submit partial sentence construction or select chunks twice
+ok 92 - cannot submit partial sentence construction or select chunks twice
+  ---
+  duration_ms: 0.828288
+  type: 'test'
+  ...
+# Subtest: typed word-level pinyin accepts equivalent numbers and identifies tone errors
+ok 93 - typed word-level pinyin accepts equivalent numbers and identifies tone errors
+  ---
+  duration_ms: 1.361684
+  type: 'test'
+  ...
+# Subtest: duplicate event IDs rejected, including if session stage advances
+ok 94 - duplicate event IDs rejected, including if session stage advances
+  ---
+  duration_ms: 0.715514
+  type: 'test'
+  ...
+# Subtest: cannot skip unchecked stage or edit answer after feedback
+ok 95 - cannot skip unchecked stage or edit answer after feedback
+  ---
+  duration_ms: 0.326708
+  type: 'test'
+  ...
+# Subtest: existing active session cannot be overwritten, abandon preserves submitted evidence
+ok 96 - existing active session cannot be overwritten, abandon preserves submitted evidence
+  ---
+  duration_ms: 0.290739
+  type: 'test'
+  ...
+# Subtest: older v1 backups without sentence ladder fields remain valid
+ok 97 - older v1 backups without sentence ladder fields remain valid
+  ---
+  duration_ms: 0.793442
+  type: 'test'
+  ...
+# Subtest: repeated ladder alternates the teaching word after completed tone task
+ok 98 - repeated ladder alternates the teaching word after completed tone task
+  ---
+  duration_ms: 0.21549
+  type: 'test'
+  ...
+# Subtest: malicious and malformed checkpoint selections are rejected
+ok 99 - malicious and malformed checkpoint selections are rejected
+  ---
+  duration_ms: 0.198042
+  type: 'test'
+  ...
+# Subtest: invalid stage, fabricated lesson and duplicate history are rejected
+ok 100 - invalid stage, fabricated lesson and duplicate history are rejected
+  ---
+  duration_ms: 0.668904
+  type: 'test'
+  ...
+# Subtest: adaptive priorities use mistakes and assistance, not scheduled mastery grants
+ok 101 - adaptive priorities use mistakes and assistance, not scheduled mastery grants
+  ---
+  duration_ms: 1.17862
+  type: 'test'
+  ...
+# Subtest: independent correction reduces adaptive priority for same stage
+ok 102 - independent correction reduces adaptive priority for same stage
+  ---
+  duration_ms: 0.735542
+  type: 'test'
+  ...
+# Subtest: scheduled-review grades and original event history are unchanged by ladder
+ok 103 - scheduled-review grades and original event history are unchanged by ladder
+  ---
+  duration_ms: 0.560239
+  type: 'test'
+  ...
+# Subtest: UI and offline list incorporate Sentence Ladder
+ok 104 - UI and offline list incorporate Sentence Ladder
+  ---
+  duration_ms: 14.461021
+  type: 'test'
+  ...
+# Subtest: multi-lesson selection is deterministic, unique, size-bound and does not alter progress
+ok 105 - multi-lesson selection is deterministic, unique, size-bound and does not alter progress
+  ---
+  duration_ms: 7.407718
+  type: 'test'
+  ...
+# Subtest: block start is an optional backwards-compatible state extension
+ok 106 - block start is an optional backwards-compatible state extension
+  ---
+  duration_ms: 2.49215
+  type: 'test'
+  ...
+# Subtest: opening or previously finishing an activity cannot falsely satisfy a new block step
+ok 107 - opening or previously finishing an activity cannot falsely satisfy a new block step
+  ---
+  duration_ms: 3.20352
+  type: 'test'
+  ...
+# Subtest: actual six-stage journey and four-stage ladder advance only after completion, without scheduled grades
+ok 108 - actual six-stage journey and four-stage ladder advance only after completion, without scheduled grades
+  ---
+  duration_ms: 9.241361
+  type: 'test'
+  ...
+# Subtest: bridge hint survives state cloning and makes a correct answer assisted
+ok 109 - bridge hint survives state cloning and makes a correct answer assisted
+  ---
+  duration_ms: 0.698469
+  type: 'test'
+  ...
+# Subtest: bridge revealed answer is not independent success and cannot be answered twice
+ok 110 - bridge revealed answer is not independent success and cannot be answered twice
+  ---
+  duration_ms: 0.413102
+  type: 'test'
+  ...
+# Subtest: tone grader reports wrong tone in full word, without scheduled mastery credit
+ok 111 - tone grader reports wrong tone in full word, without scheduled mastery credit
+  ---
+  duration_ms: 0.729529
+  type: 'test'
+  ...
+# Subtest: block checkpoints do not overwrite existing active lesson or review records
+ok 112 - block checkpoints do not overwrite existing active lesson or review records
+  ---
+  duration_ms: 0.773898
+  type: 'test'
+  ...
+# Subtest: abandon saves historical blocks without resetting exercises or local learner data
+ok 113 - abandon saves historical blocks without resetting exercises or local learner data
+  ---
+  duration_ms: 0.715297
+  type: 'test'
+  ...
+# Subtest: malformed checkpoints, unsupported lessons and duplicate event identities are rejected
+ok 114 - malformed checkpoints, unsupported lessons and duplicate event identities are rejected
+  ---
+  duration_ms: 1.011361
+  type: 'test'
+  ...
+# Subtest: all 74 lessons have complete original demo cross-links, with no assumed HSK membership
+ok 115 - all 74 lessons have complete original demo cross-links, with no assumed HSK membership
+  ---
+  duration_ms: 5.533345
+  type: 'test'
+  ...
+# Subtest: UI, browser script and offline asset declarations expose working Study Blocks
+ok 116 - UI, browser script and offline asset declarations expose working Study Blocks
+  ---
+  duration_ms: 9.738609
+  type: 'test'
+  ...
+# Subtest: cross-lesson meaning choices include a correct answer and are not always first
+ok 117 - cross-lesson meaning choices include a correct answer and are not always first
+  ---
+  duration_ms: 2.123222
+  type: 'test'
+  ...
+# Subtest: old v1 backups lacking block trail and old course fields remain supported
+ok 118 - old v1 backups lacking block trail and old course fields remain supported
+  ---
+  duration_ms: 3.397013
+  type: 'test'
+  ...
+# Subtest: trail starts only with an actual block and references existing original content
+ok 119 - trail starts only with an actual block and references existing original content
+  ---
+  duration_ms: 3.103427
+  type: 'test'
+  ...
+# Subtest: three context questions are distinct reading evidence, dialogue evidence, full-word pinyin
+ok 120 - three context questions are distinct reading evidence, dialogue evidence, full-word pinyin
+  ---
+  duration_ms: 4.188633
+  type: 'test'
+  ...
+# Subtest: assistance flag survives backup and cannot be cleared by restarting answer
+ok 121 - assistance flag survives backup and cannot be cleared by restarting answer
+  ---
+  duration_ms: 1.225919
+  type: 'test'
+  ...
+# Subtest: answer reveal never awards independent correctness
+ok 122 - answer reveal never awards independent correctness
+  ---
+  duration_ms: 0.736968
+  type: 'test'
+  ...
+# Subtest: no double submission across a completed trail stage
+ok 123 - no double submission across a completed trail stage
+  ---
+  duration_ms: 1.358437
+  type: 'test'
+  ...
+# Subtest: untrusted malformed trail, orphan session and duplicate event identity rejected
+ok 124 - untrusted malformed trail, orphan session and duplicate event identity rejected
+  ---
+  duration_ms: 1.561071
+  type: 'test'
+  ...
+# Subtest: ending block discards only active trail checkpoint, preserving trail observations
+ok 125 - ending block discards only active trail checkpoint, preserving trail observations
+  ---
+  duration_ms: 0.983225
+  type: 'test'
+  ...
+# Subtest: fresh learner skill ledger honestly reports four not-assessed skill facets
+ok 126 - fresh learner skill ledger honestly reports four not-assessed skill facets
+  ---
+  duration_ms: 4.903845
+  type: 'test'
+  ...
+# Subtest: recent independent correct evidence resolves earlier assisted error without rewriting event history
+ok 127 - recent independent correct evidence resolves earlier assisted error without rewriting event history
+  ---
+  duration_ms: 0.86329
+  type: 'test'
+  ...
+# Subtest: last assisted attempt makes skill unresolved, even after earlier independent success
+ok 128 - last assisted attempt makes skill unresolved, even after earlier independent success
+  ---
+  duration_ms: 0.89092
+  type: 'test'
+  ...
+# Subtest: review grades remain untouched by diagnostic reads and context trail
+ok 129 - review grades remain untouched by diagnostic reads and context trail
+  ---
+  duration_ms: 0.97867
+  type: 'test'
+  ...
+# Subtest: weak-priority selection retains count and no duplicate lessons
+ok 130 - weak-priority selection retains count and no duplicate lessons
+  ---
+  duration_ms: 4.979793
+  type: 'test'
+  ...
+# Subtest: new UI and service worker register context trail, skill coach and offline modules
+ok 131 - new UI and service worker register context trail, skill coach and offline modules
+  ---
+  duration_ms: 20.438461
+  type: 'test'
+  ...
+# Subtest: original teaching inventories remain unchanged and every fluency prompt has a real demo origin
+ok 132 - original teaching inventories remain unchanged and every fluency prompt has a real demo origin
+  ---
+  duration_ms: 1.425631
+  type: 'test'
+  ...
+# Subtest: balanced sessions cover all five independent supplemental activities with unique IDs
+ok 133 - balanced sessions cover all five independent supplemental activities with unique IDs
+  ---
+  duration_ms: 8.490746
+  type: 'test'
+  ...
+# Subtest: session focus and length are bounded; invalid modes and sizes rejected
+ok 134 - session focus and length are bounded; invalid modes and sizes rejected
+  ---
+  duration_ms: 25.122972
+  type: 'test'
+  ...
+# Subtest: pronunciation practice is prominent in tone focus
+ok 135 - pronunciation practice is prominent in tone focus
+  ---
+  duration_ms: 1.793081
+  type: 'test'
+  ...
+# Subtest: weak mode prioritizes a previously missed fluency prompt
+ok 136 - weak mode prioritizes a previously missed fluency prompt
+  ---
+  duration_ms: 1.961615
+  type: 'test'
+  ...
+# Subtest: support state persists in a v1 backup and prevents independent credit
+ok 137 - support state persists in a v1 backup and prevents independent credit
+  ---
+  duration_ms: 3.518387
+  type: 'test'
+  ...
+# Subtest: reveal is always assisted and cannot become independent success
+ok 138 - reveal is always assisted and cannot become independent success
+  ---
+  duration_ms: 1.992827
+  type: 'test'
+  ...
+# Subtest: answers commit once and second submission cannot double-credit a skill
+ok 139 - answers commit once and second submission cannot double-credit a skill
+  ---
+  duration_ms: 2.463199
+  type: 'test'
+  ...
+# Subtest: complete multi-skill sessions are checkpointed and summarize only independent correct answers
+ok 140 - complete multi-skill sessions are checkpointed and summarize only independent correct answers
+  ---
+  duration_ms: 5.135723
+  type: 'test'
+  ...
+# Subtest: a completed step is recovered in the same place from an exported backup
+ok 141 - a completed step is recovered in the same place from an exported backup
+  ---
+  duration_ms: 2.461516
+  type: 'test'
+  ...
+# Subtest: discard retains saved attempts but clears only the active checkpoint
+ok 142 - discard retains saved attempts but clears only the active checkpoint
+  ---
+  duration_ms: 3.506702
+  type: 'test'
+  ...
+# Subtest: prior scheduled-review observations are byte-identical across supplementary activity
+ok 143 - prior scheduled-review observations are byte-identical across supplementary activity
+  ---
+  duration_ms: 3.165809
+  type: 'test'
+  ...
+# Subtest: written-tone feedback distinguishes lexical tones
+ok 144 - written-tone feedback distinguishes lexical tones
+  ---
+  duration_ms: 2.410902
+  type: 'test'
+  ...
+# Subtest: contextual sense exercises use the authored context and retain distinct readings
+ok 145 - contextual sense exercises use the authored context and retain distinct readings
+  ---
+  duration_ms: 0.36433
+  type: 'test'
+  ...
+# Subtest: old version-one backup without any Batch 17 extension remains valid
+ok 146 - old version-one backup without any Batch 17 extension remains valid
+  ---
+  duration_ms: 0.942064
+  type: 'test'
+  ...
+# Subtest: invalid external imported histories and session pointers fail validation
+ok 147 - invalid external imported histories and session pointers fail validation
+  ---
+  duration_ms: 6.972436
+  type: 'test'
+  ...
+# Subtest: new route, source navigation, accessibility hooks and pre-cache all present
+ok 148 - new route, source navigation, accessibility hooks and pre-cache all present
+  ---
+  duration_ms: 17.091262
+  type: 'test'
+  ...
+# Subtest: Batch 18 preserves all original independent demo content counts
+ok 149 - Batch 18 preserves all original independent demo content counts
+  ---
+  duration_ms: 1.402854
+  type: 'test'
+  ...
+# Subtest: planning defaults and all allowed workload/focus values round trip
+ok 150 - planning defaults and all allowed workload/focus values round trip
+  ---
+  duration_ms: 6.857239
+  type: 'test'
+  ...
+# Subtest: unsupported preferences cannot corrupt state
+ok 151 - unsupported preferences cannot corrupt state
+  ---
+  duration_ms: 0.571664
+  type: 'test'
+  ...
+# Subtest: seven-day plan determinism, real local calendar dates, no invented future review counts
+ok 152 - seven-day plan determinism, real local calendar dates, no invented future review counts
+  ---
+  duration_ms: 1.434338
+  type: 'test'
+  ...
+# Subtest: future suggested lessons progress instead of seven repeated identical lessons
+ok 153 - future suggested lessons progress instead of seven repeated identical lessons
+  ---
+  duration_ms: 0.203211
+  type: 'test'
+  ...
+# Subtest: recorded daily evidence is distinct across review, journey, fluency and reading
+ok 154 - recorded daily evidence is distinct across review, journey, fluency and reading
+  ---
+  duration_ms: 0.64935
+  type: 'test'
+  ...
+# Subtest: scheduled review mistake identified with explicit source and safe reference
+ok 155 - scheduled review mistake identified with explicit source and safe reference
+  ---
+  duration_ms: 1.297189
+  type: 'test'
+  ...
+# Subtest: independent later correct review resolves prior error without deleting history
+ok 156 - independent later correct review resolves prior error without deleting history
+  ---
+  duration_ms: 0.406641
+  type: 'test'
+  ...
+# Subtest: supplemental Fluency Studio errors enter collection but never scheduled review grade
+ok 157 - supplemental Fluency Studio errors enter collection but never scheduled review grade
+  ---
+  duration_ms: 0.579704
+  type: 'test'
+  ...
+# Subtest: assisted correct attempt remains unresolved until independent success
+ok 158 - assisted correct attempt remains unresolved until independent success
+  ---
+  duration_ms: 0.408939
+  type: 'test'
+  ...
+# Subtest: course, ladder, remediation and study block histories contribute to follow-up list
+ok 159 - course, ladder, remediation and study block histories contribute to follow-up list
+  ---
+  duration_ms: 0.553448
+  type: 'test'
+  ...
+# Subtest: manual saved mistake collection persists through version-one backup import
+ok 160 - manual saved mistake collection persists through version-one backup import
+  ---
+  duration_ms: 1.152864
+  type: 'test'
+  ...
+# Subtest: pinned correction remains in saved collection even after later success
+ok 161 - pinned correction remains in saved collection even after later success
+  ---
+  duration_ms: 0.401261
+  type: 'test'
+  ...
+# Subtest: unknown, malformed and duplicated pin IDs rejected
+ok 162 - unknown, malformed and duplicated pin IDs rejected
+  ---
+  duration_ms: 0.280615
+  type: 'test'
+  ...
+# Subtest: legacy v1 backups without Batch 18 properties remain importable and default safely
+ok 163 - legacy v1 backups without Batch 18 properties remain importable and default safely
+  ---
+  duration_ms: 0.224238
+  type: 'test'
+  ...
+# Subtest: new plan features never modify scheduled-review events or mastery projections
+ok 164 - new plan features never modify scheduled-review events or mastery projections
+  ---
+  duration_ms: 0.464054
+  type: 'test'
+  ...
+# Subtest: related reading and dialogue recommendations select real original demo content
+ok 165 - related reading and dialogue recommendations select real original demo content
+  ---
+  duration_ms: 0.239801
+  type: 'test'
+  ...
+# Subtest: planning window rejects invalid or unbounded ranges and clock timestamps
+ok 166 - planning window rejects invalid or unbounded ranges and clock timestamps
+  ---
+  duration_ms: 0.772933
+  type: 'test'
+  ...
+# Subtest: existing 206 fluency question IDs and official HSK restrictions remain unchanged
+ok 167 - existing 206 fluency question IDs and official HSK restrictions remain unchanged
+  ---
+  duration_ms: 0.141012
+  type: 'test'
+  ...
+# Subtest: plan route, keyboard actions, mobile link, browser cache and no external data sources
+ok 168 - plan route, keyboard actions, mobile link, browser cache and no external data sources
+  ---
+  duration_ms: 5.212319
+  type: 'test'
+  ...
+# Subtest: written-tone repair provides specific location, contour and retry steps without speech claims
+ok 169 - written-tone repair provides specific location, contour and retry steps without speech claims
+  ---
+  duration_ms: 1.715802
+  type: 'test'
+  ...
+# Subtest: missing-syllable repair separates form problems from tone problems
+ok 170 - missing-syllable repair separates form problems from tone problems
+  ---
+  duration_ms: 0.539208
+  type: 'test'
+  ...
+# Subtest: correct lexical tones are reported as typed evidence, not certified speech
+ok 171 - correct lexical tones are reported as typed evidence, not certified speech
+  ---
+  duration_ms: 0.206115
+  type: 'test'
+  ...
+# Subtest: daily workload portions sum to learner-selected minutes across all plans
+ok 172 - daily workload portions sum to learner-selected minutes across all plans
+  ---
+  duration_ms: 2.16191
+  type: 'test'
+  ...
+# Subtest: seven-day retrospective uses observed activity only and does not touch mastery
+ok 173 - seven-day retrospective uses observed activity only and does not touch mastery
+  ---
+  duration_ms: 0.372064
+  type: 'test'
+  ...
+# Subtest: Batch 19 retains independently authored demonstration curriculum counts
+ok 174 - Batch 19 retains independently authored demonstration curriculum counts
+  ---
+  duration_ms: 1.444865
+  type: 'test'
+  ...
+# Subtest: Unified course home chooses next unintroduced lesson, never fabricates mastery
+ok 175 - Unified course home chooses next unintroduced lesson, never fabricates mastery
+  ---
+  duration_ms: 2.531021
+  type: 'test'
+  ...
+# Subtest: Due recall takes precedence over new lessons without modifying the grade
+ok 176 - Due recall takes precedence over new lessons without modifying the grade
+  ---
+  duration_ms: 1.77731
+  type: 'test'
+  ...
+# Subtest: Previously recorded unresolved error suggests remediation when no recall is due
+ok 177 - Previously recorded unresolved error suggests remediation when no recall is due
+  ---
+  duration_ms: 1.310584
+  type: 'test'
+  ...
+# Subtest: Saved Study Block is recommended before due scheduled review
+ok 178 - Saved Study Block is recommended before due scheduled review
+  ---
+  duration_ms: 1.873778
+  type: 'test'
+  ...
+# Subtest: All existing activity checkpoint types retain distinct resume routes
+ok 179 - All existing activity checkpoint types retain distinct resume routes
+  ---
+  duration_ms: 0.527856
+  type: 'test'
+  ...
+# Subtest: Legacy v1 backups load without newly invented persisted hub state
+ok 180 - Legacy v1 backups load without newly invented persisted hub state
+  ---
+  duration_ms: 1.344553
+  type: 'test'
+  ...
+# Subtest: Hub action selection does not consume session histories or grant recall
+ok 181 - Hub action selection does not consume session histories or grant recall
+  ---
+  duration_ms: 1.310648
+  type: 'test'
+  ...
+# Subtest: Lesson context links reference only matching original words and passages
+ok 182 - Lesson context links reference only matching original words and passages
+  ---
+  duration_ms: 5.171907
+  type: 'test'
+  ...
+# Subtest: Context continuation handles unknown IDs safely and cycles only provided content
+ok 183 - Context continuation handles unknown IDs safely and cycles only provided content
+  ---
+  duration_ms: 0.734751
+  type: 'test'
+  ...
+# Subtest: All key course and source routes are available in unified navigation
+ok 184 - All key course and source routes are available in unified navigation
+  ---
+  duration_ms: 2.227483
+  type: 'test'
+  ...
+# Subtest: Mobile navigation and static cache include all new app modules with no official HSK data
+ok 185 - Mobile navigation and static cache include all new app modules with no official HSK data
+  ---
+  duration_ms: 0.472137
+  type: 'test'
+  ...
+# Subtest: Batch 20 preserves the exact original demonstration curriculum
+ok 186 - Batch 20 preserves the exact original demonstration curriculum
+  ---
+  duration_ms: 2.01624
+  type: 'test'
+  ...
+# Subtest: Course overview reads fresh learner data without creating mastery events
+ok 187 - Course overview reads fresh learner data without creating mastery events
+  ---
+  duration_ms: 2.464818
+  type: 'test'
+  ...
+# Subtest: Course overview keeps supplementary events independent from scheduled credit
+ok 188 - Course overview keeps supplementary events independent from scheduled credit
+  ---
+  duration_ms: 9.013789
+  type: 'test'
+  ...
+# Subtest: Course shortcuts prioritize real due reviews and give correct lesson links
+ok 189 - Course shortcuts prioritize real due reviews and give correct lesson links
+  ---
+  duration_ms: 1.017952
+  type: 'test'
+  ...
+# Subtest: Recovery snapshot is a read-only summary not fabricated persistence evidence
+ok 190 - Recovery snapshot is a read-only summary not fabricated persistence evidence
+  ---
+  duration_ms: 0.630745
+  type: 'test'
+  ...
+# Subtest: Backup preview is read-only and never mutates live progress
+ok 191 - Backup preview is read-only and never mutates live progress
+  ---
+  duration_ms: 5.125809
+  type: 'test'
+  ...
+# Subtest: Legacy v1 backup still imports without optional learner extensions
+ok 192 - Legacy v1 backup still imports without optional learner extensions
+  ---
+  duration_ms: 0.905989
+  type: 'test'
+  ...
+# Subtest: Backup rejects unsupported origin and incompatible version before preview
+ok 193 - Backup rejects unsupported origin and incompatible version before preview
+  ---
+  duration_ms: 0.699323
+  type: 'test'
+  ...
+# Subtest: Backup enforces upper byte limit and disallows malformed events
+ok 194 - Backup enforces upper byte limit and disallows malformed events
+  ---
+  duration_ms: 0.788684
+  type: 'test'
+  ...
+# Subtest: Restore requires explicitly typed REPLACE, and no other input
+ok 195 - Restore requires explicitly typed REPLACE, and no other input
+  ---
+  duration_ms: 3.206319
+  type: 'test'
+  ...
+# Subtest: Optional large-Hanzi setting validates and old backups remain valid
+ok 196 - Optional large-Hanzi setting validates and old backups remain valid
+  ---
+  duration_ms: 0.563085
+  type: 'test'
+  ...
+# Subtest: Source exposes explicit backup preview and safe separate restore action
+ok 197 - Source exposes explicit backup preview and safe separate restore action
+  ---
+  duration_ms: 2.748783
+  type: 'test'
+  ...
+# Subtest: Service worker caches the new modules with revision 20
+ok 198 - Service worker caches the new modules with revision 20
+  ---
+  duration_ms: 0.261718
+  type: 'test'
+  ...
+# Subtest: Mobile course-navigation retains access to source learning tools
+ok 199 - Mobile course-navigation retains access to source learning tools
+  ---
+  duration_ms: 0.981371
+  type: 'test'
+  ...
+# Subtest: Restore transaction carries an expected revision for cross-tab safety
+ok 200 - Restore transaction carries an expected revision for cross-tab safety
+  ---
+  duration_ms: 1.631989
+  type: 'test'
+  ...
+# Subtest: twelve original readings contain 36 complete, auditable demonstration sentences
+ok 201 - twelve original readings contain 36 complete, auditable demonstration sentences
+  ---
+  duration_ms: 5.061791
+  type: 'test'
+  ...
+# Subtest: four reading exercise modes have explicit answer keys and legitimate content
+ok 202 - four reading exercise modes have explicit answer keys and legitimate content
+  ---
+  duration_ms: 11.215479
+  type: 'test'
+  ...
+# Subtest: vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+ok 203 - vocabulary lookup preserves distinct word identities, meanings and parent lesson links
+  ---
+  duration_ms: 5.819019
+  type: 'test'
+  ...
+# Subtest: supplementary reading attempts do not create scheduled review successes
+ok 204 - supplementary reading attempts do not create scheduled review successes
+  ---
+  duration_ms: 5.589619
+  type: 'test'
+  ...
+# Subtest: legacy learning histories and backups preserve old review events after adding reading events
+ok 205 - legacy learning histories and backups preserve old review events after adding reading events
+  ---
+  duration_ms: 2.361989
+  type: 'test'
+  ...
+# Subtest: invalid and fabricated reading history is rejected before persistence/import
+ok 206 - invalid and fabricated reading history is rejected before persistence/import
+  ---
+  duration_ms: 0.883312
+  type: 'test'
+  ...
+# Subtest: all 74 lessons offer six distinct valid synthetic exercise formats
+ok 207 - all 74 lessons offer six distinct valid synthetic exercise formats
+  ---
+  duration_ms: 52.618384
+  type: 'test'
+  ...
+# Subtest: deep lesson notes provide safe, non-etymological teaching explanations
+ok 208 - deep lesson notes provide safe, non-etymological teaching explanations
+  ---
+  duration_ms: 0.604296
+  type: 'test'
+  ...
+# Subtest: supplemental drill record is deduplicated and does not change scheduled mastery
+ok 209 - supplemental drill record is deduplicated and does not change scheduled mastery
+  ---
+  duration_ms: 5.521329
+  type: 'test'
+  ...
+# Subtest: old Batch 2 / Batch 3 backups without Batch 4 fields remain valid
+ok 210 - old Batch 2 / Batch 3 backups without Batch 4 fields remain valid
+  ---
+  duration_ms: 2.472746
+  type: 'test'
+  ...
+# Subtest: invalid drill events/bookmarks/reading size are rejected
+ok 211 - invalid drill events/bookmarks/reading size are rejected
+  ---
+  duration_ms: 1.935377
+  type: 'test'
+  ...
+# Subtest: bookmarks toggle, preserve existing history and survive backups
+ok 212 - bookmarks toggle, preserve existing history and survive backups
+  ---
+  duration_ms: 1.023968
+  type: 'test'
+  ...
+# Subtest: weak-skill priority is derived from attempts and does not fabricate progress
+ok 213 - weak-skill priority is derived from attempts and does not fabricate progress
+  ---
+  duration_ms: 2.57541
+  type: 'test'
+  ...
+# Subtest: UI wires practice route, larger reading, deep lessons, review-priority and retains legacy routes
+ok 214 - UI wires practice route, larger reading, deep lessons, review-priority and retains legacy routes
+  ---
+  duration_ms: 17.294359
+  type: 'test'
+  ...
+# Subtest: prior curriculum and readings retained, no official HSK memberships
+ok 215 - prior curriculum and readings retained, no official HSK memberships
+  ---
+  duration_ms: 1.862957
+  type: 'test'
+  ...
+# Subtest: recommendations prioritize real observed errors while preserving stable lesson IDs
+ok 216 - recommendations prioritize real observed errors while preserving stable lesson IDs
+  ---
+  duration_ms: 3.027402
+  type: 'test'
+  ...
+# Subtest: new practice sessions are structurally valid across limits and focus modes
+ok 217 - new practice sessions are structurally valid across limits and focus modes
+  ---
+  duration_ms: 12.390746
+  type: 'test'
+  ...
+# Subtest: guided question accepts exact correct answers, including character ordering and tonal pinyin
+ok 218 - guided question accepts exact correct answers, including character ordering and tonal pinyin
+  ---
+  duration_ms: 2.933045
+  type: 'test'
+  ...
+# Subtest: guided outcomes commit as supplemental events, can checkpoint and never credit scheduled cards
+ok 219 - guided outcomes commit as supplemental events, can checkpoint and never credit scheduled cards
+  ---
+  duration_ms: 4.640857
+  type: 'test'
+  ...
+# Subtest: answer reveal is assisted and never counted as independently correct
+ok 220 - answer reveal is assisted and never counted as independently correct
+  ---
+  duration_ms: 0.473556
+  type: 'test'
+  ...
+# Subtest: invalid sessions and duplicate answers rejected, without modifying original state
+ok 221 - invalid sessions and duplicate answers rejected, without modifying original state
+  ---
+  duration_ms: 1.475542
+  type: 'test'
+  ...
+# Subtest: legacy Batch 4 backups without a practiceSession remain importable
+ok 222 - legacy Batch 4 backups without a practiceSession remain importable
+  ---
+  duration_ms: 0.717531
+  type: 'test'
+  ...
+# Subtest: source contains new navigation, guided practice, reading and recovery states
+ok 223 - source contains new navigation, guided practice, reading and recovery states
+  ---
+  duration_ms: 2.270028
+  type: 'test'
+  ...
+# Subtest: complete authored content from previous five batches remains available
+ok 224 - complete authored content from previous five batches remains available
+  ---
+  duration_ms: 1.230343
+  type: 'test'
+  ...
+# Subtest: placement questions are stable six unique complete four-option questions
+ok 225 - placement questions are stable six unique complete four-option questions
+  ---
+  duration_ms: 0.521059
+  type: 'test'
+  ...
+# Subtest: placement works across resumable checkpointed answers without granting mastery
+ok 226 - placement works across resumable checkpointed answers without granting mastery
+  ---
+  duration_ms: 5.936904
+  type: 'test'
+  ...
+# Subtest: placement can be skipped without changing learner history
+ok 227 - placement can be skipped without changing learner history
+  ---
+  duration_ms: 0.207149
+  type: 'test'
+  ...
+# Subtest: invalid placement options and tampered backup fields fail closed
+ok 228 - invalid placement options and tampered backup fields fail closed
+  ---
+  duration_ms: 0.570353
+  type: 'test'
+  ...
+# Subtest: two distinct connected sentence tasks available across all 12 demo readings
+ok 229 - two distinct connected sentence tasks available across all 12 demo readings
+  ---
+  duration_ms: 0.726021
+  type: 'test'
+  ...
+# Subtest: sentence sessions grade correctly and store reading events without scheduled credit
+ok 230 - sentence sessions grade correctly and store reading events without scheduled credit
+  ---
+  duration_ms: 1.229285
+  type: 'test'
+  ...
+# Subtest: new guided session sentence-only mode and pronunciation mode remain valid
+ok 231 - new guided session sentence-only mode and pronunciation mode remain valid
+  ---
+  duration_ms: 10.450046
+  type: 'test'
+  ...
+# Subtest: weak focus specifically selects pinyin practice for observed pronunciation errors
+ok 232 - weak focus specifically selects pinyin practice for observed pronunciation errors
+  ---
+  duration_ms: 1.312016
+  type: 'test'
+  ...
+# Subtest: coaching uses actual mistakes across scheduled reviews and extra practice
+ok 233 - coaching uses actual mistakes across scheduled reviews and extra practice
+  ---
+  duration_ms: 1.337997
+  type: 'test'
+  ...
+# Subtest: weekly evidence keeps scheduled and supplemental attempts separate
+ok 234 - weekly evidence keeps scheduled and supplemental attempts separate
+  ---
+  duration_ms: 0.626153
+  type: 'test'
+  ...
+# Subtest: reading-mode extension preserves existing event history and rejects unsupported types
+ok 235 - reading-mode extension preserves existing event history and rejects unsupported types
+  ---
+  duration_ms: 0.16296
+  type: 'test'
+  ...
+# Subtest: new UI sections are connected to navigation, storage gating and lesson teaching
+ok 236 - new UI sections are connected to navigation, storage gating and lesson teaching
+  ---
+  duration_ms: 1.741077
+  type: 'test'
+  ...
+# Subtest: offline shell caches all imported batch6 modules with a qualified newer cache revision
+ok 237 - offline shell caches all imported batch6 modules with a qualified newer cache revision
+  ---
+  duration_ms: 0.398536
+  type: 'test'
+  ...
+# Subtest: previous complete demonstrator curriculum is unchanged, synthetic rights gates still apply
+ok 238 - previous complete demonstrator curriculum is unchanged, synthetic rights gates still apply
+  ---
+  duration_ms: 1.684615
+  type: 'test'
+  ...
+# Subtest: contextual exercises are complete for all stories and never use an unattested external syllabus
+ok 239 - contextual exercises are complete for all stories and never use an unattested external syllabus
+  ---
+  duration_ms: 1.684731
+  type: 'test'
+  ...
+# Subtest: all context exercise modes can be recorded independently of scheduler history
+ok 240 - all context exercise modes can be recorded independently of scheduler history
+  ---
+  duration_ms: 5.231069
+  type: 'test'
+  ...
+# Subtest: reveal is assisted and cannot credit an independent context exercise
+ok 241 - reveal is assisted and cannot credit an independent context exercise
+  ---
+  duration_ms: 0.333636
+  type: 'test'
+  ...
+# Subtest: new focused reading sessions include evidence, connection and legacy modes
+ok 242 - new focused reading sessions include evidence, connection and legacy modes
+  ---
+  duration_ms: 3.863474
+  type: 'test'
+  ...
+# Subtest: saved vocabulary wordbook deduplicates, toggles and is included in v1 backup
+ok 243 - saved vocabulary wordbook deduplicates, toggles and is included in v1 backup
+  ---
+  duration_ms: 0.80164
+  type: 'test'
+  ...
+# Subtest: legacy backup without wordbook remains compatible and can acquire new fields
+ok 244 - legacy backup without wordbook remains compatible and can acquire new fields
+  ---
+  duration_ms: 1.322019
+  type: 'test'
+  ...
+# Subtest: lesson connection graph uses actual word links and story occurrences without fake entries
+ok 245 - lesson connection graph uses actual word links and story occurrences without fake entries
+  ---
+  duration_ms: 6.8872
+  type: 'test'
+  ...
+# Subtest: assisted or correct responses do not artificially generate certification
+ok 246 - assisted or correct responses do not artificially generate certification
+  ---
+  duration_ms: 0.967206
+  type: 'test'
+  ...
+# Subtest: reading modes remain backward compatible and reject unknown history
+ok 247 - reading modes remain backward compatible and reject unknown history
+  ---
+  duration_ms: 1.003544
+  type: 'test'
+  ...
+# Subtest: app provides story sentence guidance, wordbook, adaptable speech and module cache
+ok 248 - app provides story sentence guidance, wordbook, adaptable speech and module cache
+  ---
+  duration_ms: 3.021536
+  type: 'test'
+  ...
+# Subtest: all 74 legacy lessons, 12 readings, and demo-only content boundaries survive
+ok 249 - all 74 legacy lessons, 12 readings, and demo-only content boundaries survive
+  ---
+  duration_ms: 1.453856
+  type: 'test'
+  ...
+# Subtest: ten hand-authored dialogues expose thirty turns and twenty unambiguous questions
+ok 250 - ten hand-authored dialogues expose thirty turns and twenty unambiguous questions
+  ---
+  duration_ms: 1.172731
+  type: 'test'
+  ...
+# Subtest: dialogue answers save independently from scheduled mastery
+ok 251 - dialogue answers save independently from scheduled mastery
+  ---
+  duration_ms: 3.24543
+  type: 'test'
+  ...
+# Subtest: hint-aided dialogue success stays assisted and does not credit independent activity
+ok 252 - hint-aided dialogue success stays assisted and does not credit independent activity
+  ---
+  duration_ms: 0.82249
+  type: 'test'
+  ...
+# Subtest: dialogue events are deduplicated and malformed/unapproved imports are rejected
+ok 253 - dialogue events are deduplicated and malformed/unapproved imports are rejected
+  ---
+  duration_ms: 1.523122
+  type: 'test'
+  ...
+# Subtest: wordbook selects saved vocabulary without guessing official HSK levels
+ok 254 - wordbook selects saved vocabulary without guessing official HSK levels
+  ---
+  duration_ms: 0.781537
+  type: 'test'
+  ...
+# Subtest: wordbook pinyin distinguishes a correct tone and an incorrect tone
+ok 255 - wordbook pinyin distinguishes a correct tone and an incorrect tone
+  ---
+  duration_ms: 1.996596
+  type: 'test'
+  ...
+# Subtest: wordbook attempts remain supplementary, deduplicated and validated
+ok 256 - wordbook attempts remain supplementary, deduplicated and validated
+  ---
+  duration_ms: 1.455317
+  type: 'test'
+  ...
+# Subtest: legacy backups without new fields round-trip and accept subsequent new events
+ok 257 - legacy backups without new fields round-trip and accept subsequent new events
+  ---
+  duration_ms: 1.543365
+  type: 'test'
+  ...
+# Subtest: existing guided-session and placement metadata survive extended backup unchanged
+ok 258 - existing guided-session and placement metadata survive extended backup unchanged
+  ---
+  duration_ms: 2.617085
+  type: 'test'
+  ...
+# Subtest: lesson path gives upcoming material plus explainable, prioritized recovery
+ok 259 - lesson path gives upcoming material plus explainable, prioritized recovery
+  ---
+  duration_ms: 1.515106
+  type: 'test'
+  ...
+# Subtest: unit tracking separates introduction from proficiency and preserves 74-lesson total
+ok 260 - unit tracking separates introduction from proficiency and preserves 74-lesson total
+  ---
+  duration_ms: 1.56164
+  type: 'test'
+  ...
+# Subtest: review planner retains only due cards and covers multiple independent skill families
+ok 261 - review planner retains only due cards and covers multiple independent skill families
+  ---
+  duration_ms: 2.233771
+  type: 'test'
+  ...
+# Subtest: review planner prioritizes missed responses and does not fabricate grades
+ok 262 - review planner prioritizes missed responses and does not fabricate grades
+  ---
+  duration_ms: 1.03354
+  type: 'test'
+  ...
+# Subtest: progress diagnostics separate five evidence streams and ignore assisted successes
+ok 263 - progress diagnostics separate five evidence streams and ignore assisted successes
+  ---
+  duration_ms: 1.537567
+  type: 'test'
+  ...
+# Subtest: new features have reachable UI, local-only service worker entries, and v9 cache revision
+ok 264 - new features have reachable UI, local-only service worker entries, and v9 cache revision
+  ---
+  duration_ms: 3.733607
+  type: 'test'
+  ...
+# Subtest: Batch 9 preserves all earlier demo content without invented HSK membership
+ok 265 - Batch 9 preserves all earlier demo content without invented HSK membership
+  ---
+  duration_ms: 1.540217
+  type: 'test'
+  ...
+# Subtest: tone coach accepts numeric and marked pinyin and pinpoints mismatched tone
+ok 266 - tone coach accepts numeric and marked pinyin and pinpoints mismatched tone
+  ---
+  duration_ms: 1.459361
+  type: 'test'
+  ...
+# Subtest: tone coach distinguishes wrong syllables and invalid input without false acoustic claims
+ok 267 - tone coach distinguishes wrong syllables and invalid input without false acoustic claims
+  ---
+  duration_ms: 0.598645
+  type: 'test'
+  ...
+# Subtest: 12 hand-authored sense contexts yield distinct two-choice prompts and contextual reasons
+ok 268 - 12 hand-authored sense contexts yield distinct two-choice prompts and contextual reasons
+  ---
+  duration_ms: 0.436816
+  type: 'test'
+  ...
+# Subtest: sense attempts never create scheduled-review evidence, preserve assistance, and deduplicate
+ok 269 - sense attempts never create scheduled-review evidence, preserve assistance, and deduplicate
+  ---
+  duration_ms: 2.672065
+  type: 'test'
+  ...
+# Subtest: all 24 original reading-based exact written sentence tasks are available
+ok 270 - all 24 original reading-based exact written sentence tasks are available
+  ---
+  duration_ms: 0.751555
+  type: 'test'
+  ...
+# Subtest: sentence workshop does not grade paraphrase or give mastery to assisted answers
+ok 271 - sentence workshop does not grade paraphrase or give mastery to assisted answers
+  ---
+  duration_ms: 0.863943
+  type: 'test'
+  ...
+# Subtest: all ten dialogues support three steps with cited evidence and pinyin reference
+ok 272 - all ten dialogues support three steps with cited evidence and pinyin reference
+  ---
+  duration_ms: 1.615499
+  type: 'test'
+  ...
+# Subtest: dialogue mission grades typed tones and keeps correct assisted answers supplementary
+ok 273 - dialogue mission grades typed tones and keeps correct assisted answers supplementary
+  ---
+  duration_ms: 2.971188
+  type: 'test'
+  ...
+# Subtest: wordbook practice provides all / missed / unpracticed selections
+ok 274 - wordbook practice provides all / missed / unpracticed selections
+  ---
+  duration_ms: 1.009206
+  type: 'test'
+  ...
+# Subtest: legacy v1 backups without Batch 9 histories import and remain writable
+ok 275 - legacy v1 backups without Batch 9 histories import and remain writable
+  ---
+  duration_ms: 1.68094
+  type: 'test'
+  ...
+# Subtest: new supplemental histories never mutate legacy review events, learned IDs or guided checkpoints
+ok 276 - new supplemental histories never mutate legacy review events, learned IDs or guided checkpoints
+  ---
+  duration_ms: 1.091121
+  type: 'test'
+  ...
+# Subtest: progress diagnostics report new evidence streams separately from existing ones
+ok 277 - progress diagnostics report new evidence streams separately from existing ones
+  ---
+  duration_ms: 0.974349
+  type: 'test'
+  ...
+# Subtest: new routes, handlers, responsive CSS and offline dependencies are connected
+ok 278 - new routes, handlers, responsive CSS and offline dependencies are connected
+  ---
+  duration_ms: 2.440804
+  type: 'test'
+  ...
+# Subtest: tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+ok 279 - tone-marked and numeric Mandarin pinyin match independently of keyboard convention
+  ---
+  duration_ms: 3.508569
+  type: 'test'
+  ...
+# Subtest: tone differs from syllable spelling and empty answers fail conservatively
+ok 280 - tone differs from syllable spelling and empty answers fail conservatively
+  ---
+  duration_ms: 0.368163
+  type: 'test'
+  ...
+# Subtest: meaning answers accept only reviewed textual senses, not arbitrary partial strings
+ok 281 - meaning answers accept only reviewed textual senses, not arbitrary partial strings
+  ---
+  duration_ms: 1.521909
+  type: 'test'
+  ...
+# Subtest: multiple-choice answers are evaluated literally, with deterministic options
+ok 282 - multiple-choice answers are evaluated literally, with deterministic options
+  ---
+  duration_ms: 1.578941
+  type: 'test'
+  ...
+# Subtest: cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+ok 283 - cloze exercises preserve the target sentence and avoid fabricated HSK memberships
+  ---
+  duration_ms: 6.902011
+  type: 'test'
+  ...
+# Subtest: all 74 original lessons remain well-formed and contain two related words
+ok 284 - all 74 original lessons remain well-formed and contain two related words
+  ---
+  duration_ms: 0.344459
+  type: 'test'
+  ...
+# Subtest: local dev server serves actual application and rejects missing routes
+ok 285 - local dev server serves actual application and rejects missing routes
+  ---
+  duration_ms: 130.764564
+  type: 'test'
+  ...
+# Subtest: original content has no official HSK membership and all lessons have complete linked words and sentences
+ok 286 - original content has no official HSK membership and all lessons have complete linked words and sentences
+  ---
+  duration_ms: 2.025912
+  type: 'test'
+  ...
+# Subtest: non-approved/missing lesson cannot be published
+ok 287 - non-approved/missing lesson cannot be published
+  ---
+  duration_ms: 0.219188
+  type: 'test'
+  ...
+# Subtest: search supports hanzi, english and diacritic-free pinyin
+ok 288 - search supports hanzi, english and diacritic-free pinyin
+  ---
+  duration_ms: 5.86549
+  type: 'test'
+  ...
+# Subtest: learning registers independent recognition, pronunciation and lexical targets
+ok 289 - learning registers independent recognition, pronunciation and lexical targets
+  ---
+  duration_ms: 2.7927
+  type: 'test'
+  ...
+# Subtest: review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+ok 290 - review policy schedules deterministic delayed returns and does not double grade duplicate IDs
+  ---
+  duration_ms: 1.550552
+  type: 'test'
+  ...
+# Subtest: different skills are not auto-credited and failures relearn
+ok 291 - different skills are not auto-credited and failures relearn
+  ---
+  duration_ms: 0.458217
+  type: 'test'
+  ...
+# Subtest: progress does not claim calibrated mastery
+ok 292 - progress does not claim calibrated mastery
+  ---
+  duration_ms: 0.528386
+  type: 'test'
+  ...
+# Subtest: backup roundtrips with strict curriculum origin
+ok 293 - backup roundtrips with strict curriculum origin
+  ---
+  duration_ms: 1.035367
+  type: 'test'
+  ...
+# Subtest: unknown target and malformed user history fail closed
+ok 294 - unknown target and malformed user history fail closed
+  ---
+  duration_ms: 0.816621
+  type: 'test'
+  ...
+# Subtest: offline source includes functional modules without external runtime dependencies
+ok 295 - offline source includes functional modules without external runtime dependencies
+  ---
+  duration_ms: 10.007335
+  type: 'test'
+  ...
+# Subtest: newly added independent pronunciation and sentence targets have distinct meanings
+ok 296 - newly added independent pronunciation and sentence targets have distinct meanings
+  ---
+  duration_ms: 0.384961
+  type: 'test'
+  ...
+# Subtest: legacy saved progress migrates additional targets with no fabricated grades
+ok 297 - legacy saved progress migrates additional targets with no fabricated grades
+  ---
+  duration_ms: 0.716365
+  type: 'test'
+  ...
+# Subtest: a revealed or incorrect attempt cannot earn a passing event
+ok 298 - a revealed or incorrect attempt cannot earn a passing event
+  ---
+  duration_ms: 0.268126
+  type: 'test'
+  ...
+# Subtest: six lesson units cover exactly each approved demo lesson
+ok 299 - six lesson units cover exactly each approved demo lesson
+  ---
+  duration_ms: 0.302742
+  type: 'test'
+  ...
+# Subtest: daily introduction goal distinguishes actual lesson completion from historical imported lessons
+ok 300 - daily introduction goal distinguishes actual lesson completion from historical imported lessons
+  ---
+  duration_ms: 0.364759
+  type: 'test'
+  ...
+1..300
+# tests 300
+# suites 0
+# pass 300
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1390.89042

@@ -1,0 +1,5 @@
+
+> character-study-local-working-build@1.0.0-local verify
+> node scripts/verify.mjs
+
+PASS: 15 built assets verified, shell/offline guard present, 74 non-HSK demo lessons

@@ -1,0 +1,39 @@
+{
+  "phase": "Batch 8",
+  "sourceTreeSha256": "66e7012c42497410ad56d85cf2c15ed733e9c8da3de09f82c90338f0f314988c",
+  "build": "PASS",
+  "nodeTests": {
+    "pass": 86,
+    "fail": 0
+  },
+  "assets": {
+    "verified": 30,
+    "pass": true
+  },
+  "http": {
+    "passed": 9,
+    "failed": 0
+  },
+  "realBrowser": {
+    "status": "NOT_TESTED",
+    "attempt": "Chromium headless local-origin navigation timed out (exit 124)",
+    "note": "No claim of real IndexedDB persistence, service-worker offline reload, mobile or screen-reader acceptance"
+  },
+  "dataset": {
+    "demoLessons": 74,
+    "miniReadings": 12,
+    "newDialogues": 10,
+    "newDialogueTurns": 30,
+    "newDialogueQuestions": 20,
+    "officialHSKImported": false
+  },
+  "persistence": {
+    "schemaVersion": 1,
+    "legacyBackupSchema": "Supported in source-level tests",
+    "newOptionalFields": [
+      "dialogueEvents",
+      "wordPracticeEvents"
+    ]
+  },
+  "productionChanges": false
+}

@@ -1,0 +1,9 @@
+/ 200 text/html; charset=utf-8 nosniff 3772
+/app.mjs 200 text/javascript; charset=utf-8 nosniff 97506
+/dialogues.mjs 200 text/javascript; charset=utf-8 nosniff 7412
+/wordbook-lab.mjs 200 text/javascript; charset=utf-8 nosniff 2715
+/pathways.mjs 200 text/javascript; charset=utf-8 nosniff 1940
+/review-strategy.mjs 200 text/javascript; charset=utf-8 nosniff 1327
+/progress-diagnostics.mjs 200 text/javascript; charset=utf-8 nosniff 1104
+/sw.js 200 text/javascript; charset=utf-8 nosniff 1448
+/styles.css 200 text/css; charset=utf-8 nosniff 47210

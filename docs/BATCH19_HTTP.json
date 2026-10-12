@@ -1,0 +1,12 @@
+{
+  "checked_assets": 51,
+  "passed_assets": 51,
+  "failed": [],
+  "index_http": 200,
+  "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+  "missing_http": 404,
+  "new_modules": {
+    "learning-hub.mjs": 200,
+    "context-continuity.mjs": 200
+  }
+}

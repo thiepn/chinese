@@ -1,0 +1,22 @@
+{
+  "batch": 12,
+  "sourceTreeSha256": "3704744257c0059e690d55bb810ffd53f4eaa732559e4fd504a811e3cec4f99e",
+  "sourceFiles": 60,
+  "tests": {
+    "passed": 159,
+    "failed": 0
+  },
+  "build": {
+    "assets": 40,
+    "verifiedAssets": 40
+  },
+  "http": {
+    "200responses": 10
+  },
+  "browser": {
+    "realOrigin": "NOT_TESTED",
+    "indexedDbReload": "NOT_TESTED",
+    "offlineReload": "NOT_TESTED"
+  },
+  "archive": "ZIP CRC checked after creation; final ZIP SHA-256 is reported separately (cannot be self-embedded)."
+}

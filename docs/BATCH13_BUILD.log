@@ -1,0 +1,5 @@
+
+> character-study-local-working-build@1.10.0-local-batch13 build
+> node scripts/build.mjs
+
+Built 41 static assets in dist/. SHA-256 manifest: docs/DIST_SHA256.json

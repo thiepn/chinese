@@ -1,0 +1,53 @@
+{
+  "http": [
+    {
+      "route": "/",
+      "status": 200,
+      "bytes": 3978
+    },
+    {
+      "route": "/app.mjs",
+      "status": 200,
+      "bytes": 115820
+    },
+    {
+      "route": "/guided-session.mjs",
+      "status": 200,
+      "bytes": 9080
+    },
+    {
+      "route": "/connected-practice.mjs",
+      "status": 200,
+      "bytes": 4653
+    },
+    {
+      "route": "/pronunciation-path.mjs",
+      "status": 200,
+      "bytes": 1569
+    },
+    {
+      "route": "/context-links.mjs",
+      "status": 200,
+      "bytes": 749
+    },
+    {
+      "route": "/sw.js",
+      "status": 200,
+      "bytes": 1614
+    },
+    {
+      "route": "/styles.css",
+      "status": 200,
+      "bytes": 53312
+    },
+    {
+      "route": "/manifest.webmanifest",
+      "status": 200,
+      "bytes": 667
+    }
+  ],
+  "chromium": {
+    "status": "NOT_TESTED",
+    "error": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:4173/\nCall log:\n  - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\n"
+  }
+}

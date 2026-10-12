@@ -1,0 +1,397 @@
+{
+  "source_tree_sha256": "6a696422fe0f2ec4c3e262b1bb0d2de4b0d83d0fad7d47e3fbfde9f9108d455b",
+  "algorithm": "SHA256 over sorted relative file paths + NUL + SHA256 + newline",
+  "file_count": 78,
+  "files": [
+    {
+      "file": "README.md",
+      "sha256": "9e70e0906cd4ed9bd22011f4fef0586eda47cd6a2e54c98628af5698cb1c070a",
+      "size": 40898
+    },
+    {
+      "file": "package.json",
+      "sha256": "98339b57e3b1748dff401094085ce4ed903d245183363424c4b34cf23e63e3e7",
+      "size": 834
+    },
+    {
+      "file": "run-windows.bat",
+      "sha256": "49380ed738ee7aa9a91be25a549b33492a049243db38655f077a8cc9c35cbe5f",
+      "size": 236
+    },
+    {
+      "file": "scripts/build.mjs",
+      "sha256": "bd5f636e749329e2e452cfd57a7744d203573f61b32389269b420f03a0e078e2",
+      "size": 1158
+    },
+    {
+      "file": "scripts/serve.mjs",
+      "sha256": "692e05f3a662216a5648396fd8671ae442b2b518df6f00d46a0538a42f6031fa",
+      "size": 1413
+    },
+    {
+      "file": "scripts/verify.mjs",
+      "sha256": "8f4e80bcddc274f009a832ee90d5dfa1ed2b1b42fb7d44d385320f0aea3f766b",
+      "size": 1735
+    },
+    {
+      "file": "src/app.mjs",
+      "sha256": "4dc92d9487d0a5ad865ea398685cadd9abc066168e43b1610dac45d91c0b59e1",
+      "size": 195334
+    },
+    {
+      "file": "src/block-coach.mjs",
+      "sha256": "d71eec0050921b3fa2e2412099d3781c20ba57945a19f15bf319885510a0d7ce",
+      "size": 3903
+    },
+    {
+      "file": "src/connected-practice.mjs",
+      "sha256": "013b61a3e02ca951ad723967d81461d853db86c8d7394dd4ca118635b8403acf",
+      "size": 4653
+    },
+    {
+      "file": "src/context-continuity.mjs",
+      "sha256": "60476fb4ab4aa9d6b23ce0f1ca0357438e60dff6dfccbf1d22ceddae3b3f2fcc",
+      "size": 1412
+    },
+    {
+      "file": "src/context-lab.mjs",
+      "sha256": "ba6742524499fa73cada152f348dd09fb771a0837ea06c00ab20b20f23ed5d1f",
+      "size": 6017
+    },
+    {
+      "file": "src/context-links.mjs",
+      "sha256": "aef1754c97ce4dc2579ba4a60effa9442ef2fbc947fb3bca5ac5ce6d0f0e51fa",
+      "size": 749
+    },
+    {
+      "file": "src/context-trail.mjs",
+      "sha256": "3106326c341d71f1faac34419abb5a05dff4e56c6b8a7e65ade7650d8ff11774",
+      "size": 6166
+    },
+    {
+      "file": "src/course-continuation.mjs",
+      "sha256": "512e8b853666d9f0cae8beb963ddcb4d9aacee318ad1d6770048cf5b1e860f88",
+      "size": 7509
+    },
+    {
+      "file": "src/course-journey.mjs",
+      "sha256": "d6d347ffda4d4c811628716fef93498443c02c59673669db2d7934fbe1c88fae",
+      "size": 9333
+    },
+    {
+      "file": "src/cross-lesson.mjs",
+      "sha256": "650a251f08e1786d53e31cc07cfdf54144be73886a31c0dbed1b12c080e08980",
+      "size": 1727
+    },
+    {
+      "file": "src/daily-plan.mjs",
+      "sha256": "1f8729a65148831f601c57dd6d9a03a715e19afa5a9dbf407590426be85d6e33",
+      "size": 9344
+    },
+    {
+      "file": "src/demo-lessons.mjs",
+      "sha256": "e2e16fa5ec0a977d73c01fded2e3c76abb33b7c21358887a2d334bdedbe94250",
+      "size": 18321
+    },
+    {
+      "file": "src/dialogue-missions.mjs",
+      "sha256": "a25623a042c85d5bdc954fb052c3e4531590dcc8f24f04df94a216a8cff07484",
+      "size": 2649
+    },
+    {
+      "file": "src/dialogues.mjs",
+      "sha256": "19c46dbcae00997780f840311e06d9cff20312d35b7846b27dcdc92f8d5fe7cb",
+      "size": 7412
+    },
+    {
+      "file": "src/drills.mjs",
+      "sha256": "3a77a754e8039b5ee72e6fffa29ae426bfbc7550dae88c0f6bee74dc872cb894",
+      "size": 3994
+    },
+    {
+      "file": "src/exercises.mjs",
+      "sha256": "c499efdc019f2eaf5e0fd2f8c99dc68fc0178b601149f16c0fc89fbe5eda28ed",
+      "size": 6128
+    },
+    {
+      "file": "src/fluency-studio.mjs",
+      "sha256": "0bc089db58019fe071672279b894b1feb76a1a196f990676a5b93fe280215a5e",
+      "size": 10329
+    },
+    {
+      "file": "src/guided-session.mjs",
+      "sha256": "952c394a1c12c8e8966aa7cf22e6ad68dbb093c6ca9b85ee356880d772cb5dca",
+      "size": 9080
+    },
+    {
+      "file": "src/icons/icon-192.png",
+      "sha256": "a4f79f12eca2bcfef039773079410a13f427ee963260fe9167ef297a4066144f",
+      "size": 1142
+    },
+    {
+      "file": "src/icons/icon-512.png",
+      "sha256": "a2d783087169e218c625f66fb01390494634c6880b6424deb739b51ee19e36d2",
+      "size": 2934
+    },
+    {
+      "file": "src/icons/icon.svg",
+      "sha256": "4529b3801de0a429bdc48ff6a68469854d8c1dd1490cfa984e62cf2baedb7caf",
+      "size": 468
+    },
+    {
+      "file": "src/index.html",
+      "sha256": "cff3d139e02d9b134a076fa7252a4aad22f16ef1981cc32350df6de1d89eff92",
+      "size": 4513
+    },
+    {
+      "file": "src/insights.mjs",
+      "sha256": "72720c56d833267869ea28e14b44a364e798fdb36b0559e52fff99e750f642e1",
+      "size": 2429
+    },
+    {
+      "file": "src/learning-bridge.mjs",
+      "sha256": "972bc61d933bf88fdef36f9362ad175f178698ab51377555a5026374da1d6d36",
+      "size": 4860
+    },
+    {
+      "file": "src/learning-coach.mjs",
+      "sha256": "d97bfe201f77e79cc71a3356a40ca80e6115915ce41ed8077d544798c8532e3e",
+      "size": 2901
+    },
+    {
+      "file": "src/learning-hub.mjs",
+      "sha256": "0b609b1fcdd97e29e4cf8496cbdd7b07e564a8b7a289d1e1b73a481857222d38",
+      "size": 4971
+    },
+    {
+      "file": "src/lesson-guides.mjs",
+      "sha256": "1627b64d5304246420ff7af17f0eec6f06cebe5dd2031db0d02db285124333c4",
+      "size": 4558
+    },
+    {
+      "file": "src/lexicon.mjs",
+      "sha256": "35b239c7ba222926db90b7619e001da0e2aab5824276b7678874af0057150cfe",
+      "size": 1562
+    },
+    {
+      "file": "src/manifest.webmanifest",
+      "sha256": "28e3b091cc347c175416bf729211b293df430d5407f7655c1a9ec0b56b4bb088",
+      "size": 667
+    },
+    {
+      "file": "src/pathways.mjs",
+      "sha256": "58def2890131afb61d93dca69bab49b6f16166bbfab686570924c6711ca0351a",
+      "size": 1940
+    },
+    {
+      "file": "src/placement.mjs",
+      "sha256": "29757f4ef7d5fc5037f9036d94432c7c7bba5c0f03bb0ee8cc35bd62eb189327",
+      "size": 2964
+    },
+    {
+      "file": "src/practice-records.mjs",
+      "sha256": "e6943f806199774c637d699f8bdb464a588cb45f96c4953432de675e07128144",
+      "size": 2935
+    },
+    {
+      "file": "src/progress-diagnostics.mjs",
+      "sha256": "86e0ab295ba4800123be322f53bd67784203698a52cc47f171b2adc7fb0a5960",
+      "size": 1740
+    },
+    {
+      "file": "src/pronunciation-path.mjs",
+      "sha256": "454e7aab876dc398462e24441159ffaa369b53bd158035b76f232b0238fdf386",
+      "size": 1569
+    },
+    {
+      "file": "src/reader-records.mjs",
+      "sha256": "3800740f580c06249ad1041140212ec114eb788168d88bb39f56356499db0415",
+      "size": 1666
+    },
+    {
+      "file": "src/recommendations.mjs",
+      "sha256": "c29eea403e28d5769705d5149eaf506fc26dd341b98285f7bc161e9521779b24",
+      "size": 1960
+    },
+    {
+      "file": "src/review-strategy.mjs",
+      "sha256": "8dec0700a5689a1e7f5a7bc64468c626bc7785df95cdc213105bf96621794f54",
+      "size": 1548
+    },
+    {
+      "file": "src/sense-contrast.mjs",
+      "sha256": "d13d2cbb6155af5afc26dc83d95c0ca632b2b43f86c051f37d8e7fc1cdb43f24",
+      "size": 1268
+    },
+    {
+      "file": "src/sense-lab.mjs",
+      "sha256": "d1beb9d82675422a0b3d2659cc09bd92f38f5b6f8b76ae27ac5ff1e452d21fc2",
+      "size": 3868
+    },
+    {
+      "file": "src/sentence-assessment.mjs",
+      "sha256": "b04630b605105fd132189c1b5fd01d68fa7b437e2f8782f6e4926eaf9e0472df",
+      "size": 1672
+    },
+    {
+      "file": "src/sentence-ladder.mjs",
+      "sha256": "1e889240eafdf5ec583a0a6ed438809d22c79591b482509149963eb727f39895",
+      "size": 9068
+    },
+    {
+      "file": "src/sentence-workshop.mjs",
+      "sha256": "79f70299ac5c60b270287f1440de6ba64ffa62d32f52e4b9ae0a9b13b82b6ad9",
+      "size": 2096
+    },
+    {
+      "file": "src/stories.mjs",
+      "sha256": "bc69036917f0137c3bc2459036265cdc3bd05ef8620307d1b6417670d3a56318",
+      "size": 13082
+    },
+    {
+      "file": "src/study-block.mjs",
+      "sha256": "ab2f10338f1a290b2f67625f3e54bdd849b93e573ecf744518b48f5e7662a2e3",
+      "size": 10372
+    },
+    {
+      "file": "src/study-groups.mjs",
+      "sha256": "c6f98c6c9d548a2181fcd3c6b85498b05ea3ab3017d635f4527e35720e35ac8c",
+      "size": 515
+    },
+    {
+      "file": "src/study-storage.mjs",
+      "sha256": "7c47865d64587e8e1594976a0c77157d066adfb13c8448a334ab5cd6e6622857",
+      "size": 2592
+    },
+    {
+      "file": "src/study.mjs",
+      "sha256": "76e8ed1922b11a3af141444e8bcf01f19911fe77d0de8c438eccfa66c6b19929",
+      "size": 8483
+    },
+    {
+      "file": "src/styles.css",
+      "sha256": "69edfc72339448aef83a3fdcf629fd21c6dd7629a6fd71136b3b9d8b2936507e",
+      "size": 80122
+    },
+    {
+      "file": "src/sw.js",
+      "sha256": "19cbeca41e03cf6251e61947308e53e5f51de5e5ca2cda27b93be005c0e0af91",
+      "size": 1930
+    },
+    {
+      "file": "src/tone-coach.mjs",
+      "sha256": "d2bb7dc5a85a32bec851659a2dd98dcdea71ae9ac7bec026540e1b55572555be",
+      "size": 3164
+    },
+    {
+      "file": "src/wordbook-lab.mjs",
+      "sha256": "19c35910d1e40eb01f163f4127b8078b44cd935832b4642b4835aeb5e401fedf",
+      "size": 3227
+    },
+    {
+      "file": "tests/batch10.test.mjs",
+      "sha256": "91101b29aa7b0cfb6cde0263c1c20d74dc5498f5bb461406f14227900c2b3ae6",
+      "size": 10559
+    },
+    {
+      "file": "tests/batch11.test.mjs",
+      "sha256": "f4842ad1fbfea9df2a41672aeb195f45cd9326f7bab47b56c83aaae51399c373",
+      "size": 11033
+    },
+    {
+      "file": "tests/batch12.test.mjs",
+      "sha256": "467fb28828e99bc99357961198d9da811ca21f87d93f10f297a8330450c58ce0",
+      "size": 10510
+    },
+    {
+      "file": "tests/batch13.test.mjs",
+      "sha256": "6a8a3e2c59a9dc97ca84b83f0d86dac2678fe519276494b261d2d0baab7b2862",
+      "size": 8348
+    },
+    {
+      "file": "tests/batch14-senses.test.mjs",
+      "sha256": "8dfbfbd8e9b6a9d8d64d9f252f3affafc7856bfaf4c22601df1a0cbb223de2e0",
+      "size": 1598
+    },
+    {
+      "file": "tests/batch14.test.mjs",
+      "sha256": "19feafb8b4cffce698f88dd0c915bcaa86493789bfca444c6fbdbadde407ce26",
+      "size": 8508
+    },
+    {
+      "file": "tests/batch15.test.mjs",
+      "sha256": "63032aa0b7b7e6723586d2979a7f9cf2ed933b181770114be689bf7972ec781c",
+      "size": 7939
+    },
+    {
+      "file": "tests/batch16.test.mjs",
+      "sha256": "c6b14c39afcdef829798076269d1b2cdc532b35406ad84ba0e49a93c60b60b0d",
+      "size": 6789
+    },
+    {
+      "file": "tests/batch17.test.mjs",
+      "sha256": "0ed31e4b069d474ccf1d1875080ae41258323f638ad472cc430083055dbfa834",
+      "size": 8097
+    },
+    {
+      "file": "tests/batch18.test.mjs",
+      "sha256": "8a824a608863ba03947dadfd925ac541b92b1d52d14ccbcab80074dd86ad9be4",
+      "size": 10658
+    },
+    {
+      "file": "tests/batch19.test.mjs",
+      "sha256": "fbe8294f9702a5de58070b32c84f72f7b7215b64e12fbd355680fed1153897a3",
+      "size": 6333
+    },
+    {
+      "file": "tests/batch3.test.mjs",
+      "sha256": "63c68b71470684b97161973092bd9c436bdcdbd7ffb1576cafd5a77098073332",
+      "size": 4891
+    },
+    {
+      "file": "tests/batch4.test.mjs",
+      "sha256": "e6dee0668ed5f5d5c464c1a1871df5fc882728d0e38e38e9f41280a1710e43cc",
+      "size": 5923
+    },
+    {
+      "file": "tests/batch5.test.mjs",
+      "sha256": "bc32d9ec89c656ce17f0ae243323d38d9b7da802c73a64c4f87c15ac9f42d1bb",
+      "size": 5909
+    },
+    {
+      "file": "tests/batch6.test.mjs",
+      "sha256": "ca49b7dda98fe7f7f3be87cda0fc45af8da79fb54f3d6bc47fabe662263615f2",
+      "size": 9607
+    },
+    {
+      "file": "tests/batch7.test.mjs",
+      "sha256": "dbc940f4df9592561a89d6431f185761375d039ff244255e6463bd86d4743689",
+      "size": 7570
+    },
+    {
+      "file": "tests/batch8.test.mjs",
+      "sha256": "8afff9e1e95b399df562880581968d6b2120d5c011fc400a582a3830b4e6a774",
+      "size": 10357
+    },
+    {
+      "file": "tests/batch9.test.mjs",
+      "sha256": "970af02e25b5861fa41e4b66523080538950838405c4654d7e525f0ef2202cfa",
+      "size": 8798
+    },
+    {
+      "file": "tests/exercises.test.mjs",
+      "sha256": "ec234977a82ea621b3ac880aa0e08ad7b8e1ee21d3cda7027605800f68dc34b8",
+      "size": 2885
+    },
+    {
+      "file": "tests/server.test.mjs",
+      "sha256": "1102db5a27437856bf50ab9d02f108633ca1e8feb82c95ab77c53e0c4ccf6d8b",
+      "size": 1178
+    },
+    {
+      "file": "tests/study.test.mjs",
+      "sha256": "0358c43cf18e2188c35d1a66b44df9ffd43cc21d20b51c5f0c4bebc895e5b502",
+      "size": 6518
+    }
+  ]
+}

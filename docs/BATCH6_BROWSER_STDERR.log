@@ -1,0 +1,26 @@
+[2524:2552:1012/133854.840332:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[2524:2552:1012/133854.863403:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2552:1012/133854.864554:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[2524:2552:1012/133854.864650:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[2524:2552:1012/133854.893296:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2552:1012/133854.964392:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.014521:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.014809:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.016444:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2524:1012/133855.022160:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.067777:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2552:1012/133855.185976:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[2524:2524:1012/133855.186001:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.186014:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[2524:2524:1012/133855.196728:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.197618:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.210903:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
+[2524:2524:1012/133855.219055:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.219241:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.227688:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.227850:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.230211:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2552:1012/133855.231129:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/oai/bus: No such file or directory
+[2524:2524:1012/133855.232292:ERROR:dbus/object_proxy.cc:573] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[2524:2524:1012/133904.479772:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote
+[2524:2524:1012/133904.480336:ERROR:content/common/zygote/zygote_communication_linux.cc:293] Failed to send GetTerminationStatus message to zygote

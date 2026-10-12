@@ -1,0 +1,196 @@
+{
+  "asset_http_checked": 47,
+  "http_successes": 47,
+  "missing_resource_status": 404,
+  "failures": [],
+  "responses": {
+    "index.html": {
+      "status": 200,
+      "bytes": 4279
+    },
+    "app.mjs": {
+      "status": 200,
+      "bytes": 169204
+    },
+    "styles.css": {
+      "status": 200,
+      "bytes": 69394
+    },
+    "sw.js": {
+      "status": 200,
+      "bytes": 1840
+    },
+    "manifest.webmanifest": {
+      "status": 200,
+      "bytes": 667
+    },
+    "block-coach.mjs": {
+      "status": 200,
+      "bytes": 3903
+    },
+    "context-trail.mjs": {
+      "status": 200,
+      "bytes": 6166
+    },
+    "connected-practice.mjs": {
+      "status": 200,
+      "bytes": 4653
+    },
+    "context-lab.mjs": {
+      "status": 200,
+      "bytes": 6017
+    },
+    "context-links.mjs": {
+      "status": 200,
+      "bytes": 749
+    },
+    "course-continuation.mjs": {
+      "status": 200,
+      "bytes": 7509
+    },
+    "course-journey.mjs": {
+      "status": 200,
+      "bytes": 9333
+    },
+    "cross-lesson.mjs": {
+      "status": 200,
+      "bytes": 1727
+    },
+    "demo-lessons.mjs": {
+      "status": 200,
+      "bytes": 18321
+    },
+    "dialogue-missions.mjs": {
+      "status": 200,
+      "bytes": 2649
+    },
+    "dialogues.mjs": {
+      "status": 200,
+      "bytes": 7412
+    },
+    "drills.mjs": {
+      "status": 200,
+      "bytes": 3994
+    },
+    "exercises.mjs": {
+      "status": 200,
+      "bytes": 6128
+    },
+    "guided-session.mjs": {
+      "status": 200,
+      "bytes": 9080
+    },
+    "icons/icon-192.png": {
+      "status": 200,
+      "bytes": 1142
+    },
+    "icons/icon-512.png": {
+      "status": 200,
+      "bytes": 2934
+    },
+    "icons/icon.svg": {
+      "status": 200,
+      "bytes": 468
+    },
+    "insights.mjs": {
+      "status": 200,
+      "bytes": 2429
+    },
+    "learning-bridge.mjs": {
+      "status": 200,
+      "bytes": 4860
+    },
+    "learning-coach.mjs": {
+      "status": 200,
+      "bytes": 2901
+    },
+    "lesson-guides.mjs": {
+      "status": 200,
+      "bytes": 4558
+    },
+    "lexicon.mjs": {
+      "status": 200,
+      "bytes": 1562
+    },
+    "pathways.mjs": {
+      "status": 200,
+      "bytes": 1940
+    },
+    "placement.mjs": {
+      "status": 200,
+      "bytes": 2964
+    },
+    "practice-records.mjs": {
+      "status": 200,
+      "bytes": 2935
+    },
+    "progress-diagnostics.mjs": {
+      "status": 200,
+      "bytes": 1740
+    },
+    "pronunciation-path.mjs": {
+      "status": 200,
+      "bytes": 1569
+    },
+    "reader-records.mjs": {
+      "status": 200,
+      "bytes": 1666
+    },
+    "recommendations.mjs": {
+      "status": 200,
+      "bytes": 1960
+    },
+    "review-strategy.mjs": {
+      "status": 200,
+      "bytes": 1548
+    },
+    "sense-contrast.mjs": {
+      "status": 200,
+      "bytes": 1268
+    },
+    "sense-lab.mjs": {
+      "status": 200,
+      "bytes": 3868
+    },
+    "sentence-assessment.mjs": {
+      "status": 200,
+      "bytes": 1672
+    },
+    "sentence-ladder.mjs": {
+      "status": 200,
+      "bytes": 9068
+    },
+    "sentence-workshop.mjs": {
+      "status": 200,
+      "bytes": 2096
+    },
+    "stories.mjs": {
+      "status": 200,
+      "bytes": 13082
+    },
+    "study-block.mjs": {
+      "status": 200,
+      "bytes": 10372
+    },
+    "study-groups.mjs": {
+      "status": 200,
+      "bytes": 515
+    },
+    "study-storage.mjs": {
+      "status": 200,
+      "bytes": 2592
+    },
+    "study.mjs": {
+      "status": 200,
+      "bytes": 8205
+    },
+    "tone-coach.mjs": {
+      "status": 200,
+      "bytes": 2046
+    },
+    "wordbook-lab.mjs": {
+      "status": 200,
+      "bytes": 3227
+    }
+  }
+}
