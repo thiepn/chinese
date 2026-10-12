@@ -463,3 +463,53 @@
 @media(max-width:1100px){.p22-unit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.p22-unit-grid{grid-template-columns:minmax(0,1fr);gap:8px}.p22-unit{min-height:auto;padding:13px}.p22-unit-number{margin-bottom:6px}.p22-unit-go{padding-top:7px}.p22-foundation-panel{margin:13px 0 20px}.p22-extra-sentence{padding:14px}}
 @media(prefers-reduced-motion:reduce){.p22-unit{transition:none}}
+
+/* P23: Complete vocabulary learning, integrated with the original layout. */
+.p23-vocabulary-header{border-left:4px solid var(--accent);margin-bottom:18px}
+.p23-vocabulary-header>.button-row{align-items:end;gap:12px;margin-top:14px;flex-wrap:wrap}
+.p23-journey-heading{border-top:1px solid var(--line);margin-top:18px;padding-top:17px}
+.p23-journey-heading .course-stage-bar{margin:12px 0}
+.p23-journey-heading p{line-height:1.55;font-size:14px}
+.p23-wordbook .panel-heading{margin-bottom:12px}
+.p23-wordbook .panel-heading h2{font-size:clamp(18px,2.3vw,25px)}
+.p23-wordbook .wordbook-hero{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif;margin:17px 0 5px}
+.p23-audio-prompt{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:24px;margin:18px 0;background:var(--soft);border:1px solid var(--line)}
+.p23-audio-prompt p{margin:0;color:var(--sub);line-height:1.5}
+.p23-context-question{background:var(--soft);padding:16px 20px;border:1px solid var(--line);margin:14px 0}
+.p23-context-question>p[lang="zh-Hans"]{font-size:clamp(21px,3vw,31px);line-height:1.65;font-family:"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.p23-context-question mark{background:var(--accent);color:#fff;border-radius:2px;padding:1px 3px}
+.p23-context-question small{font-size:12px;color:var(--sub)}
+.p23-word-teaching{margin-top:20px;display:grid;gap:14px}
+.p23-word-note{border-left:3px solid var(--accent);padding:10px 14px;background:var(--soft)}
+.p23-word-note p{font-size:14px;line-height:1.6;margin:7px 0}
+.p23-collocations{border-top:1px solid var(--line);padding-top:12px}
+.p23-collocations>div,.p23-phrase-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.p23-collocations span,.p23-phrase-row span{background:var(--soft);border:1px solid var(--line);padding:7px 11px;font-size:15px}
+.p23-word-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.p23-word-examples>div{border:1px solid var(--line);padding:15px;background:var(--surface);min-width:0}
+.p23-word-examples p[lang="zh-Hans"]{font-size:clamp(18px,2.5vw,25px);font-family:"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.5}
+.p23-word-examples p{font-size:13px;margin:7px 0}
+.p23-word-examples small{font-size:12px;color:var(--sub)}
+.p23-vocabulary-shelf{margin:12px 0 22px;border-top:3px solid var(--accent)}
+.p23-vocabulary-shelf>p{max-width:760px;line-height:1.6;color:var(--sub)}
+.p23-shelf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0}
+.p23-shelf-word{padding:15px;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);min-width:0}
+.p23-shelf-word strong{font-family:"Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;font-size:24px;display:block;line-height:1.4}
+.p23-shelf-word small{font-size:12px;display:block;color:var(--sub);margin-top:4px;overflow-wrap:anywhere}
+.p23-shelf-word .button-row{flex:none;gap:6px}
+.p23-word-entry{min-width:0}
+.p23-word-entry .detail-character{line-height:1.3}
+.p23-word-entry h2{font-size:clamp(19px,2.3vw,27px);margin:6px 0 12px;overflow-wrap:anywhere}
+.p23-dictionary-section{margin-top:22px;padding-top:17px;border-top:1px solid var(--line)}
+.p23-dictionary-section h3{font-size:17px;margin-bottom:10px}
+.p23-dictionary-section>p{line-height:1.6}
+.p23-word-family{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+.p23-word-family .word-ref{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+.p23-word-family .word-ref span{font-size:22px}
+.p23-word-family .word-ref small{color:var(--sub);font-size:11px;overflow-wrap:anywhere}
+.p23-catalog-pager{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:15px 8px;border-top:1px solid var(--line)}
+.p23-catalog-pager span{font-size:12px;color:var(--sub);margin-right:8px}
+.p23-today-vocabulary{border-left:3px solid var(--accent)}
+.p23-today-vocabulary p{line-height:1.6}
+@media(max-width:1000px){.p23-shelf-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.p23-word-examples,.p23-word-family{grid-template-columns:minmax(0,1fr)}.p23-shelf-word{display:block}.p23-shelf-word .button-row{margin-top:12px}.p23-context-question{padding:12px}.p23-audio-prompt{padding:18px}}

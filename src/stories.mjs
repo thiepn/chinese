@@ -2,6 +2,7 @@
  * These have not been reviewed by a language teacher. No implied HSK level.
  */
 import { DEMO_LESSONS } from './demo-lessons.mjs';
+import {WORDS} from './lexicon.mjs';
 const raw = [
  ['A school morning','School & routine',[
   ['我每天早上喝水。','Wǒ měitiān zǎoshang hē shuǐ.','I drink water every morning.'],
@@ -447,6 +448,12 @@ const extras=[
 const glossaryMap=new Map();
 for(const lesson of DEMO_LESSONS){glossaryMap.set(lesson.hanzi,{hanzi:lesson.hanzi,pinyin:lesson.pinyin,english:lesson.meaning,lessonIds:[lesson.id]});for(const w of lesson.words){const key=w.hanzi.replace(/\s/g,'');if(!glossaryMap.has(key))glossaryMap.set(key,{...w,hanzi:key,lessonIds:[]});if(!glossaryMap.get(key).lessonIds.includes(lesson.id))glossaryMap.get(key).lessonIds.push(lesson.id);}}
 for(const [hanzi,pinyin,english] of extras)if(!glossaryMap.has(hanzi))glossaryMap.set(hanzi,{hanzi,pinyin,english,lessonIds:[]});
+// P23 authored complete words become tappable in the existing reading view.
+for(const word of WORDS){
+ const current=glossaryMap.get(word.hanzi);
+ if(!current)glossaryMap.set(word.hanzi,{hanzi:word.hanzi,pinyin:word.pinyin,english:word.senses[0]||'',lessonIds:[...word.lessonIds],wordKey:word.key});
+ else current.wordKey??=word.key;
+}
 export const GLOSSARY=Object.freeze([...glossaryMap.values()].map(v=>Object.freeze({...v,lessonIds:Object.freeze(v.lessonIds)})));
 const tokenWords=[...glossaryMap.keys()].filter(Boolean).sort((a,b)=>b.length-a.length||a.localeCompare(b));
 export function tokenizeSentence(hanzi){const result=[];for(let i=0;i<hanzi.length;){const key=tokenWords.find(w=>hanzi.startsWith(w,i));if(key){result.push({text:key,entry:glossaryMap.get(key)});i+=key.length;}else{const ch=String.fromCodePoint(hanzi.codePointAt(i));result.push({text:ch,entry:null});i+=ch.length;}}return result;}
