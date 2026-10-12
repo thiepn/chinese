@@ -11,6 +11,231 @@ const data=[
  ['Homework help',[['A','这个问题我不明白。','Zhège wèntí wǒ bù míngbai.','I do not understand this question.'],['B','我再说一次，好吗？','Wǒ zài shuō yí cì, hǎo ma?','Shall I explain it once more?'],['A','谢谢，请慢一点。','Xièxie, qǐng màn yìdiǎn.','Thank you, a little slower please.']],[['What difficulty does A have?','Understanding the question.','Finding a train.','Buying a new book.'],['What does A ask B to change?','Speak more slowly.','Speak more loudly.','Leave the room.']]],
  ['Evening routine',[['A','你晚上常常做什么？','Nǐ wǎnshang chángcháng zuò shénme?','What do you often do in the evening?'],['B','我先写作业，再看书。','Wǒ xiān xiě zuòyè, zài kàn shū.','I do homework first, then read.'],['A','我晚上常常听音乐。','Wǒ wǎnshang chángcháng tīng yīnyuè.','I often listen to music at night.']],[['Which activity does B do first?','Homework.','Reading.','Listening to music.'],['How are the speakers’ routines different?','A often listens to music; B does homework and reads.','Both only watch films.','Neither reads books.']]]
 ];
+// P22 original conversations; existing dialogue IDs and histories remain unchanged.
+data.push(...[
+  [
+    "First day in class",
+    [
+      [
+        "A",
+        "你好，你是新来的学生吗？",
+        "Nǐ hǎo, nǐ shì xīn lái de xuésheng ma?",
+        "Hello, are you a new student?"
+      ],
+      [
+        "B",
+        "是的，我叫小林。",
+        "Shì de, wǒ jiào Xiǎolín.",
+        "Yes, my name is Xiaolin."
+      ],
+      [
+        "A",
+        "欢迎！请坐这里。",
+        "Huānyíng! Qǐng zuò zhèlǐ.",
+        "Welcome! Please sit here."
+      ]
+    ],
+    [
+      [
+        "Who is B?",
+        "A new student.",
+        "A bus driver.",
+        "A shopkeeper."
+      ],
+      [
+        "What does A ask B to do?",
+        "Sit here.",
+        "Buy a book.",
+        "Call a friend."
+      ]
+    ]
+  ],
+  [
+    "At the fruit shop",
+    [
+      [
+        "A",
+        "请问，这些苹果多少钱？",
+        "Qǐngwèn, zhèxiē píngguǒ duōshao qián?",
+        "Excuse me, how much are these apples?"
+      ],
+      [
+        "B",
+        "三个十五元。",
+        "Sān ge shíwǔ yuán.",
+        "Fifteen yuan for three."
+      ],
+      [
+        "A",
+        "好，我要三个，谢谢。",
+        "Hǎo, wǒ yào sān ge, xièxie.",
+        "All right, I would like three, thank you."
+      ]
+    ],
+    [
+      [
+        "How much are three apples?",
+        "Fifteen yuan.",
+        "Three yuan.",
+        "Fifty yuan."
+      ],
+      [
+        "How many apples does A buy?",
+        "Three.",
+        "Five.",
+        "One."
+      ]
+    ]
+  ],
+  [
+    "Finding the bank",
+    [
+      [
+        "A",
+        "请问，银行在哪边？",
+        "Qǐngwèn, yínháng zài nǎbiān?",
+        "Excuse me, which way is the bank?"
+      ],
+      [
+        "B",
+        "在书店左边。",
+        "Zài shūdiàn zuǒbiān.",
+        "To the left of the bookstore."
+      ],
+      [
+        "A",
+        "谢谢，我知道了。",
+        "Xièxie, wǒ zhīdào le.",
+        "Thanks, I understand now."
+      ]
+    ],
+    [
+      [
+        "Where is the bank?",
+        "To the left of the bookstore.",
+        "Inside the bookstore.",
+        "Behind the station."
+      ],
+      [
+        "What does A say at the end?",
+        "They understand the direction.",
+        "They cannot walk.",
+        "They need a ticket."
+      ]
+    ]
+  ],
+  [
+    "Arranging a meeting",
+    [
+      [
+        "A",
+        "你明天能来我家吗？",
+        "Nǐ míngtiān néng lái wǒ jiā ma?",
+        "Can you come to my home tomorrow?"
+      ],
+      [
+        "B",
+        "能。我们几点见面？",
+        "Néng. Wǒmen jǐ diǎn jiànmiàn?",
+        "Yes. What time shall we meet?"
+      ],
+      [
+        "A",
+        "下午三点吧。",
+        "Xiàwǔ sān diǎn ba.",
+        "How about three in the afternoon?"
+      ]
+    ],
+    [
+      [
+        "When will they meet?",
+        "Tomorrow afternoon at three.",
+        "Today at eight.",
+        "Tonight at ten."
+      ],
+      [
+        "What place does A suggest?",
+        "A's home.",
+        "The library.",
+        "The station."
+      ]
+    ]
+  ],
+  [
+    "A cold evening",
+    [
+      [
+        "A",
+        "外面很冷，你想喝什么？",
+        "Wàimiàn hěn lěng, nǐ xiǎng hē shénme?",
+        "It is cold outside. What would you like to drink?"
+      ],
+      [
+        "B",
+        "我想喝一杯热茶。",
+        "Wǒ xiǎng hē yì bēi rè chá.",
+        "I would like a cup of hot tea."
+      ],
+      [
+        "A",
+        "好，我也喝茶。",
+        "Hǎo, wǒ yě hē chá.",
+        "Okay, I will have tea too."
+      ]
+    ],
+    [
+      [
+        "What drink does B want?",
+        "Hot tea.",
+        "Cold water.",
+        "Milk."
+      ],
+      [
+        "What does A decide?",
+        "Also to drink tea.",
+        "To go shopping.",
+        "To eat fish."
+      ]
+    ]
+  ],
+  [
+    "What should we cook?",
+    [
+      [
+        "A",
+        "今天晚上我们做什么饭？",
+        "Jīntiān wǎnshang wǒmen zuò shénme fàn?",
+        "What meal shall we cook tonight?"
+      ],
+      [
+        "B",
+        "我想吃米饭和鱼。",
+        "Wǒ xiǎng chī mǐfàn hé yú.",
+        "I want rice and fish."
+      ],
+      [
+        "A",
+        "好，我去买菜。",
+        "Hǎo, wǒ qù mǎi cài.",
+        "All right, I will go buy groceries."
+      ]
+    ],
+    [
+      [
+        "What does B want to eat?",
+        "Rice and fish.",
+        "A bowl of noodles.",
+        "Fruit only."
+      ],
+      [
+        "What will A do?",
+        "Buy groceries.",
+        "Meet the teacher.",
+        "Go to sleep."
+      ]
+    ]
+  ]
+]);
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
  return Object.freeze({id,title,

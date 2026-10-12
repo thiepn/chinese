@@ -27,4 +27,4 @@ export const DEEP_NOTES=Object.freeze({
 '再':['Again or later','再 often refers to doing something again; 再见 is a fixed goodbye expression.','Learn the phrase rather than translating every part literally.'],
 '家':['Home and family','家人 means family member, while 回家 describes going home.','Notice the difference between family relationships and movement.'],
 });
-export function guideFor(lesson){if(!lesson)return null;const [topic,explanation,comparison]=DEEP_NOTES[lesson.hanzi]||['Character in context',lesson.note,`Compare ${lesson.words[0].hanzi} (${lesson.words[0].english}) and ${lesson.words[1].hanzi} (${lesson.words[1].english}).`];return {topic,explanation,comparison};}
+export function guideFor(lesson){if(!lesson)return null;const [topic,explanation,comparison]=DEEP_NOTES[lesson.hanzi]||(lesson.grammar?[lesson.grammar.title,lesson.grammar.explanation,`Useful pattern: ${lesson.grammar.pattern}. Compare ${lesson.words[0].hanzi} with ${lesson.words[1].hanzi}.`]:['Character in context',lesson.note,`Compare ${lesson.words[0].hanzi} (${lesson.words[0].english}) and ${lesson.words[1].hanzi} (${lesson.words[1].english}).`]);return {topic,explanation,comparison};}

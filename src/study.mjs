@@ -18,17 +18,21 @@ import {validateFluency} from './fluency-studio.mjs';
 import {validatePlanExtensions} from './daily-plan.mjs';
 import {lessonGroups as sharedLessonGroups} from './study-groups.mjs';
 export const STATE_VERSION=1;
-const kinds=['meaning','reading','word0','word1','wordread0','sentence'];
+const originalKinds=['meaning','reading','word0','word1','wordread0','sentence'];
 export const DAY=86400000;
 export function freshState(){return {version:STATE_VERSION,revision:0,learned:[],cards:{},events:[],readingEvents:[],drillEvents:[],bookmarkedStories:[],bookmarkedWords:[],dialogueEvents:[],wordPracticeEvents:[],senseEvents:[],sentenceEvents:[],missionEvents:[],practiceSession:null,courseJourney:null,courseEvents:[],courseRepairSession:null,courseRepairEvents:[],ladderSession:null,ladderEvents:[],studyBlock:null,studyBlockEvents:[],blockTrail:null,blockTrailEvents:[],fluencySession:null,fluencyEvents:[],fluencyCompletions:[],dailyPlan:{minutes:15,focus:'balanced'},mistakePins:[],placement:null,introductions:[],settings:{dailyNew:5,showPinyin:true,dark:false,readingLarge:false,hanziLarge:false},updatedAt:null};}
-export function cardsForLesson(id){if(!DEMO_IDS.has(id))return [];return kinds.map(k=>`${id}:${k}`);}
-export function cardInfo(id){const match=/^(demo-\d{2}):(meaning|reading|word[01]|wordread0|sentence)$/.exec(String(id));if(!match)return null;
+export function cardsForLesson(id){const lesson=findLesson(id);if(!lesson)return [];
+ // Existing Batch 20 lessons retain their exact six card identities.
+ const extended=lesson.order<=74?[]:[...lesson.words.slice(2).map((_,i)=>`word${i+2}`),...lesson.words.slice(1).map((_,i)=>`wordread${i+1}`)];
+ return [...originalKinds,...extended].map(kind=>`${id}:${kind}`);}
+
+export function cardInfo(id){const match=/^(demo-\d{2,3}):(meaning|reading|word[0-9]+|wordread[0-9]+|sentence)$/.exec(String(id));if(!match||!cardsForLesson(match[1]).includes(id))return null;
  const lesson=findLesson(match[1]);if(!lesson)return null;const type=match[2];
  if(type==='meaning')return {id,type,lesson,prompt:lesson.hanzi,question:'What does this character mean?',answer:lesson.meaning,kind:'meaning',reading:lesson.pinyin};
  if(type==='reading')return {id,type,lesson,prompt:lesson.hanzi,question:'Type the pinyin, including its tone.',answer:lesson.pinyin,kind:'pinyin',reading:null};
- if(type==='wordread0'){const w=lesson.words[0];return {id,type,lesson,prompt:w.hanzi,question:'Type the word’s complete pinyin.',answer:w.pinyin,kind:'pinyin',reading:null};}
+ if(type.startsWith('wordread')){const w=lesson.words[Number(type.slice(8))];return w?{id,type,lesson,prompt:w.hanzi,question:'Type the word’s complete pinyin.',answer:w.pinyin,kind:'pinyin',reading:null}:null;}
  if(type==='sentence')return {id,type,lesson,prompt:lesson.sentence.hanzi,question:'Choose the best English meaning of this sentence.',answer:lesson.sentence.english,kind:'choice',reading:null};
- const w=lesson.words[Number(type.slice(-1))];return {id,type,lesson,prompt:w.hanzi,question:'What does this word mean?',answer:w.english,kind:'meaning',reading:w.pinyin};}
+ const w=lesson.words[Number(type.slice(4))];return w?{id,type,lesson,prompt:w.hanzi,question:'What does this word mean?',answer:w.english,kind:'meaning',reading:w.pinyin}:null;}
 export function validateState(input){if(!input||input.version!==STATE_VERSION||!Array.isArray(input.learned)||!input.learned.every(id=>DEMO_IDS.has(id))||new Set(input.learned).size!==input.learned.length||!input.cards||typeof input.cards!=='object'||Array.isArray(input.cards)||!Array.isArray(input.events)||input.events.length>100000)throw new Error('Invalid or incompatible learning history');
  validateReadingEvents(input.readingEvents);validatePracticeExtensions(input);validateGuidedSession(input.practiceSession);validatePlacement(input.placement);validateDialogueEvents(input.dialogueEvents);validateWordPracticeEvents(input.wordPracticeEvents);validateSenseEvents(input.senseEvents);validateSentenceEvents(input.sentenceEvents);validateMissionEvents(input.missionEvents);validateCourseExtensions(input);validateCourseContinuation(input);validateLadderExtensions(input);validateBlockExtensions(input);validateTrail(input);validateFluency(input);validatePlanExtensions(input);
  if('introductions'in input&&(!Array.isArray(input.introductions)||input.introductions.length>10000||input.introductions.some(item=>!item||!DEMO_IDS.has(item.id)||!Number.isFinite(item.at)||!input.learned.includes(item.id))))throw new Error('Invalid introduction history');

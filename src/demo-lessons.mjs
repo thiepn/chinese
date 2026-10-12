@@ -2,6 +2,7 @@
  * These examples have not been independently linguistically certified.
  * They are never to be presented as official 2025 HSK membership.
  */
+import {FOUNDATION_ADDITIONS} from './foundational-expansion.mjs';
 const rows = [
  ['我','wǒ','I; me','The first-person pronoun.',[['我们','wǒmen','we; us'],['我的','wǒ de','my; mine']],['我是学生。','Wǒ shì xuésheng.','I am a student.']],
  ['你','nǐ','you','The singular informal second-person pronoun.',[['你好','nǐ hǎo','hello'],['你们','nǐmen','you (plural)']],['你喜欢喝茶吗？','Nǐ xǐhuan hē chá ma?','Do you like drinking tea?']],
@@ -78,10 +79,12 @@ const rows = [
  ['身','shēn','body','Used in terms relating to the body.',[['身体','shēntǐ','body; health'],['身边','shēnbiān',"at one's side"]],['我身体很好。','Wǒ shēntǐ hěn hǎo.','I am in good health.']],
  ['体','tǐ','body; form','Part of body and physical education words.',[['身体','shēntǐ','body; health'],['体育','tǐyù','sports; physical education']],['他喜欢体育。','Tā xǐhuan tǐyù.','He likes sports.']],
 ];
-export const DEMO_LESSONS = Object.freeze(rows.map((r,i)=>Object.freeze({
+export const DEMO_LESSONS = Object.freeze([...rows,...FOUNDATION_ADDITIONS].map((r,i)=>Object.freeze({
  id:`demo-${String(i+1).padStart(2,'0')}`,order:i+1,hanzi:r[0],pinyin:r[1],meaning:r[2],note:r[3],
  words:Object.freeze(r[4].map(([hanzi,pinyin,english])=>Object.freeze({hanzi,pinyin,english}))),
  sentence:Object.freeze({hanzi:r[5][0],pinyin:r[5][1],english:r[5][2]}),
+ extraSentence:r[6]?Object.freeze({hanzi:r[6][0],pinyin:r[6][1],english:r[6][2]}):null,
+ grammar:r[7]?Object.freeze({title:r[7],pattern:r[8],explanation:r[9]}):null,
  origin:'original-editorial-demo',license:'original-demo',approval:'DEMO_ONLY',officialHskLevel:null
 })));
 export const DEMO_IDS = new Set(DEMO_LESSONS.map(x=>x.id));

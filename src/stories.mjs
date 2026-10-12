@@ -88,6 +88,350 @@ const raw = [
   [1,'公园','公园','学校','书店','银行'],
   ['我','和家人','去公园','走路','。']]
 ];
+// P22 connected readings; original story IDs and order remain unchanged.
+raw.push(...[
+  [
+    "An early start",
+    "Routine & time",
+    [
+      [
+        "我早上七点起床。",
+        "Wǒ zǎoshang qī diǎn qǐchuáng.",
+        "I get up at seven in the morning."
+      ],
+      [
+        "我先喝一杯牛奶。",
+        "Wǒ xiān hē yì bēi niúnǎi.",
+        "First I drink a glass of milk."
+      ],
+      [
+        "八点我去学校上课。",
+        "Bā diǎn wǒ qù xuéxiào shàng kè.",
+        "At eight I go to school for class."
+      ]
+    ],
+    [
+      "When does the speaker get up?",
+      "At seven.",
+      "At six.",
+      "At eight.",
+      "At nine."
+    ],
+    [
+      0,
+      "起床",
+      "起床",
+      "工作",
+      "睡觉",
+      "回家"
+    ],
+    [
+      "我",
+      "早上七点",
+      "起床",
+      "。"
+    ]
+  ],
+  [
+    "Directions to the bookstore",
+    "Directions & places",
+    [
+      [
+        "我想买一本中文书。",
+        "Wǒ xiǎng mǎi yì běn Zhōngwén shū.",
+        "I want to buy a Chinese book."
+      ],
+      [
+        "书店在银行右边。",
+        "Shūdiàn zài yínháng yòubiān.",
+        "The bookstore is to the right of the bank."
+      ],
+      [
+        "朋友跟我一起去。",
+        "Péngyou gēn wǒ yìqǐ qù.",
+        "A friend goes with me."
+      ]
+    ],
+    [
+      "Where is the bookstore?",
+      "To the right of the bank.",
+      "In front of the station.",
+      "Inside the school.",
+      "Behind the park."
+    ],
+    [
+      1,
+      "右边",
+      "右边",
+      "左边",
+      "上面",
+      "下面"
+    ],
+    [
+      "书店",
+      "在银行",
+      "右边",
+      "。"
+    ]
+  ],
+  [
+    "The new student's question",
+    "School & questions",
+    [
+      [
+        "她是新来的学生。",
+        "Tā shì xīn lái de xuésheng.",
+        "She is a new student."
+      ],
+      [
+        "她想问老师一个问题。",
+        "Tā xiǎng wèn lǎoshī yí ge wèntí.",
+        "She wants to ask the teacher a question."
+      ],
+      [
+        "老师请她坐下。",
+        "Lǎoshī qǐng tā zuòxià.",
+        "The teacher asks her to sit down."
+      ]
+    ],
+    [
+      "What does the student want to do?",
+      "Ask the teacher a question.",
+      "Go shopping.",
+      "Buy a train ticket.",
+      "Eat dinner."
+    ],
+    [
+      1,
+      "问题",
+      "问题",
+      "朋友",
+      "手机",
+      "学校"
+    ],
+    [
+      "她",
+      "想问老师",
+      "一个问题",
+      "。"
+    ]
+  ],
+  [
+    "Choosing lunch",
+    "Food & preferences",
+    [
+      [
+        "中午我们一起吃饭。",
+        "Zhōngwǔ wǒmen yìqǐ chī fàn.",
+        "At noon we eat together."
+      ],
+      [
+        "我想吃米饭和鱼。",
+        "Wǒ xiǎng chī mǐfàn hé yú.",
+        "I want rice and fish."
+      ],
+      [
+        "朋友想喝一杯热茶。",
+        "Péngyou xiǎng hē yì bēi rè chá.",
+        "My friend wants a cup of hot tea."
+      ]
+    ],
+    [
+      "What does the speaker want to eat?",
+      "Rice and fish.",
+      "Milk and bread.",
+      "Only fruit.",
+      "Noodles and eggs."
+    ],
+    [
+      1,
+      "米饭",
+      "米饭",
+      "牛奶",
+      "水果",
+      "热水"
+    ],
+    [
+      "我",
+      "想吃",
+      "米饭",
+      "和鱼",
+      "。"
+    ]
+  ],
+  [
+    "A cold rainy day",
+    "Weather & home",
+    [
+      [
+        "今天外面下雨了。",
+        "Jīntiān wàimiàn xià yǔ le.",
+        "It has started raining outside today."
+      ],
+      [
+        "天气很冷，我不想出去。",
+        "Tiānqì hěn lěng, wǒ bù xiǎng chūqù.",
+        "It is cold, and I do not want to go out."
+      ],
+      [
+        "我在家看书，喝热水。",
+        "Wǒ zài jiā kàn shū, hē rè shuǐ.",
+        "I read at home and drink hot water."
+      ]
+    ],
+    [
+      "Why does the speaker stay inside?",
+      "It is cold and raining.",
+      "The teacher asked them to.",
+      "They lost their phone.",
+      "They are expecting a train."
+    ],
+    [
+      0,
+      "下雨",
+      "下雨",
+      "工作",
+      "起床",
+      "见面"
+    ],
+    [
+      "今天",
+      "外面",
+      "下雨",
+      "了",
+      "。"
+    ]
+  ],
+  [
+    "Meeting at three",
+    "Plans & friendship",
+    [
+      [
+        "你明天下午能来吗？",
+        "Nǐ míngtiān xiàwǔ néng lái ma?",
+        "Can you come tomorrow afternoon?"
+      ],
+      [
+        "我们三点在公园见面。",
+        "Wǒmen sān diǎn zài gōngyuán jiànmiàn.",
+        "We will meet at the park at three."
+      ],
+      [
+        "以后我们一起玩游戏。",
+        "Yǐhòu wǒmen yìqǐ wán yóuxì.",
+        "Afterward we will play games together."
+      ]
+    ],
+    [
+      "When will they meet?",
+      "At three in the afternoon.",
+      "At eight in the morning.",
+      "Tonight at ten.",
+      "On Monday morning."
+    ],
+    [
+      1,
+      "见面",
+      "见面",
+      "睡觉",
+      "找钱",
+      "上课"
+    ],
+    [
+      "我们",
+      "三点",
+      "在公园",
+      "见面",
+      "。"
+    ]
+  ],
+  [
+    "A book for a friend",
+    "Gifts & possession",
+    [
+      [
+        "我有两本中文书。",
+        "Wǒ yǒu liǎng běn Zhōngwén shū.",
+        "I have two Chinese books."
+      ],
+      [
+        "我想给朋友一本书。",
+        "Wǒ xiǎng gěi péngyou yì běn shū.",
+        "I want to give a book to a friend."
+      ],
+      [
+        "她说谢谢，我很高兴。",
+        "Tā shuō xièxie, wǒ hěn gāoxìng.",
+        "She says thank you, and I am happy."
+      ]
+    ],
+    [
+      "What does the speaker give the friend?",
+      "A Chinese book.",
+      "A cup of tea.",
+      "A mobile phone.",
+      "A train ticket."
+    ],
+    [
+      1,
+      "给朋友",
+      "给朋友",
+      "跟朋友",
+      "听歌",
+      "找人"
+    ],
+    [
+      "我",
+      "想",
+      "给朋友",
+      "一本书",
+      "。"
+    ]
+  ],
+  [
+    "A shop with good fruit",
+    "Shopping & money",
+    [
+      [
+        "我们走进一家水果店。",
+        "Wǒmen zǒu jìn yì jiā shuǐguǒ diàn.",
+        "We enter a fruit shop."
+      ],
+      [
+        "我买了三个苹果。",
+        "Wǒ mǎi le sān ge píngguǒ.",
+        "I bought three apples."
+      ],
+      [
+        "朋友说这些苹果很好吃。",
+        "Péngyou shuō zhèxiē píngguǒ hěn hǎochī.",
+        "My friend says these apples are delicious."
+      ]
+    ],
+    [
+      "How many apples does the speaker buy?",
+      "Three.",
+      "Two.",
+      "Five.",
+      "Eight."
+    ],
+    [
+      1,
+      "苹果",
+      "苹果",
+      "水果",
+      "米饭",
+      "牛奶"
+    ],
+    [
+      "我",
+      "买了",
+      "三个",
+      "苹果",
+      "。"
+    ]
+  ]
+]);
 export const STORIES=Object.freeze(raw.map(([title,theme,lines,question,cloze,order],i)=>Object.freeze({
  id:`story-${String(i+1).padStart(2,'0')}`,title,theme,origin:'original-editorial-demo',approval:'DEMO_ONLY',officialHskLevel:null,
  lines:Object.freeze(lines.map(([hanzi,pinyin,english])=>Object.freeze({hanzi,pinyin,english}))),

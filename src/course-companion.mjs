@@ -3,6 +3,7 @@
  * Each contextual check is a variant of the existing sentence stage on repeat.
  */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
+import {FOUNDATION_ADDITIONS} from './foundational-expansion.mjs';
 const COURSE_CONTEXT = [
   {
     "anchor": "我",
@@ -879,6 +880,20 @@ const BY_LESSON = new Map();
 for (const unit of COURSE_CONTEXT) {
  const lesson = DEMO_LESSONS.find(item=>item.hanzi===unit.anchor);
  if (lesson) BY_LESSON.set(lesson.id,Object.freeze({...unit,lessonId:lesson.id,order:lesson.order}));
+}
+// Extend the same P21 grammar interface to the P22 character additions.
+for(const [index,row] of FOUNDATION_ADDITIONS.entries()){
+ const lesson=DEMO_LESSONS[74+index];if(!lesson)continue;
+ const otherSentences=FOUNDATION_ADDITIONS.filter((_,i)=>i!==index).map(entry=>entry[6][2]);
+ const candidates=[row[6][2],...otherSentences.slice(index*3),...otherSentences];
+ const options=[...new Set(candidates)].slice(0,4);
+ const rotated=[...options.slice(index%options.length),...options.slice(0,index%options.length)];
+ BY_LESSON.set(lesson.id,Object.freeze({lessonId:lesson.id,order:lesson.order,anchor:row[0],
+  title:row[7],pattern:row[8],explanation:row[9],
+  pitfall:'Learn the entire expression rather than translating every character in isolation.',
+  examples:[{hanzi:row[5][0],pinyin:row[5][1],english:row[5][2]},
+            {hanzi:row[6][0],pinyin:row[6][1],english:row[6][2]}],
+  question:{prompt:`Which English meaning matches “${row[6][0]}”?`,answer:row[6][2],options:rotated}}));
 }
 export const COURSE_COMPANIONS = Object.freeze([...BY_LESSON.values()].sort((a,b)=>a.order-b.order));
 export function companionForLesson(lessonId){return BY_LESSON.get(lessonId)||null;}
