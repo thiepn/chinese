@@ -49,7 +49,8 @@ export function p49Overview(state,act,esc,{compact=false,selected='',filter='all
  'p49-case '+(selected===c.id?'active':''),'data-id="'+c.id+'"');
  }).join('')+'</div>'+(!filtered.length?'<p class="muted">No original P49 case matches this evidence filter.</p>':'')+
  '<div class="p49-actions">'+act('p49-review','Open genuine due cards in original Review →','button outline')+
- act('p48-enter','P48 advanced source comparison →','button outline')+'</div>')+'</section>';
+ act('p48-enter','P48 advanced source comparison →','button outline')+
+ act('p50-enter','Continue to P50 advanced discourse and HSK 5-targeted sources →','button primary')+'</div>')+'</section>';
 }
 export function p49Lesson(c,state,act,esc,{stage='sources',showSource=false,showTranscript=false,
  showModels=false,questionIndex=0,feedback=null}={}){
@@ -155,6 +156,7 @@ export function p49Lesson(c,state,act,esc,{stage='sources',showSource=false,show
  ' exact sentence events. These counts do not grade your independent essay or speech.</p>'+
  '<div class="p49-actions">'+act(earlierAction(c),'Source →','button outline small',
  'data-id="'+esc(c.sourceId)+'"')+act('p48-enter','P48 argumentation →','button outline small')+
+ act('p50-enter','P50 formal source discourse →','button outline small')+
  act('p45-enter','P45 source recall →','button outline small')+
  act('p49-review','Original scheduled Review →','button outline small')+'</div></aside>'+
  '</section>';
