@@ -2,7 +2,7 @@
  * not licensed HSK 3.0 material, official grading, or human-recorded speech.
  * Independent source records are fictional classroom documents.
  */
-export const P52_RECORD_SOURCE=String.raw\`The sign-up list is not the attendance list|Community event reporting|Registration, entry log and newsletter|Registration sheet;Door check-in log;Newsletter draft|p51-01|p43-09|Resolve which document supports a claim about participation, distinguish intentions from actual attendance, and rewrite the newsletter for two audiences.|A high registration count still matters for event planning; it cannot be presented as attendance.|Avoid replacing a checked-in count with a registration count when translating or summarizing.
+export const P52_RECORD_SOURCE=String.raw`The sign-up list is not the attendance list|Community event reporting|Registration, entry log and newsletter|Registration sheet;Door check-in log;Newsletter draft|p51-01|p43-09|Resolve which document supports a claim about participation, distinguish intentions from actual attendance, and rewrite the newsletter for two audiences.|A high registration count still matters for event planning; it cannot be presented as attendance.|Avoid replacing a checked-in count with a registration count when translating or summarizing.
 L|0|报名表上共有十八个名字。|Bàomíng biǎo shàng gòng yǒu shíbā ge míngzi.|The registration sheet contains eighteen names.
 L|0|表格记录了参加意向，而不是实际到场情况。|Biǎogé jìlù le cānjiā yìxiàng, ér bú shì shíjì dàochǎng qíngkuàng.|The form records intention to attend, not actual presence.
 L|0|两名报名者还注明可能迟到。|Liǎng míng bàomíngzhě hái zhùmíng kěnéng chídào.|Two registrants also noted they might be late.
@@ -100,4 +100,4 @@ DQ|What does the receipt sheet actually document?|Fourteen received boxes.|Twent
 DQ|Where are the six boxes not distributed?|In the warehouse.|Already handed to recipients.|At the donor's home.|3|The coordinator distinguishes storage from distribution.
 DQ|Which categories must the public notice distinguish?|Pledged, received and distributed.|Donated, photographed and admired.|Bought, labeled and imagined.|4|The editor explicitly requires all three authority stages.
 M|捐赠承诺不能代替实际收货记录。|Juānzèng chéngnuò bù néng dàitì shíjì shōuhuò jìlù.|A donation pledge cannot replace a receipt record.|Keep future intention distinct from verified receipt.
-M|根据记录，二十箱已获承诺，十四箱已收到，八箱已发放。|Gēnjù jìlù, èrshí xiāng yǐ huò chéngnuò, shísì xiāng yǐ shōudào, bā xiāng yǐ fāfàng.|According to the records, twenty boxes are pledged, fourteen received and eight distributed.|State all three levels of evidence accurately.\`;
+M|根据记录，二十箱已获承诺，十四箱已收到，八箱已发放。|Gēnjù jìlù, èrshí xiāng yǐ huò chéngnuò, shísì xiāng yǐ shōudào, bā xiāng yǐ fāfàng.|According to the records, twenty boxes are pledged, fourteen received and eight distributed.|State all three levels of evidence accurately.`;
