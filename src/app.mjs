@@ -225,11 +225,12 @@ function refreshC9Words(){
 }
 function renderWordbook(){
  const browse=renderC9VocabularyLibrary(state,c9WordUi(),action,esc);
- const study='<section class="c9-language-native" aria-label="Original vocabulary practice">'+
+ const study='<section class="c9-language-native c9-language-study" id="c9-native-vocabulary" aria-label="Original vocabulary practice">'+
   '<div class="c9-language-native-head"><div><p class="c9-eyebrow">ORIGINAL VOCABULARY ENGINE</p><h2>Practise word knowledge</h2>'+
   '<p>Existing meaning, pronunciation, listening and contextual tasks; independent attempts stay separate from scheduled review.</p></div></div>'+
   renderWordbookNative()+'</section>';
- return '<div class="c9-language-workspace">'+
+ return '<div class="c9-language-workspace c9-language-workspace--vocabulary">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook" aria-current="page">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
   (state.vocabularyJourney?study+browse:browse+study)+'</div>';
 }
 function renderDiagnosticPanel(){const d=progressDiagnostics(state);const connections=contextualProgress(state);const nextWeak=contextualWeaknesses(state).slice(0,3);return `<section class="simple-panel diagnostic-panel"><div class="panel-heading"><h2>Activity by learning mode</h2><span class="muted">Past 7 days · no mastery predictions</span></div><div class="diagnostic-list">${d.sources.map(s=>`<div><strong>${esc(s.name)}</strong><span>${s.recent} checked · ${s.independent} independent correct · ${s.assisted} assisted</span></div>`).join('')}</div><p class="muted">${d.totalRecent} recorded attempts across all modes this week. Scheduled-review events remain separate from supplementary exercises.</p><div class="button-row">${action('open-dialogues','Conversation Lab →','button outline')}${action('open-wordbook-practice','Practice saved words →','button outline')}${action('open-senses','Word sense lab →','button outline')}${action('open-workshop','Sentence workshop →','button outline')}</div><div class="connected-analytics"><h3>Connecting knowledge</h3><p class="muted">These attempts are supplemental, not scheduled mastery.</p><div class="connected-analytics-grid">${connections.map(c=>`<div class="connected-analytics-item"><strong>${esc(c.name)}</strong><span>${c.attempts} attempts · ${c.independent} independent · ${c.misses} misses</span></div>`).join('')}</div><p class="muted">Recommended context to practice: ${nextWeak.map(w=>w.type==='sense'?'word meanings':w.type==='sentence'?'sentence writing':'dialogue understanding').join(' · ')}.</p><div class="button-row">${action('connected-session','Practice these connections →','button primary')}</div></div>${d.extras.map(s=>`<div class="extra-diagnostic"><strong>${esc(s.name)}</strong><span>${s.all} total · ${s.independent} independent this week · ${s.assisted} assisted</span></div>`).join('')}</section>`;}
@@ -374,8 +375,10 @@ function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2}
 function renderGrammar(){
  const selected=selectedGrammarId();
  const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
- return '<div class="c9-language-workspace">'+renderC9GrammarDirectory(state,action,esc)+
-  '<section class="c9-language-native" aria-label="Native original grammar lessons">'+native+'</section></div>';
+ return '<div class="c9-language-workspace c9-language-workspace--grammar">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar" aria-current="page">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
+  renderC9GrammarDirectory(state,action,esc)+
+  '<section class="c9-language-native c9-language-study" id="c9-native-grammar" aria-label="Original grammar lessons">'+native+'</section></div>';
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
@@ -415,8 +418,10 @@ function renderSentences(){
  mode:libraryMode,typed:libraryTyped,order:libraryOrder,feedback:libraryFeedback,
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
- return '<div class="c9-language-workspace">'+renderC9SentenceDirectory(state,action,esc)+
- '<section class="c9-language-native" aria-label="Native original sentence learning">'+native+'</section></div>';
+ return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences" aria-current="page">Sentences</a></nav>'+
+  renderC9SentenceDirectory(state,action,esc)+
+  '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
 function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;}
@@ -847,6 +852,15 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
      nav.classList.toggle('is-current',current);
      if(current)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');
    }
+   return;
+ }
+ if(name==='c9-word-reset'){
+   c9WordQuery='';c9WordFilter='all';c9WordPage=0;
+   if(route()==='wordbook'){
+     refreshC9Words();
+     const input=root.querySelector('#c9-word-query');
+     if(input){input.value='';input.focus({preventScroll:true});}
+   }else render();
    return;
  }
  if(name==='c9-word-open'){
