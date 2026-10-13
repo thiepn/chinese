@@ -893,7 +893,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='c9-lesson-open'){
    if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
-   if(route()==='learn'){render();root.querySelector('.c9-lesson-heading')?.scrollIntoView({block:'start'});}
+   if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
    else go('learn');
    return;
  }
