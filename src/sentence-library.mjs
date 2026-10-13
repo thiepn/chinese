@@ -44,10 +44,10 @@ export function validateSentenceBookmarks(state){
  return true;
 }
 const norm=text=>String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
-export function searchSentences({query='',topic='all',difficulty='all',area='all',grammar='all',purpose='all',tone='all',savedOnly=false,state={}}={}){
+export function searchSentences({query='',topic='all',difficulty='all',area='all',grammar='all',purpose='all',tone='all',source='all',savedOnly=false,state={}}={}){
  const q=norm(query);
  return SENTENCE_LIBRARY.filter(s=>
- (topic==='all'||s.topicId===topic)&&(difficulty==='all'||String(s.difficulty)===String(difficulty))&&
+ (source==='all'||s.source===source)&&(topic==='all'||s.topicId===topic)&&(difficulty==='all'||String(s.difficulty)===String(difficulty))&&
  (area==='all'||s.area===area)&&(grammar==='all'||s.grammarIds.includes(grammar))&&(purpose==='all'||s.purpose===purpose)&&
  (tone==='all'||({tone1:/[āēīōūǖ]/u,tone2:/[áéíóúǘ]/u,tone3:/[ǎěǐǒǔǚ]/u,tone4:/[àèìòùǜ]/u}[tone]?.test(s.pinyin)??false))&&
  (!savedOnly||sentenceBookmarked(state,s.id))&&
