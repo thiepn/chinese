@@ -730,6 +730,89 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p44-enter'||name==='p44-return'){
+  const chosen=findP44Scenario(p44SessionId)||p44Next(state);
+  p44SessionId=chosen.id;
+  location.hash='#/integrated/'+chosen.id+'?stage='+p44Phase;
+  return render();
+ }
+ if(name==='p44-open'||name==='p44-next-case'){
+  const selected=name==='p44-open'?findP44Scenario(id):p44Next(state,p44SessionId);
+  if(!selected)return alertUser('The original integrated scenario is unavailable.','error');
+  p44SessionId=selected.id;p44Phase='read';p44ReadHelp=false;p44ListenHelp=false;
+  p44QuestionIndex=0;p44Feedback=null;
+  location.hash='#/integrated/'+selected.id+'?stage=read';
+  render();root.querySelector('.p44-journey')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p44-stage'){
+  const stage=button.dataset.stage;
+  if(!P44_PHASES.some(p=>p.id===stage)||!findP44Scenario(p44SessionId))return;
+  p44Phase=stage;p44Feedback=null;
+  location.hash='#/integrated/'+p44SessionId+'?stage='+stage;
+  return render();
+ }
+ if(name==='p44-prev-page'||name==='p44-next-page'){
+  const q=p44Query.trim().toLocaleLowerCase();
+  const size=P44_SCENARIOS.filter(sc=>!q||[sc.title,sc.theme,sc.goal,sc.pitfall,sc.revision,
+   ...sc.brief.flatMap(l=>[l.hanzi,l.english])].join(' ').toLocaleLowerCase().includes(q)).length;
+  p44Page=Math.max(0,Math.min(Math.max(0,Math.ceil(size/6)-1),p44Page+(name==='p44-next-page'?1:-1)));
+  return render();
+ }
+ if(name==='p44-source-help'){
+  if(!findP44Scenario(p44SessionId))return;
+  p44ReadHelp=!p44ReadHelp;
+  if(p44ReadHelp)p44AssistedCases.add(p44SessionId);
+  return render();
+ }
+ if(name==='p44-transcript'){
+  if(!findP44Scenario(p44SessionId))return;
+  p44ListenHelp=!p44ListenHelp;
+  if(p44ListenHelp)p44AssistedCases.add(p44SessionId);
+  return render();
+ }
+ if(name==='p44-audio'||name==='p44-audio-slow'||name==='p44-play-turn'||name==='p44-oral-model'){
+  const sc=findP44Scenario(p44SessionId);if(!sc)return;
+  if(name==='p44-oral-model')p44AssistedCases.add(sc.id);
+  const index=Number(button.dataset.index);
+  if(name==='p44-play-turn'&&(!Number.isInteger(index)||index<0||index>=sc.turns.length))return;
+  const message=name==='p44-play-turn'?sc.turns[index].hanzi:
+    name==='p44-oral-model'?sc.responses.map(x=>x.hanzi).join(' '):sc.turns.map(t=>t.hanzi).join(' ');
+  return speak(message,name==='p44-audio-slow'?0.68:demoSpeechRate);
+ }
+ if(name==='p44-question-next'){
+  const sc=findP44Scenario(p44SessionId);if(!sc)return;
+  if(p44QuestionIndex+1<sc.questions.length){
+   p44QuestionIndex++;p44Feedback=null;return render();
+  }
+  p44Feedback=null;p44Phase='write';
+  location.hash='#/integrated/'+sc.id+'?stage=write';return render();
+ }
+ if(name==='p44-question-retry'){p44Feedback=null;return render();}
+ if(name==='p44-answer'||name==='p44-reveal-answer'){
+  const sc=findP44Scenario(p44SessionId);if(!sc||p44Feedback)return;
+  const original=DIALOGUES.find(d=>d.p44?.id===sc.id);
+  const q=original&&dialogueQuestion(original.id,p44QuestionIndex);if(!q)return;
+  const response=name==='p44-reveal-answer'?'':button.dataset.option||'';
+  if(name==='p44-answer'&&!q.options.includes(response))return;
+  const assisted=p44AssistedCases.has(sc.id)||name==='p44-reveal-answer';
+  const eventId=globalThis.crypto?.randomUUID?.()||'p44-dialogue-'+Date.now()+'-'+Math.random();
+  const ok=await mutate(old=>addDialogueEvent(old,{id:eventId,dialogueId:original.id,
+    question:p44QuestionIndex,answer:response,assisted}));
+  if(ok){p44Feedback={correct:response===q.answer,assisted};render();
+   root.querySelector('.p44-evidence')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p44-write'){
+  const sc=findP44Scenario(p44SessionId);if(!sc)return;
+  const index=Number(button.dataset.index);
+  if(!Number.isInteger(index)||index<0||index>=sc.responses.length)return;
+  const taskId='p44:'+sc.id+':response'+index;
+  const taskIndex=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
+  if(taskIndex<0)return alertUser('The canonical P44 sentence task is unavailable.','error');
+  sentenceIndex=taskIndex;sentenceTyped='';sentenceFeedback=null;
+  sentenceSupport=p44AssistedCases.has(sc.id);
+  return go('workshop');
+ }
  if(name==='p43-enter'){
   if(route()!=='production')return go('production');
   root.querySelector('.p43-studio')?.scrollIntoView({block:'start'});return;
@@ -1926,6 +2009,12 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p44-search'){
+  p44Query=e.target.value;p44Page=0;render();
+  const el=root.querySelector('#p44-search');
+  if(el){el.focus();el.setSelectionRange(p44Query.length,p44Query.length);}
+  return;
+ }
  if(e.target.id==='p43-draft'){
   p43Draft=e.target.value;
   if(p43Reviewed.length){
