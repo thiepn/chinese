@@ -1,6 +1,7 @@
 /** Exact-form written sentence reconstruction: no open-ended translation judging. */
 import {STORIES,findStory} from './stories.mjs';
-export const SENTENCE_TASKS=Object.freeze(STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))));
+import {GRAMMAR_PRACTICE_TASKS} from './grammar-course.mjs';
+export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS]);
 export function sentenceTask(index=0){return SENTENCE_TASKS[((index%SENTENCE_TASKS.length)+SENTENCE_TASKS.length)%SENTENCE_TASKS.length];}
 const comparable=s=>String(s).normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
 export function checkSentence(task,input){if(!task||!SENTENCE_TASKS.some(x=>x.id===task.id)||typeof input!=='string')throw Error('Invalid sentence task');const correct=comparable(input)===comparable(task.hanzi);return {correct,reason:correct?'correct':'exact-form',message:correct?'Exact written sentence accepted.':'Not the same Chinese sentence. This is an exact-reconstruction exercise: valid alternative translations are not automatically graded.',reference:task.hanzi};}
