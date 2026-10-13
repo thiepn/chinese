@@ -41,7 +41,7 @@ const experienceNote=(info,result,esc)=>{
 const progress=(done,total,label)=>{
  const value=total?Math.min(100,Math.round(100*done/total)):0;
  return '<div class="c9-assessment-progress"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div>'+
- '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+value+'%"></span></div></div>';
+ '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+saved+'"><span style="width:'+value+'%"></span></div></div>';
 };
 const stat=(n,label)=>'<div class="c9-assessment-stat"><strong>'+count(n)+'</strong><span>'+label+'</span></div>';
 const title=(eyebrow,name,desc)=>'<header class="c9-assessment-title"><p class="c9-eyebrow">'+eyebrow+'</p>'+
@@ -174,7 +174,7 @@ export function renderC9PracticeHeader(state,action,esc){
   'Choose an original exercise or return to a saved guided checkpoint. Supplemental answers never change scheduled-review intervals.')+
  '<div class="c9-assessment-stats">'+stat(drill.attempts,'Recorded standalone attempts')+
   stat(drill.independentCorrect,'Independent correct drills')+
-  stat(guide?guide.cursor:0,'Saved guided responses')+'</div>'+
+  stat(guide?guide.cursor+Number(Boolean(guide.feedback)):0,'Recorded guided responses')+'</div>'+
  '<section class="c9-practice-continuity" aria-label="Practice recovery"><div>'+
   '<p class="c9-eyebrow">'+(guide?'PERSISTED GUIDED SESSION':'START A SOURCE-BASED SESSION')+'</p>'+
   '<strong>'+(guide?guideActive?'Guided practice · question '+(guide.cursor+1)+' of '+guide.limit:
@@ -206,14 +206,17 @@ export function renderC9PracticePaths(state,action){
 export function renderC9GuidedStep(state,esc){
  const g=state.practiceSession;
  if(!g)return '';
- const done=Math.min(g.cursor,g.limit), percent=g.limit?Math.round(100*done/g.limit):0;
+ const done=Math.min(g.cursor,g.limit),saved=done+Number(Boolean(g.feedback));
+ const correct=g.correct+Number(Boolean(g.feedback?.correct&&!g.feedback?.assisted));
+ const assisted=g.assisted+Number(Boolean(g.feedback?.assisted));
+ const percent=g.limit?Math.round(100*saved/g.limit):0;
  return '<div class="c9-guided-checkpoint" role="group" aria-label="Saved guided checkpoint">'+
   '<div><span class="c9-eyebrow">AUTHENTIC LEARNER CHECKPOINT</span><strong>'+
   (done>=g.limit?'All saved questions answered':'Question '+(done+1)+' / '+g.limit)+'</strong></div>'+
   '<div class="c9-guided-checkpoint-track" role="progressbar" aria-label="Questions with saved answers" aria-valuemin="0" aria-valuemax="'+g.limit+'" aria-valuenow="'+done+'">'+
    '<span style="width:'+percent+'%"></span></div>'+
-  '<div class="c9-guided-checkpoint-detail"><span>'+done+' submitted answers</span>'+
-  '<span>'+g.correct+' independently correct</span><span>'+g.assisted+' assisted</span></div>'+
+  '<div class="c9-guided-checkpoint-detail"><span>'+saved+' recorded answers</span>'+
+  '<span>'+correct+' independently correct</span><span>'+assisted+' assisted</span></div>'+
   '<p>Responses persist only after the original check is saved; unfinished input is local to this open screen. A hint or reveal marks the next response assisted.</p>'+
   '</div>';
 }
