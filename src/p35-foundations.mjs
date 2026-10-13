@@ -6,7 +6,10 @@ import {P35_CHARACTERS_A} from './p35-character-a.mjs';
 import {P35_CHARACTERS_B} from './p35-character-b.mjs';
 import {P35_CHARACTERS_C} from './p35-character-c.mjs';
 import {P35_CHARACTERS_D} from './p35-character-d.mjs';
+import {P35_EXTRA_A} from './p35-example-a.mjs';
+import {P35_EXTRA_B} from './p35-example-b.mjs';
 const raw=Object.freeze([...P35_CHARACTERS_A,...P35_CHARACTERS_B,...P35_CHARACTERS_C,...P35_CHARACTERS_D]);
+const furtherExamples=[...P35_EXTRA_A,...P35_EXTRA_B];
 const category=i=>i<11?'People & communication':i<17?'Time & scheduling':
  i<22?'Sequence & arrangements':i<32?'Transport & directions':i<41?'Independent study':
  i<52?'Services & health':i<62?'Shopping & choices':'Feelings & nuance';
@@ -18,7 +21,7 @@ export const P35_CHARACTER_GUIDES=Object.freeze(raw.map((r,i)=>Object.freeze({
  category:category(i),explanation:r[3],grammarTitle:r[7],grammarPattern:r[8],
  grammarExplanation:r[9],pitfall:r[10],pronunciation:r[11],
  words:Object.freeze(r[4].map(w=>Object.freeze({hanzi:w[0],pinyin:w[1],english:w[2]}))),
- examples:Object.freeze([r[5],r[6]].map(s=>Object.freeze({hanzi:s[0],pinyin:s[1],english:s[2]}))),
+ examples:Object.freeze([r[5],r[6],furtherExamples[i]].map(s=>Object.freeze({hanzi:s[0],pinyin:s[1],english:s[2]}))),
  officialHskLevel:null,source:'original-p35-authorial'
 })));
 export const P35_THEMES=Object.freeze([...new Set(P35_CHARACTER_GUIDES.map(g=>g.category))]);
