@@ -3,6 +3,7 @@ import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
+import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
@@ -93,6 +94,7 @@ let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
 let c9LessonSection='overview',c9LastLessonId=null,c9CharacterShowTranslations=true;
+let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
 let missionStep=0,missionActive=false,missionSupport=false,missionTyped='',missionFeedback=null;
@@ -160,7 +162,7 @@ function wordbookTeaching(q,{feedback=false}={}){
  ${feedback?'<p class="muted">Practice answers are supplementary observations, not scheduled mastery or an official proficiency claim.</p>':''}
  </div>`;
 }
-function renderWordbook(){
+function renderWordbookNative(){
  const stats=wordbookStats(state),journey=state.vocabularyJourney;
  const mode=journey?VOCABULARY_STEPS[journey.step]:wordbookMode;
  const q=wordbookQuestion(state,wordbookIndex,mode,wordbookFocus,journey?.key||null);
@@ -179,6 +181,20 @@ function renderWordbook(){
  `<div class="answer-entry"><label for="wordbook-entry">${mode==='typed'?'Write the English meaning from memory':'Type complete pinyin with tone marks or numbers'}</label><input id="wordbook-entry" type="text" value="${esc(wordbookTyped)}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${mode==='typed'?'Your English meaning':'e.g. xue2xiao4'}"></div><div class="button-row">${action('wordbook-answer','Check answer →','button primary',wordbookTyped.trim()?'':'disabled')}${action('wordbook-reveal','Reveal and explain','button outline')}</div>`}
  ${!wordbookFeedback?`<p class="muted">Study note: other senses, pinyin and example translations appear after your attempt.</p>`:''}
  </section>`}`;
+}
+function c9WordUi(){return {query:c9WordQuery,filter:c9WordFilter,page:c9WordPage};}
+function refreshC9Words(){
+ const panel=$('c9-word-catalog');
+ if(panel)panel.innerHTML=c9WordCatalogResults(state,c9WordUi(),action,esc);
+}
+function renderWordbook(){
+ const browse=renderC9VocabularyLibrary(state,c9WordUi(),action,esc);
+ const study='<section class="c9-language-native" aria-label="Original vocabulary practice">'+
+  '<div class="c9-language-native-head"><div><p class="c9-eyebrow">ORIGINAL VOCABULARY ENGINE</p><h2>Practise word knowledge</h2>'+
+  '<p>Existing meaning, pronunciation, listening and contextual tasks; independent attempts stay separate from scheduled review.</p></div></div>'+
+  renderWordbookNative()+'</section>';
+ return '<div class="c9-language-workspace">'+
+  (state.vocabularyJourney?study+browse:browse+study)+'</div>';
 }
 function renderDiagnosticPanel(){const d=progressDiagnostics(state);const connections=contextualProgress(state);const nextWeak=contextualWeaknesses(state).slice(0,3);return `<section class="simple-panel diagnostic-panel"><div class="panel-heading"><h2>Activity by learning mode</h2><span class="muted">Past 7 days · no mastery predictions</span></div><div class="diagnostic-list">${d.sources.map(s=>`<div><strong>${esc(s.name)}</strong><span>${s.recent} checked · ${s.independent} independent correct · ${s.assisted} assisted</span></div>`).join('')}</div><p class="muted">${d.totalRecent} recorded attempts across all modes this week. Scheduled-review events remain separate from supplementary exercises.</p><div class="button-row">${action('open-dialogues','Conversation Lab →','button outline')}${action('open-wordbook-practice','Practice saved words →','button outline')}${action('open-senses','Word sense lab →','button outline')}${action('open-workshop','Sentence workshop →','button outline')}</div><div class="connected-analytics"><h3>Connecting knowledge</h3><p class="muted">These attempts are supplemental, not scheduled mastery.</p><div class="connected-analytics-grid">${connections.map(c=>`<div class="connected-analytics-item"><strong>${esc(c.name)}</strong><span>${c.attempts} attempts · ${c.independent} independent · ${c.misses} misses</span></div>`).join('')}</div><p class="muted">Recommended context to practice: ${nextWeak.map(w=>w.type==='sense'?'word meanings':w.type==='sentence'?'sentence writing':'dialogue understanding').join(' · ')}.</p><div class="button-row">${action('connected-session','Practice these connections →','button primary')}</div></div>${d.extras.map(s=>`<div class="extra-diagnostic"><strong>${esc(s.name)}</strong><span>${s.all} total · ${s.independent} independent this week · ${s.assisted} assisted</span></div>`).join('')}</section>`;}
 function coachPanel(){const active=recentRemediation(state,{limit:3});const focus=active.map(item=>({...item,lessonId:item.id,misses:item.wrong,label:'Recovery practice'}));return `<section class="simple-panel coach-panel"><div class="panel-heading"><h2>Learning coach</h2><span class="muted">Observed mistakes, not a mastery prediction</span></div>${active.length?`<p class="muted">Active recovery: ${active.map(item=>`${esc(item.lesson.hanzi)} (${item.wrong} unresolved errors)`).join(' · ')}. Two later independent successes reduce an earlier error signal; they never automatically certify mastery.</p>`:''}${focus.length?`<div class="coach-grid">${focus.map(item=>{const l=findLesson(item.lessonId);return `<article><span class="eyebrow">${esc(item.label)}</span><strong lang="zh-Hans">${esc(l.hanzi)}</strong><p>${item.misses} recorded misses · ${esc(l.meaning)}</p>${action('coach-open-lesson','Revisit lesson →','button outline small',`data-id="${l.id}"`)}</article>`}).join('')}</div><div class="button-row">${action('coach-practice','Practice recent mistakes →','button primary')}</div>`:'<p>No incorrect attempts recorded yet. Work through a few lessons or try the guided Practice Lab.</p>'}</section>`;}
@@ -324,7 +340,9 @@ function vocabularyTodayPanel(){
 function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2})/)||[])[1];return findGrammarLesson(id)?id:grammarSelected;}
 function renderGrammar(){
  const selected=selectedGrammarId();
- return renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
+ const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
+ return '<div class="c9-language-workspace">'+renderC9GrammarDirectory(state,action,esc)+
+  '<section class="c9-language-native" aria-label="Native original grammar lessons">'+native+'</section></div>';
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
@@ -359,11 +377,13 @@ function openLibrarySentence(id){
  location.hash='#/sentences/'+id;render();
 }
 function renderSentences(){
- return renderSentenceScreen({selected:selectedLibraryId(),query:libraryQuery,topic:libraryTopic,
+ const native=renderSentenceScreen({selected:selectedLibraryId(),query:libraryQuery,topic:libraryTopic,
  area:libraryArea,difficulty:libraryDifficulty,grammar:libraryGrammar,purpose:libraryPurpose,tone:libraryTone,source:librarySource,savedOnly:librarySavedOnly,page:libraryPage,
  mode:libraryMode,typed:libraryTyped,order:libraryOrder,feedback:libraryFeedback,
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
+ return '<div class="c9-language-workspace">'+renderC9SentenceDirectory(state,action,esc)+
+ '<section class="c9-language-native" aria-label="Native original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
 function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;}
@@ -599,12 +619,13 @@ function catalogPager(count){
  return `<nav class="p23-catalog-pager" aria-label="Search results pages"><span>Page ${explorePage+1} / ${pages}</span>${action('catalog-prev','← Previous','button outline small',explorePage===0?'disabled':'')}${action('catalog-next','Next →','button outline small',explorePage>=pages-1?'disabled':'')}</nav>`;
 }
 function visibleExploreResults(){const found=searchCatalog(searchQuery,exploreKind);return exploreSavedOnly?found.filter(e=>e.type==='word'&&(state.bookmarkedWords||[]).includes(e.id)):found;}
-function renderExplore(){const results=visibleExploreResults(),selected=searchSelection;
+function renderExploreNative(){const results=visibleExploreResults(),selected=searchSelection;
  const selectedResult=selected?.type==='word'?findWord(selected.id):selected?.type==='character'?findLesson(selected.id):null;
  return `${title('CHARACTER & WORD LOOKUP','Explore Chinese.','Search independent characters and complete vocabulary words, including alternate definitions and related lessons.')}${gated()}${exploreWorkspace(state,action,esc)}<div class="button-row p32-explore-links">${action('p34-open-reading','P34 guided reading →','button outline small','data-id="p34-01"')}${action('p34-open-listening','P34 listening-first →','button outline small','data-id="p34-audio-01"')}${action('p33-browse','Everyday conversations →','button outline small')}${action('grammar-select','P32 beginner grammar →','button outline small','data-id="g37"')}${action('p32-open-sentences','120 new contextual sentences →','button outline small')}</div>${p31VocabularyShelf(state,action,esc,{page:p31WordPage})}${vocabularyShelfPanel()}
  <div class="search-shell"><label class="field-label" for="explore-query">Find a character, word, pinyin or meaning</label><input type="search" id="explore-query" autocomplete="off" spellcheck="false" placeholder="Try 学校, xue, friend, water" value="${esc(searchQuery)}"><div class="mode-tabs" role="group" aria-label="Search category">${['all','characters','words'].map(k=>action('search-kind',k==='all'?'All':k==='words'?'Words':'Characters',exploreKind===k?'button dark small':'button outline small',`data-kind="${k}"`)).join('')}</div><div class="button-row wordbook-filter">${action('open-wordbook-practice','Practice saved words →','button primary')}${action('wordbook-filter',exploreSavedOnly?'Show all entries':'My saved words ('+(state.bookmarkedWords||[]).length+')','button outline small',`aria-pressed="${exploreSavedOnly}"`)}</div><p id="search-count" class="muted">${results.length} results · ${WORDS.length} distinct example word entries · Browsing never changes mastery.</p></div>
  <div class="explore-layout"><div class="p23-search-list"><div id="explore-results" class="results-list">${renderSearchResults(results)}</div><div id="explore-pager">${catalogPager(results.length)}</div></div><article id="explore-detail" class="explore-detail">${selectedResult?selected.type==='word'?wordDetail(selectedResult):exploreDetail(selectedResult):'<div class="empty-panel"><strong>Select an entry.</strong><p>Open a character or word to inspect its meanings, related lessons and usage.</p></div>'}</article></div>`;
 }
+function renderExplore(){return '<div class="c9-language-workspace c9-lookup-workspace">'+renderExploreNative()+'</div>';}
 function renderSearchResults(results){return results.slice(explorePage*90,(explorePage+1)*90).map(e=>`<button class="result-row ${searchSelection?.type===e.type&&searchSelection?.id===e.id?'selected':''}" data-action="select-explore" data-type="${e.type}" data-id="${esc(e.id)}" type="button"><span lang="zh-Hans">${esc(e.hanzi)}</span><span><strong>${esc(e.pinyin)}</strong><small>${esc(e.english)}</small><small class="muted">${e.type==='word'?'Word':'Character'}</small></span><span>→</span></button>`).join('')||'<p class="empty-panel">No matching approved demo entries.</p>'}
 function exploreDetail(l){return `<span class="eyebrow">CHARACTER · ORIGINAL DEMO</span><div lang="zh-Hans" class="detail-character">${esc(l.hanzi)}</div><p class="detail-reading">${esc(l.pinyin)}</p><h2>${esc(l.meaning)}</h2><p>${esc(l.note)}</p><h3>Words containing this character</h3><div class="detail-words">${l.words.map(w=>`<button type="button" class="word-ref" data-action="lookup-word" data-word="${esc(w.hanzi)}"><strong lang="zh-Hans">${esc(w.hanzi)}</strong><span>${esc(w.pinyin)}</span><small>${esc(w.english)}</small></button>`).join('')}</div><h3>Used in context</h3><p lang="zh-Hans" class="detail-sentence">${esc(l.sentence.hanzi)}</p><p class="muted">${esc(l.sentence.pinyin)}</p><p>${esc(l.sentence.english)}</p>${action('open-lesson','Study this character →','button primary',`data-id="${l.id}"`)}`;}
 function wordDetail(w){
@@ -690,6 +711,35 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    target?.scrollIntoView({block:'start',behavior:'auto'});
    if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
    return;
+ }
+ if(name==='c9-word-open'){
+  if(!findWord(id))return alertUser('Original vocabulary entry unavailable.','error');
+  searchSelection={type:'word',id};exploreKind='words';exploreSavedOnly=false;
+  searchQuery='';explorePage=0;
+  return go('explore');
+ }
+ if(name==='c9-word-page'){
+  const delta=Number(button.dataset.delta);
+  if(![-1,1].includes(delta))return;
+  c9WordPage=Math.max(0,c9WordPage+delta);
+  refreshC9Words();
+  root.querySelector('#c9-word-catalog')?.scrollIntoView({block:'nearest'});
+  return;
+ }
+ if(name==='c9-sentence-topic'){
+  const topic=SENTENCE_TOPICS.find(x=>x.id===id);if(!topic)return;
+  const first=SENTENCE_LIBRARY.find(x=>x.topicId===topic.id);
+  if(!first)return;
+  libraryTopic=topic.id;libraryQuery='';libraryArea='all';libraryDifficulty='all';
+  libraryGrammar='all';libraryPurpose='all';libraryTone='all';librarySource='all';
+  librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
+  return openLibrarySentence(first.id);
+ }
+ if(name==='c9-sentence-all'){
+  libraryTopic='all';libraryQuery='';libraryArea='all';libraryDifficulty='all';
+  libraryGrammar='all';libraryPurpose='all';libraryTone='all';librarySource='all';
+  librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
+  return render();
  }
  if(name==='c9-lesson-jump'){
   const section=button.dataset.section;
@@ -1476,6 +1526,8 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
 document.querySelector('.topbar')?.addEventListener('click',ev=>{if(ev.target.closest('[data-action="go-settings"]'))go('settings')});
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='c9-word-query'){c9WordQuery=e.target.value;c9WordPage=0;refreshC9Words();return;}
+
  if(e.target.id==='c9-learn-query'){c9LearnQuery=e.target.value;c9LearnPage=0;refreshC9DiscoveryResults();return;}
 
  if(e.target.id==='p33-scenario-query'){
@@ -1509,6 +1561,8 @@ if(e.target.id==='sentence-library-query'){
 }
 if(e.target.id==='grammar-entry'){grammarTyped=e.target.value;const b=root.querySelector('[data-action="grammar-answer"]');if(b)b.disabled=!grammarTyped.trim();return;}if(e.target.id==='grammar-query'){grammarQuery=e.target.value;for(const item of root.querySelectorAll('[data-grammar-search]'))item.hidden=!item.dataset.grammarSearch.includes(grammarQuery.toLowerCase());return;}if(e.target.id==='pinyin-answer-entry'){pinyinTyped=e.target.value;const button=root.querySelector('[data-action="pinyin-answer"]');if(button)button.disabled=!pinyinTyped.trim();return;}if(e.target.id==='wordbook-entry'){wordbookTyped=e.target.value;const b=root.querySelector('[data-action="wordbook-answer"]');if(b)b.disabled=!wordbookTyped.trim();return;}if(e.target.id==='guided-entry'){guidedTyped=e.target.value;const b=root.querySelector('[data-action="guided-check"]');if(b)b.disabled=!guidedTyped.trim();return;}if(e.target.id==='drill-entry'){drillTyped=e.target.value;const b=root.querySelector('[data-action="drill-check"]');if(b)b.disabled=!drillTyped.trim();return;}if(e.target.id==='story-entry'){storyTyped=e.target.value;const b=root.querySelector('[data-action="story-check"]');if(b)b.disabled=!storyTyped.trim();return;}if(e.target.id==='review-entry'){typedAnswer=e.target.value;const check=root.querySelector('[data-action="submit-review"]');if(check)check.disabled=!typedAnswer.trim();return;}if(e.target.id==='explore-query'){searchQuery=e.target.value;explorePage=0;const matches=visibleExploreResults();$('search-count').textContent=`${matches.length} results · ${WORDS.length} distinct demo word entries · Browsing never changes mastery.`;$('explore-results').innerHTML=renderSearchResults(matches);if($('explore-pager'))$('explore-pager').innerHTML=catalogPager(matches.length);}});
 root.addEventListener('change',async e=>{
+ if(e.target.id==='c9-word-status'){if(!C9_WORD_FILTERS.includes(e.target.value))return;c9WordFilter=e.target.value;c9WordPage=0;refreshC9Words();return;}
+
  if(e.target.id==='c9-learn-unit'||e.target.id==='c9-learn-status'){
    if(e.target.id==='c9-learn-unit'){
      const value=e.target.value;
