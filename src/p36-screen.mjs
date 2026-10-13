@@ -33,7 +33,7 @@ export function p36Overview(state,act,esc,{compact=false}={}){
  'p36-lesson-card','data-id="'+id+'"');
  }).join('')+'</div>':'')+'</section>';
 }
-export function p36TeachingExtension(lesson,act,esc){
+export function p36TeachingExtension(lesson,act,esc,{showModel=false}={}){
  const repair=p36RepairFor(lesson?.id);if(!repair)return '';
  const related=P35_CHARACTER_GUIDES.filter(g=>g.hanzi===lesson.anchor||
  g.words.some(w=>lesson.examples.some(e=>e.hanzi.includes(w.hanzi)))).slice(0,3);
@@ -52,10 +52,15 @@ export function p36TeachingExtension(lesson,act,esc){
  '<p>The example sentence is faulty or misleading for the <em>specified meaning</em>; it is not an automatic verdict on every possible context.</p></div>'+
  '<div class="p36-correction"><div><span>LESS SUITABLE FOR THIS MEANING</span>'+
  '<p lang="zh-Hans">'+esc(repair.incorrect)+'</p></div>'+
- '<div><span>TAUGHT MODEL</span><p lang="zh-Hans">'+esc(repair.correct.hanzi)+'</p>'+
- '<small>'+esc(repair.correct.pinyin)+'</small><p>'+esc(repair.correct.english)+'</p></div></div>'+
+ '<div><span>'+(showModel?'TAUGHT MODEL · ASSISTED':'MODEL HIDDEN · TRY INDEPENDENTLY')+'</span>'+
+ (showModel?'<p lang="zh-Hans">'+esc(repair.correct.hanzi)+'</p>'+
+ '<small>'+esc(repair.correct.pinyin)+'</small><p>'+esc(repair.correct.english)+'</p>':
+ '<p>Use the intended English meaning to reconstruct the correct Mandarin independently. The exact taught answer stays hidden until you request it.</p>')+
+ '</div></div>'+
  '<div class="p36-reason"><strong>Why this matters</strong><p>'+esc(repair.pitfall)+'</p><p>'+esc(repair.contrast)+'</p></div>'+
- '<div class="p36-ext-actions">'+act('p36-repair','Repair this sentence independently →','button primary','data-id="'+repair.grammarId+'"')+
+ '<div class="p36-ext-actions">'+
+ act('p36-repair',showModel?'Practise model · assisted →':'Repair without seeing model →','button primary','data-id="'+repair.grammarId+'"')+
+ act('p36-toggle-model',showModel?'Hide reference model':'Reveal reference · marks assistance','button outline','data-id="'+repair.grammarId+'"')+
  act('p36-sentences','More examples in the Sentence Library →','button outline')+'</div>'+
  (related.length?'<div class="p36-crosslinks"><strong>Apply P35 character vocabulary</strong><div class="button-row">'+
  related.map(g=>act('p35-open-lesson',esc(g.hanzi)+' · '+esc(g.meaning)+' →','button outline small','data-id="'+g.id+'"')).join('')+'</div></div>':'')+
