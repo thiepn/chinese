@@ -41,7 +41,7 @@ Q|detail|Which aspect of the activity changed after the official confirmation?|T
 Q|reason|Why did volunteers remind some registrants individually?|They had seen only the old poster and missed the new address.|They had forgotten to sign up.|They wanted to change the program.|They could not read the weather forecast.|11|The old poster had left some people without current location information.
 Q|sequence|When was the indoor venue formally confirmed?|Saturday morning.|Friday evening.|Sunday after the event.|A month later.|8|Line 9 reports formal confirmation, followed by updated notices.
 
-Two kinds of help at the workshop|Work & cooperation|workplace training narrative|g95,g98,g101,g118|协助~xiézhù~assist|Offering guidance is distinguished from doing another person's task for them.|A corrected result is not automatically an independent achievement by the learner.
+Two kinds of help at the workshop|Work & cooperation|workplace training narrative|g95,g98,g101,g118|规则~guīzé~rule|Offering guidance is distinguished from doing another person's task for them.|A corrected result is not automatically an independent achievement by the learner.
 L|一家小公司为新员工组织了一次培训。|Yì jiā xiǎo gōngsī wèi xīn yuángōng zǔzhī le yí cì péixùn.|A small company organized a training session for new employees.
 L|培训的任务是按照说明整理一份客户资料。|Péixùn de rènwu shì ànzhào shuōmíng zhěnglǐ yí fèn kèhù zīliào.|The training task was to organize customer materials according to instructions.
 L|经理说，每个人都应该先独立尝试。|Jīnglǐ shuō, měi ge rén dōu yīnggāi xiān dúlì chángshì.|The manager said everyone should try independently first.
