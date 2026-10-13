@@ -1,0 +1,491 @@
+/*
+ * C9-11 — Complete dark-mode source parity.
+ * This is the final visual layer; it follows C9-01–C9-10 and the original
+ * study, P21–P34, and offline CSS. The sole mode owner remains
+ * document.documentElement.dataset.theme via the native Settings writer.
+ *
+ * All selectors in this file are scoped to the existing dark theme. No new
+ * HTML state, theme storage, animation engine or duplicate visual system.
+ */
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  /* Better small-text contrast on raised and subdued surfaces. */
+  --c9-ink:#f1f4f2;
+  --c9-sub:#c0ccc8;
+  --c9-muted:#a8b8b3;
+  --c9-canvas:#10191c;
+  --c9-surface:#172226;
+  --c9-surface-2:#213034;
+  --c9-raised:#293a3f;
+  --c9-line:#3e5156;
+  --c9-line-strong:#60777b;
+  /* A readable vermilion text accent also used with a dark CTA foreground. */
+  --c9-accent:#ed958b;
+  --c9-accent-hover:#f4aaa1;
+  --c9-accent-soft:#402b2d;
+  --c9-accent-contrast:#142124;
+  --c9-green:#90bda0;
+  --c9-green-hover:#b1d2b9;
+  --c9-green-soft:#253b34;
+  --c9-green-contrast:#102119;
+  --c9-sage:#91ad9b;
+  --c9-focus:#a4d9f2;
+  --c9-danger:#f2a39c;
+  --c9-danger-bg:#432b2c;
+  --c9-warning:#f5d89c;
+  --c9-warning-bg:#433825;
+  /* Original P21–P34 components consume these inherited semantic colors. */
+  --nav:#111f22;
+  --nav-sub:#b7c6c0;
+  --background:var(--c9-canvas);
+  --surface:var(--c9-surface);
+  --soft:var(--c9-surface-2);
+  --ink:var(--c9-ink);
+  --sub:var(--c9-sub);
+  --muted:var(--c9-muted);
+  --line:var(--c9-line);
+  --green:var(--c9-green);
+  --accent:var(--c9-accent);
+  --focus:var(--c9-focus);
+  --warning-bg:var(--c9-warning-bg);
+  --warning-ink:var(--c9-warning);
+  --p30-ink:var(--c9-ink);
+  --p30-forest:var(--c9-green);
+  --p30-paper:var(--c9-canvas);
+  --p30-sage:var(--c9-green-soft);
+  --p30-label:var(--c9-sub);
+  --p30-border:var(--c9-line);
+  scrollbar-color:var(--c9-line-strong) var(--c9-canvas);
+}
+:root[data-theme="dark"] body {
+  background:var(--c9-canvas);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] ::selection {
+  background:var(--c9-accent-soft);
+  color:var(--c9-ink);
+}
+/* Shell, navigation, first-run, alerts and offline/recovery messages. */
+:root[data-theme="dark"] :is(
+  .workspace,.c9-topbar,.topbar,.c9-mobile-drawer,.c9-app-shell,
+  .c9-sidebar,.c9-mobile-nav,.c9-drawer-groups,.c9-drawer-group,
+  .c9-drawer-header
+) { color:var(--c9-ink); }
+:root[data-theme="dark"] :is(
+  .topbar,.c9-topbar,.c9-mobile-drawer,.c9-mobile-nav,
+  .c9-drawer-header,.c9-drawer-groups
+) {
+  background:var(--c9-surface);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(.c9-sidebar,.sidebar) {
+  background:var(--nav);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(.c9-sidebar .nav-heading,.c9-sidebar .side-bottom small) {
+  color:var(--c9-muted);
+}
+:root[data-theme="dark"] :is(
+  .c9-sidebar .desktop-nav a:hover,
+  .c9-sidebar .desktop-nav a[aria-current="page"],
+  .c9-mobile-nav a[aria-current="page"],
+  .c9-drawer-group a[aria-current="page"]
+) {
+  background:var(--c9-green-soft);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(
+  .c9-sidebar .desktop-nav a:not([aria-current="page"]),
+  .c9-drawer-group a:not([aria-current="page"]),
+  .c9-breadcrumb a,.c9-breadcrumb-sep
+) { color:var(--c9-sub); }
+:root[data-theme="dark"] :is(
+  .c9-mobile-drawer::backdrop,.c9-modal::backdrop,dialog::backdrop
+) { background:rgba(4,12,14,.77); }
+:root[data-theme="dark"] :is(
+  .alert.error,.c9-notice--error,.c9-home-notice--warning,
+  .permission-note,.c9-notice--warning,.p34-listening-warning
+) {
+  border-color:var(--c9-warning);
+  color:var(--c9-warning);
+  background:var(--c9-warning-bg);
+}
+:root[data-theme="dark"] :is(.alert.error,.c9-notice--error) {
+  background:var(--c9-danger-bg);
+  color:var(--c9-danger);
+  border-color:var(--c9-danger);
+}
+:root[data-theme="dark"] :is(
+  .alert:not(.error),.c9-notice,.c9-home-notice,.status-chip,
+  .c9-empty,.p33-no-results,.p31-empty-status,.p30-no-results,
+  .c9-utility-empty,.c9-discovery-empty,.c9-home-quiet-state
+) {
+  background:var(--c9-surface-2);
+  border-color:var(--c9-line);
+  color:var(--c9-sub);
+}
+:root[data-theme="dark"] :is(.loading,.loading-glyph,.p30-source-note) {
+  color:var(--c9-muted);
+}
+/* The same existing native Settings, inputs, and forms; browser widgets also
+ * inherit dark color-scheme. No forced dark styling in light mode. */
+:root[data-theme="dark"] :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,textarea,[contenteditable="true"]
+) {
+  background-color:var(--c9-surface);
+  color:var(--c9-ink);
+  border-color:var(--c9-line-strong);
+  caret-color:var(--c9-ink);
+}
+:root[data-theme="dark"] :where(
+  input::placeholder,textarea::placeholder
+) {color:var(--c9-muted);opacity:1;}
+:root[data-theme="dark"] :where(
+  input[type="checkbox"],input[type="radio"],input[type="range"]
+) {accent-color:var(--c9-accent);}
+:root[data-theme="dark"] :where(
+  select option,optgroup
+) {
+  background:var(--c9-surface);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(
+  .button.primary,.c9-button--primary,
+  .c9-home-hero-actions .c9-button--primary
+) {
+  background:var(--c9-accent);
+  border-color:var(--c9-accent);
+  color:var(--c9-accent-contrast);
+}
+:root[data-theme="dark"] :is(
+  .button.primary,.c9-button--primary
+):hover:not(:disabled) {
+  background:var(--c9-accent-hover);
+  border-color:var(--c9-accent-hover);
+  color:var(--c9-accent-contrast);
+}
+:root[data-theme="dark"] :is(
+  .button.dark,.c9-button--study
+) {
+  background:var(--c9-green);
+  border-color:var(--c9-green);
+  color:var(--c9-green-contrast);
+}
+:root[data-theme="dark"] :is(
+  .button.outline,.c9-button--secondary,
+  .c9-home-route,.c9-skill-card,.c9-lesson-row .c9-button,
+  .c9-library-text-button,.c9-assessment-actions .c9-button--secondary
+) {
+  background:var(--c9-surface);
+  border-color:var(--c9-line-strong);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(
+  .button.outline,.c9-button--secondary,.c9-home-route,
+  .c9-skill-card,.c9-library-text-button
+):hover:not(:disabled) {
+  background:var(--c9-surface-2);
+  border-color:var(--c9-accent);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(.button.danger,.text-danger) {
+  color:var(--c9-danger);
+  border-color:var(--c9-danger);
+}
+:root[data-theme="dark"] :is(
+  .choice,.choice-list>.choice,.p29-mode,.p25-mode,.p26-mode,
+  .p30-filter,.p31-theme,.p31-status-tabs button,.p33-theme-btn
+) {
+  background:var(--c9-surface);
+  color:var(--c9-ink);
+  border-color:var(--c9-line-strong);
+}
+:root[data-theme="dark"] :is(
+  .choice.selected,.choice[aria-pressed="true"],.p29-mode.active,
+  .p25-mode.active,.p26-mode.active,.p30-filter.active,
+  .p31-theme.active,.p33-theme-btn.active,.c9-discovery-chip.is-selected
+) {
+  background:var(--c9-accent-soft);
+  border-color:var(--c9-accent);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(
+  .choice.selected span,.c9-assessment-choices .choice[aria-pressed="true"]>span
+) {
+  background:var(--c9-accent);
+  color:var(--c9-accent-contrast);
+}
+:root[data-theme="dark"] :is(
+  .choice:hover,.p30-filter:hover,.p33-theme-btn:hover
+) {border-color:var(--c9-accent);}
+:root[data-theme="dark"] :is(
+  .choice:disabled,.button:disabled,.c9-button:disabled
+) {opacity:.58;}
+:root[data-theme="dark"] :where(
+  a,button,input,select,textarea,summary,[role="tab"],[tabindex]
+):focus-visible {
+  outline:3px solid var(--c9-focus)!important;
+  outline-offset:3px;
+}
+:root[data-theme="dark"] .skip-link:focus-visible {
+  background:var(--c9-raised);
+  color:var(--c9-ink);
+  border-color:var(--c9-focus);
+}
+/* Shared source-owned cards and legacy P21–P34 teaching panels. Avoid
+ * changing their internal question order, links or collapsed state. */
+:root[data-theme="dark"] :is(
+  .simple-panel,.p30-hero,.p30-coach-card,.p30-route-grid>a,
+  .p30-course-tile,.p30-evidence,.p30-review-guide,
+  .p30-review-lead,.p30-explore-lead,.p30-learn-lead,
+  .p31-overview,.p31-course-library,.p31-vocabulary-shelf,
+  .p31-character-card,.p31-lesson-teaching,.p31-vocab-card,
+  .p32-hub,.p32-repair,.p33-browser,.p33-shelf,.p33-scene-item,
+  .p33-scenario-detail,.p34-overview,.p34-reading-card,
+  .p34-listening-panel,.p34-read-bridge,
+  .lesson-paper,.lesson-checkpoint,.lesson-guide,.word-card,
+  .sentence-block,.story-paper,.story-practice,
+  .dialogue-paper,.dialogue-quiz,.reader-card,.reader-sidebar
+) {
+  background:var(--c9-surface);
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .p30-hero-numbers,.p30-coach-next,.p30-learn-count,
+  .p31-overview-numbers,.p31-practice-bridge,.p31-writing-feedback,
+  .p32-example-button,.p32-repair-tip,.p33-situation,
+  .p33-concept-grid,.p33-alternative,.p33-partner-reply,
+  .p34-shadow,.p34-linkbox,
+  .lesson-footer,.lesson-context-links,.word-example,
+  .story-glossary,.line-support,.reading-context,.guided-reading-context,
+  .p21-companion-tip,.p22-extra-sentence,.p23-word-note,.p24-rules,
+  .p25-teaching,.p25-hint,.p25-mistake,.p25-result,.p25-model,
+  .p26-context,.p26-hint,.p26-feedback,.p26-variation,
+  .p27-paragraph-explanation,.p27-reading-evidence,
+  .p28-reading-tip,.p28-evidence,.p29-teaching,.p29-hint,
+  .p29-result
+) {
+  background:var(--c9-surface-2);
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .p31-character-grid,.p31-vocabulary-grid,.p32-hub-examples,
+  .p33-scene-grid,.p33-vocab-grid,.p34-reading-grid,
+  .word-grid,.c9-lesson-results,.c9-discovery-results,
+  .p25-examples,.p26-context-grid
+) {color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .p31-character-card:hover,.p32-example-button:hover,.p33-scene-item:hover,
+  .p34-reading-card:hover,.p30-route-grid>a:hover,.p30-course-tile:hover
+) {
+  background:var(--c9-surface-2);
+  border-color:var(--c9-accent);
+}
+:root[data-theme="dark"] :is(
+  .p31-character-card.active,.p32-example-button.active,
+  .p33-scene-item[aria-pressed="true"],.p34-reading-card[aria-current="true"]
+) {
+  background:var(--c9-green-soft);
+  border-color:var(--c9-sage);
+  color:var(--c9-ink);
+}
+/* Older native skills: Pinyin, grammar, sentences, vocabulary and advanced
+ * guided/practice surfaces still use the original screen component names. */
+:root[data-theme="dark"] :is(
+  .p21-companion,.p21-companion-pattern,.p21-context-example,
+  .p22-foundation-panel,.p22-unit,
+  .p23-wordbook,.p23-word-entry,.p23-dictionary-section,.p23-shelf-word,
+  .p24-today,.p24-panel,.p24-sound,.p24-contrast-pair,.p24-chart,
+  .p24-exercise,.p24-exercise-card,.p24-sound-primer,
+  .p25-overview,.p25-sidebar,.p25-lesson,.p25-chapter,.p25-unit,
+  .p25-examples article,.p25-practice,.p25-assembled,
+  .p26-overview,.p26-browser,.p26-detail,.p26-sentence-item,
+  .p26-practice,.p26-mini-sentence,
+  .p27-today-feature,.p27-paragraph-link,.p27-related-sentences,
+  .p28-shelf,.p28-shelf-item,.p28-level,.p28-part,.p28-word,
+  .p29-band,.p29-mission-card,.p29-sidebar,.p29-lesson,
+  .p29-authored-line,.p29-practice,
+  .ladder-intro,.ladder-active,.ladder-teaching,.ladder-suggestion,
+  .sense-contrast,.sense-compare-grid,
+  .block-setup,.block-work,.block-preview,.block-step,
+  .fluency-start,.fluency-work,.fluency-analytics,.fluency-skill,
+  .fluency-contrast,.fluency-preview-item
+) {
+  background:var(--c9-surface);
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .p21-context-examples,.p23-word-teaching,.p23-phrase-row,.p23-word-family,
+  .p24-sandhi,.p24-audio-first,.p24-sound-detail,
+  .p25-pattern,.p25-task-context,.p25-task,.p25-chunk,
+  .p26-context,.p26-task,.p26-task-context,.p26-chunk,
+  .p27-paragraph-title,.p28-intro,.p28-part-heading,
+  .p29-context,.p29-covered,.p29-evidence,.p29-hint,
+  .block-evidence,.block-resume-bar,.fluency-context,
+  .fluency-help,.fluency-explanation,.ladder-built
+) {
+  background:var(--c9-surface-2);
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .p25-unit.active,.p26-sentence-item.selected,.p29-band[aria-current="true"],
+  .p24-syllable-current,.p29-mode.active,.p29-part.active
+) {
+  background:var(--c9-accent-soft);
+  border-color:var(--c9-accent);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(
+  .p21-context-pinyin,.p23-word-entry .word-pinyin,
+  .p24-chart-syllable,.p26-pinyin,.p29-pinyin,
+  .story-pinyin,.dialogue-pinyin,.sentence-pinyin,
+  .word-pinyin,.c9-character-pinyin,.c9-character-example-translation span:first-child
+) {color:var(--c9-green);}
+:root[data-theme="dark"] :is(
+  .p26-meaning,.p29-english,.story-english,.sentence-english,
+  .p27-paragraph-explanation,.p28-reading-tip,.c9-english
+) {color:var(--c9-sub);}
+:root[data-theme="dark"] :is(
+  .p24-sound-symbol,.p24-exercise-target,.p26-heading [lang="zh-Hans"],
+  .p25-example-heading [lang="zh-Hans"],.p29-authored-line [lang="zh-Hans"],
+  .story-chinese,.dialogue-chinese,.sentence-hanzi,.big-hanzi,
+  .c9-lesson-character,.c9-character-glyph,.c9-assessment-hanzi
+) {color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .p24-exercise .feedback,.p25-result,.p26-feedback,.p29-result,
+  .reader-feedback,.story-result,.dialogue-result,
+  .c9-assessment-feedback.correct
+) {border-color:var(--c9-sage);color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .reader-feedback.incorrect,.p25-result.incorrect,.p26-feedback.incorrect,
+  .c9-assessment-feedback.incorrect
+) {border-color:var(--c9-danger);color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .p31-misconception,.p32-wrong,.p33-response-branch,
+  .p34-listening-warning
+) {
+  background:var(--c9-warning-bg);
+  border-color:var(--c9-warning);
+  color:var(--c9-ink);
+}
+/* Word highlighting, examples and script-grid lines must not stay pale. */
+:root[data-theme="dark"] :is(
+  mark,.bridge-word mark,.p23-context-question mark,
+  .story-token mark,.p26-context mark,.p25-task mark
+) {
+  background:var(--c9-accent-soft);
+  color:var(--c9-ink);
+  border-bottom-color:var(--c9-accent);
+}
+:root[data-theme="dark"] :is(
+  .c9-native-section .big-hanzi,.c9-character-glyph,.c9-writing-guide>span,
+  #c9-writing-canvas
+) {
+  border-color:var(--c9-line-strong);
+  color:var(--c9-ink);
+}
+:root[data-theme="dark"] :is(.c9-lesson-workspace,.c9-character-page) {
+  color:var(--c9-ink);
+}
+/* New C9-01–C9-10 panels share the same dark surface contracts. */
+:root[data-theme="dark"] :is(
+  .c9-home-hero,.c9-home-panel,.c9-home-metrics,
+  .c9-discovery-lead,.c9-discovery-section,.c9-skill-card,.c9-unit-card,
+  .c9-band-card,.c9-lesson-row,.c9-lesson-left,.c9-native-section,
+  .c9-character-identity,.c9-character-info,.c9-character-section,
+  .c9-library,.c9-library-word,.c9-library-topic,.c9-library-chapter,
+  .c9-assessment-panel,.c9-review-active,.c9-practice-page .practice-card,
+  .c9-media-lead,.c9-media-entry,.c9-media-discovery,.c9-media-native,
+  .c9-utility-panel,.c9-utility-metric,.c9-search-category,
+  .c9-settings-context>div,.c9-settings-nav-item,.c9-secondary-native
+) {
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .c9-home-hero,.c9-home-panel,.c9-discovery-section,
+  .c9-character-section,.c9-library,.c9-assessment-panel,
+  .c9-media-discovery,.c9-utility-panel,.c9-settings-context>div
+) {background:var(--c9-surface);}
+:root[data-theme="dark"] :is(
+  .c9-lesson-nav-button.is-current,.c9-discovery-chip.is-selected,
+  .c9-character-tabs .c9-character-tab:focus-visible,
+  .c9-library-topic.is-selected,.c9-search-category.is-active,
+  .c9-assessment-choices .choice.selected
+) {background:var(--c9-accent-soft);color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .c9-home-notice,.c9-lesson-guide,.c9-character-caution,
+  .c9-media-transcript-warning,.c9-assessment-note,
+  .c9-utility-truth
+) {border-color:var(--c9-line);}
+:root[data-theme="dark"] :is(
+  .c9-home-plan-time,.c9-home-stat small,.c9-discovery-note,
+  .c9-lesson-context-card p,.c9-character-info p,
+  .c9-library-disclaimer,.c9-media-provenance,
+  .c9-assessment-disclaimer,.c9-utility-truth
+) {color:var(--c9-sub);}
+:root[data-theme="dark"] :is(
+  .c9-badge--success,.c9-home-task.is-recorded .c9-home-task-mark,
+  .c9-progress>span,.progress-rail>span
+) {border-color:var(--c9-green);}
+/* Legacy progress/chart blocks and tables are informational, not scoring. */
+:root[data-theme="dark"] :is(
+  .progress-rail,.progress-bar,.p30-rail,.p27-reading-stats,
+  .p28-evidence,.p34-metrics,.stats-grid,.analytics-chart,
+  .progress-panel,.progress-breakdown,.p30-evidence-row
+) {border-color:var(--c9-line);color:var(--c9-ink);}
+:root[data-theme="dark"] :is(
+  .progress-rail,.progress-bar,.p30-rail,
+  .analytics-chart,.progress-breakdown
+) {background:var(--c9-surface-2);}
+:root[data-theme="dark"] :is(
+  .progress-rail>span,.progress-bar>span,.p30-rail>i
+) {background:var(--c9-sage);}
+:root[data-theme="dark"] :is(
+  .c9-data-table,.p30-evidence table,.progress-panel table
+) {
+  background:var(--c9-surface);
+  color:var(--c9-ink);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .c9-data-table thead,.c9-data-table th,
+  .p30-evidence th,.progress-panel th
+) {
+  background:var(--c9-surface-2);
+  color:var(--c9-sub);
+  border-color:var(--c9-line);
+}
+:root[data-theme="dark"] :is(
+  .c9-data-table td,.p30-evidence td,.progress-panel td
+) {border-color:var(--c9-line);}
+:root[data-theme="dark"] :is(
+  .c9-data-table tbody tr:hover,
+  .p30-evidence tr:hover,.progress-panel tr:hover
+) {background:var(--c9-raised);}
+/* Dark browser chrome and high-contrast contextual overlays. */
+:root[data-theme="dark"] :is(
+  dialog,.c9-mobile-drawer,.c9-dialog,.popover,.tooltip,[role="dialog"]
+) {
+  color:var(--c9-ink);
+  background:var(--c9-raised);
+  border-color:var(--c9-line-strong);
+}
+:root[data-theme="dark"] :is(
+  .c9-character-audio-notice,.c9-writing-feedback,.status-chip,
+  .p30-source-note,.c9-skeleton
+) {color:var(--c9-sub);}
+:root[data-theme="dark"] :is(
+  .c9-skeleton,.loading-placeholder,.skeleton
+) {background:var(--c9-raised);}
+@media (forced-colors:active) {
+  :root[data-theme="dark"] :where(
+    .choice.selected,.c9-button--primary,.c9-badge--success,
+    .p30-filter.active,.c9-lesson-nav-button.is-current
+  ) {forced-color-adjust:auto;}
+}
