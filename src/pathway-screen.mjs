@@ -80,7 +80,7 @@ export function renderPathwayScreen(ui,act,esc,title,gated){
  ${PATHWAY_MISSIONS.filter(t=>t.band===band.number).map(t=>missionCard(t,ui.learner,act,esc,t.id===m.id)).join('')}</div>
  <div class="button-row">${act('pathway-prev-band','← Previous band','button outline small',band.number===1?'disabled':'')}${act('pathway-next-band','Next band →','button outline small',band.number===9?'disabled':'')}</div></aside>
  <article class="p29-lesson"><div class="p29-lesson-heading"><p class="eyebrow">ORIGINAL LEARNING MISSION ${m.id.toUpperCase()} · BAND ${m.band}</p>
- <h2>${esc(m.title)}</h2><p>${esc(m.purpose)} · ${esc(m.teaching)}</p>
+ <h2>${esc(m.title)}</h2><p>${esc(m.purpose)}${!ui.focus||ui.feedback?' · '+esc(m.teaching):''}</p>
  <div class="button-row">${act('pathway-focus',ui.focus?'Exit focused recall':'Start focused recall','button primary')}
  ${act('pathway-toggle-pinyin',ui.showPinyin?'Hide Pinyin':'Show Pinyin','button outline small')}
  ${act('pathway-toggle-english',ui.showEnglish?'Hide translations':'Show translations','button outline small')}</div></div>
