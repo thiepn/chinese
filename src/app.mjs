@@ -1,4 +1,5 @@
 import { DEMO_LESSONS, demoSearch, findLesson } from './demo-lessons.mjs';
+import {renderC9Home} from './home-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
@@ -396,10 +397,21 @@ function pinyinTodayPanel(){
  return `<section class="simple-panel p24-today"><div class="panel-heading"><div><p class="eyebrow">PRONUNCIATION FOUNDATIONS</p><h2>Learn the sounds behind Pinyin</h2></div><span class="muted">${PINYIN_INITIALS.length} initials · ${PINYIN_FINALS.length} finals</span></div>
  <p>Explore tongue positions, vowels, lexical tones, tone sandhi and the spelling rules behind Mandarin words.</p><div class="button-row">${action('pinyin-open','Open sound foundations →','button primary')}${action('pinyin-tab','Practice tones →','button outline small',`data-section="practice" data-filter="tones"`)}</div></section>`;
 }
-function renderToday(){return `${title('YOUR MANDARIN WORKSPACE','One focused learning day.','Continue the next meaningful activity, then study language in context without losing access to your existing tools.')}${gated()}${onboardingPanel()}${dashboardHome(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31Overview(state,action,esc,true)}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}
-<details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>
-${hubHomePanel()}${pathwayHomePanel(state,action,esc)}${beginnerReadingTodayPanel()}${connectedReadingTodayPanel()}${sentenceTodayPanel()}${grammarTodayPanel()}${pinyinTodayPanel()}${vocabularyTodayPanel()}${finishOverviewPanel()}
-</details>`;}
+function renderToday(){
+  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
+    onboardingPanel()+
+    '<details class="c9-home-extra"><summary><strong>More course material and teaching recommendations</strong><span>Beginner expansion, grammar, reading, listening and extended learning tools</span></summary><div class="c9-home-extra-inner">'+
+      gated()+
+      p31Overview(state,action,esc,true)+
+      p32LearningHub(state,action,esc)+
+      p33SceneShelf(state,null,action,esc,{compact:true})+
+      p34Overview(state,action,esc,{compact:true})+
+      '<details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>'+
+        hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
+        connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
+        pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
+      '</details></div></details>';
+}
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
 function lessonQuiz(l){if(lessonCheckpoint.lessonId!==l.id)lessonCheckpoint={lessonId:l.id,step:0,response:'',feedback:null};
@@ -1414,7 +1426,7 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
 });
 window.addEventListener('hashchange',()=>{revealed=false;typedAnswer='';chosenOption='';checkResult=null;render();window.scrollTo(0,0);$('main').focus({preventScroll:true})});
 window.addEventListener('online',networkLabel);window.addEventListener('offline',networkLabel);
-function networkLabel(){$('network-state').textContent=navigator.onLine?'Local data · Online':'Local data · Offline'}
+function networkLabel(){const online=navigator.onLine;$('network-state').textContent=online?'Local data · Online':'Local data · Offline';const homeStatus=$('c9-home-connectivity');if(homeStatus)homeStatus.textContent=online?'Online · local learner data':'Offline · cache-dependent availability';const homeNotice=$('c9-home-offline-notice');if(homeNotice)homeNotice.hidden=online;}
 async function setupSW(){if(!('serviceWorker'in navigator)||location.protocol==='file:')return;try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(e){console.warn('Offline shell unavailable',e)}}
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
