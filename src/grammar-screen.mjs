@@ -2,6 +2,7 @@
 import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarQuestion,grammarUnitLinks,shuffleGrammarChunks} from './grammar-course.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {p32RepairPanel,p32LearningHub} from './p32-learning.mjs';
+import {p36Overview,p36TeachingExtension} from './p36-screen.mjs';
 
 const modeNames={meaning:'Comprehension',cloze:'Fill the gap',ordering:'Word order',transformation:'Transform',production:'Write Chinese'};
 export function grammarLessonList({chapter='all',query='',selected='g01'},action,esc){
@@ -44,7 +45,8 @@ export function renderGrammarScreen(s,action,esc,title,gated){
  const attempts=events.filter(e=>e.taskId.startsWith('grammar:'+l.id+':'));
  return `${title('STRUCTURED MANDARIN GRAMMAR','Learn the structure. Use the language.','Original Chinese explanations, examples, misconceptions, sentence building and writing, connected to the character course.')}${gated()}
  <section class="simple-panel p25-overview"><div class="p25-stats">${[[GRAMMAR_LESSONS.length,'Full grammar lessons'],[GRAMMAR_CHAPTERS.length,'Linked chapters'],[GRAMMAR_LESSONS.length*GRAMMAR_MODES.length,'Grammar exercises'],[events.length,'Practice answers']].map(x=>`<div><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join('')}</div><p>Each lesson teaches a useful pattern through explanations, contrasts and two original bilingual examples. Practice independently or reveal help when needed.</p></section>
- ${p32LearningHub({sentenceEvents:s.sentenceEvents||[]},action,esc)}
+ ${p32LearningHub({sentenceEvents:s.sentenceEvents||[]},action,esc)}${p36Overview(s,action,esc,{compact:true})}
+ <details class="p36-catalog"><summary>Browse all 30 P36 elementary grammar lessons</summary>${p36Overview(s,action,esc)}</details>
  <nav class="p25-chapters" aria-label="Grammar chapters">${GRAMMAR_CHAPTERS.map(ch=>action('grammar-chapter',ch.number+'. '+esc(ch.name),'p25-chapter '+(String(ch.number)===String(s.chapter)?'active':''),`data-chapter="${ch.number}"`)).join('')}</nav>
  <div class="p25-layout"><aside class="p25-sidebar"><label for="grammar-query">Find a pattern</label><input type="search" id="grammar-query" value="${esc(s.query)}" placeholder="Search 是, word order, possession">
  <label for="grammar-chapter-select">Chapter</label><select id="grammar-chapter-select"><option value="all" ${s.chapter==='all'?'selected':''}>All chapters</option>${GRAMMAR_CHAPTERS.map(ch=>`<option value="${ch.number}" ${String(s.chapter)===String(ch.number)?'selected':''}>${ch.number}. ${esc(ch.name)}</option>`).join('')}</select>
@@ -53,7 +55,7 @@ export function renderGrammarScreen(s,action,esc,title,gated){
  <div class="p25-teaching"><h3>How it works</h3><p>${esc(l.explanation)}</p><h3>Compare the alternatives</h3><p>${esc(l.contrast)}</p><div class="p25-mistake"><strong>Common misconception</strong><p>${esc(l.pitfall)}</p></div></div>
  <div class="p25-example-heading"><h3>Meaningful Chinese examples</h3>${action('grammar-translation',s.showEnglish?'Hide English':'Reveal English','button outline small')}</div>
  <div class="p25-examples">${l.examples.map((e,i)=>`<article><p class="eyebrow">EXAMPLE ${i+1}</p><p lang="zh-Hans">${esc(e.hanzi)}</p><small>${esc(e.pinyin)}</small>${s.showEnglish?`<p>${esc(e.english)}</p>`:'<p class="muted">Reveal the English interpretation when ready.</p>'}${voice(e.hanzi,action,esc)}</article>`).join('')}</div>
- ${p32RepairPanel(l.id,action,esc)}
+ ${p32RepairPanel(l.id,action,esc)}${p36TeachingExtension(l,action,esc)}
  ${practicePanel(s,l,action,esc)}
  <div class="p25-navigation">${action('grammar-previous','← Previous grammar lesson','button outline')}${action('grammar-next','Next grammar lesson →','button primary')}${action('grammar-pinyin','Pinyin & Sounds','button outline small')}${action('grammar-workshop','Sentence Workshop','button outline small')}</div></article></div>
  ${linksPanel(l.id,action,esc)}<section class="simple-panel p26-grammar-examples"><h3>Use this grammar in complete original sentences</h3><div>${SENTENCE_LIBRARY.filter(s=>s.grammarIds.includes(l.id)).slice(0,5).map(s=>action('sentence-select',`<strong lang="zh-Hans">${esc(s.hanzi)}</strong><small>${esc(s.english)}</small>`,'p26-mini-sentence',`data-id="${s.id}"`)).join('')}</div>${action('sentence-grammar-filter','Browse all sentences with this pattern →','button outline small',`data-id="${l.id}"`)}</section>`;
