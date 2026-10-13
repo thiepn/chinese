@@ -7,6 +7,7 @@ import {VOCABULARY_ADDITIONS} from './vocabulary-expansion.mjs';
 import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P35_VOCABULARY} from './p35-vocabulary.mjs';
+import {P37_SCENES} from './p37-scenarios.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
 export const canonicalWordKey=(hanzi,pinyin)=>hanzi+'|'+plain(pinyin);
@@ -52,6 +53,15 @@ for(const scene of P33_SCENARIOS)for(const term of scene.vocabulary){
  if(!record.notes.includes(usage))record.notes.push(usage);
  for(const sentence of term.examples)addExample(record,sentence);
  if(!record.source.includes('p33'))record.source=record.source==='original-demonstration'?'original-p33-context':record.source+'-and-p33';
+}
+// P37 original expressions extend the canonical dictionary without a new word store.
+for(const scene of P37_SCENES)for(const term of scene.vocabulary){
+ const record=entry(term.hanzi,term.pinyin);
+ if(!record.senses.includes(term.english))record.senses.push(term.english);
+ const teaching='P37 · '+scene.title+': '+scene.teaching;
+ if(!record.notes.includes(teaching))record.notes.push(teaching);
+ for(const sample of term.examples)addExample(record,sample);
+ if(!record.source.includes('p37'))record.source=record.source==='original-demonstration'?'original-p37-context':record.source+'-and-p37';
 }
 // P35 authored contextual vocabulary extends the existing word index and IDs.
 for(const original of P35_VOCABULARY){
