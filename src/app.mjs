@@ -1211,7 +1211,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='open-wordbook-practice'){wordbookFeedback=null;wordbookTyped='';return go('wordbook');}
  if(name==='dialogue-support'){dialogueSupport=!dialogueSupport;if(dialogueSupport&&findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;if(dialogueSupport&&missionActive)missionSupport=true;return render();}
  if(name==='dialogue-prev'||name==='dialogue-next-context'){p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;const step=name==='dialogue-prev'?-1:1;dialogueId=DIALOGUES[(DIALOGUES.findIndex(d=>d.id===dialogueId)+step+DIALOGUES.length)%DIALOGUES.length].id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;return render();}
- if(name==='dialogue-next'){p34ShadowLine=0;p33Branch=null;missionActive=false;missionFeedback=null;const d=findDialogue(dialogueId);if(dialogueStep+1<d.questions.length){dialogueStep++;}else{dialogueId=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length].id;dialogueStep=0;}dialogueFeedback=null;dialogueSupport=false;return render();}
+ if(name==='dialogue-next'){p34ShadowLine=0;p33Branch=null;missionActive=false;missionFeedback=null;const d=findDialogue(dialogueId);if(dialogueStep+1<d.questions.length){dialogueStep++;}else{dialogueId=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length].id;dialogueStep=0;p34TranscriptViewed=false;}dialogueFeedback=null;dialogueSupport=false;return render();}
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
