@@ -89,7 +89,8 @@ export function p47Overview(state,act,esc,{compact=false,selected='',query=''}={
  'p47-unit '+(p.id===selected?'active':''),'data-id="'+p.id+'"');
  }).join('')+'</div>'+(!cases.length?'<p class="muted">No original P47 cases match this search.</p>':'')+
  '<div class="p47-actions">'+act('p47-review','Open canonical scheduled Review →','button outline')+
- act('p46-enter','Return to P46 upper-intermediate foundations →','button outline')+'</div>')+'</section>';
+ act('p46-enter','Return to P46 upper-intermediate foundations →','button outline')+
+ act('p48-enter','Continue to P48 multi-source reading and argumentation →','button primary')+'</div>')+'</section>';
 }
 export function p47Lesson(p,state,act,esc,{stage='words',readingHelp=false,listeningHelp=false,
  readingIndex=0,listeningIndex=0,readingFeedback=null,listeningFeedback=null,assisted=false,productionModels=false}={}){
@@ -212,7 +213,8 @@ export function p47Lesson(p,state,act,esc,{stage='words',readingHelp=false,liste
  '<div class="p47-actions">'+act('p47-review','Open genuinely due cards in canonical Review →','button outline')+
  act('p46-enter','Earlier P46 grammar and reading foundations →','button outline')+
  act('p45-enter','P45 cumulative independent transfer →','button outline')+
- act('p44-enter','P44 five-skill integrated practice →','button outline')+'</div></aside>'+
+ act('p44-enter','P44 five-skill integrated practice →','button outline')+
+ act('p48-enter','P48 source comparison and independent argument →','button outline')+'</div></aside>'+
  '<p class="p47-disclosure">Source-help toggles and stage selection are temporary in-tab context. Native dialogue, reading, exact sentence and SRS writers are the only progress authorities. Correct responses are not official HSK certification, pronunciation assessment or open-ended writing grades.</p>'+
  '</section>';
 }
