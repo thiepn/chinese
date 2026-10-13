@@ -2,7 +2,7 @@ import {BEGINNER_STORIES,BEGINNER_MODES,beginnerReadingStats,beginnerStoryLinks}
 export function beginnerReadingShelf(state,story,act,esc,level='all'){
  const stats=beginnerReadingStats(state),items=BEGINNER_STORIES.filter(s=>level==='all'||String(s.beginner.level)===String(level));
  return `<section class="simple-panel p28-shelf"><div class="panel-heading"><div><p class="eyebrow">BEGINNER READING PATH</p><h2>Short Chinese stories</h2></div><span class="muted">${BEGINNER_STORIES.length} passages · ${stats.attempted} attempted · ${stats.correctIndependent} with independent correct answers</span></div>
- <p>Read six connected sentences about an everyday situation. Learn a useful expression, answer from evidence and rebuild a Chinese sentence. Internal difficulty bands do not represent official HSK levels.</p>
+ <p>Read six connected sentences about an everyday situation. P34 adds 25 separate source-linked reading and listening pairs; questions still use the original reading and writing event writers. Learn a useful expression, answer from evidence and rebuild a Chinese sentence. Internal difficulty bands do not represent official HSK levels.</p>
  <div class="p28-levels" role="group">${[['all','All beginners'],['1','First steps'],['2','Building confidence']].map(([id,label])=>act('beginner-level',esc(label),'p28-level '+(level===id?'active':''),`data-level="${id}"`)).join('')}</div>
  <div class="p28-shelf-list">${items.map((s,i)=>act('open-story-link',`<span>${String(i+1).padStart(2,'0')}</span><strong>${esc(s.title)}</strong><small>${esc(s.theme)} · ${esc(s.beginner.grade)}</small>`,'p28-shelf-item '+(s.id===story?.id?'selected':''),`data-id="${s.id}"`)).join('')}</div></section>`;
 }
