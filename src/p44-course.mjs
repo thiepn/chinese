@@ -48,7 +48,7 @@ export const P44_PHASES=Object.freeze([
 export const P44_WRITING_TASKS=Object.freeze(P44_SCENARIOS.flatMap(s=>s.responses.map((line,i)=>Object.freeze({
  id:'p44:'+s.id+':response'+i,kind:'p44-integrated-exact-sentence',
  p44ScenarioId:s.id,p44ResponseIndex:i,hanzi:line.hanzi,pinyin:line.pinyin,english:line.english,
- explanation:line.purpose,pitfall:s.pitfall,readingId:s.readingId,dialogueId:s.dialogueId
+ explanation:line.purpose,pitfall:s.pitfall
 }))));
 export const p44Evidence=(sceneId,index)=>{
  const s=findP44Scenario(sceneId),q=s?.questions[index];
