@@ -4,6 +4,7 @@ import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9Pat
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
 import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
+import {renderC9Review,renderC9PracticeHeader} from './review-practice-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
@@ -495,27 +496,20 @@ function renderLearn(){
 }
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
- const m=summary(state),due=dueCards(state).filter(reviewMatches);
- if(sessionQueue===null)return `${title('FOCUSED REVIEW','Choose your practice.','Select the skill and a manageable number of questions. All due items remain due if you leave or skip them.')}
- ${reviewWorkspace(state,action,esc)}<section class="simple-panel session-setup"><div class="stats-grid">${stat(dueCards(state).length,'All due cards')}${stat(m.cards,'Active recall targets')}${stat(m.successful,'Correct independent attempts')}</div>
- <div class="session-controls"><label>Practice focus<select id="review-focus"><option value="all" ${reviewFocus==='all'?'selected':''}>All skills</option><option value="weak" ${reviewFocus==='weak'?'selected':''}>Prioritize weaker skills</option><option value="meanings" ${reviewFocus==='meanings'?'selected':''}>Character & word meanings</option><option value="pronunciation" ${reviewFocus==='pronunciation'?'selected':''}>Pinyin & tones</option><option value="sentences" ${reviewFocus==='sentences'?'selected':''}>Sentence comprehension</option></select></label>
- <label>Session length<select id="review-size">${[5,10,20,50].map(n=>`<option value="${n}" ${reviewSize===n?'selected':''}>Up to ${n} questions</option>`).join('')}</select></label></div>
- <p class="muted">${due.length} matching reviews are due. A skipped question stays due; no success is credited. Keyboard: 1–4 to choose, Enter to check, S to skip; 1–4 to grade after feedback.</p><div class="review-queue-preview"><strong>Why these reviews come first</strong><div class="review-queue-reasons">${reviewPlan(state,{focus:reviewFocus,limit:Math.min(4,reviewSize)}).map(item=>`<span>${esc(item.family)} · ${esc(item.reason)}</span>`).join('')||'<span>No reviews are due for this focus.</span>'}</div></div><div class="button-row">${action('review-begin','Begin practice →','button primary',due.length?'':'disabled')}${action('go-learn','Learn something new','button outline')}</div></section>`;
- if(sessionQueue.length===0)return `${title('SESSION FINISHED','Practice complete.','Your answers have been recorded individually. Skipped questions remain due.')}
- <section class="simple-panel session-finish"><div class="stats-grid">${stat(sessionDone,'Answered')}${stat(sessionCorrect,'Correct independently')}${stat(sessionSkipped,'Skipped')}${stat(dueCards(state).length,'Still due')}</div><div class="button-row">${action('review-restart','Start another session →','button primary')}${action('go-learn','Continue learning','button outline')}${action('open-stories','Read a short story','button outline')}</div></section>`;
- // A review may have been completed in another tab: never award a second attempt implicitly.
- let id=sessionQueue[0];if(!state.cards[id]||!dueCards(state).includes(id)){sessionQueue.shift();return renderReview();}
- activeReviewId=id;const c=cardInfo(id),options=c.kind==='choice'?makeOptions(c.answer,'sentence',c.lesson.id):[];
- const promptType=c.kind==='pinyin'?'PRONUNCIATION · TONES':c.kind==='choice'?'SENTENCE COMPREHENSION':c.type==='meaning'?'CHARACTER MEANING':'VOCABULARY MEANING';
- const total=sessionDone+sessionSkipped+sessionQueue.length;
- return `${title('ACTIVE RECALL','Check what you remember.','Answer without assistance, then inspect precise feedback.')}
- <div class="review-shell"><div class="review-bar"><span>${sessionDone+sessionSkipped+1} of ${total} · ${sessionQueue.length} remaining</span><span>${esc(reviewFocus==='all'?'Mixed skills':reviewFocus)} · ${sessionCorrect} correct</span></div><div class="progress-rail review-progress"><span style="width:${100*(sessionDone+sessionSkipped)/total}%"></span></div>
- <div class="review-card"><p class="eyebrow">${promptType}</p><p class="review-hanzi" lang="zh-Hans">${esc(c.prompt)}</p><h2>${esc(c.question)}</h2>
- ${!revealed?`<p class="muted">Pronunciation and translations are hidden until checking.</p>
- ${c.kind==='choice'?`<div class="choice-list" role="group" aria-label="Choose sentence meaning">${options.map((opt,i)=>`<button type="button" class="choice ${chosenOption===opt?'selected':''}" data-action="review-pick" data-option="${esc(opt)}" aria-pressed="${chosenOption===opt}"><span>${String.fromCharCode(65+i)}</span>${esc(opt)}</button>`).join('')}</div>`:`<div class="answer-entry"><label for="review-entry">${c.kind==='pinyin'?'Your pinyin (marks or numbers)':'Your English meaning'}</label><input id="review-entry" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${c.kind==='pinyin'?'For example, ni3 or nǐ':'Type the meaning'}" value="${esc(typedAnswer)}"></div>`}
- <div class="button-row">${action('submit-review','Check answer ↵','button primary',((c.kind==='choice'?!chosenOption:!typedAnswer.trim())?'disabled':''))}${action('reveal-review','Reveal answer','button outline')}${action('review-skip','Skip for now','button outline')}</div>`:
- `<div class="review-answer ${checkResult?.correct?'correct':'incorrect'}" role="status"><p class="eyebrow">${checkResult?.correct?'CORRECT':'LEARNING FEEDBACK'}</p><p>${esc(checkResult?.message||'Review this answer.')}</p>${typedAnswer||chosenOption?`<p class="your-answer">You entered: <strong>${esc(typedAnswer||chosenOption)}</strong></p>`:''}<p>Reference answer: <strong>${esc(c.answer)}</strong></p>${c.reading?`<span class="muted">${esc(c.reading)}</span>`:''}${c.kind==='pinyin'?toneTeachingPanel(c.answer,checkResult?.reason||''):''}<div>${action('speak','▶ Listen','button outline small',`data-text="${esc(c.prompt)}"`)}</div></div><div class="button-row">${checkResult?.correct?`${action('grade','Good · Next →','button primary',`data-grade="2"`)}${action('grade','Easy · Next →','button outline',`data-grade="3"`)}`:action('grade','Again · Next →','button primary',`data-grade="0"`)}</div>`}
- </div><p class="study-note">Demo-only scheduler. Accurate answers are recorded per skill; the system does not claim calibrated mastery.</p></div>`;
+ // Preserve original in-memory queue and single-writer gradeCard authority.
+ // A card can become unavailable after another tab updates the IndexedDB CAS.
+ if(sessionQueue?.length){
+   while(sessionQueue.length && (!state.cards[sessionQueue[0]] || !dueCards(state).includes(sessionQueue[0]))){
+     sessionQueue.shift();activeReviewId=null;typedAnswer='';chosenOption='';checkResult=null;revealed=false;
+   }
+ }
+ activeReviewId=sessionQueue?.length?sessionQueue[0]:null;
+ return renderC9Review({
+  state,queue:sessionQueue,focus:reviewFocus,size:reviewSize,
+  done:sessionDone,correct:sessionCorrect,skipped:sessionSkipped,
+  revealed,response:typedAnswer,selected:chosenOption,result:checkResult,
+  action,esc,toneTeachingPanel,reviewWorkspace
+ });
 }
 function readerLesson(){return findLesson(readerLessonId)||DEMO_LESSONS[0];}
 function characterLesson(){const match=location.hash.match(/^#\/character\/(demo-\d{2,3})$/);return findLesson(match?.[1])||findLesson(displayLessonId)||DEMO_LESSONS[0];}
@@ -594,9 +588,9 @@ function renderGuidedPractice(){const session=state.practiceSession;
  ${!session.feedback?`<div class="button-row">${q.kind!=='choice'?action('guided-check','Check answer','button primary',q.kind==='ordering'?!guidedOrder.length?'disabled':'':!guidedTyped.trim()?'disabled':''):''}${action('guided-hint','Show teaching hint','button outline')}${action('guided-reveal','Reveal answer','button outline')}${action('guided-pause','Pause session','button outline')}${action('guided-abandon','End session','button outline')}</div>${usedHint?`<p class="muted">Hint used. The answer will be recorded as assisted.</p><div class="lesson-guide"><p>${esc(q.explanation||'Review the reading and relevant word meaning.')}</p></div>`:''}`:''}
  </section>`;
 }
-function renderPractice(){if(state.practiceSession)return renderGuidedPractice();const l=findLesson(drillLessonId)||DEMO_LESSONS[0],d=buildDrill(l.id,drillMode),record=practiceSummary(state),available=state.learned.length;
+function renderPracticeNative(){if(state.practiceSession)return renderGuidedPractice();const l=findLesson(drillLessonId)||DEMO_LESSONS[0],d=buildDrill(l.id,drillMode),record=practiceSummary(state),available=state.learned.length;
  const selected=new Set(drillOrder),choices=d.kind==='ordering'?d.chunks.map((_,i)=>i).sort((a,b)=>(a*13+l.order*7)%17-(b*13+l.order*7)%17):[];
- return `${title('PRACTICE LAB','Think, retrieve, connect.','Six optional formats practice forms, readings, words and sentence contexts. Results are tracked separately from scheduled-review mastery.')}${gated()}${fluencyHomePanel()}
+ return `${title('PRACTICE LAB','Think, retrieve, connect.','Six optional formats practice forms, readings, words and sentence contexts. Results are tracked separately from scheduled-review mastery.')}${gated()}<details class="c9-assessment-extra"><summary>Fluency recommendations and additional study context</summary><div>${fluencyHomePanel()}</div></details>
  <section class="simple-panel practice-shortcuts"><h2>Practice beyond flashcards</h2><p>Review your saved words or follow a conversation without affecting scheduled-review mastery.</p><div class="button-row">${action('open-wordbook-practice','Saved word drills →','button outline')}${action('open-dialogues','Conversation Lab →','button outline')}${action('connected-session','Connect words, sentences and dialogues →','button outline')}</div></section>
  <section class="simple-panel guided-start"><div><p class="eyebrow">NEW · CONTINUOUS STUDY</p><h2>Guided practice session</h2><p>Mix characters, words, pinyin, and short readings across your learning history. Answers save after each question and can be resumed after reopening the app. Supplemental practice never raises scheduled-review mastery.</p></div><div class="guided-start-actions"><label>Session focus<select id="guided-focus"><option value="balanced" ${guidedFocus==='balanced'?'selected':''}>Balanced mix</option><option value="weak" ${guidedFocus==='weak'?'selected':''}>Focus recent mistakes</option><option value="reading" ${guidedFocus==='reading'?'selected':''}>Reading & context</option><option value="sentences" ${guidedFocus==='sentences'?'selected':''}>Sentence reasoning</option><option value="pronunciation" ${guidedFocus==='pronunciation'?'selected':''}>Pinyin & tones</option><option value="connected" ${guidedFocus==='connected'?'selected':''}>Connect senses, sentences & dialogues</option></select></label><label>Questions<select id="guided-size">${[5,10,20].map(n=>`<option value="${n}" ${n===guidedLimit?'selected':''}>${n} questions</option>`).join('')}</select></label>${action('guided-start','Start session →','button primary')}</div></section>
  <div class="practice-header"><label>Choose a demo lesson<select id="drill-lesson">${DEMO_LESSONS.map(item=>`<option value="${item.id}" ${l.id===item.id?'selected':''}>${item.order}. ${esc(item.hanzi)} — ${esc(item.meaning)}</option>`).join('')}</select></label><p>${record.attempts} supplemental attempts · ${record.independentCorrect} correct without hints · ${available} lessons introduced</p></div>
@@ -606,6 +600,13 @@ function renderPractice(){if(state.practiceSession)return renderGuidedPractice()
  ${drillAssisted&&!drillResult?`<div class="lesson-guide"><strong>Teaching hint</strong><p>${esc(l.note)}</p><p class="muted">This attempt will be marked assisted, regardless of the answer.</p></div>`:''}
  <div class="button-row">${!drillResult?`${d.kind!=='choice'?action('drill-check','Check answer','button primary',(d.kind==='pinyin'?!drillTyped.trim():!drillOrder.length)?'disabled':''):''}${action('drill-hint','Hint','button outline')}${action('drill-reveal','Reveal reference','button outline')}`:`${action('drill-retry','Try again','button outline')}${action('drill-next','Next lesson →','button primary')}`}</div></article>`;
 }
+function renderPractice(){
+ return '<div class="c9-practice-page">'+renderC9PracticeHeader(state)+
+   '<div class="c9-practice-native-section">'+renderPracticeNative()+'</div>'+
+   '<p class="c9-assessment-disclaimer">Only existing review and practice actions write learner history. Independent answers, assisted checks, and scheduled review remain separate authorities.</p>'+
+ '</div>';
+}
+
 function vocabularyShelfPanel(){
  const introduced=(state.vocabularyIntroduced||[]).map(findWord).filter(Boolean);
  const featured=introduced.length?introduced.slice(-6).reverse():WORDS.filter(w=>w.source.includes('p23')).slice(0,8);
