@@ -20,7 +20,7 @@ Q|detail|How many products were inside the original package?|Four.|Five.|Three.|
 Q|reason|Why did Li Ming not consider the shop's first reply final proof of resolution?|The shop had said it still needed to check its warehouse records.|The shop had already shipped a replacement.|The package had not arrived.|He had already received a refund.|8|The initial message promised investigation, not settlement.
 Q|sequence|What did Li Ming choose after the shop confirmed the missing item?|He chose to have the missing item shipped.|He closed the account.|He chose a full refund for five items.|He sent back all five products.|12|The chosen remedy was replacement delivery, later completed.
 
-Two versions of a travel plan|Travel & scheduling|schedule comparison narrative|g100,g105,g115,g117|确认~quèrèn~confirm|A written plan is distinguished from the timetable currently published by the transport provider.|A planned departure is not a promise that the service will run.
+Two versions of a travel plan|Travel & scheduling|schedule comparison narrative|g100,g105,g115,g117|通知~tōngzhī~notice|A written plan is distinguished from the timetable currently published by the transport provider.|A planned departure is not a promise that the service will run.
 L|周末，两个朋友打算坐火车去附近的城市参观博物馆。|Zhōumò, liǎng ge péngyou dǎsuàn zuò huǒchē qù fùjìn de chéngshì cānguān bówùguǎn.|On the weekend, two friends planned to visit a museum in a nearby city by train.
 L|小周负责查看交通，小刘负责了解博物馆的开放时间。|Xiǎozhōu fùzé chákàn jiāotōng, Xiǎoliú fùzé liǎojiě bówùguǎn de kāifàng shíjiān.|Xiaozhou handled transport, while Xiaoliu checked the museum hours.
 L|一开始，小周找到了一张上个月保存的时刻表。|Yì kāishǐ, Xiǎozhōu zhǎo dào le yì zhāng shàng ge yuè bǎocún de shíkèbiǎo.|At first, Xiaozhou found a timetable saved last month.
