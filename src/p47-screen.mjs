@@ -11,6 +11,7 @@ import {WORDS,canonicalWordKey} from './lexicon.mjs';
 import {STORIES} from './stories.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {dueCards} from './study.mjs';
+import {findP47Production} from './p47-production.mjs';
 export const P47_STAGES=Object.freeze([
  {id:'words',label:'Words & characters'},{id:'grammar',label:'Discourse grammar'},
  {id:'read',label:'Read 4 paragraphs'},{id:'listen',label:'Hear 8 turns'},
@@ -91,9 +92,10 @@ export function p47Overview(state,act,esc,{compact=false,selected='',query=''}={
  act('p46-enter','Return to P46 upper-intermediate foundations →','button outline')+'</div>')+'</section>';
 }
 export function p47Lesson(p,state,act,esc,{stage='words',readingHelp=false,listeningHelp=false,
- readingIndex=0,listeningIndex=0,readingFeedback=null,listeningFeedback=null,assisted=false}={}){
+ readingIndex=0,listeningIndex=0,readingFeedback=null,listeningFeedback=null,assisted=false,productionModels=false}={}){
  if(!p)return '';
  const ev=p47Evidence(state,p),d=P47_DIALOGUES.find(s=>s.readingId===p.id);
+ const production=findP47Production(p.id);
  const rq=p.questions[readingIndex],lq=d?.questions[listeningIndex];
  const grammar=p.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  return '<section class="p47-lesson" aria-label="P47 multi-skill connected case">'+
@@ -184,12 +186,22 @@ export function p47Lesson(p,state,act,esc,{stage='words',readingHelp=false,liste
  act('p47-stage','Continue to production →','button outline','data-stage="produce"')+'</div>')+
  '</div></div>':'')+
  (stage==='produce'?'<div class="p47-pane"><h3>Independently summarize, justify and revise</h3>'+
- '<p>'+esc(p.oral)+'</p><p>Write a connected paragraph explaining what was first claimed, which evidence changed the interpretation, and which statement remains uncertain. Use P43 to draft privately in tab memory; the P47 model tasks are exact sentence reconstruction only.</p>'+
+ '<p><strong>Independent writing:</strong> '+esc(production?.writing||p.oral)+'</p>'+
+ '<p><strong>Independent spoken response:</strong> '+esc(production?.oral||p.oral)+'</p>'+
+ '<p>Prepare both without consulting models first. Original P43 holds editable two-paragraph self-review in tab memory; the source sentences below are exact reconstruction only, not a free-text grader.</p>'+
+ '<div class="p47-actions">'+act('p47-production-help',productionModels?'Hide bilingual model · assisted':'Show source-backed bilingual models · assisted','button outline')+'</div>'+
+ (productionModels?(production?.models||[]).map((m,i)=>'<div class="p47-model"><p lang="zh-Hans">'+esc(m.hanzi)+'</p>'+
+ '<small>'+esc(m.pinyin)+'</small><span>'+esc(m.english)+'</span>'+
+ '<p>'+esc(m.purpose)+'</p>'+
+ act('speak','Hear the model','button outline small','data-text="'+esc(m.hanzi)+'"')+'</div>').join(''):'')+
+ '<div class="p47-actions">'+(production?.models||[]).map((m,i)=>
+ act('p47-production-write','Reconstruct evidence response '+(i+1)+' →','button outline','data-index="'+i+'"')).join('')+'</div>'+
  '<div class="p47-actions">'+
  act('p47-write','Reconstruct reading conclusion in native Workshop →','button primary','data-kind="reading"')+
  act('p47-write','Reconstruct spoken turn 4 →','button outline','data-kind="turn3"')+
  act('p47-write','Reconstruct spoken turn 8 →','button outline','data-kind="turn7"')+
- act('p43-enter','Independent paragraphs in P43 →','button outline')+'</div>'+
+ (production?act('p43-open','Independent source-linked P43 paragraphs →','button outline','data-id="'+production.writingId+'"'):
+ act('p43-enter','Independent paragraphs in P43 →','button outline'))+'</div>'+
  '<p class="p47-pitfall"><strong>Meaning to preserve:</strong> '+esc(p.contrast)+'</p>'+
  '<div class="p47-actions">'+act('p47-next','Continue to another difficult context →','button primary')+'</div></div>':'')+
  '<aside class="p47-evidence"><h3>Existing progress evidence and further practice</h3>'+
