@@ -1,4 +1,5 @@
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
+import {P34_LISTENING} from './p34-course.mjs';
 /** Independent demo conversations. Editorial samples; no official HSK membership or audio qualification. */
 const data=[
  ['At the library',[['A','你想看什么书？','Nǐ xiǎng kàn shénme shū?','What book would you like to read?'],['B','我想看一本中文书。','Wǒ xiǎng kàn yì běn Zhōngwén shū.','I want to read a Chinese-language book.'],['A','我们一起找吧。','Wǒmen yìqǐ zhǎo ba.','Let’s look for it together.']],[['What kind of book does B want?','A Chinese-language book.','A book about trains.','A math textbook.'],['What does A suggest doing together?','Looking for the book.','Going home.','Taking a train.']]],
@@ -249,10 +250,13 @@ data.push(...P33_SCENARIOS.map((s,i)=>{
  ];
  return [s.title,s.turns,[...s.questions,completion]];
 }));
+// P34 listening scripts follow historical dialogues without renumbering.
+data.push(...P34_LISTENING.map(s=>[s.title,s.lines,s.questions]));
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
  const p33=P33_SCENARIOS.find(s=>s.title===title)||null;
- return Object.freeze({id,title,p33,
+ const p34=P34_LISTENING.find(s=>s.title===title)||null;
+ return Object.freeze({id,title,p33,p34,
   lines:Object.freeze(lines.map(([speaker,hanzi,pinyin,english])=>Object.freeze({speaker,hanzi,pinyin,english}))),
   questions:Object.freeze(questions.map(([prompt,answer,...wrong],j)=>Object.freeze({
    id:`${id}:q${j}`,prompt,answer,options:Object.freeze([answer,...wrong].sort((a,b)=>a.localeCompare(b)))
