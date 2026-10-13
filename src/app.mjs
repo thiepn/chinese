@@ -12,6 +12,7 @@ import {renderPathwayScreen,pathwayHomePanel} from './pathway-screen.mjs';
 import {dashboardHome,learnWorkspace,reviewWorkspace,exploreWorkspace,progressWorkspace,unifiedSearchPage,courseSearchResults,courseSearch,FIND_CATEGORIES} from './workspace-p30.mjs';
 import {P31_CHARACTER_GUIDES,P31_THEMES,findP31Guide,nextP31Guide} from './p31-foundations.mjs';
 import {p31Overview,p31LessonShelf,p31LessonTeaching,p31VocabularyShelf} from './p31-screen.mjs';
+import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 import { WORDS, findWord, searchCatalog, wordFamily, canonicalWordKey } from './lexicon.mjs';
 import { addReadingEvent, storySummary } from './reader-records.mjs';
 import { DRILL_MODES, buildDrill, gradeDrill } from './drills.mjs';
@@ -76,7 +77,7 @@ let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeed
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
-let p31Theme='all',p31Page=0,p31WordPage=0;
+let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
@@ -426,7 +427,7 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31LessonShelf(state,action,esc,{theme:p31Theme,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
  const m=summary(state),due=dueCards(state).filter(reviewMatches);
@@ -631,14 +632,19 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(value!=='all'&&!P31_THEMES.includes(value))return;
   p31Theme=value;p31Page=0;return render();
  }
+ if(name==='p31-status'){
+  const value=button.dataset.status;
+  if(!['all','new','introduced'].includes(value))return;
+  p31Status=value;p31Page=0;return render();
+ }
  if(name==='p31-next'||name==='p31-prev'){
-  const length=P31_CHARACTER_GUIDES.filter(g=>p31Theme==='all'||g.category===p31Theme).length;
+  const length=P31_CHARACTER_GUIDES.filter(g=>(p31Theme==='all'||g.category===p31Theme)&&(p31Status==='all'||(p31Status==='introduced'?(state.learned||[]).includes(g.id):!(state.learned||[]).includes(g.id)))).length;
   const last=Math.max(0,Math.ceil(length/12)-1);
   p31Page=Math.max(0,Math.min(last,p31Page+(name==='p31-next'?1:-1)));
   return render();
  }
  if(name==='p31-words-next'||name==='p31-words-prev'){
-  const last=Math.ceil(40/12)-1;
+  const last=Math.max(0,Math.ceil(P31_VOCABULARY.length/12)-1);
   p31WordPage=Math.max(0,Math.min(last,p31WordPage+(name==='p31-words-next'?1:-1)));
   return render();
  }
