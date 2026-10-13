@@ -6,9 +6,11 @@ No credentials, paid service, CI, production URL or real user data is accessed.
 Prints PASS/FAIL/NOT_TESTED JSON. Screenshots optional.
 """
 import argparse
+import hashlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -18,6 +20,7 @@ def main():
     parser.add_argument("--base-url",default="http://127.0.0.1:4173")
     parser.add_argument("--chromium",default=os.getenv("CHROME_BIN"))
     parser.add_argument("--artifacts",type=Path)
+    parser.add_argument("--expected-head",help="Exact 40-character Git commit required for source provenance")
     args=parser.parse_args()
     url=urlparse(args.base_url)
     if url.scheme!="http" or url.hostname not in ("localhost","127.0.0.1","::1"):
@@ -28,10 +31,51 @@ def main():
         results.append({"check":name,"status":status,"detail":str(details)[:450]})
     def finish():
         counts={s:sum(x["status"]==s for x in results) for s in ("PASS","FAIL","NOT_TESTED")}
+        automated_passed=counts["PASS"]>=25 and not counts["FAIL"] and not counts["NOT_TESTED"]
         print(json.dumps({"checks":results,"summary":counts,
-                          "release_qualified":counts["PASS"]>=15 and not counts["FAIL"] and not counts["NOT_TESTED"]},
+                          "automated_acceptance_passed":automated_passed,
+                          "release_qualified":False,
+                          "manual_gates":["Review actual light/dark mobile and desktop screenshots",
+                                          "Screen reader and keyboard acceptance with real assistive technology",
+                                          "Review listening-first educational source/evidence behavior",
+                                          "Explicit human release authorization"]},
                           ensure_ascii=False,indent=2))
-        return 0 if counts["PASS"]>=15 and not counts["FAIL"] and not counts["NOT_TESTED"] else 1
+        return 0 if automated_passed else 1
+    # A historical tracked dist/ may look healthy while being unrelated to the
+    # checked-out Concept 9 source. This is a hard precondition for test validity.
+    root=Path(__file__).resolve().parents[1]
+    src_root=root/"src"
+    dist_root=root/"dist"
+    try:
+        source_files={p.relative_to(src_root) for p in src_root.rglob("*") if p.is_file()}
+        dist_files={p.relative_to(dist_root) for p in dist_root.rglob("*") if p.is_file()}
+        if not source_files or source_files!=dist_files:
+            raise AssertionError("src/dist inventory differs; build the current checkout")
+        mismatched=[str(p) for p in source_files
+                    if hashlib.sha256((src_root/p).read_bytes()).digest()!=
+                       hashlib.sha256((dist_root/p).read_bytes()).digest()]
+        if mismatched:
+            raise AssertionError("Stale dist files: "+", ".join(mismatched[:6]))
+        record("Exact source versus local build","PASS",
+               str(len(source_files))+" source/dist assets identical")
+    except Exception as exc:
+        record("Exact source versus local build","FAIL",exc)
+        return finish()
+    if args.expected_head:
+        try:
+            if len(args.expected_head)!=40 or any(c not in "0123456789abcdef" for c in args.expected_head.lower()):
+                raise AssertionError("Expected head must be a full 40-character SHA")
+            head=subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,
+                text=True,stderr=subprocess.DEVNULL,timeout=4).strip()
+            if head!=args.expected_head:
+                raise AssertionError("Wrong Git checkout: "+head+" != "+args.expected_head)
+            record("Exact Git commit provenance","PASS",head)
+        except Exception as exc:
+            record("Exact Git commit provenance","FAIL",exc)
+            return finish()
+    else:
+        record("Exact Git commit provenance","NOT_TESTED",
+               "Specify --expected-head with the final C9-16 SHA for credible acceptance")
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -59,8 +103,12 @@ def main():
                 page.locator("#app-content").wait_for(state="visible")
                 page.wait_for_function("()=>document.querySelector('#app-content')?.textContent?.trim().length>40")
             def check(name,fn):
-                try: record(name,"PASS",fn() or "OK")
-                except Exception as exc: record(name,"FAIL",type(exc).__name__+": "+str(exc))
+                try:
+                    record(name,"PASS",fn() or "OK")
+                    return True
+                except Exception as exc:
+                    record(name,"FAIL",type(exc).__name__+": "+str(exc))
+                    return False
             for route in ["today","learn","character/demo-01","review","practice",
                           "wordbook","grammar","sentences","stories","dialogues",
                           "progress","settings","pinyin","find"]:
@@ -80,7 +128,13 @@ def main():
                 page.reload()
                 page.wait_for_function("()=>document.documentElement.dataset.theme==='dark'")
                 if errors: raise RuntimeError("; ".join(errors[:2]))
-                return "Dark preference survives reload in isolated browser"
+                if args.artifacts:
+                    page.screenshot(path=str(args.artifacts/"desktop-dark-settings.png"),full_page=True)
+                    page.goto(args.base_url.rstrip("/")+"/#/stories",wait_until="domcontentloaded")
+                    page.screenshot(path=str(args.artifacts/"desktop-dark-stories.png"),full_page=True)
+                    page.set_viewport_size({"width":390,"height":844})
+                    page.screenshot(path=str(args.artifacts/"mobile-dark-stories.png"),full_page=True)
+                return "Dark preference survives reload; desktop and mobile captures are optional"
             check("dark-mode and persistence",dark)
             ctx.close()
             ctx,page,errors=session()
@@ -105,7 +159,7 @@ def main():
                 page.locator(".c9-assessment-live").wait_for(state="visible")
                 if errors: raise RuntimeError("; ".join(errors[:2]))
                 return "Original lesson introduction populated native Review"
-            check("lesson to scheduled Review",review)
+            ready_for_grading=check("lesson to scheduled Review",review)
             def grade():
                 # Verify custody in the *original* learner object store rather
                 # than accepting a successful DOM reload as evidence.
@@ -135,7 +189,10 @@ def main():
                     raise AssertionError("Review grade was not retained after reload")
                 if errors: raise RuntimeError("; ".join(errors[:2]))
                 return "Original learner IndexedDB events: "+str(before)+" → "+str(persisted)
-            check("native grading and reload",grade)
+            if ready_for_grading:
+                check("native grading and reload",grade)
+            else:
+                record("native grading and reload","NOT_TESTED","Cannot grade because lesson-to-review setup failed")
             ctx.close()
             ctx,page,errors=session()
             def writing():
@@ -147,6 +204,81 @@ def main():
                 if errors: raise RuntimeError("; ".join(errors[:2]))
                 return "Keyboard strokes and Undo handled"
             check("handwriting keyboard input",writing)
+            ctx.close()
+            # Native source-backed tool controls, beyond checking route visibility.
+            ctx,page,errors=session()
+            def vocabulary():
+                open_route(page,"wordbook")
+                search=page.locator("#c9-word-query")
+                search.fill("xué")
+                page.locator("#c9-word-catalog [data-action='c9-word-open']").first.wait_for(state="visible")
+                page.locator("#c9-word-catalog [data-action='c9-word-open']").first.click()
+                page.wait_for_function("()=>location.hash==='#/explore'")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Search filtered original source words and opened native detail"
+            check("Vocabulary search and dictionary handoff",vocabulary)
+            ctx.close()
+            ctx,page,errors=session()
+            def grammar():
+                open_route(page,"grammar")
+                first=page.locator('[data-action="grammar-select"]').first
+                first.wait_for(state="visible")
+                name=first.inner_text().strip()
+                first.click()
+                page.locator(".c9-language-native").wait_for(state="visible")
+                if name and name not in page.locator(".c9-language-native").inner_text():
+                    raise AssertionError("Selected grammar lesson missing from native workspace")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Original grammar lesson selected and native study opened"
+            check("Grammar discovery to native lesson",grammar)
+            ctx.close()
+            ctx,page,errors=session()
+            def sentences():
+                open_route(page,"sentences")
+                page.locator('[data-action="c9-sentence-topic"]').first.click()
+                page.locator(".c9-language-native").wait_for(state="visible")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Original sentence situation opened native sentence study"
+            check("Sentence situation to original practice",sentences)
+            ctx.close()
+            ctx,page,errors=session()
+            def reading():
+                open_route(page,"stories")
+                switch=page.locator('[data-action="c9-story-pinyin"]')
+                switch.wait_for(state="visible")
+                switch.click()
+                switch=page.locator('[data-action="c9-story-pinyin"]')
+                if switch.get_attribute("aria-pressed")!="true":
+                    raise AssertionError("Source-based Pinyin help did not activate")
+                page.locator(".story-pinyin").first.wait_for(state="visible")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Pinyin support revealed in original story; answer remains assisted"
+            check("Reading source support controls",reading)
+            ctx.close()
+            ctx,page,errors=session()
+            def listening():
+                open_route(page,"dialogues")
+                next_turn=page.locator('[data-action="c9-media-turn"][data-dir="1"]')
+                next_turn.wait_for(state="visible")
+                before=page.locator(".c9-media-turn-nav strong").inner_text()
+                next_turn.click()
+                after=page.locator(".c9-media-turn-nav strong").inner_text()
+                if before==after:
+                    raise AssertionError("Conversation turn did not advance")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Original dialogue turn navigation advanced without grading"
+            check("Dialogue turn navigation",listening)
+            ctx.close()
+            ctx,page,errors=session()
+            def semantics():
+                open_route(page,"today")
+                for selector in ("main[aria-label]",'#c9-route-announcement[aria-live="polite"]',
+                                 '#c9-interaction-announcement[aria-live="polite"]'):
+                    if not page.locator(selector).count():
+                        raise AssertionError("Required landmark/live region missing: "+selector)
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Landmark and live regions present; not screen-reader certification"
+            check("Accessible DOM landmarks",semantics)
             ctx.close()
             for label,width,height,mobile in [
                 ("mobile",390,844,True),("tablet",820,1180,True),("desktop",1366,850,False)]:
