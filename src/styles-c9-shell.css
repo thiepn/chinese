@@ -95,6 +95,15 @@
   border:0;
   box-shadow:none;
 }
+/* Historical selectors target anchor > span as icon; these are now labels. */
+.c9-sidebar .desktop-nav a > span {
+  flex:1;
+  min-width:0;
+  width:auto;
+  font-size:inherit;
+  line-height:inherit;
+  text-align:left;
+}
 .c9-sidebar .desktop-nav a:hover,
 .c9-sidebar .more-tools>summary:hover {
   color:var(--c9-ink);
@@ -305,6 +314,14 @@
     font:550 11px/1.15 var(--c9-ui);
     text-decoration:none;
     cursor:pointer;
+  }
+  .c9-mobile-nav.mobile-nav a > span,
+  .c9-mobile-nav.mobile-nav button > span {
+    display:block;
+    width:auto;
+    font:inherit;
+    line-height:1.2;
+    text-align:center;
   }
   .c9-mobile-nav .c9-icon { width:22px;height:22px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round; }
   .c9-mobile-nav.mobile-nav a:hover,.c9-mobile-nav.mobile-nav button:hover {
