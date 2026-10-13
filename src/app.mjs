@@ -80,7 +80,7 @@ let pinyinSection='sounds',pinyinFilter='all',pinyinIndex=0,pinyinTyped='',pinyi
 let grammarSelected='g01',grammarChapter='all',grammarQuery='',grammarMode='meaning',grammarTyped='',grammarFeedback=null,grammarAssisted=false,grammarOrder=[],grammarShowEnglish=true;
 let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeedback=null;
 let p33Theme='all',p33Query='',p33Branch=null;
-let p34ShadowLine=0;
+let p34ShadowLine=0,p34TranscriptViewed=false;
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
@@ -634,7 +634,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!dialogue)return alertUser('Original P34 listening unavailable.','error');
   dialogueId=dialogue.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
-  p34ShadowLine=0;p33Branch=null;return go('dialogues');
+  p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;return go('dialogues');
  }
  if(name==='p34-shadow-prev'||name==='p34-shadow-next'){
   if(!findDialogue(dialogueId)?.p34)return;
@@ -1021,7 +1021,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
  if(name==='hub-lesson'){if(findLesson(id)){displayLessonId=id;return go('learn');}return;}
- if(name==='hub-dialogue'){if(findDialogue(id)){p34ShadowLine=0;dialogueId=id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;p33Branch=null;return go('dialogues');}return;}
+ if(name==='hub-dialogue'){if(findDialogue(id)){p34ShadowLine=0;p34TranscriptViewed=false;dialogueId=id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;p33Branch=null;return go('dialogues');}return;}
  if(name==='plan-open'||name==='plan-mistakes'){planMistakeFilter=name==='plan-mistakes'?'unresolved':planMistakeFilter;return go('plan');}
  if(name==='plan-minutes'){const minutes=Number(button.dataset.minutes);return mutate(s=>setPlanPreferences(s,{minutes,focus:planPreferences(s).focus}));}
  if(name==='plan-focus')return mutate(s=>setPlanPreferences(s,{minutes:planPreferences(s).minutes,focus:button.dataset.focus}));
@@ -1203,19 +1203,19 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='mission-next'){if(missionStep===2){missionStep=0;missionActive=false;}else missionStep++;missionFeedback=null;missionSupport=false;missionTyped='';return render();}
  if(name==='mission-answer'||name==='mission-reveal'){
   if(!missionActive||missionFeedback)return;const q=missionQuestion(dialogueId,missionStep),response=name==='mission-reveal'?'':q.kind==='pinyin'?missionTyped:button.dataset.option||'';if(name==='mission-answer'&&!response.trim())return alertUser('Enter an answer first.','error');
-  const result=gradeMission(q,response),assisted=missionSupport||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
+  const result=gradeMission(q,response),assisted=missionSupport||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addMissionEvent(s,{id,dialogueId,step:missionStep,correct:result.correct,assisted}));if(ok){missionFeedback={...result,assisted};render();}return;
  }
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
  if(name==='open-dialogues')return go('dialogues');
  if(name==='open-wordbook-practice'){wordbookFeedback=null;wordbookTyped='';return go('wordbook');}
- if(name==='dialogue-support'){dialogueSupport=!dialogueSupport;if(dialogueSupport&&missionActive)missionSupport=true;return render();}
- if(name==='dialogue-prev'||name==='dialogue-next-context'){p34ShadowLine=0;p33Branch=null;const step=name==='dialogue-prev'?-1:1;dialogueId=DIALOGUES[(DIALOGUES.findIndex(d=>d.id===dialogueId)+step+DIALOGUES.length)%DIALOGUES.length].id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;return render();}
+ if(name==='dialogue-support'){dialogueSupport=!dialogueSupport;if(dialogueSupport&&findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;if(dialogueSupport&&missionActive)missionSupport=true;return render();}
+ if(name==='dialogue-prev'||name==='dialogue-next-context'){p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;const step=name==='dialogue-prev'?-1:1;dialogueId=DIALOGUES[(DIALOGUES.findIndex(d=>d.id===dialogueId)+step+DIALOGUES.length)%DIALOGUES.length].id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;return render();}
  if(name==='dialogue-next'){p34ShadowLine=0;p33Branch=null;missionActive=false;missionFeedback=null;const d=findDialogue(dialogueId);if(dialogueStep+1<d.questions.length){dialogueStep++;}else{dialogueId=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length].id;dialogueStep=0;}dialogueFeedback=null;dialogueSupport=false;return render();}
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
-  const assisted=dialogueSupport||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
+  const assisted=dialogueSupport||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
   const eventId=globalThis.crypto?.randomUUID?.()||`dialogue-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addDialogueEvent(s,{id:eventId,dialogueId,question:dialogueStep,answer:response,assisted}));
   if(ok){dialogueFeedback={correct:response===q.answer,assisted};render();}return;
@@ -1396,7 +1396,7 @@ root.addEventListener('change',async e=>{if(e.target.id==='p30-saved'){p30Saved=
  libraryPage=0;render();return;
 }
 if(e.target.id==='sentence-library-saved'){librarySavedOnly=e.target.checked;libraryPage=0;render();return;}
-if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c=>String(c.number)===e.target.value);if(!chapter){grammarChapter='all';return render();}grammarChapter=e.target.value;openGrammarLesson(chapter.lessons[0]);return;}if(e.target.id==='pinyin-filter'){pinyinFilter=e.target.value;pinyinIndex=0;pinyinFeedback=null;pinyinTyped='';render();return;}if(e.target.id==='wordbook-mode'){if(WORD_PRACTICE_MODES.includes(e.target.value)&&!state.vocabularyJourney){wordbookMode=e.target.value;wordbookFeedback=null;wordbookTyped='';render();}return;}if(e.target.id==='wordbook-focus'){wordbookFocus=e.target.value;wordbookIndex=0;wordbookFeedback=null;wordbookTyped='';render();return;}if(e.target.id==='dialogue-choice'){if(findDialogue(e.target.value)){p34ShadowLine=0;p33Branch=null;dialogueId=e.target.value;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;render();}return;}if(e.target.id==='guided-size'){guidedLimit=Number(e.target.value);return;}if(e.target.id==='guided-focus'){guidedFocus=e.target.value;return;} if(e.target.id==='drill-lesson'){if(findLesson(e.target.value)){drillLessonId=e.target.value;resetDrill();render();}return;}if(e.target.id==='review-focus'){reviewFocus=e.target.value;return render();}if(e.target.id==='review-size'){reviewSize=Number(e.target.value);return render();}if(e.target.id==='story-choice'){if(findStory(e.target.value)){storyId=e.target.value;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';render();}return;}if(e.target.id==='reader-lesson'){readerLessonId=e.target.value;readerResult=null;showLessonTranslation=false;render();return;}
+if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c=>String(c.number)===e.target.value);if(!chapter){grammarChapter='all';return render();}grammarChapter=e.target.value;openGrammarLesson(chapter.lessons[0]);return;}if(e.target.id==='pinyin-filter'){pinyinFilter=e.target.value;pinyinIndex=0;pinyinFeedback=null;pinyinTyped='';render();return;}if(e.target.id==='wordbook-mode'){if(WORD_PRACTICE_MODES.includes(e.target.value)&&!state.vocabularyJourney){wordbookMode=e.target.value;wordbookFeedback=null;wordbookTyped='';render();}return;}if(e.target.id==='wordbook-focus'){wordbookFocus=e.target.value;wordbookIndex=0;wordbookFeedback=null;wordbookTyped='';render();return;}if(e.target.id==='dialogue-choice'){if(findDialogue(e.target.value)){p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;dialogueId=e.target.value;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;render();}return;}if(e.target.id==='guided-size'){guidedLimit=Number(e.target.value);return;}if(e.target.id==='guided-focus'){guidedFocus=e.target.value;return;} if(e.target.id==='drill-lesson'){if(findLesson(e.target.value)){drillLessonId=e.target.value;resetDrill();render();}return;}if(e.target.id==='review-focus'){reviewFocus=e.target.value;return render();}if(e.target.id==='review-size'){reviewSize=Number(e.target.value);return render();}if(e.target.id==='story-choice'){if(findStory(e.target.value)){storyId=e.target.value;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';render();}return;}if(e.target.id==='reader-lesson'){readerLessonId=e.target.value;readerResult=null;showLessonTranslation=false;render();return;}
  if(e.target.id==='import-file'&&e.target.files?.length){if(!db)return;try{const file=e.target.files[0];if(file.size>MAX_BACKUP_BYTES)throw new Error('Backup exceeds 8 MB size limit');const doc=JSON.parse(await file.text());const inspected=previewBackup(doc,state,{bytes:file.size});pendingRestore={learner:importBackup(doc),preview:inspected};restoreAcknowledgement='';e.target.value='';go('settings');render();alertUser('Backup validated. Review the comparison below before choosing to replace any learner data.');}catch(err){pendingRestore=null;restoreAcknowledgement='';alertUser(`Import rejected: ${err.message}`,'error')}}
 });
 document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Enter'&&e.ctrlKey&&e.target.id==='sentence-library-entry'){
