@@ -1,0 +1,248 @@
+/*
+ * THIEPN Chinese / Concept 9 C9-13 — canonical visual components and asset styling.
+ * LAST stylesheet by design, loaded after P21–P34 and C9-01–C9-12.
+ *
+ * Source-owned cards, native learning flows, original action IDs, light/dark
+ * tokens and the single learner-state authority are unchanged.
+ * This file consolidates the formerly repeated touch/focus rules and gives
+ * C9 screens shared presentation contracts instead of phase-specific copies.
+ */
+/* Min 44 CSS-pixel activation area for primary app and in-lesson controls.
+ * Preserve compact legend-only elements and large data rows. */
+.c9-app-shell :where(
+  .c9-button,.c9-icon-button,.button,.text-button,
+  .c9-lesson-nav-button,.c9-character-tab,.c9-library-text-button,
+  .c9-search-category,.c9-settings-nav-item,.p30-filter,
+  .p25-mode,.p26-mode,.p26-sentence-item,.p33-theme-btn,
+  .p33-scene-item,.p34-card-actions .button,
+  .pinyin-sound,.story-line-actions button,.choice-list .choice,
+  .p24-tone-list button,.p29-mission-card button
+) {min-height:var(--c9-tap);}
+.c9-app-shell :where(
+  input:not([type="checkbox"]):not([type="radio"]),select,textarea
+) {min-height:var(--c9-tap);max-width:100%;font-size:max(16px,1rem);}
+.c9-app-shell :where(
+  input[type="checkbox"],input[type="radio"]
+) {width:max(17px,1.0625rem);height:max(17px,1.0625rem);}
+.c9-app-shell :where(label,button,summary,a) {touch-action:manipulation;}
+.c9-app-shell :where(
+  a,button,input,select,textarea,summary,[role="tab"],[tabindex]
+):focus-visible,
+.c9-mobile-drawer :where(a,button):focus-visible,
+.c9-shortcuts-dialog :where(a,button):focus-visible {
+  outline:3px solid var(--c9-focus)!important;
+  outline-offset:3px!important;
+}
+
+/* Global focus is owned here. All theme colors resolve through the existing
+ * learner-selected C9 root tokens; no CSS media theme is allowed to override it. */
+:where(button,a,input,select,textarea,summary,[role="tab"],[tabindex]):focus-visible{
+ outline:3px solid var(--c9-focus)!important;
+ outline-offset:3px!important;
+}
+:root[data-theme="dark"] :where(button,a,input,select,textarea,summary,[role="tab"],[tabindex]):focus-visible{
+ outline-color:var(--c9-focus)!important;
+}
+:where(.c9-unified-card){
+ min-width:0;
+ border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);
+ background:var(--c9-surface);
+ color:var(--c9-ink);
+}
+:where(.c9-unified-card) :where(h2,h3,h4){
+ color:var(--c9-ink);
+ overflow-wrap:break-word;
+}
+:where(.c9-unified-actions){
+ display:flex;
+ flex-wrap:wrap;
+ align-items:center;
+ gap:var(--c9-s2);
+ min-width:0;
+}
+:where(.c9-unified-actions)>:where(button,a){
+ max-width:100%;
+ white-space:normal;
+ min-height:var(--c9-tap);
+}
+:where(.c9-unified-source-note){
+ color:var(--c9-sub);
+ font:400 12px/1.7 var(--c9-ui);
+ max-width:90ch;
+ overflow-wrap:anywhere;
+}
+/* Common native teaching cards and sections, using low specificity. Individual
+ * screens own content-specific layouts and remain free to override these. */
+.c9-app-shell :where(
+ .c9-lesson-context-card,.c9-character-info,
+ .c9-library-word,.c9-library-chapter,.c9-library-topic,
+ .c9-assessment-panel,.c9-media-entry,.c9-utility-panel,
+ .c9-home-panel,.c9-discovery-section
+){
+ border-color:var(--c9-line);
+ color:var(--c9-ink);
+}
+.c9-app-shell :where(
+ .simple-panel,.lesson-paper,.p25-lesson,.p26-detail,.p23-word-entry,
+ .p33-scenario-detail,.p34-reading-card,.dialogue-paper,.story-paper
+){
+ min-width:0;
+ border-radius:var(--c9-r);
+}
+.c9-app-shell :where(
+ .c9-home-page,.c9-learn-hub,.c9-lesson-workspace,.c9-character-page,
+ .c9-library,.c9-assessment,.c9-practice-page,.c9-media-workspace,
+ .c9-utility-page,.c9-secondary-workspace
+) :where(h1,h2,h3){
+ text-wrap:balance;
+ overflow-wrap:break-word;
+}
+.c9-app-shell :where(.c9-home-page,.c9-learn-hub,.c9-lesson-workspace,.c9-character-page,.c9-library,.c9-assessment,.c9-practice-page,.c9-media-workspace,.c9-utility-page) :where(
+ .section-intro h1,.panel-heading h2,.c9-section-heading h2
+) {font-family:var(--c9-display);}
+.c9-app-shell :where(
+ .c9-home-page,.c9-learn-hub,.c9-lesson-workspace,.c9-character-page,
+ .c9-library,.c9-assessment,.c9-practice-page,.c9-media-workspace,.c9-utility-page
+) :where(.button,.text-button,.choice,.c9-button){
+ border-radius:var(--c9-r-sm);
+ font-family:var(--c9-ui);
+ line-height:1.4;
+ min-width:0;
+}
+.c9-app-shell :where(
+ .c9-home-page,.c9-learn-hub,.c9-lesson-workspace,.c9-character-page,
+ .c9-library,.c9-assessment,.c9-practice-page,.c9-media-workspace,.c9-utility-page
+) :where(.button.primary){
+ background:var(--c9-accent);
+ color:var(--c9-accent-contrast);
+ border-color:var(--c9-accent);
+}
+.c9-app-shell :where(.button.primary):hover:not(:disabled){
+ background:var(--c9-accent-hover);
+ border-color:var(--c9-accent-hover);
+ color:var(--c9-accent-contrast);
+}
+.c9-app-shell :where(.button.dark,.button.study){
+ background:var(--c9-green);
+ color:var(--c9-green-contrast);
+ border-color:var(--c9-green);
+}
+.c9-app-shell :where(.button.outline){
+ background:var(--c9-surface);
+ color:var(--c9-ink);
+ border-color:var(--c9-line-strong);
+}
+.c9-app-shell :where(.button.outline):hover:not(:disabled){
+ background:var(--c9-surface-2);
+ border-color:var(--c9-accent);
+}
+.c9-app-shell :where(.choice[aria-pressed="true"],.choice.selected){
+ border-color:var(--c9-accent);
+ background:var(--c9-accent-soft);
+ color:var(--c9-ink);
+}
+.c9-app-shell :where(.c9-button,.button,.choice):disabled{
+ cursor:not-allowed;
+ opacity:.58;
+}
+.c9-app-shell :where(.c9-eyebrow,.eyebrow){
+ letter-spacing:.07em;
+ line-height:1.45;
+}
+.c9-app-shell :where(
+ .c9-library-results-caption,.c9-assessment-queue,.c9-character-fact,
+ .c9-lesson-evidence,.c9-progress-units,.c9-home-metrics
+) {font-variant-numeric:tabular-nums;}
+.c9-app-shell :where(
+ .c9-native-section,.c9-library,.c9-assessment-panel,
+ .c9-character-section,.c9-utility-panel,.story-paper,.dialogue-paper
+) :where(
+ label,small,figcaption,[role="note"]
+) {overflow-wrap:anywhere;}
+.c9-app-shell :where(
+ input[type="text"],input[type="search"],input[type="email"],input[type="number"],
+ textarea,select,.c9-input,.c9-select,.c9-textarea
+){
+ color:var(--c9-ink);
+ background:var(--c9-surface);
+ border-color:var(--c9-line-strong);
+ border-radius:var(--c9-r-sm);
+}
+.c9-app-shell :where(
+ input[type="text"],input[type="search"],input[type="email"],input[type="number"],textarea
+)::placeholder{
+ color:var(--c9-muted);
+ opacity:1;
+}
+.c9-app-shell :where(.c9-icon){
+ flex:none;
+ vertical-align:middle;
+ stroke:currentColor;
+}
+/* Native font roles unify script display without flattening useful Hanzi,
+ * Pinyin and English distinctions already established in the curriculum. */
+.c9-app-shell :where(
+ .c9-character-glyph,.c9-writing-guide>span,.c9-lesson-title-row [lang="zh-Hans"],
+ .c9-library-word-head [lang="zh-Hans"],.c9-assessment-hanzi
+){font-family:var(--c9-hanzi-display);letter-spacing:0;}
+.c9-app-shell :where(
+ .story-chinese,.dialogue-chinese,.sentence-hanzi,.c9-character-example p[lang="zh-Hans"],
+ .p26-heading [lang="zh-Hans"]
+){font-family:var(--c9-hanzi);letter-spacing:0;line-height:1.75;}
+.c9-app-shell :where(
+ .story-pinyin,.dialogue-pinyin,.sentence-pinyin,.c9-character-pinyin,.c9-lesson-pronunciation
+){color:var(--c9-green);line-height:1.65;}
+.c9-app-shell :where(
+ .story-english,.dialogue-english,.sentence-english,.c9-english,.c9-library-word-copy small
+){color:var(--c9-sub);line-height:1.6;}
+/* Source-honest feedback is not a computed mastery status: preserve the
+ * original native answer, assisted and independent labels. */
+.c9-app-shell :where(
+ .c9-notice,.reader-feedback,.p25-result,.p26-feedback,.c9-assessment-feedback
+){border-radius:var(--c9-r-sm);}
+.c9-app-shell :where(
+ .reader-feedback.correct,.c9-assessment-feedback.correct
+){border-left:3px solid var(--c9-green);}
+.c9-app-shell :where(
+ .reader-feedback.incorrect,.c9-assessment-feedback.incorrect
+){border-left:3px solid var(--c9-accent);}
+.c9-app-shell :where(
+ .permission-note,.p34-listening-warning,.c9-notice--warning
+){background:var(--c9-warning-bg);border-color:var(--c9-warning);}
+.c9-app-shell :where(
+ .alert.error,.c9-notice--error
+){background:var(--c9-danger-bg);border-color:var(--c9-danger);color:var(--c9-danger);}
+.c9-app-shell :where(
+ .c9-progress,.progress-rail,.p30-rail
+){background:var(--c9-line);}
+.c9-app-shell :where(
+ .c9-progress>span,.progress-rail>span,.p30-rail>i
+){background:var(--c9-sage);}
+/* Component-level mobile layout contracts. Specific lesson/reader/media
+ * sections keep their own layout; this catches shared overflow at the edges. */
+@media(max-width:1000px){
+ .c9-app-shell :where(
+  .c9-unified-card,.c9-unified-actions,.c9-library-word,
+  .c9-assessment-live,.c9-media-native,.c9-secondary-native
+ ){min-width:0;max-width:100%;}
+ .c9-app-shell :where(
+  .c9-unified-actions,.c9-character-hero-actions,
+  .c9-lesson-header-actions,.c9-media-lead-actions
+ ){flex-wrap:wrap;}
+}
+@media(max-width:650px){
+ .c9-app-shell :where(.c9-unified-card){max-width:100%;}
+ .c9-app-shell :where(.c9-unified-actions)>:where(a,button){
+   min-height:44px;
+   flex:0 1 auto;
+ }
+ .c9-app-shell :where(
+  .c9-library-word-actions,.c9-assessment-actions,
+  .c9-character-inline-actions,.c9-media-lead-actions
+ ){row-gap:10px;}
+ .c9-app-shell :where(.c9-badge,.c9-eyebrow,.c9-meta){overflow-wrap:anywhere;}
+}
+@media(prefers-reduced-motion:reduce){
+ :root{scroll-behavior:auto;}
+}
