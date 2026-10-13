@@ -8,7 +8,7 @@ import {P37_SCENES_C} from './p37-scenes-c.mjs';
 import {P37_SCENES_D} from './p37-scenes-d.mjs';
 const rows=[...P37_SCENES_A,...P37_SCENES_B,...P37_SCENES_C,...P37_SCENES_D];
 // Explicit evidence line for question 1 in each independently authored dialogue.
-const evidence=[5,2,4,2,6,3,2,2,5,2,6,2,6,4,1,5,3,3,5,4,2,2,3,4,2,6,4,3,5,3];
+const evidence=[5,2,4,2,6,3,2,2,5,2,6,2,6,4,1,5,3,3,5,4,0,2,3,4,2,6,4,2,5,3];
 export const P37_SCENES=Object.freeze(rows.map((s,i)=>Object.freeze({
  ...s,id:'p37-'+String(i+1).padStart(2,'0'),sequence:i+1,evidenceIndex:evidence[i],
  turns:Object.freeze(s.turns.map(([hanzi,pinyin,english],j)=>Object.freeze([
