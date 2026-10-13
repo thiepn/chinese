@@ -815,7 +815,11 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const d=findDialogue(dialogueId);if(!d)return;
   return speak(d.lines.map(line=>line.hanzi).join('。'),name==='c9-media-listen-slow'?0.68:demoSpeechRate);
  }
- if(name==='c9-media-open-story'){
+if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
+  const d=findDialogue(dialogueId),line=d?.lines[c9DialogueTurn];if(!line)return;
+  return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
+ }
+  if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
