@@ -8,10 +8,14 @@ import {WORDS} from './lexicon.mjs';
 import {P39_CHARACTER_GUIDES} from './p39-foundations.mjs';
 const storyFor=p=>STORIES.find(st=>st.beginner?.p41?.id===p.id)||null;
 const attempts=(state,id)=>(state.readingEvents||[]).filter(e=>e.storyId===id);
-export const p41Next=state=>P41_PASSAGES.find(p=>{
- const st=storyFor(p);
- return st&&!attempts(state,st.id).some(e=>e.correct&&!e.assisted);
-})||P41_PASSAGES[0];
+export const p41Next=(state,after=null)=>{
+ const index=P41_PASSAGES.findIndex(p=>p.id===after);
+ const choices=index<0?P41_PASSAGES:[...P41_PASSAGES.slice(index+1),...P41_PASSAGES.slice(0,index+1)];
+ return choices.find(p=>{
+  const st=storyFor(p);
+  return st&&!attempts(state,st.id).some(e=>e.correct&&!e.assisted);
+ })||choices[0]||P41_PASSAGES[0];
+};
 export function p41Overview(state,act,esc,{compact=false,stage='all',query='',page=0,selected=null}={}){
  const q=String(query).trim().toLocaleLowerCase();
  const pool=P41_PASSAGES.filter(p=>(stage==='all'||String(p.stage)===String(stage))&&
