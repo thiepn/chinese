@@ -67,7 +67,8 @@ export function p46Overview(state,act,esc,{compact=false,selected='',query=''}={
  '<em>'+e.introduced+'/3 characters introduced · '+e.reading.length+' reader and '+e.listening.length+' dialogue attempts</em>',
  'p46-unit '+(p.id===selected?'selected':''),'data-id="'+p.id+'"');
  }).join('')+'</div>'+(!items.length?'<p class="muted">No authored P46 unit matches the query.</p>':'')+
- '<div class="p46-actions">'+act('p46-native-review','Original due-card Review →','button outline')+
+ '<div class="p46-actions">'+act('p47-enter','Continue to P47 contextual vocabulary and grammar →','button primary')+
+ act('p46-native-review','Original due-card Review →','button outline')+
  act('p45-enter','Return to P45 cumulative transfer →','button outline')+'</div>')+'</section>';
 }
 export function p46Lesson(p,state,act,esc,{stage='characters',readerHelp=false,audioHelp=false,
@@ -169,6 +170,7 @@ export function p46Lesson(p,state,act,esc,{stage='characters',readerHelp=false,a
  act('p44-open','P44 applied case →','button outline small','data-id="'+earlier.integrated+'"'):'')+'</div>'+
  '<div class="p46-actions">'+act('p46-native-review','Study genuinely due cards in original Review →','button outline')+
  act('p41-browse','P41 intermediate reading →','button outline small')+
- act('p45-enter','P45 independent transfer →','button outline small')+'</div></aside>'+
+ act('p45-enter','P45 independent transfer →','button outline small')+
+ act('p47-enter','Next: P47 connected context & evidence →','button outline small')+'</div></aside>'+
  '<p class="p46-disclosure">P46 review dates are controlled only by the original scheduler. Reading and listening are recorded only by their native assessment writers. Hidden answer explanations and TTS are assistance for subsequent answers on this unit; they do not demonstrate independent proficiency. Original teaching content has not been independently language-certified.</p></section>';
 }
