@@ -26,7 +26,8 @@ export function p39Overview(state,act,esc,{compact=false}={}){
  '<div class="p39-actions">'+(next?act('p39-open','Continue '+esc(next.hanzi)+' · '+esc(next.meaning)+' →','button primary','data-id="'+next.id+'"'):'')+
  act('p39-browse','Browse '+P39_CHARACTER_GUIDES.length+' characters →','button outline')+
  act('p39-vocab','Open contextual words →','button outline')+
- act('p39-sentences','Practise '+P39_WRITING_TASKS.length+' original sentences →','button outline')+'</div></section>';
+ act('p39-sentences','Practise '+P39_WRITING_TASKS.length+' original sentences →','button outline')+
+ act('p46-enter','Continue to P46 upper-intermediate character families →','button outline')+'</div></section>';
 }
 export function p39CharacterShelf(state,act,esc,filters={}){
  const pool=filtered(state,filters),page=Math.max(0,Math.min(Math.max(0,Math.ceil(pool.length/10)-1),Number(filters.page)||0));
