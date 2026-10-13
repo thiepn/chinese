@@ -733,7 +733,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }
  if(name==='p35-write'){
   const guide=findP35Guide(id),index=Number(button.dataset.index);
-  if(!guide||![0,1].includes(index))return;
+  if(!guide||![0,1,2].includes(index))return;
   const taskIndex=SENTENCE_TASKS.findIndex(t=>t.id==='p35:'+guide.id+':line'+(index+1));
   if(taskIndex<0)return alertUser('Original P35 writing lesson unavailable.','error');
   sentenceIndex=taskIndex;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
