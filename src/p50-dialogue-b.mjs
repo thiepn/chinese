@@ -1,0 +1,26 @@
+/** P50 original multi-speaker listening volume B. */
+export const P50_DIALOGUE_B=String.raw`A temporary room restriction is not a diagnosis|p50-03|Public communication under uncertainty|Contrast an observed moisture problem, a room-specific restriction and a preliminary professional assessment.|Precautionary action is not proof that a particular cause or medical outcome was established.|Produce an accurate announcement naming the room, substitute and uncertainty.
+D|Coordinator|工作人员发现墙上有潮湿痕迹，我们应该取消整个活动吗？|Gōngzuò rényuán fāxiàn qiáng shàng yǒu cháoshī hénjì, wǒmen yīnggāi qǔxiāo zhěng ge huódòng ma?|Staff found moisture marks on the wall. Should we cancel the whole event?
+D|Volunteer|我建议先不用那间教室，请专业人员检查。|Wǒ jiànyì xiān bú yòng nà jiān jiàoshì, qǐng zhuānyè rényuán jiǎnchá.|I suggest not using that classroom yet and asking a professional to inspect it.
+D|Parent|我看到群里说整个社区中心已经关闭，这是真的吗？|Wǒ kàn dào qún lǐ shuō zhěng ge shèqū zhōngxīn yǐjīng guānbì, zhè shì zhēn de ma?|I saw a group message saying the whole community center is closed. Is that true?
+D|Coordinator|不是。正式通知只暂停使用一间教室，其他合格空间可以继续使用。|Bú shì. Zhèngshì tōngzhī zhǐ zàntíng shǐyòng yì jiān jiàoshì, qítā hégé kōngjiān kěyǐ jìxù shǐyòng.|No. The official notice restricts one classroom; other suitable spaces remain available.
+D|Parent|那是不是已经确定潮湿的原因，而且知道会影响谁的健康？|Nà shì bu shì yǐjīng quèdìng cháoshī de yuányīn, érqiě zhīdào huì yǐngxiǎng shéi de jiànkāng?|Has the cause been identified, and do we know whose health it would affect?
+D|Professional|还没有。我们建议继续检查和监测，目前不能作出完整结论。|Hái méiyǒu. Wǒmen jiànyì jìxù jiǎnchá hé jiāncè, mùqián bù néng zuò chū wánzhěng jiélùn.|Not yet. We recommend further inspection and monitoring; a full conclusion is not possible now.
+D|Volunteer|我会告诉参加者替代教室的位置，也会说明原因仍然没有查明。|Wǒ huì gàosu cānjiāzhě tìdài jiàoshì de wèizhi, yě huì shuōmíng yuányīn réngrán méiyǒu chámíng.|I'll tell attendees the replacement classroom and explain that the cause is still unknown.
+D|Coordinator|这样能保障活动进行，同时避免传播没有证据的猜测。|Zhèyàng néng bǎozhàng huódòng jìnxíng, tóngshí bìmiǎn chuánbō méiyǒu zhèngjù de cāicè.|That lets the event proceed without spreading unsupported speculation.
+Q|What has been officially restricted?|Use of one classroom.|The entire community center.|All community activities for the year.|3|The manager identifies the notice's limited scope.
+Q|What does the professional assessment establish about the cause?|It remains undetermined.|One precise health diagnosis has been confirmed.|Every participant was exposed to a proven hazard.|5|The professional says a final cause cannot yet be concluded.
+Q|What can organizers communicate now?|The replacement room and the remaining uncertainty.|An invented diagnosis.|A permanent closure of every room.|6|The volunteer plans to state operational facts and limits.
+
+The advertised price versus the confirmed quote|p50-04|Consumer decisions and contract details|Identify which details a general advertisement, a written quote, and a later order each support.|A good-looking advertisement is not a measurement or proof of included services.|Argue for a prudent decision, acknowledging the fear of missing a discount.
+D|Buyer|网页写着这张桌子适合各种房间，而且价格最低。|Wǎngyè xiězhe zhè zhāng zhuōzi shìhé gè zhǒng fángjiān, érqiě jiàgé zuì dī.|The website says this table suits all kinds of rooms and has the lowest price.
+D|Family|但是它长一百三十厘米，我们的空间只有一百二十厘米。|Dànshì tā cháng yì bǎi sānshí límǐ, wǒmen de kōngjiān zhǐ yǒu yì bǎi èrshí límǐ.|But it is 130 centimeters long; our space is only 120.
+D|Buyer|第二张尺寸合适，但广告没有说明送货和安装收费。|Dì èr zhāng chǐcùn héshì, dàn guǎnggào méiyǒu shuōmíng sònghuò hé ānzhuāng shōufèi.|The second fits, but the advertisement doesn't clarify delivery and installation charges.
+D|Shop|正式报价包含送货费用，安装则是可以另外选择的服务。|Zhèngshì bàojià bāohán sònghuò fèiyòng, ānzhuāng zé shì kěyǐ lìngwài xuǎnzé de fúwù.|The formal quote includes delivery, while installation is a separately optional service.
+D|Family|总费用现在可以接受，不过送货日期还没有确定。|Zǒng fèiyòng xiànzài kěyǐ jiēshòu, búguò sònghuò rìqī hái méiyǒu quèdìng.|The total is acceptable now, but the delivery date isn't confirmed.
+D|Buyer|我担心等两天就没有优惠了，要不要直接付款？|Wǒ dānxīn děng liǎng tiān jiù méiyǒu yōuhuì le, yào bu yào zhíjiē fùkuǎn?|I'm worried the discount will end in two days. Shall we just pay?
+D|Family|优惠固然重要，但我们需要确认什么时候能收到桌子。|Yōuhuì gùrán zhòngyào, dàn wǒmen xūyào quèrèn shénme shíhou néng shōu dào zhuōzi.|The discount matters, but we need to confirm when the table can arrive.
+D|Shop|我刚刚确认了具体日期，修改后的报价也列出了所有费用。|Wǒ gānggāng quèrèn le jùtǐ rìqī, xiūgǎi hòu de bàojià yě liè chū le suǒyǒu fèiyòng.|I've just confirmed the specific date; the revised quote lists all costs.
+Q|What excludes the cheapest table?|It is ten centimeters too long for the measured space.|It has no advertised price.|It includes optional installation.|1|A precise physical constraint outweighs a broad advertising claim.
+Q|What was unresolved before the final shop reply?|The exact delivery date.|Whether the second desk fit.|Whether delivery could be charged.|4|An acceptable total did not establish timing.
+Q|What changes in the final shop reply?|The date and complete written charges are confirmed.|The oversized desk becomes shorter.|The family has already paid before discussion.|7|The last turn supplies the missing commitment.`;
