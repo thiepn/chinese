@@ -87,7 +87,8 @@ export function p46Lesson(p,state,act,esc,{stage='characters',readerHelp=false,a
  g.examples.map(line=>'<div class="p46-example"><p lang="zh-Hans">'+esc(line.hanzi)+'</p>'+
  '<small>'+esc(line.pinyin)+'</small><span>'+esc(line.english)+'</span></div>').join('')+
  act('p46-study-character',(introduced?'Review':'Introduce')+' in canonical Course →','button outline',
- 'data-hanzi="'+esc(g.hanzi)+'"')+'</article>';
+ 'data-hanzi="'+esc(g.hanzi)+'"')+
+ act('p46-write-character','Reconstruct an original character sentence →','button outline small','data-hanzi="'+esc(g.hanzi)+'"')+'</article>';
  }).join('')+'</div>'+
  '<div class="p46-actions">'+act('p46-stage','Continue to grammar →','button primary','data-stage="grammar"')+'</div></div>':'')+
  (stage==='grammar'?'<div class="p46-pane"><h3>Grammar structures as meaning choices</h3>'+
