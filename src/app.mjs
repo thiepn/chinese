@@ -1,6 +1,7 @@
 import { DEMO_LESSONS, demoSearch, findLesson } from './demo-lessons.mjs';
 import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
+import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
@@ -90,6 +91,7 @@ let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
+let c9LessonSection='overview',c9LastLessonId=null;
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
 let missionStep=0,missionActive=false,missionSupport=false,missionTyped='',missionFeedback=null;
@@ -434,18 +436,18 @@ function sentenceLinksForCharacter(hanzi){
  const rows=SENTENCE_LIBRARY.filter(s=>s.hanzi.includes(hanzi)).slice(0,4);
  return rows.length?`<section class="p26-character-links"><p class="eyebrow">YOUR CHARACTER IN REAL SENTENCES</p><div>${rows.map(row=>action('sentence-select',`<span lang="zh-Hans">${esc(row.hanzi)}</span><small>${esc(row.english)}</small>`,'p26-mini-sentence',`data-id="${row.id}"`)).join('')}</div>${action('sentence-open','See the sentence library →','button outline small')}</section>`:'';
 }
-function lessonDetails(l){if(!l)return '<p>Lesson unavailable.</p>';const learned=state.learned.includes(l.id);return `<article class="lesson-paper"><div class="lesson-heading"><span class="eyebrow">LESSON ${String(l.order).padStart(2,'0')} OF ${DEMO_LESSONS.length} · ORIGINAL DEMO</span><span class="status-tag ${learned?'complete':''}">${learned?'Introduced':'New'}</span></div>
-  <div class="character-focus"><div class="big-hanzi" lang="zh-Hans">${esc(l.hanzi)}</div><div class="character-meta"><div class="reading-row"><span class="reading">${state.settings.showPinyin?esc(l.pinyin):"Pinyin hidden"}</span>${action('speak','<span aria-hidden="true">▶</span> Listen','button mini outline',`data-text="${esc(l.hanzi)}"`)}</div><h2>${esc(l.meaning)}</h2><p>${esc(l.note)}</p><p class="subnote">Pinyin is shown during teaching and hidden during unassisted review.</p><p class="subnote">${esc(toneContrast(l.pinyin)||'Tone analysis unavailable')}</p>${toneTeachingPanel(l.pinyin)}</div></div>
-  <div class="lesson-guide"><span class="eyebrow">CHARACTER INSIGHT · ORIGINAL TEACHING NOTE</span><h3>${esc(guideFor(l).topic)}</h3><p>${esc(guideFor(l).explanation)}</p><p class="muted">${esc(guideFor(l).comparison)}</p></div>${companionPanel(l,{compact:true})}${p31LessonTeaching(l,action,esc)}${grammarUnitSelector(l.hanzi)}${sentenceLinksForCharacter(l.hanzi)}<div class="lesson-rule"></div><div class="learning-section-heading"><div><p class="eyebrow">HOW IT APPEARS IN WORDS</p><h3>Learn it in context</h3></div><span class="section-index">01 / 02</span></div>
-  <div class="word-grid">${l.words.map((w,i)=>`<div class="word-card"><span class="word-index">0${i+1}</span><div lang="zh-Hans" class="word-hanzi">${esc(w.hanzi)}</div><div class="word-pinyin">${state.settings.showPinyin?esc(w.pinyin):"Pinyin hidden"}</div><strong>${esc(w.english)}</strong>${action('lookup-word','Word details ↗','text-button',`data-word="${esc(w.hanzi)}"`)}${action('vocabulary-start','Learn this word →','text-button',`data-id="${esc(canonicalWordKey(w.hanzi,w.pinyin))}"`)}${action('speak','Listen ↗','text-button',`data-text="${esc(w.hanzi)}"`)}</div>`).join('')}</div>
+function lessonDetails(l){if(!l)return '<p>Lesson unavailable.</p>';const learned=state.learned.includes(l.id);return `<article class="lesson-paper c9-lesson-paper"><div class="lesson-heading"><span class="eyebrow">LESSON ${String(l.order).padStart(2,'0')} OF ${DEMO_LESSONS.length} · ORIGINAL DEMO</span><span class="status-tag ${learned?'complete':''}">${learned?'Introduced':'New'}</span></div>
+  <section id="c9-lesson-overview" class="c9-native-section" tabindex="-1" aria-label="Character and pronunciation"><div class="character-focus"><div class="big-hanzi" lang="zh-Hans">${esc(l.hanzi)}</div><div class="character-meta"><div class="reading-row"><span class="reading">${state.settings.showPinyin?esc(l.pinyin):"Pinyin hidden"}</span>${action('speak','<span aria-hidden="true">▶</span> Listen','button mini outline',`data-text="${esc(l.hanzi)}"`)}</div><h2>${esc(l.meaning)}</h2><p>${esc(l.note)}</p><p class="subnote">Pinyin is shown during teaching and hidden during unassisted review.</p><p class="subnote">${esc(toneContrast(l.pinyin)||'Tone analysis unavailable')}</p>${toneTeachingPanel(l.pinyin)}</div></div></section><section id="c9-lesson-grammar" class="c9-native-section" tabindex="-1" aria-label="Grammar and character insights">
+  <div class="lesson-guide"><span class="eyebrow">CHARACTER INSIGHT · ORIGINAL TEACHING NOTE</span><h3>${esc(guideFor(l).topic)}</h3><p>${esc(guideFor(l).explanation)}</p><p class="muted">${esc(guideFor(l).comparison)}</p></div>${companionPanel(l,{compact:true})}${p31LessonTeaching(l,action,esc)}${grammarUnitSelector(l.hanzi)}${sentenceLinksForCharacter(l.hanzi)}</section><section id="c9-lesson-vocabulary" class="c9-native-section" tabindex="-1" aria-label="Vocabulary and pronunciation"><div class="lesson-rule"></div><div class="learning-section-heading"><div><p class="eyebrow">HOW IT APPEARS IN WORDS</p><h3>Learn it in context</h3></div><span class="section-index">01 / 02</span></div>
+  <div class="word-grid">${l.words.map((w,i)=>`<div class="word-card"><span class="word-index">0${i+1}</span><div lang="zh-Hans" class="word-hanzi">${esc(w.hanzi)}</div><div class="word-pinyin">${state.settings.showPinyin?esc(w.pinyin):"Pinyin hidden"}</div><strong>${esc(w.english)}</strong>${action('lookup-word','Word details ↗','text-button',`data-word="${esc(w.hanzi)}"`)}${action('vocabulary-start','Learn this word →','text-button',`data-id="${esc(canonicalWordKey(w.hanzi,w.pinyin))}"`)}${action('speak','Listen ↗','text-button',`data-text="${esc(w.hanzi)}"`)}</div>`).join('')}</div></section><section id="c9-lesson-context" class="c9-native-section" tabindex="-1" aria-label="Sentences, reading and communication">
   ${lessonConnections(l.id)?.readings.length?`<section class="lesson-context-links"><p class="eyebrow">YOUR CHARACTER IN A REAL CONTEXT</p><h3>See it in connected reading</h3><div class="context-link-grid">${lessonConnections(l.id).readings.map(item=>`<button type="button" class="context-link" data-action="open-story-link" data-id="${item.id}"><strong>${esc(item.title)}</strong><small lang="zh-Hans">${esc(item.word)} · in the story</small><span aria-hidden="true">↗</span></button>`).join('')}</div></section>`:''}
   ${(()=>{const links=contentConnections(l.id);return links.dialogues.length?`<section class="lesson-context-links"><p class="eyebrow">THE SAME WORDS IN CONVERSATION</p><h3>Hear the meaning in context</h3><div class="context-link-grid">${links.dialogues.map(d=>`<button type="button" class="context-link" data-action="hub-dialogue" data-id="${esc(d.id)}"><strong>${esc(d.title)}</strong><small lang="zh-Hans">${esc(d.matches.join(' · '))}</small><span aria-hidden="true">↗</span></button>`).join('')}</div></section>`:''})()}
   <div class="learning-section-heading sentence-title"><div><p class="eyebrow">READ A SENTENCE</p><h3>Put it together</h3></div><span class="section-index">02 / 02</span></div>
   <div class="sentence-block"><p lang="zh-Hans" class="sentence-hanzi">${esc(l.sentence.hanzi)}</p>${showLessonTranslation?`<p class="sentence-pinyin">${esc(l.sentence.pinyin)}</p><p class="sentence-english">${esc(l.sentence.english)}</p>`:'<p class="helper-text">Pinyin and translation are hidden.</p>'}<div class="button-row">${action('toggle-translation',showLessonTranslation?'Hide translation':'Show pinyin & translation','button outline small')}${action('speak','▶ Listen to sentence','button outline small',`data-text="${esc(l.sentence.hanzi)}"`)}${action('speech-rate','Playback speed: '+demoSpeechRate+'×','button outline small')}</div></div>
    ${l.extraSentence?`<div class="p22-extra-sentence" aria-label="More Chinese in context"><div><p class="eyebrow">SECOND EXAMPLE · CONNECTED LANGUAGE</p><strong lang="zh-Hans">${esc(l.extraSentence.hanzi)}</strong></div>${showLessonTranslation?`<p class="p22-reading">${esc(l.extraSentence.pinyin)}</p><p>${esc(l.extraSentence.english)}</p>`:'<p class="muted">Read it independently, or show the translations above.</p>'}${action('speak','Listen to this example','button outline small',`data-text="${esc(l.extraSentence.hanzi)}"`)}</div>`:''}
-   ${lessonQuiz(l)}
-   ${bridgeTeachingPanel(l.id)}
-   <div class="lesson-footer"><div><strong>${learned?'Ready to practice':'Ready to remember?'}</strong><p>${learned?'Your ${cardsForLesson(l.id).length} recall targets are in Review.':'Introducing this lesson creates ${cardsForLesson(l.id).length} character, word, pronunciation and sentence targets.'}</p></div><div class="button-row">${!learned?action('mark-studied','Finish lesson & add reviews →','button primary',`data-id="${l.id}"`):action('start-review','Practice recall →','button primary')}${action('next-lesson','Next →','button outline')}${action('practice-lesson','Quick practice','button outline',`data-id="${l.id}"`)}${action('course-lesson','Daily Journey','button outline',`data-id="${l.id}"`)}</div></div></article>`}
+   </section><section id="c9-lesson-practice" class="c9-native-section" tabindex="-1" aria-label="Formative practice and feedback">${lessonQuiz(l)}
+   ${bridgeTeachingPanel(l.id)}</section><section id="c9-lesson-finish" class="c9-native-section" tabindex="-1" aria-label="Lesson introduction and next actions">
+   <div class="lesson-footer"><div><strong>${learned?'Ready to practice':'Ready to remember?'}</strong><p>${learned?'Your ${cardsForLesson(l.id).length} recall targets are in Review.':'Introducing this lesson creates ${cardsForLesson(l.id).length} character, word, pronunciation and sentence targets.'}</p></div><div class="button-row">${!learned?action('mark-studied','Introduce lesson & create reviews →','button primary',`data-id="${l.id}"`):action('start-review','Practice recall →','button primary')}${action('next-lesson','Next →','button outline')}${action('practice-lesson','Quick practice','button outline',`data-id="${l.id}"`)}${action('course-lesson','Daily Journey','button outline',`data-id="${l.id}"`)}</div></div></section></article>`}
 function foundationalExpansionPanel(){
  const units=lessonGroups().filter(unit=>unit.range[0]>74);
  return `<section class="simple-panel p22-foundation-panel" aria-label="Expanded foundations and new characters">
@@ -462,13 +464,14 @@ function refreshC9DiscoveryResults(){
  if(search)search.innerHTML=renderC9SearchResults(state,ui,action,esc);
 }
 function renderLearn(){
- const heading=renderC9LearnHub(state,c9LearnUi(),action,esc);
- const advanced='<details class="c9-learn-existing"><summary>Additional original curriculum and native learning tools</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
- if(!c9LearnDetail)return heading+advanced;
- const l=findLesson(displayLessonId)||DEMO_LESSONS[0];
- return heading+'<section class="c9-learn-native-detail" aria-label="Selected original character lesson">'+lessonDetails(l)+'</section>'+advanced;
+ if(!c9LearnDetail){
+  const extra='<details class="c9-learn-existing"><summary>Additional original curriculum and native learning tools</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+extra;
+ }
+ const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
+ if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
+ return renderC9LessonWorkspace({lesson,state,nativeMarkup:lessonDetails(lesson),section:c9LessonSection,showPinyin:state.settings.showPinyin,act:action,esc});
 }
-
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
  const m=summary(state),due=dueCards(state).filter(reviewMatches);
@@ -658,6 +661,27 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
+ if(name==='c9-lesson-jump'){
+  const section=button.dataset.section;
+  if(!c9LearnDetail||!C9_LESSON_SECTIONS.some(s=>s.id===section))return;
+  c9LessonSection=section;
+  for(const nav of root.querySelectorAll('[data-action="c9-lesson-jump"]')){
+    const active=nav.dataset.section===section;
+    nav.classList.toggle('is-current',active);
+    if(active)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');
+  }
+  const target=document.getElementById('c9-lesson-'+section);
+  if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true});}
+  return;
+ }
+ if(name==='c9-lesson-select'){
+  const next=findLesson(id);
+  if(!next)return alertUser('Lesson unavailable.','error');
+  displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';
+  showLessonTranslation=state.settings.showPinyin;
+  render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+  root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});return;
+ }
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
    if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
@@ -1405,7 +1429,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='reader-reveal'){showLessonTranslation=!showLessonTranslation;return render();}
  if(name==='start-next'){const next=summary(state).next;if(next){displayLessonId=next.id;c9LearnDetail=true;go('learn')}else go('review');return}
  if(name==='open-lesson'){if(!findLesson(id))return alertUser('Lesson unavailable.','error');displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;go('learn');return}
- if(name==='next-lesson'){const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);displayLessonId=DEMO_LESSONS[(idx+1)%DEMO_LESSONS.length].id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;render();root.querySelector('.c9-learn-native-detail .lesson-paper')?.scrollIntoView({block:'start'});return}
+ if(name==='next-lesson'){const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);const next=DEMO_LESSONS[idx+1];if(!next)return alertUser('Last original lesson reached. Continue with Review or contextual study.');displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';showLessonTranslation=state.settings.showPinyin;render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return}
  if(name==='mark-studied'){if(!findLesson(id))return;const ok=await mutate(s=>addLesson(s,id));if(ok){alertUser(`Lesson introduced. ${cardsForLesson(id).length} distinct recall targets were added.`);const idx=DEMO_LESSONS.findIndex(l=>l.id===id);if(idx<DEMO_LESSONS.length-1){displayLessonId=DEMO_LESSONS[idx+1].id;render();}}return}
  if(name==='toggle-translation'){showLessonTranslation=!showLessonTranslation;render();return}
  if(name==='start-review'){revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;sessionQueue=null;go('review');return}
