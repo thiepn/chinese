@@ -113,7 +113,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">MANUAL CHARACTER PRACTICE</p><h2 id="c9-writing-title">Write by hand</h2></div><span class="c9-badge">Ungraded</span></header>'+
   '<p>Trace your own strokes on the blank guide or use the reference character. Your drawing stays on this screen and is not saved or evaluated.</p>'+
   '<div class="c9-writing-workspace"><div class="c9-writing-guide" aria-label="Reference glyph in square guide"><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><small>Reference only</small></div>'+
-  '<div class="c9-writing-pad"><canvas id="c9-writing-canvas" aria-label="Optional freehand writing canvas, not graded" width="640" height="640"></canvas>'+
+  '<div class="c9-writing-pad"><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Keyboard option: focus the writing pad, move with arrow keys, press Space or Enter to start or stop a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. No practice is graded or saved.</p><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas>'+
   '<div class="c9-writing-controls"><span id="c9-writing-feedback" role="status">Free practice · no saved strokes</span>'+
   '<div class="c9-inline"><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button>'+
   '<button type="button" id="c9-writing-clear" class="c9-button c9-button--secondary c9-button--small" disabled>Clear</button></div></div></div></div>'+
@@ -186,10 +186,11 @@ export function connectC9Writing(root){
   canvas.hidden=true;if(feedback)feedback.textContent='Drawing is unavailable in this browser.';return;
  }
  let strokes=[],active=null,ratio=1;
+ let cursor=[.5,.5],keyboardDrawing=false,keyboardFocused=false;
  const signal=()=>{
   if(undo)undo.disabled=!strokes.length;
   if(clear)clear.disabled=!strokes.length;
-  if(feedback)feedback.textContent=strokes.length?strokes.length+' freehand line'+(strokes.length===1?'':'s')+' · not scored':'Free practice · no saved strokes';
+  if(feedback)feedback.textContent=(strokes.length?strokes.length+' line'+(strokes.length===1?'':'s'):'No lines')+(keyboardDrawing?' · keyboard pen down':' · pen up')+' · not scored or saved';
  };
  const paint=()=>{
   const rect=canvas.getBoundingClientRect();
@@ -210,6 +211,12 @@ export function connectC9Writing(root){
    else for(const [x,y] of points.slice(1))context.lineTo(x,y);
    context.stroke();
   }
+  if(keyboardFocused){
+    context.beginPath();context.lineWidth=.003;
+    context.moveTo(Math.max(0,cursor[0]-.015),cursor[1]);context.lineTo(Math.min(1,cursor[0]+.015),cursor[1]);
+    context.moveTo(cursor[0],Math.max(0,cursor[1]-.015));context.lineTo(cursor[0],Math.min(1,cursor[1]+.015));
+    context.stroke();
+  }
  };
  const point=e=>{
   const r=canvas.getBoundingClientRect();
@@ -218,7 +225,7 @@ export function connectC9Writing(root){
  };
  const down=e=>{
   if(e.pointerType==='mouse'&&e.button!==0)return;
-  e.preventDefault();active=[point(e)];strokes.push(active);
+  e.preventDefault();keyboardDrawing=false;active=[point(e)];strokes.push(active);
   try{canvas.setPointerCapture(e.pointerId);}catch{}
   signal();paint();
  };
@@ -231,12 +238,38 @@ export function connectC9Writing(root){
   if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId);
  };
  const cancel=()=>{active=null;paint();};
- const clearAction=()=>{strokes=[];active=null;signal();paint();};
- const undoAction=()=>{strokes.pop();active=null;signal();paint();};
+ const clearAction=()=>{strokes=[];active=null;keyboardDrawing=false;signal();paint();};
+ const undoAction=()=>{strokes.pop();active=null;keyboardDrawing=false;signal();paint();};
+ const keydown=e=>{
+  const movement={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+  if(movement[e.key]){
+   e.preventDefault();
+   const [x,y]=movement[e.key],step=e.shiftKey?.04:.015;
+   cursor=[Math.max(.02,Math.min(.98,cursor[0]+x*step)),
+    Math.max(.02,Math.min(.98,cursor[1]+y*step))];
+   if(keyboardDrawing&&active)active.push([...cursor]);
+   paint();return;
+  }
+  if(e.key===' '||e.key==='Enter'){
+   e.preventDefault();if(e.repeat)return;
+   keyboardDrawing=!keyboardDrawing;
+   if(keyboardDrawing){active=[[...cursor]];strokes.push(active);}
+   else active=null;
+   signal();paint();return;
+  }
+  if(e.key==='Escape'&&keyboardDrawing){
+   e.preventDefault();keyboardDrawing=false;active=null;signal();paint();
+  }
+ };
+ const focusCanvas=()=>{keyboardFocused=true;paint();};
+ const blurCanvas=()=>{keyboardFocused=false;keyboardDrawing=false;active=null;signal();paint();};
  canvas.addEventListener('pointerdown',down);
  canvas.addEventListener('pointermove',move);
  canvas.addEventListener('pointerup',up);
  canvas.addEventListener('pointercancel',cancel);
+ canvas.addEventListener('keydown',keydown);
+ canvas.addEventListener('focus',focusCanvas);
+ canvas.addEventListener('blur',blurCanvas);
  undo?.addEventListener('click',undoAction);
  clear?.addEventListener('click',clearAction);
  let observer=null;
@@ -248,6 +281,9 @@ export function connectC9Writing(root){
   canvas.removeEventListener('pointermove',move);
   canvas.removeEventListener('pointerup',up);
   canvas.removeEventListener('pointercancel',cancel);
+  canvas.removeEventListener('keydown',keydown);
+  canvas.removeEventListener('focus',focusCanvas);
+  canvas.removeEventListener('blur',blurCanvas);
   undo?.removeEventListener('click',undoAction);
   clear?.removeEventListener('click',clearAction);
   strokes=[];active=null;

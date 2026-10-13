@@ -22,6 +22,8 @@ const COURSE_ROUTES=new Set([
 const EXPLORE_ROUTES=new Set(['explore','find']);
 const PERSONAL_ROUTES=new Set(['progress','settings']);
 let connected=false;
+let restoreDrawerFocus=false;
+let modalSupported=false;
 
 function contextFor(route){
   if(COURSE_ROUTES.has(route))return 'learn';
@@ -60,42 +62,64 @@ export function syncC9Shell(route){
 
   // If another controller navigates, do not leave the old menu over the page.
   const dialog=document.getElementById('c9-mobile-drawer');
-  if(dialog?.open)dialog.close();
+  if(dialog?.open){restoreDrawerFocus=false;dialog.close();}
   return label;
 }
 
 export function connectC9Shell(){
-  if(connected)return;
-  connected=true;
-  const toggle=document.getElementById('c9-more-toggle');
-  const drawer=document.getElementById('c9-mobile-drawer');
-  const close=document.getElementById('c9-drawer-close');
-  if(!toggle||!drawer)return;
-  toggle.addEventListener('click',()=>{
-    if(drawer.open){drawer.close();return;}
-    if(typeof drawer.showModal==='function'){
-      drawer.showModal();
-      toggle.setAttribute('aria-expanded','true');
-      (drawer.querySelector('[aria-current="page"]')||drawer.querySelector('a[href^="#/"]')||close)?.focus();
-    }else{
-      // Explicit fallback for older webviews without native modal dialog support.
-      drawer.setAttribute('open','');
-      toggle.setAttribute('aria-expanded','true');
-      close?.focus();
-    }
-  });
-  close?.addEventListener('click',()=>drawer.close());
-  drawer.addEventListener('close',()=>{
-    toggle.setAttribute('aria-expanded','false');
-    if(document.activeElement===document.body||drawer.contains(document.activeElement)){
-      toggle.focus({preventScroll:true});
-    }
-  });
-  drawer.addEventListener('click',event=>{
-    if(event.target===drawer){drawer.close();return;}
-    if(event.target.closest('a[href^="#/"]'))drawer.close();
-  });
-  window.addEventListener('resize',()=>{
-    if(window.innerWidth>800&&drawer.open)drawer.close();
-  });
+ if(connected)return;
+ connected=true;
+ const toggle=document.getElementById('c9-more-toggle');
+ const drawer=document.getElementById('c9-mobile-drawer');
+ const close=document.getElementById('c9-drawer-close');
+ if(!toggle||!drawer)return;
+ modalSupported=typeof drawer.showModal==='function';
+ const setExpanded=expanded=>toggle.setAttribute('aria-expanded',String(expanded));
+ const focusCurrent=()=>(
+  drawer.querySelector('[aria-current="page"]')||
+  drawer.querySelector('a[href^="#/"]')||close)?.focus({preventScroll:true});
+ const dismiss=(restore=true)=>{
+  if(!drawer.open)return;
+  restoreDrawerFocus=restore;
+  if(typeof drawer.close==='function')drawer.close();
+  else{drawer.removeAttribute('open');setExpanded(false);if(restore)toggle.focus({preventScroll:true});}
+ };
+ toggle.addEventListener('click',()=>{
+  if(drawer.open){dismiss(true);return;}
+  restoreDrawerFocus=false;
+  if(modalSupported)drawer.showModal();
+  else drawer.setAttribute('open','');
+  setExpanded(true);
+  focusCurrent();
+ });
+ close?.addEventListener('click',()=>dismiss(true));
+ drawer.addEventListener('cancel',()=>{restoreDrawerFocus=true;});
+ drawer.addEventListener('close',()=>{
+  setExpanded(false);
+  if(restoreDrawerFocus)toggle.focus({preventScroll:true});
+  restoreDrawerFocus=false;
+ });
+ drawer.addEventListener('click',event=>{
+  if(event.target===drawer){dismiss(true);return;}
+  if(event.target.closest('a[href^="#/"]')){
+    // Route changes move focus to the new page heading. Do not steal it back
+    // to the now-closed menu toggle.
+    dismiss(false);
+  }
+ });
+ // For older WebViews using a nonmodal dialog fallback, keep keyboard users
+ // inside the opened navigation and support Escape to dismiss.
+ drawer.addEventListener('keydown',event=>{
+  if(!drawer.open||modalSupported)return;
+  if(event.key==='Escape'){event.preventDefault();dismiss(true);return;}
+  if(event.key!=='Tab')return;
+  const items=[...drawer.querySelectorAll('a[href],button:not([disabled])')];
+  if(!items.length)return;
+  const first=items[0],last=items[items.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ });
+ window.addEventListener('resize',()=>{
+  if(window.innerWidth>800&&drawer.open)dismiss(false);
+ });
 }

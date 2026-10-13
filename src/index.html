@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="./styles-c9-media.css">
   <link rel="stylesheet" href="./styles-c9-utilities.css">
   <link rel="stylesheet" href="./styles-c9-dark-parity.css">
+  <link rel="stylesheet" href="./styles-c9-mobile-accessibility.css">
   <script type="module" src="./app.mjs"></script>
   <title>Home | THIEPN Chinese</title>
 </head>
@@ -74,9 +75,12 @@
   <div class="top-actions">
     <a class="p30-top-search" href="#/find" data-route="find" aria-label="Search all Chinese learning content"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-search"></use></svg><span class="c9-search-label">Search everything</span><kbd>/</kbd></a>
     <span id="network-state" class="status-chip" role="status">Checking connection</span>
+    <button id="c9-shortcuts-open" type="button" class="top-link c9-keyboard-help-trigger" aria-haspopup="dialog" aria-controls="c9-shortcuts-dialog" aria-label="Keyboard help and shortcuts">Keyboard <kbd>?</kbd></button>
     <button type="button" class="top-link" data-action="go-settings" aria-label="Open settings"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-settings"></use></svg><span class="c9-top-settings-label">Settings</span></button>
   </div>
 </header>
+<div id="c9-route-announcement" class="c9-visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="c9-interaction-announcement" class="c9-visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 <main id="main" tabindex="-1" aria-label="Learning workspace">
   <div id="alert-banner" role="status" aria-live="polite"></div>
   <div id="app-content"><div class="loading"><span class="loading-glyph" lang="zh-Hans">字</span><p>Opening your learning workspace…</p></div></div>
@@ -114,6 +118,20 @@
     <section aria-label="Your workspace"><div class="c9-drawer-group-title">Your workspace</div><div class="c9-drawer-group"><a href="#/progress" data-route="progress"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-progress"></use></svg><span>Progress</span></a>
 <a href="#/settings" data-route="settings"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-settings"></use></svg><span>Settings</span></a></div></section>
   </div>
+</dialog>
+<dialog id="c9-shortcuts-dialog" class="c9-shortcuts-dialog" aria-labelledby="c9-shortcuts-title" aria-describedby="c9-shortcuts-intro">
+  <div class="c9-shortcuts-head"><div><p class="c9-eyebrow">KEYBOARD SUPPORT</p><h2 id="c9-shortcuts-title">Navigation &amp; practice keys</h2></div>
+  <button type="button" id="c9-shortcuts-close" class="c9-icon-button" aria-label="Close keyboard help">Close</button></div>
+  <p id="c9-shortcuts-intro">All study destinations are available by Tab and Enter. These shortcuts never grade or save work automatically.</p>
+  <dl class="c9-shortcuts-list"><div><dt><kbd>/</kbd></dt><dd>Open original-source search outside input fields</dd></div>
+  <div><dt><kbd>?</kbd></dt><dd>Open this keyboard help</dd></div>
+  <div><dt><kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd></dt><dd>Move among controls</dd></div>
+  <div><dt><kbd>Esc</kbd></dt><dd>Close an open navigation or help dialog</dd></div>
+  <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Select a Review option, when available</dd></div>
+  <div><dt><kbd>Enter</kbd></dt><dd>Submit a filled Review response</dd></div>
+  <div><dt><kbd>S</kbd></dt><dd>Skip a pending scheduled Review prompt</dd></div>
+  <div><dt><kbd>Arrow keys</kbd> / <kbd>Space</kbd></dt><dd>Move the freehand writing cursor; raise/lower the ungraded pen</dd></div></dl>
+  <p class="c9-shortcuts-note">Writing-pad keys work when its canvas has focus. Practice remains local, temporary and ungraded.</p>
 </dialog>
 </body>
 </html>
