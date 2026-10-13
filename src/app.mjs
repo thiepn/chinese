@@ -863,6 +863,61 @@ if(name==='p36-sentences'){
   librarySelected=SENTENCE_LIBRARY.find(s=>s.source==='original-p32')?.id||librarySelected;
   sentenceUiReset();return go('sentences');
  }
+ if(name==='p39-open'){
+  if(!findP39Guide(id)||!findLesson(id))return;
+  displayLessonId=id;p39CatalogOpen=true;
+  if(route()==='learn'){render();root.querySelector('.lesson-paper')?.scrollIntoView({block:'start'});return;}
+  go('learn');root.querySelector('.lesson-paper')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p39-browse'){
+  p39CatalogOpen=true;
+  if(route()!=='learn')go('learn');
+  const el=root.querySelector('#p39-character-library');if(el){el.closest('details').open=true;el.scrollIntoView({block:'start'});}
+  return;
+ }
+ if(name==='p39-vocab'){
+  p39VocabOpen=true;
+  if(route()!=='explore')go('explore');
+  const el=root.querySelector('#p39-explore-vocabulary');if(el){el.open=true;el.scrollIntoView({block:'start'});}
+  return;
+ }
+ if(name==='p39-theme'){
+  const t=button.dataset.theme;if(t!=='all'&&!P39_THEMES.includes(t))return;
+  p39Theme=t;p39Page=0;p39CatalogOpen=true;return render();
+ }
+ if(name==='p39-status'){
+  const v=button.dataset.status;if(!['all','new','introduced'].includes(v))return;
+  p39Status=v;p39Page=0;p39CatalogOpen=true;return render();
+ }
+ if(name==='p39-prev'||name==='p39-next'){
+  const q=p39Query.trim().toLocaleLowerCase();
+  const n=P39_CHARACTER_GUIDES.filter(g=>(p39Theme==='all'||g.category===p39Theme)&&
+   (p39Status==='all'||(p39Status==='introduced'?(state.learned||[]).includes(g.id):!(state.learned||[]).includes(g.id)))&&
+   (!q||[g.hanzi,g.pinyin,g.meaning,g.category,g.explanation,...g.words.flatMap(w=>[w.hanzi,w.pinyin,w.english])].join(' ').toLocaleLowerCase().includes(q))).length;
+  p39Page=Math.max(0,Math.min(Math.max(0,Math.ceil(n/10)-1),p39Page+(name==='p39-next'?1:-1)));
+  p39CatalogOpen=true;return render();
+ }
+ if(name==='p39-word-prev'||name==='p39-word-next'){
+  p39VocabPage=Math.max(0,Math.min(Math.max(0,Math.ceil(P39_VOCABULARY.length/10)-1),
+   p39VocabPage+(name==='p39-word-next'?1:-1)));
+  if(route()==='explore')p39VocabOpen=true;else p39CatalogOpen=true;
+  return render();
+ }
+ if(name==='p39-write'){
+  const guide=findP39Guide(id),n=Number(button.dataset.index);
+  if(!guide||![0,1].includes(n))return;
+  const i=SENTENCE_TASKS.findIndex(t=>t.id==='p39:'+guide.id+':line'+(n+1));
+  if(i<0)return alertUser('The P39 original writing task is unavailable.','error');
+  sentenceIndex=i;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
+  return go('workshop');
+ }
+ if(name==='p39-sentences'){
+  librarySource='original-p39';libraryQuery='';libraryTopic='all';libraryArea='all';
+  libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
+  librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
+  librarySelected=SENTENCE_LIBRARY.find(x=>x.source==='original-p39')?.id||librarySelected;
+  sentenceUiReset();return go('sentences');
+ }
  if(name==='p35-open-lesson'){
   if(!findP35Guide(id)||!findLesson(id))return;
   displayLessonId=id;
@@ -1570,7 +1625,9 @@ if(name==='p36-sentences'){
 }
 document.querySelector('.topbar')?.addEventListener('click',ev=>{if(ev.target.closest('[data-action="go-settings"]'))go('settings')});
 root.addEventListener('toggle',ev=>{
- if(ev.target.id==='p35-explore-vocabulary')p35VocabOpen=ev.target.open;
+ if(ev.target.id==='p39-explore-vocabulary')p39VocabOpen=ev.target.open;
+ else if(ev.target.matches?.('.p39-course-details')&&route()==='learn')p39CatalogOpen=ev.target.open;
+ else if(ev.target.id==='p35-explore-vocabulary')p35VocabOpen=ev.target.open;
  else if(ev.target.matches?.('.p35-course-details')&&route()==='learn')p35CatalogOpen=ev.target.open;
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
@@ -1583,6 +1640,11 @@ root.addEventListener('input',e=>{
  if(e.target.id==='p37-search'){
   p37Query=e.target.value;p37Page=0;p37BrowseOpen=true;render();
   const input=root.querySelector('#p37-search');if(input){input.focus();input.setSelectionRange(p37Query.length,p37Query.length);}
+  return;
+ }
+ if(e.target.id==='p39-search'){
+  p39Query=e.target.value;p39Page=0;p39CatalogOpen=true;render();
+  const field=root.querySelector('#p39-search');if(field){field.focus();field.setSelectionRange(p39Query.length,p39Query.length);}
   return;
  }
  if(e.target.id==='p35-search'){
