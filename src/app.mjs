@@ -841,8 +841,12 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    const section=button.dataset.section;
    if(!['overview','writing','vocabulary','sentences','connections'].includes(section))return;
    const target=root.querySelector('#c9-'+section);
-   target?.scrollIntoView({block:'start',behavior:'auto'});
-   if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+   if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+   for(const nav of root.querySelectorAll('[data-action="c9-character-jump"]')){
+     const current=nav.dataset.section===section;
+     nav.classList.toggle('is-current',current);
+     if(current)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');
+   }
    return;
  }
  if(name==='c9-word-open'){
