@@ -6,6 +6,7 @@ import {P32_SENTENCE_TOPICS_B} from './p32-sentences-b.mjs';
 import {P35_SENTENCE_TOPICS} from './p35-sentences.mjs';
 import {P36_SENTENCE_TOPICS,P36_SENTENCE_GRAMMAR_IDS} from './p36-sentences.mjs';
 import {P38_SENTENCE_TOPICS,P38_SENTENCE_GRAMMAR_IDS} from './p38-sentences.mjs';
+import {P39_SENTENCE_TOPICS} from './p39-foundations.mjs';
 import {SENTENCE_VARIATIONS} from './sentence-variations.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {WORDS} from './lexicon.mjs';
@@ -18,7 +19,8 @@ const priorTopics=[...SENTENCE_TOPICS_A,...SENTENCE_TOPICS_B];
 const p32Topics=[...P32_SENTENCE_TOPICS_A,...P32_SENTENCE_TOPICS_B];
 const p36Offset=priorTopics.length+p32Topics.length+P35_SENTENCE_TOPICS.length;
 const p38Offset=p36Offset+P36_SENTENCE_TOPICS.length;
-const topics=[...priorTopics,...p32Topics,...P35_SENTENCE_TOPICS,...P36_SENTENCE_TOPICS,...P38_SENTENCE_TOPICS];
+const p39Offset=p38Offset+P38_SENTENCE_TOPICS.length;
+const topics=[...priorTopics,...p32Topics,...P35_SENTENCE_TOPICS,...P36_SENTENCE_TOPICS,...P38_SENTENCE_TOPICS,...P39_SENTENCE_TOPICS];
 export const SENTENCE_TOPICS=Object.freeze(topics.map((t,i)=>Object.freeze({
  id:'topic-'+String(i+1).padStart(2,'0'),title:t[0],area:t[1],purpose:t[2],difficulty:t[3],grammarIds:Object.freeze([...t[4]])
 })));
@@ -29,7 +31,7 @@ export const SENTENCE_LIBRARY=Object.freeze(topics.flatMap((t,i)=>t[5].map((row,
  return Object.freeze({id:'sent-'+String(i*10+j+1).padStart(3,'0'),hanzi:row[0],pinyin:row[1],english:row[2],
  topicId:SENTENCE_TOPICS[i].id,topic:SENTENCE_TOPICS[i].title,area:SENTENCE_TOPICS[i].area,
  purpose:SENTENCE_TOPICS[i].purpose,difficulty:SENTENCE_TOPICS[i].difficulty,
- grammarIds:i>=p38Offset?Object.freeze([P38_SENTENCE_GRAMMAR_IDS[(i-p38Offset)*10+j]]):i>=p36Offset?Object.freeze([P36_SENTENCE_GRAMMAR_IDS[(i-p36Offset)*10+j]]):SENTENCE_TOPICS[i].grammarIds,position:j,variant,source:i<priorTopics.length?'original-p26':i<priorTopics.length+p32Topics.length?'original-p32':i<priorTopics.length+p32Topics.length+P35_SENTENCE_TOPICS.length?'original-p35':i<p38Offset?'original-p36':'original-p38',officialHskLevel:null});
+ grammarIds:i>=p39Offset?SENTENCE_TOPICS[i].grammarIds:i>=p38Offset?Object.freeze([P38_SENTENCE_GRAMMAR_IDS[(i-p38Offset)*10+j]]):i>=p36Offset?Object.freeze([P36_SENTENCE_GRAMMAR_IDS[(i-p36Offset)*10+j]]):SENTENCE_TOPICS[i].grammarIds,position:j,variant,source:i<priorTopics.length?'original-p26':i<priorTopics.length+p32Topics.length?'original-p32':i<priorTopics.length+p32Topics.length+P35_SENTENCE_TOPICS.length?'original-p35':i<p38Offset?'original-p36':i<p39Offset?'original-p38':'original-p39',officialHskLevel:null});
 })));
 const byId=new Map(SENTENCE_LIBRARY.map(s=>[s.id,s]));
 export const findLibrarySentence=id=>byId.get(id)||null;
