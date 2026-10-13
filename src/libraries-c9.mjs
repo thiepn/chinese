@@ -83,17 +83,26 @@ export function renderC9VocabularyLibrary(state,ui,act,esc){
 export function renderC9GrammarDirectory(state,act,esc){
  const events=(state.sentenceEvents||[]).filter(e=>typeof e.taskId==='string'&&e.taskId.startsWith('grammar:'));
  const attempted=new Set(events.map(e=>e.taskId.split(':')[1]));
+ const recent=[...events].reverse().map(e=>GRAMMAR_LESSONS.find(g=>g.id===e.taskId.split(':')[1])).find(Boolean);
  return '<section class="c9-library c9-library-grammar" aria-label="Grammar course discovery">'+
  heading('GRAMMAR','Grammar chapters','Open authored patterns, contrasts and misconception-aware lessons. The existing grammar player performs all exercises.')+
  metrics([[GRAMMAR_LESSONS.length,'Grammar lessons'],[GRAMMAR_CHAPTERS.length,'Chapters'],
  [events.filter(e=>e.correct&&!e.assisted).length,'Independent correct attempts']])+
+ (recent?'<div class="c9-library-continuity"><div><p class="c9-eyebrow">RECENT ORIGINAL PRACTICE</p><h3>'+esc(recent.title)+'</h3><p>Continue the last practiced authored pattern. Attempts are not completion grades.</p></div>'+
+ act('grammar-select','Reopen pattern →','c9-button c9-button--study','data-id="'+esc(recent.id)+'"')+'</div>':'')+
+ '<div class="c9-library-section-head"><div><h3>Learn the original chapter patterns</h3><p>Read an example before choosing a native grammar lesson. Every authored lesson is available below.</p></div></div>'+
  '<div class="c9-library-chapters">'+GRAMMAR_CHAPTERS.map(ch=>{
   const entries=GRAMMAR_LESSONS.filter(g=>g.chapterNumber===ch.number);
   const seen=entries.filter(g=>attempted.has(g.id)).length;
   const next=entries.find(g=>!attempted.has(g.id))||entries[0];
   return '<article class="c9-library-chapter c9-unified-card"><div class="c9-library-tile-head"><span>'+String(ch.number).padStart(2,'0')+'</span><div><h3>'+esc(ch.name)+'</h3><small>'+count(entries.length,'authored lesson')+'</small></div></div>'+
    bar(seen,entries.length,'Lessons with a recorded practice attempt')+
-   '<div class="c9-library-links">'+entries.slice(0,3).map(g=>act('grammar-select',esc(g.title),'c9-library-text-button','data-id="'+esc(g.id)+'"')).join('')+'</div>'+
+   (next?'<section class="c9-library-grammar-preview"><p class="c9-eyebrow">NEXT ORIGINAL PATTERN</p><h4>'+esc(next.title)+'</h4><p>'+esc(next.pattern)+'</p>'+
+     '<div class="c9-library-word-example"><p lang="zh-Hans">'+esc(next.examples[0].hanzi)+'</p><span class="c9-library-pinyin">'+esc(next.examples[0].pinyin)+'</span>'+
+     '<small>'+esc(next.examples[0].english)+'</small></div><p class="c9-library-pitfall"><strong>Common confusion:</strong> '+esc(next.pitfall)+'</p></section>':'')+
+   '<details class="c9-library-chapter-lessons"><summary>All '+entries.length+' lessons</summary><div class="c9-library-links">'+
+     entries.map(g=>act('grammar-select','<strong>'+esc(g.title)+'</strong><small>'+esc(g.pattern)+'</small>','c9-library-text-button','data-id="'+esc(g.id)+'"')).join('')+
+     '</div></details>'+
    (next?act('grammar-select','Open '+esc(next.title)+' →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
    '</article>';
  }).join('')+'</div>'+
@@ -104,21 +113,25 @@ export function renderC9SentenceDirectory(state,act,esc){
  const events=(state.sentenceEvents||[]).filter(e=>typeof e.taskId==='string'&&e.taskId.startsWith('context:'));
  const attempted=new Set(events.map(e=>e.taskId.split(':')[1]));
  const correct=new Set(events.filter(e=>e.correct&&!e.assisted).map(e=>e.taskId.split(':')[1]));
+ const recent=[...events].reverse().map(e=>SENTENCE_LIBRARY.find(s=>s.id===e.taskId.split(':')[1])).find(Boolean);
  return '<section class="c9-library c9-library-sentences" aria-label="Situation-based sentence discovery">'+
  heading('SENTENCES','Explore real situations','Read original complete sentences, compare their meaning, and continue into native writing practice.')+
  metrics([[SENTENCE_LIBRARY.length,'Original sentences'],[saved.size,'Saved expressions'],
  [correct.size,'Expressions with independent correct practice']])+
- '<div class="c9-library-section-head"><h3>Browse situations</h3>'+
+ (recent?'<div class="c9-library-continuity"><div><p class="c9-eyebrow">RECENT ORIGINAL SENTENCE</p><h3 lang="zh-Hans">'+esc(recent.hanzi)+'</h3><p>'+esc(recent.english)+' · '+esc(recent.topic)+'</p></div>'+
+ act('sentence-select','Continue sentence →','c9-button c9-button--study','data-id="'+esc(recent.id)+'"')+'</div>':'')+
+ '<div class="c9-library-section-head"><div><h3>Browse situations</h3><p>These editorial source groups lead to real sentence construction and contextual practice.</p></div>'+
  act('c9-sentence-all','All sentences →','c9-button c9-button--secondary c9-button--small')+'</div>'+
  '<div class="c9-library-topics">'+SENTENCE_TOPICS.map(topic=>{
   const examples=SENTENCE_LIBRARY.filter(s=>s.topicId===topic.id);
   const s=examples[0],savedHere=examples.filter(s=>saved.has(s.id)).length;
   const attempts=examples.filter(s=>attempted.has(s.id)).length;
-  return '<article class="c9-library-topic c9-unified-card"><p class="c9-eyebrow">ORIGINAL TOPIC · COMPLEXITY '+topic.difficulty+'/3</p>'+
+  return '<article class="c9-library-topic c9-unified-card"><p class="c9-eyebrow">'+esc(topic.area)+' · ORIGINAL TOPIC · COMPLEXITY '+topic.difficulty+'/3</p>'+
    '<h4>'+esc(topic.title)+'</h4><p>'+esc(topic.purpose)+'</p>'+
-   (s?'<p class="c9-library-topic-hanzi" lang="zh-Hans">'+esc(s.hanzi)+'</p>':'')+
+   (s?'<div class="c9-library-topic-example"><p class="c9-library-topic-hanzi" lang="zh-Hans">'+esc(s.hanzi)+'</p><span class="c9-library-pinyin">'+esc(s.pinyin)+'</span><small>'+esc(s.english)+'</small></div>':'')+
    '<span>'+examples.length+' sentences · '+savedHere+' saved · '+attempts+' attempted</span>'+
-   act('c9-sentence-topic','Open situation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(topic.id)+'"')+
+   '<div class="c9-library-word-actions">'+act('c9-sentence-topic','Open situation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(topic.id)+'"')+
+   (s?act('sentence-select','First sentence','c9-button c9-button--quiet c9-button--small','data-id="'+esc(s.id)+'"'):'')+'</div>'+
    '</article>';
  }).join('')+'</div>'+
  paragraph('All situations and levels are original authored material, not certified HSK alignment or a new progress engine.')+'</section>';
