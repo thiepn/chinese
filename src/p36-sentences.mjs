@@ -19,6 +19,9 @@ const groups=[
  ['Consequences and cumulative repair','Daily life','build conditional and explanatory sentences in context',['g88','g89','g90','g91','g92','g93','g94']]
 ];
 export const P36_SENTENCE_TOPICS=Object.freeze(groups.map((g,i)=>Object.freeze([
- 'P36 · '+g[0],g[1],g[2],2,Object.freeze(g[3]),
+ 'P36 · '+g[0],g[1],g[2],2,
+ // Grammar IDs follow the actual source sentence positions (three per P36 lesson),
+ // not just a broad thematic label; this preserves precise grammar filtering.
+ Object.freeze([...new Set(Array.from({length:10},(_,j)=>P36_GRAMMAR_ROWS[Math.floor((i*10+j)/3)][0]))]),
  Object.freeze(sentences.slice(i*10,i*10+10).map(x=>Object.freeze([...x])))
 ])));
