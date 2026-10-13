@@ -10,7 +10,12 @@ import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {STORIES} from './stories.mjs';
 
 const sceneDialogue=id=>DIALOGUES.find(d=>d.p33?.id===id);
-const attempted=(state,id)=>new Set((state.dialogueEvents||[]).filter(e=>e.dialogueId===sceneDialogue(id)?.id).map(e=>e.question)).size;
+const attempted=(state,id)=>{
+ const dialogueId=sceneDialogue(id)?.id;
+ return (state.dialogueEvents||[]).filter(e=>e.dialogueId===dialogueId).length+
+  (state.missionEvents||[]).filter(e=>e.dialogueId===dialogueId).length+
+  (state.sentenceEvents||[]).filter(e=>e.taskId.startsWith('p33:'+id+':')).length;
+};
 const say=(act,esc,hanzi,text='Listen')=>act('speak',esc(text),'button outline small','data-text="'+esc(hanzi)+'"');
 export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',compact=false}={}){
  const q=String(query).trim().toLocaleLowerCase();
@@ -34,7 +39,7 @@ export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',com
  return '<button type="button" class="p33-scene-item '+(s.id===current?.id?'active':'')+
  '" data-action="p33-open-scenario" data-id="'+s.id+'" aria-current="'+(s.id===current?.id)+'"'+(!compact&&!matches.includes(s)?' hidden':'')+'><span>'+
  String(s.sequence).padStart(2,'0')+' · '+esc(s.theme)+'</span><strong>'+esc(s.title)+'</strong>'+
- '<small>'+esc(s.goal)+'</small><em>'+s.turns.length+' dialogue turns · '+(count?count+' questions attempted':'Not attempted')+'</em></button>';
+ '<small>'+esc(s.goal)+'</small><em>'+s.turns.length+' dialogue turns · '+(count?count+' attempts':'Not attempted')+'</em></button>';
  }).join('')+'</div>'+
  (!compact?'<p class="p33-no-results"'+(matches.length?' hidden':'')+'>No scenes match this query. Change the category or search term.</p>':'')+
  (compact?'<div class="p33-compact-footer">'+act('p33-browse','Browse all '+P33_SCENARIOS.length+' conversations →','button outline')+'</div>':'')+
