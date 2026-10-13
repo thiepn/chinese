@@ -8,6 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles-p30.css">
   <script type="module" src="./app.mjs"></script>
   <title>Today | Character Study</title>
 </head>
@@ -24,6 +25,7 @@
         <a href="#/learn" data-route="learn"><span aria-hidden="true">▤</span>Learn</a>
         <a href="#/review" data-route="review"><span aria-hidden="true">↻</span>Review</a>
         <a href="#/explore" data-route="explore"><span aria-hidden="true">⌕</span>Explore</a>
+        <a href="#/find" data-route="find"><span aria-hidden="true">↗</span>All Content Search</a>
         <details class="more-tools"><summary>More learning tools</summary><div class="more-tools-links">
         <a href="#/fluency" data-route="fluency"><span aria-hidden="true">◎</span>Fluency Studio</a>
         <a href="#/block" data-route="block"><span aria-hidden="true">▧</span>Study Blocks</a>
@@ -48,7 +50,7 @@
       <div class="side-bottom"><div class="side-dot"></div><div><strong>Original demo lessons</strong><small>No official HSK curriculum installed</small></div></div>
     </aside>
     <div class="workspace">
-      <header class="topbar"><span class="top-caption">YOUR MANDARIN WORKSPACE</span><div class="top-actions"><span id="network-state" class="status-chip">Checking connection</span><button type="button" class="top-link" data-action="go-settings">Settings</button></div></header>
+      <header class="topbar"><span class="top-caption">YOUR MANDARIN WORKSPACE</span><div class="top-actions"><a class="p30-top-search" href="#/find" data-route="find" aria-label="Search across all course content">⌕ Find anything <kbd>/</kbd></a><span id="network-state" class="status-chip">Checking connection</span><button type="button" class="top-link" data-action="go-settings">Settings</button></div></header>
       <main id="main" tabindex="-1" aria-label="Learning workspace">
         <div id="alert-banner" role="status" aria-live="polite"></div>
         <div id="app-content"><div class="loading"><span class="loading-glyph">字</span><p>Opening your learning workspace…</p></div></div>

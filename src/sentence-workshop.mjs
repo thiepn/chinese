@@ -5,7 +5,9 @@ import {SENTENCE_LIBRARY_TASKS} from './sentence-library.mjs';
 import {READING_WRITING_TASKS} from './reading-depth.mjs';
 import {BEGINNER_READING_WRITING_TASKS} from './beginner-reading.mjs';
 import {PATHWAY_TASKS} from './pathway-course.mjs';
-export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS]);
+import {WORKSPACE_COACHING} from './workspace-coaching-p30.mjs';
+export const WORKSPACE_COACHING_TASKS=Object.freeze(WORKSPACE_COACHING.map(note=>Object.freeze({id:'p30-coach:'+note.id,kind:'coaching-production',coachingId:note.id,hanzi:note.hanzi,pinyin:note.pinyin,english:note.english,explanation:note.explanation})));
+export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS,...WORKSPACE_COACHING_TASKS]);
 const SENTENCE_TASK_IDS=new Set(SENTENCE_TASKS.map(t=>t.id));
 export function sentenceTask(index=0){return SENTENCE_TASKS[((index%SENTENCE_TASKS.length)+SENTENCE_TASKS.length)%SENTENCE_TASKS.length];}
 const comparable=s=>String(s).normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
