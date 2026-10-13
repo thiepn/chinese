@@ -18,38 +18,67 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
  const term=plain(query),mode=C9_WORD_FILTERS.includes(filter)?filter:'all';
  const words=WORDS.filter(w=>
   (mode==='all'||(mode==='saved'?saved.has(w.key):mode==='introduced'?introduced.has(w.key):!introduced.has(w.key)))&&
-  (!term||[w.hanzi,w.pinyin,...w.senses,...w.collocations,...w.notes].some(v=>plain(v).includes(term))));
+  (!term||[w.hanzi,w.pinyin,...w.senses,...w.collocations,...w.notes,...w.examples.flatMap(e=>[e.hanzi,e.pinyin,e.english])].some(v=>plain(v).includes(term))));
  const last=Math.max(0,Math.ceil(words.length/PAGE)-1);
  const current=Math.max(0,Math.min(last,Number.isInteger(page)?page:0));
  const results=words.slice(current*PAGE,(current+1)*PAGE);
- return '<div class="c9-library-results-caption" role="status"><strong>'+count(words.length,'matching indexed word')+'</strong><span>Page '+(current+1)+' of '+(last+1)+'</span></div>'+
- (results.length?'<div class="c9-library-words">'+results.map(w=>{
-  const introducedHere=introduced.has(w.key),savedHere=saved.has(w.key),ex=w.examples[0];
-  return '<article class="c9-library-word"><div class="c9-library-word-head"><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong><span>'+esc(w.pinyin)+'</span></div>'+
-   '<div class="c9-library-word-copy"><strong>'+esc(w.senses.slice(0,2).join(' / '))+'</strong>'+
-   '<span class="c9-badge'+(introducedHere?' c9-badge--success':'')+'">'+(introducedHere?'Introduced':savedHere?'Saved':'Not introduced')+'</span>'+
-   (ex?'<p lang="zh-Hans">'+esc(ex.hanzi)+'</p><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small>':
-   '<small>No indexed example sentence for this word.</small>')+
-   '<small>'+esc(w.source)+' · Original vocabulary</small></div>'+
-   '<div class="c9-library-word-actions">'+act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
-   act('c9-word-open','Full details →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+'</div></article>';
- }).join('')+'</div>':renderC9EmptyState('No matching words','Try another word, Pinyin spelling or meaning, or change the saved/introduction filter.'))+
- '<div class="c9-library-pages"><span>'+ (words.length?String(current*PAGE+1)+'–'+String(current*PAGE+results.length):'0')+' of '+words.length+'</span>'+
- '<div class="c9-inline">'+act('c9-word-page','Previous','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(current===0?'disabled':''))+
- act('c9-word-page','Next','c9-button c9-button--secondary c9-button--small','data-delta="1" '+(current===last?'disabled':''))+'</div></div>';
+ const header='<div class="c9-library-results-caption" role="status"><div><strong>'+count(words.length,'matching indexed word')+'</strong>'+
+  '<span>Original source catalog · '+WORDS.length+' indexed words</span></div>'+
+  '<div class="c9-library-result-commands"><span>Page '+(current+1)+' / '+(last+1)+'</span>'+
+  act('c9-word-reset','Reset filters','c9-button c9-button--quiet c9-button--small')+'</div></div>';
+ const cards=results.length?'<div class="c9-library-words">'+results.map(w=>{
+  const intro=introduced.has(w.key),savedHere=saved.has(w.key);
+  return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
+   '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
+   '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
+   (savedHere?'<span class="c9-badge">Saved</span>':'')+'</div></div>'+
+   '<p class="c9-library-word-meaning">'+esc(w.senses.slice(0,3).join(' / '))+'</p>'+
+   (w.collocations.length?'<div class="c9-library-collocations"><span class="c9-eyebrow">AUTHORED COMBINATIONS</span><div>'+
+    w.collocations.slice(0,3).map(c=>'<span lang="zh-Hans">'+esc(c)+'</span>').join('')+'</div></div>':'')+
+   (w.examples.length?'<div class="c9-library-word-example"><span class="c9-eyebrow">SOURCE SENTENCE</span>'+
+    '<p lang="zh-Hans">'+esc(w.examples[0].hanzi)+'</p><span class="c9-library-pinyin">'+esc(w.examples[0].pinyin)+'</span>'+
+    '<small>'+esc(w.examples[0].english)+'</small></div>':'<p class="c9-library-word-fallback">No indexed bilingual example is available.</p>')+
+   '<details class="c9-library-word-more"><summary>Original notes & more examples</summary><div>'+
+   w.notes.slice(0,2).map(n=>'<p>'+esc(n)+'</p>').join('')+
+   w.examples.slice(1,3).map(ex=>'<p><strong lang="zh-Hans">'+esc(ex.hanzi)+'</strong><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small></p>').join('')+
+   '<small>Source: '+esc(w.source.replaceAll('-',' '))+' · '+w.lessonIds.length+' lesson references</small></div></details>'+
+   '<div class="c9-library-word-actions">'+
+   act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
+   act('c9-word-open','Full details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+
+   act('vocabulary-start','Learn word →','c9-button c9-button--study c9-button--small','data-id="'+esc(w.key)+'"')+
+   act('word-bookmark',savedHere?'Unsave':'Save','c9-button c9-button--quiet c9-button--small','data-id="'+esc(w.key)+'"')+
+   '</div></article>';
+ }).join('')+'</div>':renderC9EmptyState('No matching words','Try another word, Pinyin spelling or meaning, or clear the filters.',
+   act('c9-word-reset','Show all words','c9-button c9-button--secondary'));
+ return header+cards+
+ '<nav class="c9-library-pages" aria-label="Word catalog pages"><span>'+
+ (words.length?(current*PAGE+1)+'–'+(current*PAGE+results.length):'0')+' of '+words.length+'</span>'+
+ '<div class="c9-inline">'+act('c9-word-page','← Previous','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(current===0?'disabled':''))+
+ act('c9-word-page','Next →','c9-button c9-button--secondary c9-button--small','data-delta="1" '+(current===last?'disabled':''))+'</div></nav>';
 }
 export function renderC9VocabularyLibrary(state,ui,act,esc){
  const saved=new Set(state.bookmarkedWords||[]),introduced=new Set(state.vocabularyIntroduced||[]);
- return '<section class="c9-library c9-library-vocabulary" aria-label="Canonical vocabulary library">'+
- heading('VOCABULARY','Words in context','Search source-backed words and open the existing dictionary, pronunciation and practice tools.')+
- metrics([[WORDS.length,'Canonical words'],[WORDS.filter(w=>saved.has(w.key)).length,'Saved words'],
+ const journey=state.vocabularyJourney,active=journey&&WORDS.find(w=>w.key===journey.key);
+ return '<section class="c9-library c9-library-vocabulary" aria-labelledby="c9-library-words-title">'+
+ '<header class="c9-library-hero"><div><p class="c9-eyebrow">VOCABULARY · ORIGINAL SOURCE RECORDS</p>'+
+ '<h2 id="c9-library-words-title">Words in context</h2><p>Search complete words, tones, meanings, collocations and authored bilingual examples. Save interesting words and practise with the existing Wordbook.</p></div>'+
+ '<a href="#/explore" class="c9-button c9-button--secondary">Full word dictionary →</a></header>'+
+ metrics([[WORDS.length,'Original indexed words'],[WORDS.filter(w=>saved.has(w.key)).length,'Saved for study'],
  [WORDS.filter(w=>introduced.has(w.key)).length,'Introduced words']])+
- '<div class="c9-library-filters"><label for="c9-word-query">Search Chinese, Pinyin, meanings and examples<input type="search" id="c9-word-query" class="c9-input" value="'+esc(ui.query)+'" placeholder="学校, xué, food…" autocomplete="off" spellcheck="false"></label>'+
+ (active?'<section class="c9-library-continuity" aria-label="Recover your Wordbook lesson"><div>'+
+  '<span class="c9-eyebrow">RECOVER ORIGINAL STUDY</span><h3>Continue '+esc(active.hanzi)+' · '+esc(active.pinyin)+'</h3>'+
+  '<p>'+esc(active.senses[0])+' · Step '+(journey.step+1)+' / 5, saved in your native vocabulary journey.</p></div>'+
+  act('vocabulary-resume','Resume →','c9-button c9-button--study')+'</section>':'')+
+ '<div class="c9-library-section-head"><div><h3>Find a useful word</h3>'+
+ '<p>Filter source entries without altering lesson introduction or review data.</p></div>'+
+ act('c9-word-reset','Reset filters','c9-button c9-button--quiet c9-button--small')+'</div>'+
+ '<div class="c9-library-filters"><label for="c9-word-query">Search characters, Pinyin, meanings and examples'+
+ '<input type="search" id="c9-word-query" class="c9-input" value="'+esc(ui.query)+'" placeholder="学校, xué, learn…" autocomplete="off" spellcheck="false"></label>'+
  '<label for="c9-word-status">Word status<select id="c9-word-status" class="c9-select">'+
  [['all','All indexed words'],['saved','Saved words'],['introduced','Introduced words'],['new','Not introduced']].map(([key,label])=>
   '<option value="'+key+'"'+(ui.filter===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
  '<div id="c9-word-catalog" aria-live="polite">'+c9WordCatalogResults(state,ui,act,esc)+'</div>'+
- paragraph('Word introduction, bookmarking and extra practice are separate from scheduled recall and do not imply HSK mastery.')+'</section>';
+ paragraph('Saving a word and answering supplementary word exercises never grant scheduled-review mastery or official HSK proficiency.')+'</section>';
 }
 export function renderC9GrammarDirectory(state,act,esc){
  const events=(state.sentenceEvents||[]).filter(e=>typeof e.taskId==='string'&&e.taskId.startsWith('grammar:'));
