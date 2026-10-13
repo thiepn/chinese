@@ -10,6 +10,14 @@ import {DIALOGUES} from './dialogues.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {WORDS,canonicalWordKey} from './lexicon.mjs';
 import {DEMO_LESSONS} from './demo-lessons.mjs';
+const earlierSources=Object.freeze([
+ Object.freeze({reading:'p41-01',listening:'p42-01',writing:'p43-01',integrated:'p44-01'}),
+ Object.freeze({reading:'p41-03',listening:'p42-02',writing:'p43-03',integrated:'p44-03'}),
+ Object.freeze({reading:'p41-09',listening:'p42-07',writing:'p43-09',integrated:'p44-09'}),
+ Object.freeze({reading:'p41-07',listening:'p42-06',writing:'p43-07',integrated:'p44-07'}),
+ Object.freeze({reading:'p41-08',listening:'p42-05',writing:'p43-08',integrated:'p44-08'}),
+ Object.freeze({reading:'p41-12',listening:'p42-08',writing:'p43-12',integrated:'p44-12'})
+]);
 export const P46_STAGES=Object.freeze([
  Object.freeze({id:'characters',label:'Characters & words'}),
  Object.freeze({id:'grammar',label:'Grammar & contrasts'}),
@@ -66,6 +74,7 @@ export function p46Lesson(p,state,act,esc,{stage='characters',readerHelp=false,a
  readerIndex=0,listenerIndex=0,readerFeedback=null,listenerFeedback=null,assisted=false}={}){
  if(!p)return '';
  const status=p46Evidence(state,p),chars=status.chars,grammar=p.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
+ const earlier=earlierSources[p.sequence-1];
  const d=status.dialogue?.p46,readQuestion=p.questions[readerIndex],listenerQuestion=d?.questions[listenerIndex];
  const e=readerFeedback?readQuestion?.evidence:null,le=listenerFeedback?listenerQuestion?.evidenceIndex:null;
  const readMode=['beginner-detail','beginner-reason','beginner-sequence'][readerIndex];
@@ -154,6 +163,10 @@ export function p46Lesson(p,state,act,esc,{stage='characters',readerHelp=false,a
  '<p>'+status.reading.length+' original Reader events; '+status.listening.length+' original Dialogue events; '+
  status.nativeWriting.length+' original exact-form writing events. '+
  status.introduced+' / '+chars.length+' canonical new character lessons introduced.</p>'+
+ '<div class="p46-actions">'+(earlier?act('p41-open','P41 related reading →','button outline small','data-id="'+earlier.reading+'"')+
+ act('p42-open','P42 related listening →','button outline small','data-id="'+earlier.listening+'"')+
+ act('p43-open','P43 source-based composition →','button outline small','data-id="'+earlier.writing+'"')+
+ act('p44-open','P44 applied case →','button outline small','data-id="'+earlier.integrated+'"'):'')+'</div>'+
  '<div class="p46-actions">'+act('p46-native-review','Study genuinely due cards in original Review →','button outline')+
  act('p41-browse','P41 intermediate reading →','button outline small')+
  act('p45-enter','P45 independent transfer →','button outline small')+'</div></aside>'+
