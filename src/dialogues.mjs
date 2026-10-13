@@ -1,6 +1,7 @@
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
 import {P37_SCENES} from './p37-scenarios.mjs';
+import {P42_SCENES} from './p42-course.mjs';
 /** Independent demo conversations. Editorial samples; no official HSK membership or audio qualification. */
 const data=[
  ['At the library',[['A','你想看什么书？','Nǐ xiǎng kàn shénme shū?','What book would you like to read?'],['B','我想看一本中文书。','Wǒ xiǎng kàn yì běn Zhōngwén shū.','I want to read a Chinese-language book.'],['A','我们一起找吧。','Wǒmen yìqǐ zhǎo ba.','Let’s look for it together.']],[['What kind of book does B want?','A Chinese-language book.','A book about trains.','A math textbook.'],['What does A suggest doing together?','Looking for the book.','Going home.','Taking a train.']]],
@@ -261,12 +262,16 @@ data.push(...P37_SCENES.map((s,i)=>{
  ['Which Chinese reply completes the final exchange after: '+s.turns[6][3],
   s.turns[7][1],otherA,otherB]]];
 }));
+// P42 original intermediate spoken scenarios append after all historical dialogue IDs.
+data.push(...P42_SCENES.map(s=>[s.title,s.turns,
+ s.questions.map(q=>[q.prompt,q.answer,...q.wrong])]));
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
  const p33=P33_SCENARIOS.find(s=>s.title===title)||null;
  const p34=P34_LISTENING.find(s=>s.title===title)||null;
  const p37=P37_SCENES.find(s=>s.title===title)||null;
- return Object.freeze({id,title,p33,p34,p37,
+ const p42=P42_SCENES.find(s=>s.title===title)||null;
+ return Object.freeze({id,title,p33,p34,p37,p42,
   lines:Object.freeze(lines.map(([speaker,hanzi,pinyin,english])=>Object.freeze({speaker,hanzi,pinyin,english}))),
   questions:Object.freeze(questions.map(([prompt,answer,...wrong],j)=>Object.freeze({
    id:`${id}:q${j}`,prompt,answer,options:Object.freeze([answer,...wrong].sort((a,b)=>a.localeCompare(b)))
