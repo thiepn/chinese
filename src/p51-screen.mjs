@@ -204,10 +204,10 @@ export function p51Lesson(p,state,act,esc,{stage='language',readingHelp=false,
  e.introduced.length+'/5 introduced characters · '+e.scheduled.length+
  ' character groups currently due in the original scheduler.</p>'+
  '<div class="p51-actions">'+act('p51-review','Original due Review →','button outline')+
- (p.priorCase?act('p49-open','P49 prerequisite '+esc(p.priorCase)+' →','button outline',
+ (p.priorCase?act('p50-open','P50 source prerequisite '+esc(p.priorCase)+' →','button outline',
  'data-id="'+esc(p.priorCase)+'"'):'')+
- act('p48-enter','P48 comparative reading →','button outline')+
- act('p47-enter','P47 grammar foundations →','button outline')+'</div></aside>'+
+ act('p50-enter','P50 original advanced discourse →','button outline')+
+ act('p49-enter','P49 independent transfer →','button outline')+'</div></aside>'+
  '<p class="p51-disclosure">All assistance is explicitly shown, all native fixed-reference answers retain their original event writers, and no duplicate scheduled or personal-data store was created. Original instructional material is not official HSK certification.</p>'+
  '</section>';
 }
