@@ -14,7 +14,7 @@ export function sentenceResultsPanel(state,act,esc){
  const pages=Math.max(1,Math.ceil(result.length/18)),page=Math.min(state.page,pages-1);
  const subset=result.slice(page*18,(page+1)*18);
  return {result,pages,page,html:`<div class="p26-list" id="sentence-search-list" role="group" aria-label="Sentence results">
- ${subset.length?subset.map(s=>itemButton(s,state.selected,sentenceBookmarked(state.learner,s.id),act,esc)).join(''):'<p class="muted">No sentences match the current filters. Try removing a topic or search term.</p>'}
+ ${subset.length?subset.map(s=>itemButton(s,state.selected,sentenceBookmarked(state.learner,s.id),act,esc)).join(''):'<div class="c9-library-native-empty" role="status"><strong>No sentences match these source filters.</strong><p>Broaden the search, remove the topic constraint or turn off saved-only browsing.</p></div>'}
  </div><nav class="p26-pager" aria-label="Sentence results pagination"><span>${result.length?`${page*18+1}–${Math.min(result.length,(page+1)*18)}`:'0'} of ${result.length}</span>
  ${act('sentence-prev-page','← Previous','button outline small',page?'':'disabled')}${act('sentence-next-page','Next →','button outline small',page<pages-1?'':'disabled')}</nav>`};
 }
@@ -67,7 +67,7 @@ export function renderSentenceScreen(ui,act,esc,title,gated){
  const purposes=[...new Set(SENTENCE_TOPICS.map(t=>t.purpose))];
  return `${title('CONTEXTUAL SENTENCE LIBRARY','Make Mandarin sentences useful.','Study authored sentences inside everyday situations, understand grammar patterns, save expressions and practise complete Chinese production.')}${gated()}
  <section class="simple-panel p26-overview"><div class="p26-stats">${[[SENTENCE_LIBRARY.length,'Authored base sentences'],[SENTENCE_TOPICS.length,'Daily situations'],[SENTENCE_LIBRARY.filter(s=>s.variant).length,'Written transformations'],[saved,'Saved expressions']].map(([n,label])=>`<div><strong>${n}</strong><span>${label}</span></div>`).join('')}</div><p>Original Simplified Mandarin teaching content; neither official HSK corpus nor native-recorded audio. The library uses the same source-linked course and sentence practice systems.</p></section>
- <section class="p26-layout ${ui.focus&&!ui.feedback?'p26-focus':''}"><aside class="p26-browser" ${ui.focus&&!ui.feedback?'aria-hidden="true"':''}><div class="p26-browser-head"><h2>Find a sentence</h2><label for="sentence-library-query">Search Chinese, Pinyin, English or grammar</label><input id="sentence-library-query" type="search" value="${esc(ui.query)}" placeholder="Search a situation or phrase">
+ <section class="p26-layout ${ui.focus&&!ui.feedback?'p26-focus':''}"><aside class="p26-browser" ${ui.focus&&!ui.feedback?'inert aria-hidden="true"':''}><div class="p26-browser-head"><h2>Find a sentence</h2><label for="sentence-library-query">Search Chinese, Pinyin, English or grammar</label><input id="sentence-library-query" type="search" value="${esc(ui.query)}" placeholder="Search a situation or phrase">
  <div class="p26-filters"><label>Collection<select id="sentence-library-collection"><option value="all" ${ui.source==='all'?'selected':''}>All original sentences</option><option value="original-p32" ${ui.source==='original-p32'?'selected':''}>P32 · Grammar sentence mastery</option><option value="original-p26" ${ui.source==='original-p26'?'selected':''}>Earlier sentence library</option></select></label><label>Situation<select id="sentence-library-topic"><option value="all">All situations</option>${SENTENCE_TOPICS.map(t=>`<option value="${t.id}" ${ui.topic===t.id?'selected':''}>${esc(t.title)}</option>`).join('')}</select></label>
  <label>Topic area<select id="sentence-library-area"><option value="all">All areas</option>${areas.map(a=>`<option value="${esc(a)}" ${ui.area===a?'selected':''}>${esc(a)}</option>`).join('')}</select></label>
  <label>Complexity<select id="sentence-library-level"><option value="all">All levels</option>${[1,2,3].map(n=>`<option value="${n}" ${String(ui.difficulty)===String(n)?'selected':''}>${n} / 3</option>`).join('')}</select></label>
@@ -77,7 +77,8 @@ export function renderSentenceScreen(ui,act,esc,title,gated){
  <label class="p26-saved-filter"><input id="sentence-library-saved" type="checkbox" ${ui.savedOnly?'checked':''}> Saved sentences only</label>
  <div class="button-row">${act('sentence-show-saved',saved?'Study saved sentences →':'Browse all →','button outline small')}</div></div>
  <div id="sentence-results">${result.html}</div></aside>
- <article class="p26-detail"><div class="p26-heading"><p class="eyebrow">EXPRESSION ${esc(chosen.id.slice(-3))} / ${SENTENCE_LIBRARY.length} · ${esc(chosen.topic.toUpperCase())}</p>
+ <article class="p26-detail"><div class="p26-heading"><div class="c9-language-stage"><span>01 · UNDERSTAND</span><span>02 · EXPLORE CONTEXT</span><span>03 · PRODUCE CHINESE</span></div><p class="eyebrow">EXPRESSION ${esc(chosen.id.slice(-3))} / ${SENTENCE_LIBRARY.length} · ${esc(chosen.topic.toUpperCase())}</p>
+ <div class="c9-sentence-source-meta"><span>Source: ${esc(chosen.source.replaceAll('-',' '))}</span><span>${sentenceBookmarked(ui.learner,chosen.id)?'Saved':'Not saved'}</span><span>${(ui.learner.sentenceEvents||[]).filter(e=>typeof e.taskId==='string'&&e.taskId.startsWith('context:'+chosen.id+':')).length} recorded attempts</span></div>
  <div class="p26-heading-flags"><span>Difficulty ${chosen.difficulty}/3</span><span>${esc(chosen.purpose)}</span></div>
  ${ui.focus&&!ui.feedback?'<h2 class="p26-hidden-reference">Reference hidden for focused recall</h2>':`<h2 lang="zh-Hans">${esc(chosen.hanzi)}</h2>`}
  ${(!ui.focus||ui.feedback)&&ui.showPinyin?`<p class="p26-pinyin">${esc(chosen.pinyin)}</p>`:''}
@@ -89,6 +90,6 @@ export function renderSentenceScreen(ui,act,esc,title,gated){
  <div class="p26-detail-nav">${act('sentence-previous','← Previous','button outline small')}${act('sentence-next','Next sentence →','button primary')}${act('sentence-workshop','Write in Sentence Workshop →','button outline small')}</div>
  ${(!ui.focus||ui.feedback)?nearbyPanel(ctx,act,esc):''}${taskPanel(ui,chosen,act,esc)}
  </article></section>${(!ui.focus||ui.feedback)?referenceLinks(ctx,act,esc):''}
- <section class="simple-panel p26-end"><h3>Use the sentence in the rest of the course</h3><p>Continue into a grammar lesson, a character study unit or a topical reading. Authored example sentences extend the existing curriculum rather than replacing it.</p>
+ <section class="simple-panel p26-end c9-language-handoff"><h3>Use the sentence in the rest of the course</h3><p>Continue into a grammar lesson, a character study unit or a topical reading. Authored example sentences extend the existing curriculum rather than replacing it.</p>
  <div class="button-row">${act('sentence-next','Continue discovering sentences →','button primary')}${act('sentence-workshop','Sentence Workshop →','button outline')}${act('grammar-open','Grammar course →','button outline')}</div></section>`;
 }
