@@ -7,7 +7,7 @@ export function beginnerReadingShelf(state,story,act,esc,level='all'){
  <div class="p28-shelf-list">${items.map((s,i)=>act('open-story-link',`<span>${String(i+1).padStart(2,'0')}</span><strong>${esc(s.title)}</strong><small>${esc(s.theme)} · ${esc(s.beginner.grade)}</small>`,'p28-shelf-item '+(s.id===story?.id?'selected':''),`data-id="${s.id}"`)).join('')}</div></section>`;
 }
 export function beginnerReadingHeading(story,act,esc,part='all',wordShown=false){
- if(!story?.beginner)return '';
+ if(!story?.beginner||story.beginner.p38)return '';
  const b=story.beginner;
  return `<section class="p28-intro"><p class="eyebrow">${esc(b.grade)} · ${story.lines.length}-sentence reading</p><p><strong>Communicative purpose:</strong> ${esc(b.purpose)}. ${esc(b.bridge)}</p>
  <div class="p28-learning-steps"><span>01 · Understand the situation</span><span>02 · Follow the outcome</span><span>03 · Find evidence</span><span>04 · Rebuild Chinese</span></div>
@@ -18,7 +18,7 @@ export function beginnerReadingHeading(story,act,esc,part='all',wordShown=false)
  </div></div></section>`;
 }
 export function beginnerPartMarker(story,i,act,esc,explained=''){
- if(!story?.beginner||i!==0&&i!==3)return '';
+ if(!story?.beginner||story.beginner.p38||i!==0&&i!==3)return '';
  const part=i===0?0:1;
  return `<div class="p28-part-heading"><div><span class="eyebrow">PART ${part+1} / 2</span><h3>${part===0?'Who, where and when?':'What happens next?'}</h3></div>
  ${act('beginner-explain-part',explained===String(part)?'Hide strategy':'Reading strategy','button outline small',`data-part="${part}"`)}
