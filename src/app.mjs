@@ -923,6 +923,13 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    }
    refreshC9DiscoveryResults();return;
  }
+ if(name==='c9-learn-jump'){
+   const target=button.dataset.target;
+   if(!['c9-units-title','c9-browse-title','c9-content-title','c9-original-curriculum-title'].includes(target))return;
+   const node=document.getElementById(target);
+   if(node){node.scrollIntoView({block:'start',behavior:'auto'});node.setAttribute('tabindex','-1');node.focus({preventScroll:true});}
+   return;
+ }
  if(name==='c9-discovery-reset'){
    c9LearnQuery='';c9LearnUnit='all';c9LearnStatus='all';c9LearnKind='all';
    c9LearnSaved=false;c9LearnPage=0;render();
