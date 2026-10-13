@@ -7,6 +7,7 @@ import {VOCABULARY_ADDITIONS} from './vocabulary-expansion.mjs';
 import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P35_VOCABULARY} from './p35-vocabulary.mjs';
+import {P39_VOCABULARY} from './p39-foundations.mjs';
 import {P37_SCENES} from './p37-scenarios.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
@@ -73,6 +74,16 @@ for(const original of P35_VOCABULARY){
  for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
  for(const id of original.lessonIds)if(!record.lessonIds.includes(id))record.lessonIds.push(id);
  if(!record.source.includes('p35'))record.source=record.source==='original-demonstration'?'original-p35':record.source+'-and-p35';
+}
+// P39 source-attested intermediate words extend original canonical keys.
+for(const original of P39_VOCABULARY){
+ const record=entry(original.hanzi,original.pinyin);
+ if(!record.senses.includes(original.meaning))record.senses.push(original.meaning);
+ for(const note of original.notes)if(note&&!record.notes.includes(note))record.notes.push(note);
+ for(const example of original.examples)addExample(record,example);
+ for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
+ for(const lessonId of original.lessonIds)if(!record.lessonIds.includes(lessonId))record.lessonIds.push(lessonId);
+ if(!record.source.includes('p39'))record.source=record.source==='original-demonstration'?'original-p39':record.source+'-and-p39';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
