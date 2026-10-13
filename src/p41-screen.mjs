@@ -2,6 +2,7 @@
  * beginnerQuestion, grammar and Sentence Workshop own all assessment evidence.
  */
 import {P41_PASSAGES} from './p41-readings.mjs';
+import {P43_UNITS} from './p43-course.mjs';
 import {STORIES} from './stories.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {WORDS} from './lexicon.mjs';
@@ -55,6 +56,7 @@ export function p41PassagePanel(story,act,esc,{section='all',pinyin=false,englis
  const grammar=p.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  const matches=WORDS.filter(w=>w.hanzi.length>=2&&p.lines.some(l=>l.hanzi.includes(w.hanzi))).slice(0,10);
  const chars=P39_CHARACTER_GUIDES.filter(g=>p.lines.some(l=>l.hanzi.includes(g.hanzi))).slice(0,6);
+ const writing=P43_UNITS.find(u=>u.readingId===p.id);
  return '<section class="p41-study" aria-label="P41 four-section passage">'+
  '<div class="p41-study-head"><div><p class="eyebrow">INTERMEDIATE READING '+p.sequence+' / '+P41_PASSAGES.length+
  ' · '+esc(p.format.toUpperCase())+'</p><h3>'+esc(p.title)+'</h3><p>'+esc(p.notes.teaching)+'</p></div>'+
@@ -78,6 +80,7 @@ export function p41PassagePanel(story,act,esc,{section='all',pinyin=false,englis
  '<article><h4>Evidence questions</h4><p>Use the existing three native modes: detail, reason and sequence. Each explanation points to a precise original line after you answer.</p></article></div>'+
  '<div class="p41-crosslinks"><h4>Continue with the original course</h4><div class="button-row">'+
  act('p41-write','Reconstruct the final sentence from memory →','button primary','data-id="'+p.id+'"')+
+ (writing?act('p43-open','Write a two-paragraph evidence-based summary →','button outline','data-id="'+writing.id+'"'):'')+
  act('p41-next-reading','Next reading →','button outline')+
  act('p41-browse','All P41 readings →','button outline')+'</div>'+
  (grammar.length?'<div class="p41-links"><strong>Original P40 and earlier grammar</strong>'+grammar.map(g=>act('grammar-select',esc(g.title)+' →','button outline small','data-id="'+g.id+'"')).join('')+'</div>':'')+
