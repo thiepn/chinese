@@ -77,3 +77,21 @@ export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  });
 }));
 export const findP38Passage=id=>P38_PASSAGES.find(p=>p.id===id)||null;
+
+/** Adapt P38 to the original P28/P34 reader-source contract and its modes.
+ * Three distinct source-evidence questions, cloze, sentence ordering, one
+ * native writer and a three-section progression per reading.
+ */
+export const P38_READING_ROWS=Object.freeze(P38_PASSAGES.map(p=>{
+ const spoken=p.lines.map(x=>Object.freeze([x.hanzi,x.pinyin,x.english]));
+ const questions=p.questions.map(q=>Object.freeze([q.prompt,q.answer,...q.options.slice(1),
+  q.evidence,q.explanation]));
+ const word=p.focusWord,cloze=p.cloze;
+ return Object.freeze([
+ p.title,p.theme,'Read a '+p.format+'; '+p.notes.teaching,p.level,spoken,questions,
+ p.chunks,[cloze.line,cloze.word,...cloze.choices.slice(1)],
+ [p.writing.prompt,p.writing.hanzi,p.writing.pinyin,p.writing.english,p.writing.explanation],
+ p.grammarIds,[word.hanzi,word.pinyin,word.english],
+ 'Authorial P38 reading adaptation of P37 '+p.originSceneId+'. '+p.notes.misconception
+ ]);
+}));
