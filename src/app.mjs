@@ -702,6 +702,87 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p43-enter'){
+  if(route()!=='production')return go('production');
+  root.querySelector('.p43-studio')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p43-open'||name==='p43-next'){
+  const selected=name==='p43-next'?P43_UNITS[(P43_UNITS.findIndex(x=>x.id===p43UnitId)+1)%P43_UNITS.length]?.id:id;
+  if(!findP43Unit(selected))return;
+  if(selected!==p43UnitId&&(p43Draft.trim()||p43Revisions.length)){
+   p43Pending=selected;return go('production');
+  }
+  if(selected!==p43UnitId){
+   p43UnitId=selected;p43Draft='';p43Revisions=[];p43Version=-1;p43Step='plan';
+   p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Reviewed=[];p43Pending='';
+  }
+  location.hash='#/production/'+selected;return render();
+ }
+ if(name==='p43-filter'){
+  if(!['all','1','2','3'].includes(button.dataset.filter))return;
+  p43Filter=button.dataset.filter;return render();
+ }
+ if(name==='p43-stay'){p43Pending='';return render();}
+ if(name==='p43-discard'){p43Pending='discard';return render();}
+ if(name==='p43-switch-confirm'){
+  if(!p43Pending)return;
+  const selected=p43Pending==='discard'?p43UnitId:p43Pending;
+  if(!findP43Unit(selected))return;
+  p43Draft='';p43Revisions=[];p43Version=-1;p43Reviewed=[];
+  p43Assisted=false;p43ModelRevealed=false;p43SourceRevealed=false;
+  p43Step='plan';p43UnitId=selected;p43Pending='';
+  location.hash='#/production/'+selected;return render();
+ }
+ if(name==='p43-step'){
+  const stage=button.dataset.step;if(!['plan','compose','revise','speak'].includes(stage))return;
+  p43Step=stage;return render();
+ }
+ if(name==='p43-evidence'){p43SourceRevealed=!p43SourceRevealed;if(p43SourceRevealed)p43Assisted=true;return render();}
+ if(name==='p43-reveal'){p43ModelRevealed=!p43ModelRevealed;if(p43ModelRevealed)p43Assisted=true;return render();}
+ if(name==='p43-model-audio'){
+  const unit=findP43Unit(p43UnitId);if(!unit)return;
+  p43Assisted=true;return speak(unit.lines.map(l=>l.hanzi).join(' '),demoSpeechRate);
+ }
+ if(name==='p43-save'){
+  if(!p43Draft.trim())return alertUser('Write your own draft before saving an in-tab snapshot.','error');
+  if(p43Revisions.at(-1)===p43Draft)return alertUser('Current writing matches the last saved snapshot.');
+  p43Revisions=[...p43Revisions.slice(-7),p43Draft];
+  p43Version=p43Revisions.length-1;
+  alertUser('Revision snapshot held in this tab only; copy it elsewhere for a durable backup.');return render();
+ }
+ if(name==='p43-version'){
+  const i=Number(button.dataset.version);
+  if(!Number.isInteger(i)||i<0||i>=p43Revisions.length)return;
+  p43Version=i;return render();
+ }
+ if(name==='p43-restore'){
+  const i=Number(button.dataset.version);
+  if(!Number.isInteger(i)||i<0||i>=p43Revisions.length)return;
+  p43Draft=p43Revisions[i];p43Reviewed=[];
+  render();root.querySelector('#p43-draft')?.focus();return;
+ }
+ if(name==='p43-criterion'){
+  const key=id;
+  if(!P43_REVIEW_CRITERIA.some(c=>c.id===key))return;
+  p43Reviewed=p43Reviewed.includes(key)?p43Reviewed.filter(x=>x!==key):[...p43Reviewed,key];
+  return render();
+ }
+ if(name==='p43-copy'){
+  if(!p43Draft.trim())return;
+  if(!navigator.clipboard?.writeText)return alertUser('Clipboard API unavailable. Select and copy the text in the editor manually.','error');
+  try{await navigator.clipboard.writeText(p43Draft);alertUser('Your current writing was copied to the clipboard.');}
+  catch(e){alertUser('Clipboard permission was denied. Select and copy the writing in the editor manually.','error');}
+  return;
+ }
+ if(name==='p43-workshop'){
+  const i=Number(button.dataset.line);
+  if(![4,9].includes(i))return;
+  const targetId='p43:'+p43UnitId+':line'+i;
+  const index=SENTENCE_TASKS.findIndex(t=>t.id===targetId);
+  if(index<0)return alertUser('Original P43 exact-reconstruction task is unavailable.','error');
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=p43Assisted;
+  return go('workshop');
+ }
  if(name==='p41-open'){
   const passage=findP41Passage(id),target=passage&&STORIES.find(st=>st.beginner?.p41?.id===id);
   if(!target)return alertUser('The original P41 reading is unavailable.','error');
@@ -1808,6 +1889,27 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p43-draft'){
+  p43Draft=e.target.value;
+  if(p43Reviewed.length){
+   p43Reviewed=[];
+   for(const b of root.querySelectorAll('[data-action="p43-criterion"]')){
+    b.classList.remove('checked');b.setAttribute('aria-checked','false');
+    const marker=b.querySelector('.p43-check');if(marker)marker.textContent='○';
+   }
+  }
+  const count=Array.from(p43Draft).filter(ch=>/\p{Script=Han}/u.test(ch)).length;
+  const label=root.querySelector('.p43-draft-status span');
+  if(label)label.textContent=count+' Hanzi characters · in-tab draft only';
+  for(const b of root.querySelectorAll('[data-action="p43-save"],[data-action="p43-copy"]'))b.disabled=!p43Draft.trim();
+  return;
+ }
+ if(e.target.id==='p43-search'){
+  p43Query=e.target.value;render();
+  const field=root.querySelector('#p43-search');
+  if(field){field.focus();field.setSelectionRange(p43Query.length,p43Query.length);}
+  return;
+ }
  if(e.target.id==='p41-search'){
   p41Query=e.target.value;p41Page=0;p41BrowseOpen=true;render();
   const input=root.querySelector('#p41-search');
