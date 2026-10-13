@@ -2,7 +2,9 @@
  * not official HSK levels and do not affect canonical scheduled review. */
 import {BEGINNER_READING_A} from './beginner-reading-a.mjs';
 import {BEGINNER_READING_B} from './beginner-reading-b.mjs';
-const raw=[...BEGINNER_READING_A,...BEGINNER_READING_B];
+import {P34_READING_ROWS} from './p34-course.mjs';
+const historicalCount=BEGINNER_READING_A.length+BEGINNER_READING_B.length;
+const raw=[...BEGINNER_READING_A,...BEGINNER_READING_B,...P34_READING_ROWS];
 function fallbackChunks(lines){
  const target=lines[0][0];
  const units=Array.from(target);
@@ -18,7 +20,7 @@ export const BEGINNER_READING_ROWS=Object.freeze(raw.map((r,i)=>{
   prompt:q[0],answer:q[1],options:Object.freeze(q.slice(1,5)),evidence:q[5],
   explanation:q[6]}));
  const meta=Object.freeze({
-  id:'beginner-'+String(i+1).padStart(2,'0'),
+  id:'beginner-'+String(i+1).padStart(2,'0'),source:i>=historicalCount?'original-p34':'original-p28',
   grade:level===1?'First steps':'Building confidence',
   level,format:'short connected reading',purpose,
   questions:Object.freeze(modeQuestions),
