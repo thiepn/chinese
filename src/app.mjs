@@ -6,7 +6,7 @@ import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './cha
 import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro} from './media-c9.mjs';
-import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
+import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import {renderC9NativeAction,renderC9PageHeading,renderC9ContextNav} from './ui-c9.mjs';
@@ -748,7 +748,15 @@ function applySettings(){
  const chromeTheme=document.querySelector('meta[name="theme-color"]');
  if(chromeTheme)chromeTheme.setAttribute('content',dark?'#10191C':'#F8F7F3');
 }
-function renderFind(){const ui={query:p30Query,kind:p30Kind,saved:p30Saved,page:p30Page,state};return '<div class="c9-search-page">'+renderC9SearchIntro(state,ui,action,esc)+'<div class="c9-search-native">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
+function c9FindContext(){return {query:p30Query,kind:p30Kind,saved:p30Saved,page:p30Page,state};}
+function refreshC9FindWorkbench(){
+ const panel=$('c9-search-assist');
+ if(panel)panel.outerHTML=renderC9SearchAssist(state,c9FindContext(),action,esc);
+}
+function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
+  renderC9SearchIntro(state,ui,action,esc)+
+  '<div class="c9-search-native" id="c9-original-search" tabindex="-1">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
+
 function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page){const target=`#/${page}`;if(location.hash===target){render();return;}location.hash=target;}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
@@ -760,6 +768,38 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='c9-find-reset'){
   p30Query='';p30Kind='all';p30Saved=false;p30Page=0;
   render();root.querySelector('#p30-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-find-focus'){
+  const input=root.querySelector('#p30-query');
+  input?.scrollIntoView({block:'nearest',behavior:'auto'});input?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-find-type'){
+  const kind=button.dataset.kind;
+  if(!FIND_CATEGORIES.some(([key])=>key===kind))return;
+  p30Kind=kind;p30Page=0;render();
+  root.querySelector('#p30-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-find-example'){
+  const kind=button.dataset.kind,query=button.dataset.query;
+  if(!FIND_CATEGORIES.some(([key])=>key===kind)||typeof query!=='string'||query.length>120)return;
+  const source=COURSE_INDEX.some(x=>x.kind===kind&&(x.title===query||x.title.includes(query)));
+  if(!source)return alertUser('This original source is unavailable.','error');
+  p30Query=query;p30Kind=kind;p30Saved=false;p30Page=0;render();
+  const input=root.querySelector('#p30-query');input?.scrollIntoView({block:'nearest',behavior:'auto'});
+  input?.focus({preventScroll:true});announceC9Interaction('Searching the original '+kind+' sources for '+query+'.');return;
+ }
+ if(name==='c9-find-saved'){
+  p30Saved=!p30Saved;p30Page=0;render();
+  root.querySelector('#p30-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-progress-source'){
+  if(!findLesson(id))return alertUser('Original lesson unavailable.','error');
+  return act({dataset:{action:'open-lesson',id}});
+ }
+ if(name==='c9-tool-jump'){
+  const native=root.querySelector('#c9-original-tool');
+  if(native){native.scrollIntoView({block:'start',behavior:'auto'});native.focus({preventScroll:true});}
+  return;
  }
  if(name==='c9-settings-target'){
   const target=button.dataset.target;
@@ -1786,7 +1826,7 @@ root.addEventListener('input',e=>{
  if(e.target.id==='p30-query'){
  p30Query=e.target.value;p30Page=0;
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
- return;
+ refreshC9FindWorkbench();return;
 }if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
  libraryTyped=e.target.value;
  const button=root.querySelector('[data-action="sentence-answer"]');if(button)button.disabled=!libraryTyped.trim();return;
