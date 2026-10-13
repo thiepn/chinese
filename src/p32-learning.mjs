@@ -45,7 +45,7 @@ export const P32_REPAIR_CASES=Object.freeze(rows.map((r,i)=>{
   taskId:'p32:fix:'+id});
 }));
 export const P32_CORRECTION_TASKS=Object.freeze(P32_REPAIR_CASES.map(r=>Object.freeze({
- id:r.taskId,grammarId:r.grammarId,kind:'p32-grammar-correction',p32Correction:true,
+ id:r.taskId,grammarId:r.grammarId,grammarTitle:r.title,kind:'p32-grammar-correction',p32Correction:true,
  english:'Repair this learner sentence for the intended meaning: '+r.incorrect+' Intended meaning: '+r.correct.english,
  hanzi:r.correct.hanzi,pinyin:r.correct.pinyin,
  explanation:r.pitfall,incorrect:r.incorrect
