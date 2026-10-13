@@ -197,7 +197,8 @@ export function p51Lesson(p,state,act,esc,{stage='language',readingHelp=false,
  '<p>'+esc(m.purpose)+'</p></div>').join(''):'')+
  (a?.models||[]).map((m,i)=>'<div class="p51-actions">'+
  act('p51-argument-write','Exact-form model '+(i+1)+' →','button outline','data-index="'+i+'"')+'</div>').join('')+
- '<div class="p51-actions">'+act('p51-next','Apply to another debate →','button primary')+'</div></div>':'')+
+ '<div class="p51-actions">'+act('p51-next','Apply to another debate →','button primary')+
+  act('p52-enter','Advance to P52 independent source synthesis →','button outline')+'</div></div>':'')+
  '<aside class="p51-evidence"><h3>Original learner evidence</h3>'+
  '<p>'+e.reading.length+' Reader submissions · '+e.listening.length+
  ' Dialogue submissions · '+e.writing.length+' exact Sentence Workshop events · '+
@@ -206,7 +207,8 @@ export function p51Lesson(p,state,act,esc,{stage='language',readingHelp=false,
  '<div class="p51-actions">'+act('p51-review','Original due Review →','button outline')+
  (p.priorCase?act('p50-open','P50 source prerequisite '+esc(p.priorCase)+' →','button outline',
  'data-id="'+esc(p.priorCase)+'"'):'')+
- act('p50-enter','P50 original advanced discourse →','button outline')+
+ act('p52-enter','Advance to P52 cross-source synthesis →','button primary')+
+  act('p50-enter','P50 original advanced discourse →','button outline')+
  act('p49-enter','P49 independent transfer →','button outline')+'</div></aside>'+
  '<p class="p51-disclosure">All assistance is explicitly shown, all native fixed-reference answers retain their original event writers, and no duplicate scheduled or personal-data store was created. Original instructional material is not official HSK certification.</p>'+
  '</section>';

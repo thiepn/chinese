@@ -42,7 +42,7 @@ export const P52_READING_ROWS=Object.freeze(P52_CASES.map(c=>{
  return Object.freeze([c.title,c.theme,c.goal,9,
   Object.freeze(c.lines.map(l=>Object.freeze([l.hanzi,l.pinyin,l.english]))),
   Object.freeze(c.questions.map(q=>Object.freeze([q.prompt,...q.options,q.evidence,q.explanation]))),
-  Object.freeze(chunks),Object.freeze([0,focus,focus,'调查','以后','因为']),
+  Object.freeze(chunks),Object.freeze([0,focus,'采访','以后','因为','讨论']),
   Object.freeze(['Reconstruct this source-qualified final conclusion.',end.hanzi,end.pinyin,end.english,c.pitfall]),
   Object.freeze(['g157','g162','g164']),Object.freeze(['记录','jìlù','record']),c.goal]);
 }));
