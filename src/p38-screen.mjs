@@ -30,7 +30,7 @@ export function p38Overview(state,act,esc,{compact=false,stage='all',query='',pa
  }).length;
  return '<section class="p38-overview" aria-label="P38 elementary graded reader">'+
  '<div class="p38-summary"><div><p class="eyebrow">P38 · ELEMENTARY READING STUDIO</p><h2>Read beyond isolated sentences</h2>'+
- '<p>30 ten-line connected readings adapted from original P37 everyday conversations, with new original contextual framing, three source-evidence questions each, cloze, ordering, pronunciation and independent written recall. The reading adaptations are not independent official HSK texts.</p>'+
+ '<p>30 twelve-line connected readings adapted from original P37 everyday conversations, with new original contextual framing, three source-evidence questions each, cloze, ordering, pronunciation and independent written recall. The reading adaptations are not independent official HSK texts.</p>'+
  '<p class="p38-source-note">These texts transparently reuse earlier original P37 Mandarin conversations. No published reading corpus, official HSK certification, live service data or audio recording is included.</p></div>'+
  '<div class="p38-metrics"><strong>'+count(state)+' / 30</strong><span>Readings attempted</span>'+
  '<strong>'+done+' / 30</strong><span>With a correct independent answer, not certified mastery</span>'+
@@ -43,7 +43,7 @@ export function p38Overview(state,act,esc,{compact=false,stage='all',query='',pa
  '<div class="p38-grid">'+candidates.slice(current*10,(current+1)*10).map(p=>{
  const st=storyFor(p),started=st?attempted(state,st.id):[];
  return act('p38-open','<span>'+String(p.sequence).padStart(2,'0')+' · '+esc(p.theme)+' · Stage '+(p.level-1)+'</span>'+
- '<strong>'+esc(p.title)+'</strong><small>'+esc(p.format)+' · 10 connected sentences</small>'+
+ '<strong>'+esc(p.title)+'</strong><small>'+esc(p.format)+' · 12 connected sentences</small>'+
  '<em>'+(started.length?started.length+' practice attempts':'Not attempted')+
  (st&&(state.bookmarkedStories||[]).includes(st.id)?' · Saved':'')+'</em>',
  'p38-passage-card '+(selected===p.id?'selected':''),'data-id="'+p.id+'"');
@@ -56,14 +56,14 @@ export function p38Overview(state,act,esc,{compact=false,stage='all',query='',pa
 export function p38PassagePanel(story,act,esc,{section='all',pinyin=false,english=false,assisted=false}={}){
  const p=story?.beginner?.p38;if(!p)return '';
  const selected=section==='all'?'all':String(section);
- const groups=[[0,2,'Situation'],[3,6,'What happens'],[7,9,'Outcome']];
+ const groups=[[0,3,'Situation'],[4,8,'What happens'],[9,11,'Outcome']];
  const matchedWords=WORDS.filter(w=>w.hanzi.length>=2&&p.lines.some(l=>l.hanzi.includes(w.hanzi))).slice(0,8);
  const grammar=p.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  const related=P37_SCENES.find(s=>s.id===p.originSceneId);
  return '<section class="p38-study" aria-label="P38 reading support and progression"><div class="p38-study-head">'+
  '<div><p class="eyebrow">READING '+p.sequence+' / 30 · '+esc(p.format.toUpperCase())+' · STAGE '+(p.level-1)+'</p>'+
  '<h3>'+esc(p.title)+'</h3><p>'+esc(p.notes.teaching)+'</p></div>'+
- '<span>10 lines · 3 sections</span></div>'+
+ '<span>12 lines · 3 sections</span></div>'+
  '<div class="p38-section-controls" role="group" aria-label="Select section">'+
  [['all','Full passage'],...groups.map((g,i)=>[String(i+1),String(i+1)+'. '+g[2]])].map(([v,n])=>
  act('p38-section',n,'p38-section-button '+(v===selected?'active':''),'data-section="'+v+'" aria-pressed="'+(v===selected)+'"')).join('')+
