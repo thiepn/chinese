@@ -264,7 +264,7 @@ export function renderC9SearchAssist(state,ui,act,esc){
   ['reading',STORIES[0]?.title,'Reading'],
   ['dialogues',DIALOGUES[0]?.title,'Conversation']
  ].filter(([k,v])=>v);
- return '<section class="c9-utility-panel c9-unified-card c9-search-assist" aria-labelledby="c9-search-workbench-title">'+
+ return '<section id="c9-search-assist" class="c9-utility-panel c9-unified-card c9-search-assist" aria-labelledby="c9-search-workbench-title">'+
  '<div class="c9-utility-section-heading"><div><p class="c9-eyebrow">ORIGINAL INDEX · LIVE FILTER CONTEXT</p>'+
  '<h2 id="c9-search-workbench-title">Find the right source</h2></div>'+
  act('c9-find-focus','Focus the full search →','c9-button c9-button--primary c9-button--small')+'</div>'+
