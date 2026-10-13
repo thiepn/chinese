@@ -1,3 +1,5 @@
+import {P33_SCENARIOS} from './p33-scenarios.mjs';
+import {P34_LISTENING} from './p34-course.mjs';
 /** Independent demo conversations. Editorial samples; no official HSK membership or audio qualification. */
 const data=[
  ['At the library',[['A','你想看什么书？','Nǐ xiǎng kàn shénme shū?','What book would you like to read?'],['B','我想看一本中文书。','Wǒ xiǎng kàn yì běn Zhōngwén shū.','I want to read a Chinese-language book.'],['A','我们一起找吧。','Wǒmen yìqǐ zhǎo ba.','Let’s look for it together.']],[['What kind of book does B want?','A Chinese-language book.','A book about trains.','A math textbook.'],['What does A suggest doing together?','Looking for the book.','Going home.','Taking a train.']]],
@@ -11,9 +13,250 @@ const data=[
  ['Homework help',[['A','这个问题我不明白。','Zhège wèntí wǒ bù míngbai.','I do not understand this question.'],['B','我再说一次，好吗？','Wǒ zài shuō yí cì, hǎo ma?','Shall I explain it once more?'],['A','谢谢，请慢一点。','Xièxie, qǐng màn yìdiǎn.','Thank you, a little slower please.']],[['What difficulty does A have?','Understanding the question.','Finding a train.','Buying a new book.'],['What does A ask B to change?','Speak more slowly.','Speak more loudly.','Leave the room.']]],
  ['Evening routine',[['A','你晚上常常做什么？','Nǐ wǎnshang chángcháng zuò shénme?','What do you often do in the evening?'],['B','我先写作业，再看书。','Wǒ xiān xiě zuòyè, zài kàn shū.','I do homework first, then read.'],['A','我晚上常常听音乐。','Wǒ wǎnshang chángcháng tīng yīnyuè.','I often listen to music at night.']],[['Which activity does B do first?','Homework.','Reading.','Listening to music.'],['How are the speakers’ routines different?','A often listens to music; B does homework and reads.','Both only watch films.','Neither reads books.']]]
 ];
+// P22 original conversations; existing dialogue IDs and histories remain unchanged.
+data.push(...[
+  [
+    "First day in class",
+    [
+      [
+        "A",
+        "你好，你是新来的学生吗？",
+        "Nǐ hǎo, nǐ shì xīn lái de xuésheng ma?",
+        "Hello, are you a new student?"
+      ],
+      [
+        "B",
+        "是的，我叫小林。",
+        "Shì de, wǒ jiào Xiǎolín.",
+        "Yes, my name is Xiaolin."
+      ],
+      [
+        "A",
+        "欢迎！请坐这里。",
+        "Huānyíng! Qǐng zuò zhèlǐ.",
+        "Welcome! Please sit here."
+      ]
+    ],
+    [
+      [
+        "Who is B?",
+        "A new student.",
+        "A bus driver.",
+        "A shopkeeper."
+      ],
+      [
+        "What does A ask B to do?",
+        "Sit here.",
+        "Buy a book.",
+        "Call a friend."
+      ]
+    ]
+  ],
+  [
+    "At the fruit shop",
+    [
+      [
+        "A",
+        "请问，这些苹果多少钱？",
+        "Qǐngwèn, zhèxiē píngguǒ duōshao qián?",
+        "Excuse me, how much are these apples?"
+      ],
+      [
+        "B",
+        "三个十五元。",
+        "Sān ge shíwǔ yuán.",
+        "Fifteen yuan for three."
+      ],
+      [
+        "A",
+        "好，我要三个，谢谢。",
+        "Hǎo, wǒ yào sān ge, xièxie.",
+        "All right, I would like three, thank you."
+      ]
+    ],
+    [
+      [
+        "How much are three apples?",
+        "Fifteen yuan.",
+        "Three yuan.",
+        "Fifty yuan."
+      ],
+      [
+        "How many apples does A buy?",
+        "Three.",
+        "Five.",
+        "One."
+      ]
+    ]
+  ],
+  [
+    "Finding the bank",
+    [
+      [
+        "A",
+        "请问，银行在哪边？",
+        "Qǐngwèn, yínháng zài nǎbiān?",
+        "Excuse me, which way is the bank?"
+      ],
+      [
+        "B",
+        "在书店左边。",
+        "Zài shūdiàn zuǒbiān.",
+        "To the left of the bookstore."
+      ],
+      [
+        "A",
+        "谢谢，我知道了。",
+        "Xièxie, wǒ zhīdào le.",
+        "Thanks, I understand now."
+      ]
+    ],
+    [
+      [
+        "Where is the bank?",
+        "To the left of the bookstore.",
+        "Inside the bookstore.",
+        "Behind the station."
+      ],
+      [
+        "What does A say at the end?",
+        "They understand the direction.",
+        "They cannot walk.",
+        "They need a ticket."
+      ]
+    ]
+  ],
+  [
+    "Arranging a meeting",
+    [
+      [
+        "A",
+        "你明天能来我家吗？",
+        "Nǐ míngtiān néng lái wǒ jiā ma?",
+        "Can you come to my home tomorrow?"
+      ],
+      [
+        "B",
+        "能。我们几点见面？",
+        "Néng. Wǒmen jǐ diǎn jiànmiàn?",
+        "Yes. What time shall we meet?"
+      ],
+      [
+        "A",
+        "下午三点吧。",
+        "Xiàwǔ sān diǎn ba.",
+        "How about three in the afternoon?"
+      ]
+    ],
+    [
+      [
+        "When will they meet?",
+        "Tomorrow afternoon at three.",
+        "Today at eight.",
+        "Tonight at ten."
+      ],
+      [
+        "What place does A suggest?",
+        "A's home.",
+        "The library.",
+        "The station."
+      ]
+    ]
+  ],
+  [
+    "A cold evening",
+    [
+      [
+        "A",
+        "外面很冷，你想喝什么？",
+        "Wàimiàn hěn lěng, nǐ xiǎng hē shénme?",
+        "It is cold outside. What would you like to drink?"
+      ],
+      [
+        "B",
+        "我想喝一杯热茶。",
+        "Wǒ xiǎng hē yì bēi rè chá.",
+        "I would like a cup of hot tea."
+      ],
+      [
+        "A",
+        "好，我也喝茶。",
+        "Hǎo, wǒ yě hē chá.",
+        "Okay, I will have tea too."
+      ]
+    ],
+    [
+      [
+        "What drink does B want?",
+        "Hot tea.",
+        "Cold water.",
+        "Milk."
+      ],
+      [
+        "What does A decide?",
+        "Also to drink tea.",
+        "To go shopping.",
+        "To eat fish."
+      ]
+    ]
+  ],
+  [
+    "What should we cook?",
+    [
+      [
+        "A",
+        "今天晚上我们做什么饭？",
+        "Jīntiān wǎnshang wǒmen zuò shénme fàn?",
+        "What meal shall we cook tonight?"
+      ],
+      [
+        "B",
+        "我想吃米饭和鱼。",
+        "Wǒ xiǎng chī mǐfàn hé yú.",
+        "I want rice and fish."
+      ],
+      [
+        "A",
+        "好，我去买菜。",
+        "Hǎo, wǒ qù mǎi cài.",
+        "All right, I will go buy groceries."
+      ]
+    ],
+    [
+      [
+        "What does B want to eat?",
+        "Rice and fish.",
+        "A bowl of noodles.",
+        "Fruit only."
+      ],
+      [
+        "What will A do?",
+        "Buy groceries.",
+        "Meet the teacher.",
+        "Go to sleep."
+      ]
+    ]
+  ]
+]);
+// P25 grammar-focused dialogue lessons, appended without renumbering earlier conversations.
+data.push(...[["Choosing a lesson",[["A","你今天想学语法还是练习听力？","Nǐ jīntiān xiǎng xué yǔfǎ háishi liànxí tīnglì?","Do you want to study grammar or practice listening today?"],["B","我先学语法，然后练习听力。","Wǒ xiān xué yǔfǎ, ránhòu liànxí tīnglì.","I'll study grammar first, then practice listening."],["A","好，我们先看这个例子。","Hǎo, wǒmen xiān kàn zhège lìzi.","Okay, let's look at this example first."]],[["What will B do first?","Study grammar.","Practice speaking.","Go home."],["What do they look at next?","An example.","A map.","A menu."]]],["This book or that book?",[["A","你喜欢这本书还是那本书？","Nǐ xǐhuan zhè běn shū háishi nà běn shū?","Do you like this book or that one?"],["B","这本书比较容易，但是那本书更有趣。","Zhè běn shū bǐjiào róngyì, dànshì nà běn shū gèng yǒuqù.","This book is relatively easy, but the other one is more interesting."],["A","那我们先读这本吧。","Nà wǒmen xiān dú zhè běn ba.","Then let's read this one first."]],[["Which book is easier?","This book.","That book.","Both are equally easy."],["Which book is more interesting?","That book.","This book.","Neither book."]]],["Asking permission",[["A","老师，我可以进来吗？","Lǎoshī, wǒ kěyǐ jìnlái ma?","Teacher, may I come in?"],["B","可以，请进。","Kěyǐ, qǐng jìn.","Yes, please come in."],["A","对不起，我来晚了。","Duìbuqǐ, wǒ lái wǎn le.","Sorry, I arrived late."]],[["Why does A apologize?","They arrived late.","They lost a textbook.","They missed the train."],["Does B permit A to enter?","Yes.","No.","B does not answer."]]],["After class",[["A","我们下课以后去哪儿？","Wǒmen xià kè yǐhòu qù nǎr?","Where shall we go after class?"],["B","先去书店吧，我想买一本书。","Xiān qù shūdiàn ba, wǒ xiǎng mǎi yì běn shū.","Let's go to the bookstore first; I want to buy a book."],["A","好，然后我们去喝茶。","Hǎo, ránhòu wǒmen qù hē chá.","Okay, then we'll go for tea."]],[["Where will they go first?","The bookstore.","The restaurant.","Home."],["What will they do afterward?","Go for tea.","Take a train.","Go to school."]]],["A plan if it rains",[["A","如果周末下雨，我们怎么办？","Rúguǒ zhōumò xià yǔ, wǒmen zěnme bàn?","What should we do if it rains this weekend?"],["B","那就来我家吧，我们一起做饭。","Nà jiù lái wǒ jiā ba, wǒmen yìqǐ zuò fàn.","Then come to my home; we'll cook together."],["A","好，我可以带水果。","Hǎo, wǒ kěyǐ dài shuǐguǒ.","Okay, I can bring fruit."]],[["What is their rainy-day plan?","Cook together at B's home.","Go to the park.","Study at school."],["What can A bring?","Fruit.","A dictionary.","Train tickets."]]],["A phone call for help",[["A","你好，请问你现在方便吗？","Nǐ hǎo, qǐngwèn nǐ xiànzài fāngbiàn ma?","Hello, is now a convenient time?"],["B","方便，你有什么问题？","Fāngbiàn, nǐ yǒu shénme wèntí?","Yes. What question do you have?"],["A","这个句子我不明白，可以请你解释一下吗？","Zhège jùzi wǒ bù míngbai, kěyǐ qǐng nǐ jiěshì yíxià ma?","I don't understand this sentence. Could you explain it?"]],[["What does A need?","An explanation of a sentence.","A train ticket.","An appointment with a doctor."],["Is B available now?","Yes.","No.","B does not say."]]]]);
+// Original P33 scenarios join the historical dialogue catalogue without renumbering.
+data.push(...P33_SCENARIOS.map((s,i)=>{
+ const wrongA=P33_SCENARIOS[(i+9)%P33_SCENARIOS.length].turns[7][1];
+ const wrongB=P33_SCENARIOS[(i+17)%P33_SCENARIOS.length].turns[7][1];
+ const completion=[
+  'Which Chinese response completes this exchange after: '+s.turns[6][3],
+  s.turns[7][1],wrongA,wrongB
+ ];
+ return [s.title,s.turns,[...s.questions,completion]];
+}));
+// P34 listening scripts follow historical dialogues without renumbering.
+data.push(...P34_LISTENING.map(s=>[s.title,s.lines,s.questions]));
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
- return Object.freeze({id,title,
+ const p33=P33_SCENARIOS.find(s=>s.title===title)||null;
+ const p34=P34_LISTENING.find(s=>s.title===title)||null;
+ return Object.freeze({id,title,p33,p34,
   lines:Object.freeze(lines.map(([speaker,hanzi,pinyin,english])=>Object.freeze({speaker,hanzi,pinyin,english}))),
   questions:Object.freeze(questions.map(([prompt,answer,...wrong],j)=>Object.freeze({
    id:`${id}:q${j}`,prompt,answer,options:Object.freeze([answer,...wrong].sort((a,b)=>a.localeCompare(b)))

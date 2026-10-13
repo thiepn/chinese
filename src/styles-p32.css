@@ -1,0 +1,28 @@
+/* P32 source-only learning UI: compact, accessible, flat rectangular controls. */
+.p32-hub{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);margin:20px 0;padding:clamp(14px,2vw,23px);min-width:0}
+.p32-hub-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,210px);align-items:start;gap:16px}
+.p32-hub-head h2{font-size:clamp(19px,2.4vw,27px);line-height:1.27;margin:7px 0 10px}
+.p32-hub-head>div>p:not(.eyebrow){font-size:13px;color:var(--sub);line-height:1.65;max-width:660px}
+.p32-hub-metrics{display:flex;flex-direction:column;gap:5px;border-left:1px solid var(--line);padding:8px 0 10px 18px;font-variant-numeric:tabular-nums}
+.p32-hub-metrics strong{font-size:25px;line-height:1.2}
+.p32-hub-metrics span{font-size:12px;color:var(--sub)}
+.p32-hub-metrics small{color:var(--accent);font-size:11px}
+.p32-hub-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.p32-hub-actions>.button{min-height:42px}
+.p32-hub-examples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.p32-example-button{display:flex;flex-direction:column;text-align:left;min-height:103px;min-width:0;gap:8px;padding:12px;background:var(--background);border:1px solid var(--line);border-radius:2px;color:var(--ink);cursor:pointer}
+.p32-example-button:hover,.p32-example-button:focus-visible{border-color:var(--accent);background:var(--soft)}
+.p32-example-button strong{font-size:17px;line-height:1.5;font-weight:650;overflow-wrap:anywhere}
+.p32-example-button small{font-size:11px;line-height:1.5;color:var(--sub);overflow-wrap:anywhere}
+.p32-repair{border:1px solid var(--line);border-left:3px solid var(--accent);margin:16px 0 22px;padding:clamp(13px,2vw,20px);background:var(--surface)}
+.p32-repair-head{display:flex;justify-content:space-between;align-items:start;gap:14px;flex-wrap:wrap}
+.p32-repair-head h3{font-size:19px;margin:6px 0 12px}
+.p32-repair-head>span{font-size:11px;color:var(--sub);max-width:180px}
+.p32-repair>p{font-size:13px;line-height:1.65;margin:9px 0}
+.p32-repair .p32-wrong{font-size:21px;line-height:1.5;padding:12px 14px;background:var(--soft);overflow-wrap:anywhere;margin-bottom:12px}
+.p32-repair-tip{color:var(--sub);max-width:760px}
+.p32-repair .button{margin:10px 0;min-height:43px}
+.p32-repair .muted{font-size:11px;line-height:1.6}
+@media(max-width:860px){.p32-hub-examples{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.p32-hub-head{grid-template-columns:minmax(0,1fr)}.p32-hub-metrics{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}.p32-hub-examples{grid-template-columns:minmax(0,1fr)}.p32-hub-actions{flex-direction:column}.p32-hub-actions>.button{width:100%;justify-content:center}.p32-repair .button{width:100%}}
+@media(prefers-reduced-motion:reduce){.p32-hub *, .p32-repair *{scroll-behavior:auto}}

@@ -2,6 +2,9 @@
  * These have not been reviewed by a language teacher. No implied HSK level.
  */
 import { DEMO_LESSONS } from './demo-lessons.mjs';
+import {WORDS} from './lexicon.mjs';
+import {CONNECTED_READING_ROWS} from './connected-reading-content.mjs';
+import {BEGINNER_READING_ROWS} from './beginner-reading-content.mjs';
 const raw = [
  ['A school morning','School & routine',[
   ['我每天早上喝水。','Wǒ měitiān zǎoshang hē shuǐ.','I drink water every morning.'],
@@ -88,8 +91,356 @@ const raw = [
   [1,'公园','公园','学校','书店','银行'],
   ['我','和家人','去公园','走路','。']]
 ];
-export const STORIES=Object.freeze(raw.map(([title,theme,lines,question,cloze,order],i)=>Object.freeze({
- id:`story-${String(i+1).padStart(2,'0')}`,title,theme,origin:'original-editorial-demo',approval:'DEMO_ONLY',officialHskLevel:null,
+// P22 connected readings; original story IDs and order remain unchanged.
+raw.push(...[
+  [
+    "An early start",
+    "Routine & time",
+    [
+      [
+        "我早上七点起床。",
+        "Wǒ zǎoshang qī diǎn qǐchuáng.",
+        "I get up at seven in the morning."
+      ],
+      [
+        "我先喝一杯牛奶。",
+        "Wǒ xiān hē yì bēi niúnǎi.",
+        "First I drink a glass of milk."
+      ],
+      [
+        "八点我去学校上课。",
+        "Bā diǎn wǒ qù xuéxiào shàng kè.",
+        "At eight I go to school for class."
+      ]
+    ],
+    [
+      "When does the speaker get up?",
+      "At seven.",
+      "At six.",
+      "At eight.",
+      "At nine."
+    ],
+    [
+      0,
+      "起床",
+      "起床",
+      "工作",
+      "睡觉",
+      "回家"
+    ],
+    [
+      "我",
+      "早上七点",
+      "起床",
+      "。"
+    ]
+  ],
+  [
+    "Directions to the bookstore",
+    "Directions & places",
+    [
+      [
+        "我想买一本中文书。",
+        "Wǒ xiǎng mǎi yì běn Zhōngwén shū.",
+        "I want to buy a Chinese book."
+      ],
+      [
+        "书店在银行右边。",
+        "Shūdiàn zài yínháng yòubiān.",
+        "The bookstore is to the right of the bank."
+      ],
+      [
+        "朋友跟我一起去。",
+        "Péngyou gēn wǒ yìqǐ qù.",
+        "A friend goes with me."
+      ]
+    ],
+    [
+      "Where is the bookstore?",
+      "To the right of the bank.",
+      "In front of the station.",
+      "Inside the school.",
+      "Behind the park."
+    ],
+    [
+      1,
+      "右边",
+      "右边",
+      "左边",
+      "上面",
+      "下面"
+    ],
+    [
+      "书店",
+      "在银行",
+      "右边",
+      "。"
+    ]
+  ],
+  [
+    "The new student's question",
+    "School & questions",
+    [
+      [
+        "她是新来的学生。",
+        "Tā shì xīn lái de xuésheng.",
+        "She is a new student."
+      ],
+      [
+        "她想问老师一个问题。",
+        "Tā xiǎng wèn lǎoshī yí ge wèntí.",
+        "She wants to ask the teacher a question."
+      ],
+      [
+        "老师请她坐下。",
+        "Lǎoshī qǐng tā zuòxià.",
+        "The teacher asks her to sit down."
+      ]
+    ],
+    [
+      "What does the student want to do?",
+      "Ask the teacher a question.",
+      "Go shopping.",
+      "Buy a train ticket.",
+      "Eat dinner."
+    ],
+    [
+      1,
+      "问题",
+      "问题",
+      "朋友",
+      "手机",
+      "学校"
+    ],
+    [
+      "她",
+      "想问老师",
+      "一个问题",
+      "。"
+    ]
+  ],
+  [
+    "Choosing lunch",
+    "Food & preferences",
+    [
+      [
+        "中午我们一起吃饭。",
+        "Zhōngwǔ wǒmen yìqǐ chī fàn.",
+        "At noon we eat together."
+      ],
+      [
+        "我想吃米饭和鱼。",
+        "Wǒ xiǎng chī mǐfàn hé yú.",
+        "I want rice and fish."
+      ],
+      [
+        "朋友想喝一杯热茶。",
+        "Péngyou xiǎng hē yì bēi rè chá.",
+        "My friend wants a cup of hot tea."
+      ]
+    ],
+    [
+      "What does the speaker want to eat?",
+      "Rice and fish.",
+      "Milk and bread.",
+      "Only fruit.",
+      "Noodles and eggs."
+    ],
+    [
+      1,
+      "米饭",
+      "米饭",
+      "牛奶",
+      "水果",
+      "热水"
+    ],
+    [
+      "我",
+      "想吃",
+      "米饭",
+      "和鱼",
+      "。"
+    ]
+  ],
+  [
+    "A cold rainy day",
+    "Weather & home",
+    [
+      [
+        "今天外面下雨了。",
+        "Jīntiān wàimiàn xià yǔ le.",
+        "It has started raining outside today."
+      ],
+      [
+        "天气很冷，我不想出去。",
+        "Tiānqì hěn lěng, wǒ bù xiǎng chūqù.",
+        "It is cold, and I do not want to go out."
+      ],
+      [
+        "我在家看书，喝热水。",
+        "Wǒ zài jiā kàn shū, hē rè shuǐ.",
+        "I read at home and drink hot water."
+      ]
+    ],
+    [
+      "Why does the speaker stay inside?",
+      "It is cold and raining.",
+      "The teacher asked them to.",
+      "They lost their phone.",
+      "They are expecting a train."
+    ],
+    [
+      0,
+      "下雨",
+      "下雨",
+      "工作",
+      "起床",
+      "见面"
+    ],
+    [
+      "今天",
+      "外面",
+      "下雨",
+      "了",
+      "。"
+    ]
+  ],
+  [
+    "Meeting at three",
+    "Plans & friendship",
+    [
+      [
+        "你明天下午能来吗？",
+        "Nǐ míngtiān xiàwǔ néng lái ma?",
+        "Can you come tomorrow afternoon?"
+      ],
+      [
+        "我们三点在公园见面。",
+        "Wǒmen sān diǎn zài gōngyuán jiànmiàn.",
+        "We will meet at the park at three."
+      ],
+      [
+        "以后我们一起玩游戏。",
+        "Yǐhòu wǒmen yìqǐ wán yóuxì.",
+        "Afterward we will play games together."
+      ]
+    ],
+    [
+      "When will they meet?",
+      "At three in the afternoon.",
+      "At eight in the morning.",
+      "Tonight at ten.",
+      "On Monday morning."
+    ],
+    [
+      1,
+      "见面",
+      "见面",
+      "睡觉",
+      "找钱",
+      "上课"
+    ],
+    [
+      "我们",
+      "三点",
+      "在公园",
+      "见面",
+      "。"
+    ]
+  ],
+  [
+    "A book for a friend",
+    "Gifts & possession",
+    [
+      [
+        "我有两本中文书。",
+        "Wǒ yǒu liǎng běn Zhōngwén shū.",
+        "I have two Chinese books."
+      ],
+      [
+        "我想给朋友一本书。",
+        "Wǒ xiǎng gěi péngyou yì běn shū.",
+        "I want to give a book to a friend."
+      ],
+      [
+        "她说谢谢，我很高兴。",
+        "Tā shuō xièxie, wǒ hěn gāoxìng.",
+        "She says thank you, and I am happy."
+      ]
+    ],
+    [
+      "What does the speaker give the friend?",
+      "A Chinese book.",
+      "A cup of tea.",
+      "A mobile phone.",
+      "A train ticket."
+    ],
+    [
+      1,
+      "给朋友",
+      "给朋友",
+      "跟朋友",
+      "听歌",
+      "找人"
+    ],
+    [
+      "我",
+      "想",
+      "给朋友",
+      "一本书",
+      "。"
+    ]
+  ],
+  [
+    "A shop with good fruit",
+    "Shopping & money",
+    [
+      [
+        "我们走进一家水果店。",
+        "Wǒmen zǒu jìn yì jiā shuǐguǒ diàn.",
+        "We enter a fruit shop."
+      ],
+      [
+        "我买了三个苹果。",
+        "Wǒ mǎi le sān ge píngguǒ.",
+        "I bought three apples."
+      ],
+      [
+        "朋友说这些苹果很好吃。",
+        "Péngyou shuō zhèxiē píngguǒ hěn hǎochī.",
+        "My friend says these apples are delicious."
+      ]
+    ],
+    [
+      "How many apples does the speaker buy?",
+      "Three.",
+      "Two.",
+      "Five.",
+      "Eight."
+    ],
+    [
+      1,
+      "苹果",
+      "苹果",
+      "水果",
+      "米饭",
+      "牛奶"
+    ],
+    [
+      "我",
+      "买了",
+      "三个",
+      "苹果",
+      "。"
+    ]
+  ]
+]);
+// P25 original grammar-focused connected readings appended after P22.
+raw.push(...[["A question about tomorrow","Questions and plans",[["明天你要去学校吗？","Míngtiān nǐ yào qù xuéxiào ma?","Are you going to school tomorrow?"],["我明天没有课，但是要去图书馆。","Wǒ míngtiān méiyǒu kè, dànshì yào qù túshūguǎn.","I have no classes tomorrow, but I am going to the library."],["你呢？你明天想做什么？","Nǐ ne? Nǐ míngtiān xiǎng zuò shénme?","How about you? What do you want to do tomorrow?"]],["Where will the speaker go despite having no classes?","To the library.","To the bank.","To a restaurant.","To the train station."],[1,"但是","但是","因为","或者","所以"],["我明天","没有课","，","但是","要去图书馆","。"]],["A quiet corner","Location and existence",[["教室里有很多学生。","Jiàoshì lǐ yǒu hěn duō xuésheng.","There are many students in the classroom."],["我的朋友坐在窗户旁边。","Wǒ de péngyou zuò zài chuānghu pángbiān.","My friend sits by the window."],["桌子上有一本中文书。","Zhuōzi shàng yǒu yì běn Zhōngwén shū.","There is a Chinese book on the table."]],["Where is the Chinese book?","On the table.","Behind the window.","Inside the schoolbag.","Under the chair."],[2,"一本","一本","一杯","一个","一张"],["桌子上","有","一本","中文书","。"]],["A rainy-day decision","Condition and consequence",[["如果明天下雨，我们就不去公园。","Rúguǒ míngtiān xià yǔ, wǒmen jiù bú qù gōngyuán.","If it rains tomorrow, we will not go to the park."],["我们可以在家一起看书。","Wǒmen kěyǐ zài jiā yìqǐ kàn shū.","We can read together at home."],["如果天气好，我们还是去公园吧。","Rúguǒ tiānqì hǎo, wǒmen háishi qù gōngyuán ba.","If the weather is good, let's go to the park after all."]],["What is their plan if it rains?","Read together at home.","Go to the park anyway.","Travel by train.","Buy two books."],[0,"如果","如果","虽然","但是","还是"],["如果","明天下雨","，","我们","就不去公园","。"]],["Comparing two books","Comparison and degree",[["我有两本中文书。","Wǒ yǒu liǎng běn Zhōngwén shū.","I have two Chinese books."],["这本书比那本书容易。","Zhè běn shū bǐ nà běn shū róngyì.","This book is easier than that one."],["但是我最喜欢那本书里的故事。","Dànshì wǒ zuì xǐhuan nà běn shū lǐ de gùshi.","But I like the stories in the other book best."]],["Which book is easier?","This book.","The other book.","They are equally difficult.","The speaker does not say."],[1,"比","比","更","最","很"],["这本书","比","那本书","容易","。"]],["A present for the teacher","Recipients and classifiers",[["今天我们想给老师买礼物。","Jīntiān wǒmen xiǎng gěi lǎoshī mǎi lǐwù.","Today we want to buy a gift for the teacher."],["我们买了一本书和一张卡片。","Wǒmen mǎi le yì běn shū hé yì zhāng kǎpiàn.","We bought a book and a card."],["明天我把礼物给老师。","Míngtiān wǒ bǎ lǐwù gěi lǎoshī.","Tomorrow I will give the gift to the teacher."]],["What do they buy?","A book and a card.","Two cups of tea.","A computer and a phone.","A bus ticket."],[1,"一张","一张","一杯","一本","一个"],["我们","买了","一本书","和","一张卡片","。"]],["Two different abilities","Ability and permission",[["我会说一点中文，但是说得不太好。","Wǒ huì shuō yìdiǎn Zhōngwén, dànshì shuō de bú tài hǎo.","I can speak a little Chinese, but not very well."],["今天我不能去上课，因为我生病了。","Jīntiān wǒ bù néng qù shàng kè, yīnwèi wǒ shēngbìng le.","I cannot attend class today because I am ill."],["老师说我可以在家休息。","Lǎoshī shuō wǒ kěyǐ zài jiā xiūxi.","The teacher says I may rest at home."]],["Why can't the speaker attend class?","They are ill.","They cannot speak Chinese.","They are traveling.","The teacher is absent."],[1,"因为","因为","虽然","但是","或者"],["今天","我不能去上课","，","因为","我生病了","。"]]]);
+raw.push(...CONNECTED_READING_ROWS);
+raw.push(...BEGINNER_READING_ROWS);
+export const STORIES=Object.freeze(raw.map(([title,theme,lines,question,cloze,order,extended,beginner],i)=>Object.freeze({
+ id:`story-${String(i+1).padStart(2,'0')}`,title,theme,origin:beginner?(beginner.source==='original-p34'?'original-p34-beginner-reading':'original-p28-beginner-reading'):extended?'original-p27-connected-reading':'original-editorial-demo',approval:'DEMO_ONLY',officialHskLevel:null,extended:extended||null,beginner:beginner||null,
  lines:Object.freeze(lines.map(([hanzi,pinyin,english])=>Object.freeze({hanzi,pinyin,english}))),
  question:Object.freeze({prompt:question[0],answer:question[1],options:Object.freeze(question.slice(1))}),
  cloze:Object.freeze({line:cloze[0],answer:cloze[1],options:Object.freeze(cloze.slice(2))}),
@@ -103,6 +454,12 @@ const extras=[
 const glossaryMap=new Map();
 for(const lesson of DEMO_LESSONS){glossaryMap.set(lesson.hanzi,{hanzi:lesson.hanzi,pinyin:lesson.pinyin,english:lesson.meaning,lessonIds:[lesson.id]});for(const w of lesson.words){const key=w.hanzi.replace(/\s/g,'');if(!glossaryMap.has(key))glossaryMap.set(key,{...w,hanzi:key,lessonIds:[]});if(!glossaryMap.get(key).lessonIds.includes(lesson.id))glossaryMap.get(key).lessonIds.push(lesson.id);}}
 for(const [hanzi,pinyin,english] of extras)if(!glossaryMap.has(hanzi))glossaryMap.set(hanzi,{hanzi,pinyin,english,lessonIds:[]});
+// P23 authored complete words become tappable in the existing reading view.
+for(const word of WORDS){
+ const current=glossaryMap.get(word.hanzi);
+ if(!current)glossaryMap.set(word.hanzi,{hanzi:word.hanzi,pinyin:word.pinyin,english:word.senses[0]||'',lessonIds:[...word.lessonIds],wordKey:word.key});
+ else current.wordKey??=word.key;
+}
 export const GLOSSARY=Object.freeze([...glossaryMap.values()].map(v=>Object.freeze({...v,lessonIds:Object.freeze(v.lessonIds)})));
 const tokenWords=[...glossaryMap.keys()].filter(Boolean).sort((a,b)=>b.length-a.length||a.localeCompare(b));
 export function tokenizeSentence(hanzi){const result=[];for(let i=0;i<hanzi.length;){const key=tokenWords.find(w=>hanzi.startsWith(w,i));if(key){result.push({text:key,entry:glossaryMap.get(key)});i+=key.length;}else{const ch=String.fromCodePoint(hanzi.codePointAt(i));result.push({text:ch,entry:null});i+=ch.length;}}return result;}
@@ -110,11 +467,11 @@ export function storyExercise(story,mode){if(!story||!STORIES_BY_ID.has(story.id
  if(mode==='comprehension')return {kind:'choice',prompt:story.question.prompt,answer:story.question.answer,options:story.question.options};
  if(mode==='cloze'){const {line,answer,options}=story.cloze;const sentence=story.lines[line].hanzi;const i=sentence.indexOf(answer);if(i<0)return null;return {kind:'choice',prompt:sentence.slice(0,i)+'＿＿'+sentence.slice(i+answer.length),answer,options};}
  if(mode==='ordering'){return {kind:'ordering',prompt:'Put the Chinese chunks in the correct order.',answer:story.order.join(''),chunks:story.order};}
- if(mode==='pronunciation'){const text=story.cloze.answer;const match=glossaryMap.get(text);if(!match)return null;return {kind:'pinyin',prompt:`Type the pinyin for ${text} (with tones).`,answer:match.pinyin,display:text};}
+ if(mode==='pronunciation'){const text=glossaryMap.has(story.cloze.answer)?story.cloze.answer:tokenWords.find(w=>story.lines.some(l=>l.hanzi.includes(w)));const match=glossaryMap.get(text);if(!match)return null;return {kind:'pinyin',prompt:`Type the pinyin for ${text} (with tones).`,answer:match.pinyin,display:text};}
  return null;
 }
 export function shuffledChunkIndices(parts,seed){let order=parts.map((_,i)=>i);let n=[...seed].reduce((a,c)=>(Math.imul(a,33)+c.charCodeAt(0))>>>0,5381);for(let i=order.length-1;i>0;i--){n=(Math.imul(n,1664525)+1013904223)>>>0;const j=n%(i+1);[order[i],order[j]]=[order[j],order[i]];}if(order.length>1&&order.every((v,i)=>v===i))order.reverse();return order;}
-export function validateStory(story){if(!story||story.approval!=='DEMO_ONLY'||story.officialHskLevel!==null||story.lines.length!==3||story.question.options.length!==4||!story.question.options.includes(story.question.answer)||!story.cloze.options.includes(story.cloze.answer)||!story.lines[story.cloze.line].hanzi.includes(story.cloze.answer)||story.order.join('')!==story.lines.find(l=>l.hanzi===story.order.join(''))?.hanzi)return false;return ['comprehension','cloze','ordering','pronunciation'].every(m=>storyExercise(story,m));}
+export function validateStory(story){if(!story||story.approval!=='DEMO_ONLY'||story.officialHskLevel!==null||story.lines.length<3||story.question.options.length!==4||!story.question.options.includes(story.question.answer)||!story.cloze.options.includes(story.cloze.answer)||!story.lines[story.cloze.line].hanzi.includes(story.cloze.answer)||story.order.join('')!==story.lines.find(l=>l.hanzi===story.order.join(''))?.hanzi)return false;return ['comprehension','cloze','ordering','pronunciation'].every(m=>storyExercise(story,m));}
 
 /** Fraction of the story's distinct covered lesson characters that have been introduced.
  * This is not full vocabulary/grammar readability and excludes untaught characters.
