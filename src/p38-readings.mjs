@@ -5,6 +5,9 @@
  * external text or an officially designated HSK 3.0 collection.
  */
 import {P37_SCENES} from './p37-scenarios.mjs';
+import {P38_EXTRA_A} from './p38-extra-a.mjs';
+import {P38_EXTRA_B} from './p38-extra-b.mjs';
+const expandedOriginal=[...P38_EXTRA_A,...P38_EXTRA_B];
 const outlines=[
  ["约好的时间有时需要改变，双方都要先确认。","Yuē hǎo de shíjiān yǒushí xūyào gǎibiàn, shuāngfāng dōu yào xiān quèrèn.","Sometimes an agreed time must change, and both sides need to confirm.","最后，大家要记清楚真正确认的日期。","Zuìhòu, dàjiā yào jì qīngchu zhēnzhèng quèrèn de rìqī.","In the end, everyone needs to remember the actual confirmed date."],
  ["上课以前，一位学生发现自己缺少学习材料。","Shàng kè yǐqián, yí wèi xuésheng fāxiàn zìjǐ quēshǎo xuéxí cáiliào.","Before class, a student notices some learning material is missing.","找不到文件并不一定说明文件从来没有发过。","Zhǎo bu dào wénjiàn bìng bù yídìng shuōmíng wénjiàn cónglái méiyǒu fā guo.","Not finding a file doesn't necessarily mean it was never sent."],
@@ -44,8 +47,10 @@ const readingEvidencePairs=[
 ];
 export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  const intro=outlines[i][0],closure=outlines[i][1];
+ const original=expandedOriginal[i];
  const lines=[
   {hanzi:intro[0],pinyin:intro[1],english:intro[2]},
+  ...original.map(line=>({hanzi:line[0],pinyin:line[1],english:line[2]})),
   ...s.turns.map(t=>({hanzi:t[1],pinyin:t[2],english:t[3]})),
   {hanzi:closure[0],pinyin:closure[1],english:closure[2]}
  ];
@@ -55,17 +60,17 @@ export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  const others=[P37_SCENES[(i+7)%P37_SCENES.length].questions[0][1],
  P37_SCENES[(i+17)%P37_SCENES.length].questions[0][1]];
  const questions=[
-  question(s.questions[0][0],s.questions[0][1],[s.questions[0][2],s.questions[0][3],'Not stated in this passage'],readingEvidencePairs[i][0],s.teaching),
-  question(s.questions[1][0],s.questions[1][1],[s.questions[1][2],s.questions[1][3],'Not stated in this passage'],readingEvidencePairs[i][1],s.pitfall),
+  question(s.questions[0][0],s.questions[0][1],[s.questions[0][2],s.questions[0][3],'Not stated in this passage'],readingEvidencePairs[i][0]+2,s.teaching),
+  question(s.questions[1][0],s.questions[1][1],[s.questions[1][2],s.questions[1][3],'Not stated in this passage'],readingEvidencePairs[i][1]+2,s.pitfall),
   question('What is the best contextual conclusion after the written exchange?',
-   closure[2],[others[0],others[1],'The speakers refuse to communicate.'],9,s.pragmatics)
+   closure[2],[others[0],others[1],'The speakers refuse to communicate.'],11,s.pragmatics)
  ];
  const focus=s.vocabulary.find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)))||
  ['可以','时间','老师','我们','学校','我'].map((hanzi,j)=>({
   hanzi,pinyin:['kěyǐ','shíjiān','lǎoshī','wǒmen','xuéxiào','wǒ'][j],
   english:['can','time','teacher','we','school','I'][j]
  })).find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)));
- const target=lines[5],written=lines[8];
+ const target=lines[7],written=lines[10];
  const clozeLine=lines.findIndex(x=>x.hanzi.includes(focus.hanzi));
  const chars=Array.from(target.hanzi);const n=Math.max(1,Math.floor(chars.length/4));
  const chunks=[];for(let j=0;j<chars.length;j+=n)chunks.push(chars.slice(j,j+n).join(''));
@@ -77,7 +82,7 @@ export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
   grammarIds:Object.freeze([s.grammar]),focusWord:focus,
   cloze:Object.freeze({line:clozeLine,word:focus.hanzi,
    choices:Object.freeze([focus.hanzi,...['预约','老师','朋友','时间','学校','火车','因为'].filter(w=>w!==focus.hanzi&&!lines[clozeLine].hanzi.includes(w)).slice(0,3)])}),
-  chunks:Object.freeze(chunks),orderLine:5,
+  chunks:Object.freeze(chunks),orderLine:7,
   writing:Object.freeze({hanzi:written.hanzi,pinyin:written.pinyin,english:written.english,
    prompt:'Without looking at the written conversation, reconstruct the final speaker response.',
    explanation:s.teaching+' '+s.pitfall}),
