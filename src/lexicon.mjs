@@ -4,6 +4,7 @@
  */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {VOCABULARY_ADDITIONS} from './vocabulary-expansion.mjs';
+import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
 export const canonicalWordKey=(hanzi,pinyin)=>hanzi+'|'+plain(pinyin);
@@ -32,6 +33,14 @@ for(const original of VOCABULARY_ADDITIONS){
  for(const example of original.examples)addExample(record,example);
  for(const phrase of original.collocations||[])if(!record.collocations.includes(phrase))record.collocations.push(phrase);
  record.source=record.lessonIds.length?'original-lessons-and-p23':'original-p23';
+}
+for(const original of P31_VOCABULARY){
+ const record=entry(original.hanzi,original.pinyin);
+ if(!record.senses.includes(original.meaning))record.senses.push(original.meaning);
+ if(!record.notes.includes(original.note))record.notes.unshift(original.note);
+ for(const example of original.examples)addExample(record,example);
+ for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
+ record.source=record.lessonIds.length?'original-lessons-and-p31':'original-p31';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
