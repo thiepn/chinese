@@ -32,6 +32,7 @@ export function p40Overview(state,act,esc,{compact=false}={}){
  '<div class="p40-actions">'+(focus?act('grammar-select','Continue: '+esc(focus.title)+' →','button primary','data-id="'+focus.id+'"'):'')+
  act('p40-repair','Repair intended meaning →','button outline','data-id="'+next+'"')+
  act('p40-sentences','90 linked practice sentences →','button outline')+
+ act('p46-enter','Continue to P46 advanced meaning contrasts →','button outline')+
  '</div></section>'+
  (compact?'':'<section class="p40-catalog" aria-label="P40 detailed lesson catalogue">'+
  sections.map(([first,last,name,description])=>{

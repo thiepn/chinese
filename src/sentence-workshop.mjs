@@ -19,8 +19,10 @@ import {P42_WRITING_TASKS} from './p42-course.mjs';
 import {P43_WRITING_TASKS} from './p43-course.mjs';
 import {P44_WRITING_TASKS} from './p44-course.mjs';
 import {P45_WRITING_TASKS} from './p45-course.mjs';
+import {P46_WRITING_TASKS} from './p46-foundations.mjs';
+import {P46_DIALOGUE_WRITING_TASKS} from './p46-dialogues.mjs';
 export const WORKSPACE_COACHING_TASKS=Object.freeze(WORKSPACE_COACHING.map(note=>Object.freeze({id:'p30-coach:'+note.id,kind:'coaching-production',coachingId:note.id,hanzi:note.hanzi,pinyin:note.pinyin,english:note.english,explanation:note.explanation})));
-export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS,...WORKSPACE_COACHING_TASKS,...P31_WRITING_TASKS,...P32_CORRECTION_TASKS,...P33_WRITING_TASKS,...P34_LISTENING_WRITING_TASKS,...P35_WRITING_TASKS,...P36_CORRECTION_TASKS,...P37_WRITING_TASKS,...P39_WRITING_TASKS,...P40_CORRECTION_TASKS,...P42_WRITING_TASKS,...P43_WRITING_TASKS,...P44_WRITING_TASKS,...P45_WRITING_TASKS]);
+export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS,...WORKSPACE_COACHING_TASKS,...P31_WRITING_TASKS,...P32_CORRECTION_TASKS,...P33_WRITING_TASKS,...P34_LISTENING_WRITING_TASKS,...P35_WRITING_TASKS,...P36_CORRECTION_TASKS,...P37_WRITING_TASKS,...P39_WRITING_TASKS,...P40_CORRECTION_TASKS,...P42_WRITING_TASKS,...P43_WRITING_TASKS,...P44_WRITING_TASKS,...P45_WRITING_TASKS,...P46_WRITING_TASKS,...P46_DIALOGUE_WRITING_TASKS]);
 const SENTENCE_TASK_IDS=new Set(SENTENCE_TASKS.map(t=>t.id));
 export function sentenceTask(index=0){return SENTENCE_TASKS[((index%SENTENCE_TASKS.length)+SENTENCE_TASKS.length)%SENTENCE_TASKS.length];}
 const comparable=s=>String(s).normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
