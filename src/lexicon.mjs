@@ -5,6 +5,7 @@
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {VOCABULARY_ADDITIONS} from './vocabulary-expansion.mjs';
 import {P31_VOCABULARY} from './p31-vocabulary.mjs';
+import {P33_SCENARIOS} from './p33-scenarios.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
 export const canonicalWordKey=(hanzi,pinyin)=>hanzi+'|'+plain(pinyin);
@@ -41,6 +42,15 @@ for(const original of P31_VOCABULARY){
  for(const example of original.examples)addExample(record,example);
  for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
  record.source=record.lessonIds.length?'original-lessons-and-p31':'original-p31';
+}
+// P33 contextual vocabulary is indexed under canonical keys. No new state writer.
+for(const scene of P33_SCENARIOS)for(const term of scene.vocabulary){
+ const record=entry(term.hanzi,term.pinyin);
+ if(!record.senses.includes(term.english))record.senses.push(term.english);
+ const usage='P33 · '+scene.title+': '+scene.teaching;
+ if(!record.notes.includes(usage))record.notes.push(usage);
+ for(const sentence of term.examples)addExample(record,sentence);
+ if(!record.source.includes('p33'))record.source=record.source==='original-demonstration'?'original-p33-context':record.source+'-and-p33';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
