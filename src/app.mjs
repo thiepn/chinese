@@ -88,7 +88,7 @@ let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
-let p35Theme='all',p35Status='all',p35Query='',p35Page=0,p35VocabPage=0;
+let p35Theme='all',p35Status='all',p35Query='',p35Page=0,p35VocabPage=0,p35CatalogOpen=false,p35VocabOpen=false;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
@@ -438,7 +438,7 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}<details class="p35-course-details" ${findP35Guide(l.id)?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}<details class="p35-course-details" ${findP35Guide(l.id)||p35CatalogOpen?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
  const m=summary(state),due=dueCards(state).filter(reviewMatches);
@@ -565,7 +565,7 @@ function catalogPager(count){
 function visibleExploreResults(){const found=searchCatalog(searchQuery,exploreKind);return exploreSavedOnly?found.filter(e=>e.type==='word'&&(state.bookmarkedWords||[]).includes(e.id)):found;}
 function renderExplore(){const results=visibleExploreResults(),selected=searchSelection;
  const selectedResult=selected?.type==='word'?findWord(selected.id):selected?.type==='character'?findLesson(selected.id):null;
- return `${title('CHARACTER & WORD LOOKUP','Explore Chinese.','Search independent characters and complete vocabulary words, including alternate definitions and related lessons.')}${gated()}${exploreWorkspace(state,action,esc)}<details id="p35-explore-vocabulary" class="p35-course-details"><summary>P35 · Elementary contextual vocabulary and word families</summary>${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details><div class="button-row p32-explore-links">${action('p35-browse','P35 character expansion →','button outline small')}${action('p35-vocab-open','P35 contextual vocabulary →','button outline small')}${action('p34-open-reading','P34 guided reading →','button outline small','data-id="p34-01"')}${action('p34-open-listening','P34 listening-first →','button outline small','data-id="p34-audio-01"')}${action('p33-browse','Everyday conversations →','button outline small')}${action('grammar-select','P32 beginner grammar →','button outline small','data-id="g37"')}${action('p32-open-sentences','120 new contextual sentences →','button outline small')}</div>${p31VocabularyShelf(state,action,esc,{page:p31WordPage})}${vocabularyShelfPanel()}
+ return `${title('CHARACTER & WORD LOOKUP','Explore Chinese.','Search independent characters and complete vocabulary words, including alternate definitions and related lessons.')}${gated()}${exploreWorkspace(state,action,esc)}<details id="p35-explore-vocabulary" class="p35-course-details" ${p35VocabOpen?'open':''}><summary>P35 · Elementary contextual vocabulary and word families</summary>${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details><div class="button-row p32-explore-links">${action('p35-browse','P35 character expansion →','button outline small')}${action('p35-vocab-open','P35 contextual vocabulary →','button outline small')}${action('p34-open-reading','P34 guided reading →','button outline small','data-id="p34-01"')}${action('p34-open-listening','P34 listening-first →','button outline small','data-id="p34-audio-01"')}${action('p33-browse','Everyday conversations →','button outline small')}${action('grammar-select','P32 beginner grammar →','button outline small','data-id="g37"')}${action('p32-open-sentences','120 new contextual sentences →','button outline small')}</div>${p31VocabularyShelf(state,action,esc,{page:p31WordPage})}${vocabularyShelfPanel()}
  <div class="search-shell"><label class="field-label" for="explore-query">Find a character, word, pinyin or meaning</label><input type="search" id="explore-query" autocomplete="off" spellcheck="false" placeholder="Try 学校, xue, friend, water" value="${esc(searchQuery)}"><div class="mode-tabs" role="group" aria-label="Search category">${['all','characters','words'].map(k=>action('search-kind',k==='all'?'All':k==='words'?'Words':'Characters',exploreKind===k?'button dark small':'button outline small',`data-kind="${k}"`)).join('')}</div><div class="button-row wordbook-filter">${action('open-wordbook-practice','Practice saved words →','button primary')}${action('wordbook-filter',exploreSavedOnly?'Show all entries':'My saved words ('+(state.bookmarkedWords||[]).length+')','button outline small',`aria-pressed="${exploreSavedOnly}"`)}</div><p id="search-count" class="muted">${results.length} results · ${WORDS.length} distinct example word entries · Browsing never changes mastery.</p></div>
  <div class="explore-layout"><div class="p23-search-list"><div id="explore-results" class="results-list">${renderSearchResults(results)}</div><div id="explore-pager">${catalogPager(results.length)}</div></div><article id="explore-detail" class="explore-detail">${selectedResult?selected.type==='word'?wordDetail(selectedResult):exploreDetail(selectedResult):'<div class="empty-panel"><strong>Select an entry.</strong><p>Open a character or word to inspect its meanings, related lessons and usage.</p></div>'}</article></div>`;
 }
@@ -701,31 +701,32 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }
  if(name==='p35-browse'){
   if(route()!=='learn')go('learn');
-  const section=root.querySelector('.p35-course-details');if(section){section.open=true;section.scrollIntoView({block:'start'});}
+  const section=root.querySelector('.p35-course-details');if(section){p35CatalogOpen=true;section.open=true;section.scrollIntoView({block:'start'});}
   return;
  }
  if(name==='p35-vocab-open'){
   if(route()!=='explore')go('explore');
-  const section=root.querySelector('#p35-explore-vocabulary');if(section){section.open=true;section.scrollIntoView({block:'start'});}
+  const section=root.querySelector('#p35-explore-vocabulary');if(section){p35VocabOpen=true;section.open=true;section.scrollIntoView({block:'start'});}
   return;
  }
  if(name==='p35-theme'){
   const v=button.dataset.theme;if(v!=='all'&&!P35_THEMES.includes(v))return;
-  p35Theme=v;p35Page=0;return render();
+  p35Theme=v;p35CatalogOpen=true;p35Page=0;return render();
  }
  if(name==='p35-status'){
   const v=button.dataset.status;if(!['all','new','introduced'].includes(v))return;
-  p35Status=v;p35Page=0;return render();
+  p35Status=v;p35CatalogOpen=true;p35Page=0;return render();
  }
  if(name==='p35-page-prev'||name==='p35-page-next'){
   const q=p35Query.toLocaleLowerCase().trim();
   const total=P35_CHARACTER_GUIDES.filter(g=>(p35Theme==='all'||g.category===p35Theme)&&
    (p35Status==='all'||(p35Status==='introduced'?(state.learned||[]).includes(g.id):!(state.learned||[]).includes(g.id)))&&
    (!q||[g.hanzi,g.pinyin,g.meaning,g.explanation,g.category,...g.words.flatMap(w=>[w.hanzi,w.pinyin,w.english])].join(' ').toLocaleLowerCase().includes(q))).length;
-  p35Page=Math.max(0,Math.min(Math.max(0,Math.ceil(total/12)-1),p35Page+(name==='p35-page-next'?1:-1)));
+  p35CatalogOpen=true;p35Page=Math.max(0,Math.min(Math.max(0,Math.ceil(total/12)-1),p35Page+(name==='p35-page-next'?1:-1)));
   return render();
  }
  if(name==='p35-vocab-prev'||name==='p35-vocab-next'){
+  if(route()==='explore')p35VocabOpen=true;else p35CatalogOpen=true;
   p35VocabPage=Math.max(0,Math.min(Math.max(0,Math.ceil(P35_VOCABULARY.length/12)-1),
    p35VocabPage+(name==='p35-vocab-next'?1:-1)));
   return render();
@@ -1398,10 +1399,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='reset'){if(!confirm('Delete all demo learning progress in this browser? Export a backup first if you want to keep it.'))return;const cleared=await mutate(_=>freshState());if(cleared){pendingRestore=null;restoreAcknowledgement='';}return}
 }
 document.querySelector('.topbar')?.addEventListener('click',ev=>{if(ev.target.closest('[data-action="go-settings"]'))go('settings')});
+root.addEventListener('toggle',ev=>{
+ if(ev.target.id==='p35-explore-vocabulary')p35VocabOpen=ev.target.open;
+ else if(ev.target.matches?.('.p35-course-details')&&route()==='learn')p35CatalogOpen=ev.target.open;
+},true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
  if(e.target.id==='p35-search'){
-  p35Query=e.target.value;p35Page=0;render();
+  p35Query=e.target.value;p35CatalogOpen=true;p35Page=0;render();
   const field=root.querySelector('#p35-search');
   if(field){field.focus();field.setSelectionRange(p35Query.length,p35Query.length);}
   return;
