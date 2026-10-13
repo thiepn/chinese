@@ -816,6 +816,7 @@ function renderComparative(){
  }
  if(id&&P48_STAGES.some(x=>x.id===stage))p48Stage=stage;
  const current=findP48Passage(p48CaseId)||p48Next(state);
+ if(!p48CaseId)p48CaseId=current.id;
  return title('P48 · ARGUMENTATIVE MANDARIN','Compare evidence before forming a conclusion.',
  'Original source dossiers, three-speaker dialogue, native comprehension and P43 independent writing.')+
  gated()+p48Lesson(current,state,action,esc,{stage:p48Stage,translations:p48Translations,
