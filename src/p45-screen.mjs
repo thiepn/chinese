@@ -36,6 +36,7 @@ export function p45Overview(state,act,esc,{compact=false,selected=null,filter='a
  (!items.length?'<p class="muted">No challenges match this recorded-evidence filter. The original review queue may still contain other due material.</p>':'')+
  '<div class="p45-actions">'+act('p46-enter','Begin P46 upper-intermediate foundations →','button primary')+
  act('p45-native-review','Open original due-card Review →','button outline')+
+ act('p49-enter','P49 upper-intermediate cumulative repair →','button outline')+
  act('p45-next','Try another source-backed challenge →','button outline')+'</div>')+
  '</section>';
 }
