@@ -83,6 +83,7 @@ let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAs
 let demoSpeechRate=0.86;
 let pinyinSection='sounds',pinyinFilter='all',pinyinIndex=0,pinyinTyped='',pinyinFeedback=null,pinyinSound='b',pinyinSyllable='ma';
 let grammarSelected='g01',grammarChapter='all',grammarQuery='',grammarMode='meaning',grammarTyped='',grammarFeedback=null,grammarAssisted=false,grammarOrder=[],grammarShowEnglish=true;
+const p36ViewedModels=new Set();let p36ShowModel=false;
 let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeedback=null;
 let p33Theme='all',p33Query='',p33Branch=null;
 let p34ShadowLine=0,p34TranscriptViewed=false;
@@ -323,13 +324,13 @@ function vocabularyTodayPanel(){
 function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2})/)||[])[1];return findGrammarLesson(id)?id:grammarSelected;}
 function renderGrammar(){
  const selected=selectedGrammarId();
- return renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
+ return renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,p36ShowModel,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
  const selected=findGrammarLesson(id);if(!selected)return;
  grammarSelected=id;grammarChapter=String(selected.chapterNumber);
- grammarQuery='';grammarSessionReset();
+ grammarQuery='';grammarSessionReset();p36ShowModel=false;
  location.hash='#/grammar/'+id;
  render();
 }
@@ -680,13 +681,19 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(index<0)return alertUser('The dialogue writing task is unavailable.','error');
   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;return go('workshop');
  }
+ if(name==='p36-toggle-model'){
+  if(id!==selectedGrammarId()||!p36RepairFor(id))return;
+  p36ShowModel=!p36ShowModel;
+  if(p36ShowModel)p36ViewedModels.add(id);
+  return render();
+ }
  if(name==='p36-repair'){
   const idToOpen=p36RepairFor(id)?id:p36Next(state);
   const repair=p36RepairFor(idToOpen);
   if(!repair)return alertUser('Original P36 correction unavailable.','error');
   const index=SENTENCE_TASKS.findIndex(t=>t.id===repair.taskId);
   if(index<0)return alertUser('P36 correction is not available in the existing Workshop.','error');
-  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=p36ViewedModels.has(idToOpen);
   return go('workshop');
  }
  if(name==='p36-sentences'){
