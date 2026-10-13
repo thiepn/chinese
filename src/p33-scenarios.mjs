@@ -7,14 +7,17 @@ import {P33_SCENARIOS_B} from './p33-scenarios-b.mjs';
 import {P33_SCENARIOS_C} from './p33-scenarios-c.mjs';
 import {P33_SCENARIOS_D} from './p33-scenarios-d.mjs';
 import {P33_SCENARIOS_E} from './p33-scenarios-e.mjs';
+import {P33_BRANCH_REPLIES} from './p33-branch-replies.mjs';
+const evidence=[0,4,1,1,3,1,2,5,1,3,1,3,2,2,1,1,3,4,3,2,2,2,2,2,2];
 export const P33_SCENARIOS=Object.freeze([...P33_SCENARIOS_A,...P33_SCENARIOS_B,...P33_SCENARIOS_C,...P33_SCENARIOS_D,...P33_SCENARIOS_E].map((row,i)=>Object.freeze({
- ...row,id:'p33-'+String(i+1).padStart(2,'0'),sequence:i+1,
+ ...row,id:'p33-'+String(i+1).padStart(2,'0'),sequence:i+1,evidenceIndex:evidence[i],
  turns:Object.freeze(row.turns.map(turn=>Object.freeze([...turn]))),
  vocabulary:Object.freeze(row.vocab.map(word=>Object.freeze({hanzi:word[0],pinyin:word[1],english:word[2],
  examples:Object.freeze(row.turns.filter(t=>t[1].includes(word[0])).slice(0,2).map(t=>Object.freeze({hanzi:t[1],pinyin:t[2],english:t[3]})))}))),
  questions:Object.freeze(row.questions.map(q=>Object.freeze([...q]))),
- alternatives:Object.freeze(row.choices.map(choice=>Object.freeze({
- hanzi:choice[0],pinyin:choice[1],english:choice[2],use:choice[3]
+ alternatives:Object.freeze(row.choices.map((choice,j)=>Object.freeze({
+ hanzi:choice[0],pinyin:choice[1],english:choice[2],use:choice[3],
+ reply:Object.freeze({hanzi:P33_BRANCH_REPLIES[i][j][0],pinyin:P33_BRANCH_REPLIES[i][j][1],english:P33_BRANCH_REPLIES[i][j][2]})
  })))
 })));
 export const findP33Scenario=id=>P33_SCENARIOS.find(s=>s.id===id)||null;
