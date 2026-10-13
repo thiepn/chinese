@@ -73,7 +73,8 @@ export function p50Overview(state,act,esc,{compact=false,selected='',query=''}={
  }).join('')+'</div>'+
  (!filtered.length?'<p class="muted">No original P50 cases match the current query.</p>':'')+
  '<div class="p50-actions">'+act('p50-review','Original scheduled Review →','button outline')+
- act('p49-enter','P49 cumulative transfer →','button outline')+'</div>')+'</section>';
+ act('p49-enter','P49 cumulative transfer →','button outline')+
+ act('p51-enter','Continue to P51 register and source-based fluency →','button primary')+'</div>')+'</section>';
 }
 function renderLine(l,i,assist,act,esc){
  return '<div class="p50-line"><span>'+(i+1)+'</span><div><p lang="zh-Hans">'+esc(l.hanzi)+'</p>'+
@@ -207,7 +208,8 @@ export function p50Lesson(p,state,act,esc,{stage='language',readingHelp=false,
  (p.priorCase?act('p49-open','P49 prerequisite '+esc(p.priorCase)+' →','button outline',
  'data-id="'+esc(p.priorCase)+'"'):'')+
  act('p48-enter','P48 comparative reading →','button outline')+
- act('p47-enter','P47 grammar foundations →','button outline')+'</div></aside>'+
+ act('p47-enter','P47 grammar foundations →','button outline')+
+ act('p51-enter','P51 register-aware source transfer →','button outline')+'</div></aside>'+
  '<p class="p50-disclosure">All assistance is explicitly shown, all native fixed-reference answers retain their original event writers, and no duplicate scheduled or personal-data store was created. Original instructional material is not official HSK certification.</p>'+
  '</section>';
 }
