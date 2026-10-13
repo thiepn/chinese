@@ -10,8 +10,9 @@ import {P31_WRITING_TASKS} from './p31-foundations.mjs';
 import {P32_CORRECTION_TASKS} from './p32-learning.mjs';
 import {P33_WRITING_TASKS} from './p33-scenarios.mjs';
 import {P34_LISTENING_WRITING_TASKS} from './p34-course.mjs';
+import {P35_WRITING_TASKS} from './p35-foundations.mjs';
 export const WORKSPACE_COACHING_TASKS=Object.freeze(WORKSPACE_COACHING.map(note=>Object.freeze({id:'p30-coach:'+note.id,kind:'coaching-production',coachingId:note.id,hanzi:note.hanzi,pinyin:note.pinyin,english:note.english,explanation:note.explanation})));
-export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS,...WORKSPACE_COACHING_TASKS,...P31_WRITING_TASKS,...P32_CORRECTION_TASKS,...P33_WRITING_TASKS,...P34_LISTENING_WRITING_TASKS]);
+export const SENTENCE_TASKS=Object.freeze([...STORIES.flatMap(story=>story.lines.slice(0,2).map((line,i)=>Object.freeze({id:`${story.id}:line${i}`,storyId:story.id,index:i,english:line.english,hanzi:line.hanzi,pinyin:line.pinyin}))),...GRAMMAR_PRACTICE_TASKS,...SENTENCE_LIBRARY_TASKS,...READING_WRITING_TASKS,...BEGINNER_READING_WRITING_TASKS,...PATHWAY_TASKS,...WORKSPACE_COACHING_TASKS,...P31_WRITING_TASKS,...P32_CORRECTION_TASKS,...P33_WRITING_TASKS,...P34_LISTENING_WRITING_TASKS,...P35_WRITING_TASKS]);
 const SENTENCE_TASK_IDS=new Set(SENTENCE_TASKS.map(t=>t.id));
 export function sentenceTask(index=0){return SENTENCE_TASKS[((index%SENTENCE_TASKS.length)+SENTENCE_TASKS.length)%SENTENCE_TASKS.length];}
 const comparable=s=>String(s).normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
