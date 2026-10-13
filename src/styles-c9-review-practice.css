@@ -186,3 +186,167 @@
 @media(prefers-reduced-motion:reduce){
  .c9-assessment *,.c9-practice-page *{scroll-behavior:auto;transition:none}
 }
+
+
+/* C9-22 — Native study decisions, checkpoints, and source repair.
+   All surfaces reuse C9 semantic light/dark tokens; grading stays in app.mjs. */
+.c9-review-skill-overview{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;
+ background:var(--c9-line);border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);overflow:hidden;margin:17px 0 3px
+}
+.c9-review-skill-overview>div{
+ display:grid;gap:4px;min-width:0;padding:13px 12px;
+ background:var(--c9-surface-2)
+}
+.c9-review-skill-overview strong{font:650 21px/1.2 var(--c9-ui);font-variant-numeric:tabular-nums}
+.c9-review-skill-overview span{font:500 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-assessment-reasons li{gap:6px;padding:15px 0}
+.c9-assessment-reasons li>div{display:flex;align-items:center;gap:10px;min-width:0}
+.c9-review-reason-number{
+ display:inline-grid;place-items:center;flex:none;width:25px;height:25px;
+ border-radius:var(--c9-r-xs);background:var(--c9-surface-2);
+ color:var(--c9-sub);font:650 12px/1 var(--c9-ui)
+}
+.c9-assessment-reasons li>span{padding-left:35px}
+.c9-assessment-reasons strong{font:600 15px/1.5 var(--c9-hanzi-display);overflow-wrap:anywhere}
+.c9-review-paused .c9-review-resume{
+ border-left:3px solid var(--c9-green);max-width:850px
+}
+.c9-review-resume h2{font:550 clamp(31px,5vw,48px)/1.4 var(--c9-hanzi-display);margin:8px 0}
+.c9-review-resume>p:not(.c9-eyebrow){font-size:13px;line-height:1.65;color:var(--c9-sub)}
+.c9-review-source-context{
+ display:grid;gap:13px;border-top:1px solid var(--c9-line);
+ padding-top:17px;margin:18px 0 0
+}
+.c9-review-source-context>.c9-eyebrow{margin:0}
+.c9-review-source-context>p:not(.c9-eyebrow){font-size:13px;line-height:1.7;margin:0}
+.c9-review-source-context dl{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:13px;margin:0
+}
+.c9-review-source-context dl>div{
+ min-width:0;padding:13px;background:var(--c9-surface);
+ border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)
+}
+.c9-review-source-context dt{
+ margin-bottom:5px;font:650 10px/1.5 var(--c9-ui);
+ text-transform:uppercase;letter-spacing:.05em;color:var(--c9-sub)
+}
+.c9-review-source-context dd{
+ margin:0;font-size:13px;line-height:1.65;overflow-wrap:anywhere
+}
+.c9-practice-continuity-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.c9-practice-continuity-actions .c9-button{min-height:44px}
+.c9-practice-history{
+ display:flex;align-items:center;flex-wrap:wrap;gap:10px 17px;
+ border-bottom:1px solid var(--c9-line);padding:3px 0 15px
+}
+.c9-practice-history>strong{
+ font:650 12px/1.5 var(--c9-ui);color:var(--c9-ink)
+}
+.c9-practice-history>div{display:flex;gap:8px;flex-wrap:wrap}
+.c9-practice-history span{
+ font:500 11px/1.45 var(--c9-ui);color:var(--c9-sub);
+ padding:6px 9px;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-xs);background:var(--c9-surface)
+}
+.c9-practice-paths{display:grid;gap:15px;min-width:0}
+.c9-practice-paths>div:first-child h2{
+ font:600 clamp(21px,2vw,26px)/1.3 var(--c9-display);
+ margin:4px 0 0
+}
+.c9-practice-path-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px
+}
+.c9-practice-path-grid>article{
+ display:flex;flex-direction:column;align-items:flex-start;
+ padding:clamp(17px,2vw,23px);gap:10px;min-width:0;
+ border:1px solid var(--c9-line);background:var(--c9-surface);
+ border-radius:var(--c9-r)
+}
+.c9-practice-path-grid h3{
+ font:600 19px/1.35 var(--c9-display);letter-spacing:-.025em;margin:0
+}
+.c9-practice-path-grid p{
+ font:400 12px/1.7 var(--c9-ui);color:var(--c9-sub);margin:0 0 8px
+}
+.c9-practice-path-grid .c9-button{margin-top:auto;min-height:44px}
+.c9-guided-checkpoint{
+ display:grid;gap:13px;padding:clamp(16px,2.2vw,23px);
+ border:1px solid var(--c9-line);border-left:3px solid var(--c9-green);
+ border-radius:var(--c9-r);background:var(--c9-surface)
+}
+.c9-guided-checkpoint>div:first-child{
+ display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px
+}
+.c9-guided-checkpoint strong{font:600 17px/1.4 var(--c9-display)}
+.c9-guided-checkpoint-track{
+ height:8px;background:var(--c9-line);
+ border-radius:var(--c9-r-xs);overflow:hidden
+}
+.c9-guided-checkpoint-track span{
+ display:block;height:100%;background:var(--c9-green)
+}
+.c9-guided-checkpoint-detail{display:flex;gap:9px 19px;flex-wrap:wrap}
+.c9-guided-checkpoint-detail span{
+ font-size:12px;font-weight:550;color:var(--c9-sub);
+ font-variant-numeric:tabular-nums
+}
+.c9-guided-checkpoint>p{
+ margin:0;max-width:850px;font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)
+}
+.c9-practice-page .c9-guided-live{
+ width:min(100%,950px);margin-inline:auto
+}
+.c9-practice-page .c9-guided-live>h2{
+ font-size:clamp(22px,2.35vw,28px);line-height:1.45
+}
+.c9-practice-page .guided-reading-context,
+.c9-practice-page .guided-session .lesson-guide{
+ background:var(--c9-surface-2);border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);padding:16px;
+ overflow-wrap:anywhere
+}
+.c9-practice-page .guided-session .story-chunks,
+.c9-practice-page .guided-session .story-assembled{
+ display:flex;flex-wrap:wrap;gap:8px
+}
+.c9-practice-page .guided-session .story-chunks button,
+.c9-practice-page .guided-session .story-assembled button{
+ min-width:44px;min-height:44px
+}
+.c9-practice-page :where(.practice-card,.guided-start,.guided-session) button:focus-visible,
+.c9-assessment button:focus-visible,
+.c9-practice-paths button:focus-visible,
+.c9-practice-page :where(.guided-start,.practice-header,.c9-practice-native-section):focus-visible,
+.c9-practice-page :where(input,select):focus-visible{
+ outline:3px solid var(--c9-accent);outline-offset:3px
+}
+.c9-review-source-context dd[lang="zh-Hans"],
+.c9-practice-page [lang="zh-Hans"]{overflow-wrap:anywhere}
+@media(max-width:1000px){
+ .c9-practice-path-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-practice-path-grid>article:last-child{grid-column:1/-1}
+}
+@media(max-width:720px){
+ .c9-practice-path-grid{grid-template-columns:minmax(0,1fr)}
+ .c9-practice-path-grid>article:last-child{grid-column:auto}
+ .c9-review-source-context dl{grid-template-columns:minmax(0,1fr)}
+ .c9-review-skill-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .c9-review-skill-overview>div{padding:10px 8px}
+ .c9-review-skill-overview span{font-size:10px}
+ .c9-practice-continuity-actions{width:100%}
+ .c9-practice-continuity-actions .c9-button{flex:1 1 180px}
+ .c9-review-source-context{gap:10px}
+ .c9-review-resume h2{font-size:36px}
+}
+@media(max-width:390px){
+ .c9-practice-continuity-actions .c9-button{width:100%}
+ .c9-guided-checkpoint-detail{flex-direction:column;gap:4px}
+ .c9-review-reason-number{width:22px;height:22px}
+ .c9-assessment-reasons li>span{padding-left:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .c9-practice-page *,.c9-assessment *{scroll-behavior:auto}
+}
