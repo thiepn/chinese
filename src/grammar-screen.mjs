@@ -1,5 +1,6 @@
 // P25 original grammar learning screen. All saving continues via Sentence Workshop events.
 import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarQuestion,grammarUnitLinks,shuffleGrammarChunks} from './grammar-course.mjs';
+import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 
 const modeNames={meaning:'Comprehension',cloze:'Fill the gap',ordering:'Word order',transformation:'Transform',production:'Write Chinese'};
 export function grammarLessonList({chapter='all',query='',selected='g01'},action,esc){
@@ -52,5 +53,5 @@ export function renderGrammarScreen(s,action,esc,title,gated){
  <div class="p25-examples">${l.examples.map((e,i)=>`<article><p class="eyebrow">EXAMPLE ${i+1}</p><p lang="zh-Hans">${esc(e.hanzi)}</p><small>${esc(e.pinyin)}</small>${s.showEnglish?`<p>${esc(e.english)}</p>`:'<p class="muted">Reveal the English interpretation when ready.</p>'}${voice(e.hanzi,action,esc)}</article>`).join('')}</div>
  ${practicePanel(s,l,action,esc)}
  <div class="p25-navigation">${action('grammar-previous','← Previous grammar lesson','button outline')}${action('grammar-next','Next grammar lesson →','button primary')}${action('grammar-pinyin','Pinyin & Sounds','button outline small')}${action('grammar-workshop','Sentence Workshop','button outline small')}</div></article></div>
- ${linksPanel(l.id,action,esc)}`;
+ ${linksPanel(l.id,action,esc)}<section class="simple-panel p26-grammar-examples"><h3>Use this grammar in complete original sentences</h3><div>${SENTENCE_LIBRARY.filter(s=>s.grammarIds.includes(l.id)).slice(0,5).map(s=>action('sentence-select',`<strong lang="zh-Hans">${esc(s.hanzi)}</strong><small>${esc(s.english)}</small>`,'p26-mini-sentence',`data-id="${s.id}"`)).join('')}</div>${action('sentence-grammar-filter','Browse all sentences with this pattern →','button outline small',`data-id="${l.id}"`)}</section>`;
 }
