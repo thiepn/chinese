@@ -674,6 +674,63 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p41-open'){
+  const passage=findP41Passage(id),target=passage&&STORIES.find(st=>st.beginner?.p41?.id===id);
+  if(!target)return alertUser('The original P41 reading is unavailable.','error');
+  storyId=target.id;storyMode='beginner-detail';storiesLongOnly=false;storiesBeginnerOnly=true;
+  p41BrowseOpen=true;resetReadingNavigation();
+  location.hash='#/stories/'+passage.id;render();
+  root.querySelector('.p41-study')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p41-browse'){
+  p41BrowseOpen=true;p41Stage='all';p41Page=0;p41Query='';
+  if(route()!=='stories')go('stories');
+  const node=root.querySelector('.p41-catalog');if(node){node.open=true;node.scrollIntoView({block:'start'});}
+  return;
+ }
+ if(name==='p41-next-reading')return act({dataset:{action:'p41-open',id:p41Next(state).id}});
+ if(name==='p41-stage'){
+  const v=button.dataset.stage;if(!['all','3','4','5'].includes(v))return;
+  p41Stage=v;p41Page=0;p41BrowseOpen=true;return render();
+ }
+ if(name==='p41-prev'||name==='p41-next-page'){
+  const q=p41Query.trim().toLocaleLowerCase();
+  const total=P41_PASSAGES.filter(p=>(p41Stage==='all'||String(p.stage)===p41Stage)&&
+  (!q||[p.title,p.theme,p.format,p.notes.teaching,p.notes.misconception,...p.grammarIds,
+   ...p.lines.map(l=>l.hanzi)].join(' ').toLocaleLowerCase().includes(q))).length;
+  const last=Math.max(0,Math.ceil(total/6)-1);
+  p41Page=Math.max(0,Math.min(last,p41Page+(name==='p41-next-page'?1:-1)));
+  p41BrowseOpen=true;return render();
+ }
+ if(name==='p41-section'){
+  const value=button.dataset.section;if(!['all','1','2','3','4'].includes(value))return;
+  p41Section=value;return render();
+ }
+ if(name==='p41-next-section'){
+  p41Section=p41Section==='all'?'1':p41Section==='1'?'2':p41Section==='2'?'3':p41Section==='3'?'4':'all';
+  return render();
+ }
+ if(name==='p41-pinyin'||name==='p41-english'){
+  if(!findStory(storyId)?.beginner?.p41)return;
+  if(name==='p41-pinyin')p41Pinyin=!p41Pinyin;else p41English=!p41English;
+  if(p41Pinyin||p41English)storyAssist=true;
+  return render();
+ }
+ if(name==='p41-audio'){
+  const p=findStory(storyId)?.beginner?.p41;if(!p)return;
+  const selected=p.paragraphs[Number(p41Section)-1];
+  const lines=selected?p.lines.slice(selected.start,selected.end+1):p.lines;
+  return speak(lines.map(line=>line.hanzi).join(' '),demoSpeechRate);
+ }
+ if(name==='p41-write'){
+  const p=findP41Passage(id),st=p&&STORIES.find(x=>x.beginner?.p41?.id===id);
+  if(!st)return alertUser('Original P41 production source unavailable.','error');
+  const index=SENTENCE_TASKS.findIndex(t=>t.id==='beginner-reading:'+st.id+':writing');
+  if(index<0)return alertUser('P41 production task unavailable in native Workshop.','error');
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+  sentenceSupport=storyAssist||p41Pinyin||p41English;
+  return go('workshop');
+ }
  if(name==='p38-open'){
  const passage=findP38Passage(id),target=passage&&STORIES.find(st=>st.beginner?.p38?.id===id);
  if(!target)return alertUser('The original reading adaptation is unavailable.','error');
@@ -1664,6 +1721,12 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p41-search'){
+  p41Query=e.target.value;p41Page=0;p41BrowseOpen=true;render();
+  const input=root.querySelector('#p41-search');
+  if(input){input.focus();input.setSelectionRange(p41Query.length,p41Query.length);}
+  return;
+ }
  if(e.target.id==='p38-search'){
   p38Query=e.target.value;p38Page=0;p38BrowseOpen=true;render();
   const input=root.querySelector('#p38-search');if(input){input.focus();input.setSelectionRange(p38Query.length,p38Query.length);}
