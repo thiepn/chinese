@@ -50,7 +50,7 @@ for(const scene of P33_SCENARIOS)for(const term of scene.vocabulary){
  const usage='P33 · '+scene.title+': '+scene.teaching;
  if(!record.notes.includes(usage))record.notes.push(usage);
  for(const sentence of term.examples)addExample(record,sentence);
- record.source=record.source==='original-demonstration'?'original-p33-context':record.source+'-and-p33';
+ if(!record.source.includes('p33'))record.source=record.source==='original-demonstration'?'original-p33-context':record.source+'-and-p33';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
