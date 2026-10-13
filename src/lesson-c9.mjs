@@ -80,6 +80,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<span class="c9-badge '+(introduced?'c9-badge--success':'')+'">'+(introduced?'Introduced':'Not introduced')+'</span></div>'+
   '<p>Study the character, its useful words, grammar and real sentences. Introduction and independent scheduled recall are distinct actions.</p></div>'+
   '<div class="c9-lesson-header-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
+  act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';

@@ -6,7 +6,7 @@
  */
 export const C9_ROUTE_LABELS = Object.freeze({
   today:'Home', plan:'Study Plan', pathway:'Learning Pathway',
-  learn:'Learn', review:'Review', explore:'Explore', find:'Search',
+  learn:'Learn', character:'Character Study', review:'Review', explore:'Explore', find:'Search',
   progress:'Progress', settings:'Settings', reader:'Character Reading',
   stories:'Reading & Stories', practice:'Practice Lab', dialogues:'Conversations',
   wordbook:'My Wordbook', senses:'Word Senses', workshop:'Sentence Workshop',
@@ -15,7 +15,7 @@ export const C9_ROUTE_LABELS = Object.freeze({
   sentences:'Sentence Library'
 });
 const COURSE_ROUTES=new Set([
-  'learn','reader','stories','practice','dialogues','wordbook','senses',
+  'learn','character','reader','stories','practice','dialogues','wordbook','senses',
   'workshop','journey','ladder','block','fluency','pinyin','grammar',
   'sentences','pathway','plan'
 ]);

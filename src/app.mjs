@@ -2,6 +2,7 @@ import { DEMO_LESSONS, demoSearch, findLesson } from './demo-lessons.mjs';
 import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
+import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
@@ -72,7 +73,7 @@ import {renderSentenceScreen,sentenceResultsPanel} from './sentence-screen.mjs';
 const root=document.getElementById('app-content');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const stableRoutes=new Set(['today','learn','review','explore','progress','settings','reader','stories','practice','dialogues','wordbook','senses','workshop','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find']);
+const stableRoutes=new Set(['today','learn','review','explore','progress','settings','character','reader','stories','practice','dialogues','wordbook','senses','workshop','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find']);
 const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';return stableRoutes.has(v)?v:'today'};
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
@@ -91,7 +92,7 @@ let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
-let c9LessonSection='overview',c9LastLessonId=null;
+let c9LessonSection='overview',c9LastLessonId=null,c9CharacterShowTranslations=true;
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
 let missionStep=0,missionActive=false,missionSupport=false,missionTyped='',missionFeedback=null;
@@ -300,7 +301,7 @@ function hubResumeStrip(){
  return `<aside class="hub-resume-strip" aria-label="Saved study sessions"><div><strong>Continue your saved work</strong><span>${sessions.length} unfinished activity${sessions.length===1?'':'ies'} · answers are saved separately from recall mastery</span></div><div class="hub-resume-buttons">${sessions.slice(0,3).map(x=>action('hub-resume',`${esc(x.label)} →`,'button outline small',`data-kind="${x.kind}"`)).join('')}${sessions.length>3?`<span class="muted">+${sessions.length-3} more on Today</span>`:''}</div></aside>`;
 }
 function hubPathNav(){
- if(['today','settings','learn','pathway'].includes(route()))return '';
+ if(['today','settings','learn','character','pathway'].includes(route()))return '';
  return `<nav class="hub-path-nav" aria-label="Learning workspace shortcuts"><span class="hub-path-label">LEARNING PATH</span>${LEARNING_DESTINATIONS.map(d=>`<a href="#/${d.route}" ${d.route===route()?'aria-current="page"':''}>${esc(d.label)}</a>`).join('')}</nav>`;
 }
 function compactHubPanel(){const hub=learningHub(state);return `<section class="simple-panel hub-compact"><div class="panel-heading"><div><p class="eyebrow">ONE CONNECTED LEARNING PATH</p><h2>Continue with a clear next step</h2></div><span class="muted">${hub.due} due · ${hub.unresolved} unresolved</span></div><div class="hub-primary-row"><div><strong>${esc(hub.primary.label)}</strong><p>${esc(hub.primary.detail)}</p></div>${action('hub-primary','Continue →','button primary')}</div><div class="button-row">${action('hub-go','Study Plan','button outline small','data-route="plan"')}${action('hub-go','Scheduled Review','button outline small','data-route="review"')}${action('hub-go','Context Practice','button outline small','data-route="fluency"')}</div></section>`;}
@@ -497,6 +498,8 @@ function renderReview(){
  </div><p class="study-note">Demo-only scheduler. Accurate answers are recorded per skill; the system does not claim calibrated mastery.</p></div>`;
 }
 function readerLesson(){return findLesson(readerLessonId)||DEMO_LESSONS[0];}
+function characterLesson(){const match=location.hash.match(/^#\/character\/(demo-\d{2,3})$/);return findLesson(match?.[1])||findLesson(displayLessonId)||DEMO_LESSONS[0];}
+function renderCharacter(){return renderC9CharacterStudy({lesson:characterLesson(),state,act:action,esc,showTranslations:c9CharacterShowTranslations,showPinyin:state.settings.showPinyin});}
 function renderReader(){const l=readerLesson(),cloze=makeCloze(l),mode=readerMode==='cloze'&&cloze?'cloze':'meaning';const options=mode==='cloze'?cloze.options:makeOptions(l.sentence.english,'sentence',l.id);
  return `${title('CONTEXTUAL PRACTICE','Sentence Lab','Read Chinese in context. Interpret sentences and reconstruct missing words; this extra practice does not inflate review mastery.')}
  ${gated()}<div class="reader-layout"><section class="simple-panel reader-sidebar"><div class="panel-heading"><h2>Choose a sentence</h2><span>${l.order}/${DEMO_LESSONS.length}</span></div><label class="field-label" for="reader-lesson">Demo lesson</label><select id="reader-lesson">${DEMO_LESSONS.map(item=>`<option value="${item.id}" ${item.id===l.id?'selected':''}>${item.order}. ${esc(item.hanzi)} · ${esc(item.meaning)}</option>`).join('')}</select><p class="muted">Source content is original demonstration material, not an official HSK list.</p><div class="button-row">${action('reader-next','Next sentence →','button outline small')}</div></section>
@@ -653,7 +656,7 @@ function renderSettings(){const s=state.settings;return `${title('PREFERENCES & 
  <section class="simple-panel"><h2>Curriculum status</h2><p><strong>Available:</strong> ${DEMO_LESSONS.length} original, author-written Mandarin demonstration lessons, not independently verified as official exam content.</p><p><strong>Not installed:</strong> Official 2025 HSK character and vocabulary inventories, approved audio libraries, and certified examination preparation.</p><p class="muted">No external analytics, cloud services, accounts, or remote curriculum downloads are used by this build.</p></section>`}
 function applySettings(){document.documentElement.dataset.theme=state.settings.dark?'dark':'light';document.documentElement.dataset.hanziSize=state.settings.hanziLarge?'large':'normal';}
 function renderFind(){return unifiedSearchPage({query:p30Query,kind:p30Kind,saved:p30Saved,page:p30Page,state},action,esc,title,gated);}
-function render(){navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+pages[route()]();if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
+function render(){disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+pages[route()]();if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root); }
 function go(page){location.hash=`#/${page}`;if(route()===page)render();}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
@@ -661,6 +664,33 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
+ if(name==='c9-character-open'){
+   const selected=findLesson(id);if(!selected)return alertUser('Character lesson unavailable.','error');
+   displayLessonId=selected.id;c9CharacterShowTranslations=true;
+   const target='#/character/'+selected.id;
+   if(location.hash===target)render();else location.hash=target;
+   return;
+ }
+ if(name==='c9-character-lesson'){
+   const selected=findLesson(id);if(!selected)return;
+   displayLessonId=selected.id;c9LearnDetail=true;c9LessonSection='overview';
+   showLessonTranslation=state.settings.showPinyin;
+   return go('learn');
+ }
+ if(name==='c9-character-reader'){
+   const selected=findLesson(id);if(!selected)return;
+   readerLessonId=selected.id;readerResult=null;showLessonTranslation=false;
+   return go('reader');
+ }
+ if(name==='c9-character-support'){c9CharacterShowTranslations=!c9CharacterShowTranslations;return render();}
+ if(name==='c9-character-jump'){
+   const section=button.dataset.section;
+   if(!['overview','writing','vocabulary','sentences','connections'].includes(section))return;
+   const target=root.querySelector('#c9-'+section);
+   target?.scrollIntoView({block:'start',behavior:'auto'});
+   if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+   return;
+ }
  if(name==='c9-lesson-jump'){
   const section=button.dataset.section;
   if(!c9LearnDetail||!C9_LESSON_SECTIONS.some(s=>s.id===section))return;

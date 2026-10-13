@@ -195,3 +195,12 @@
  .c9-discovery-chip {font-size:11px;padding:7px 9px;}
  .c9-lesson-row {grid-template-columns:22px 36px minmax(0,1fr);}
 }
+
+
+/* Concept 9 character detail entry point from the existing Learn results. */
+.c9-lesson-entry-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;min-width:0;}
+.c9-lesson-entry-actions .c9-button{white-space:nowrap;}
+@media(max-width:650px){
+ .c9-lesson-entry-actions{grid-column:3;justify-content:flex-start;flex-wrap:wrap;}
+ .c9-lesson-entry-actions .c9-button{font-size:11px;}
+}

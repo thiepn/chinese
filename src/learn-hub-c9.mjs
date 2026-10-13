@@ -34,7 +34,8 @@ function sourceHitText(entry,esc){
  return '<span class="c9-discovery-result-title"'+(chinese?' lang="zh-Hans"':'')+'>'+esc(entry.title)+'</span>';
 }
 function lessonActions(lesson,learned,act,esc){
- return act('c9-lesson-open',learned?'Revisit':'Study lesson','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"');
+ return '<div class="c9-lesson-entry-actions">'+act('c9-lesson-open',learned?'Revisit lesson':'Study lesson','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+
+ '<a href="#/character/'+esc(lesson.id)+'" class="c9-button c9-button--quiet c9-button--small">Character study ↗</a></div>';
 }
 function unitMatches(unit,search,selected,learned,status){
  if(selected!=='all'&&String(unit.index)!==String(selected))return false;
