@@ -109,11 +109,11 @@ export function renderC9LearnHub(state,ui,act,esc){
   '<div class="c9-discovery-lead-stats">'+progress(o.introduced,o.total,'Demo lessons introduced')+
   '<p><strong>'+o.due+'</strong> scheduled recall prompts due</p><p>'+o.sessions.length+' recoverable sessions</p>'+
   '<small>Study progress is source evidence, not official HSK certification.</small></div></section>'+
-  '<section class="c9-discovery-section" aria-labelledby="c9-skills-title"><div class="c9-discovery-section-head"><div><p class="c9-eyebrow">LEARNING AREAS</p><h2 id="c9-skills-title">Choose what to study</h2></div><a href="#/find">Search all content →</a></div>'+skillCards(esc)+'</section>'+
-  '<section class="c9-discovery-section" aria-labelledby="c9-units-title"><div class="c9-discovery-section-head"><div><p class="c9-eyebrow">ORIGINAL LESSON UNITS</p><h2 id="c9-units-title">Build your foundations</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-skills-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LEARNING AREAS</p><h2 id="c9-skills-title">Choose what to study</h2></div><a href="#/find">Search all content →</a></div>'+skillCards(esc)+'</section>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-units-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">ORIGINAL LESSON UNITS</p><h2 id="c9-units-title">Build your foundations</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
   '<p class="c9-discovery-note">All units are browseable. Introduction counts reflect actual saved learner history; units do not represent official HSK assignment or a locked syllabus.</p>'+
   unitCards(state,act,esc)+'</section>'+
-  '<section class="c9-discovery-section c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
   '<label class="c9-discovery-search-label" for="c9-learn-query">Search characters, Pinyin, meanings and source material</label>'+
   '<input id="c9-learn-query" class="c9-input" type="search" autocomplete="off" spellcheck="false" placeholder="Try 学, xué, family, food…" value="'+esc(ui.query)+'">'+
   '<div class="c9-discovery-filters"><label for="c9-learn-unit">Lesson unit<select id="c9-learn-unit" class="c9-select"><option value="all">All units</option>'+lessonGroups().map(g=>
@@ -121,7 +121,7 @@ export function renderC9LearnHub(state,ui,act,esc){
    '<label for="c9-learn-status">Learning evidence<select id="c9-learn-status" class="c9-select">'+[['all','All lessons'],['new','Not introduced'],['introduced','Introduced']].map(([v,label])=>
     '<option value="'+v+'"'+(status===v?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
   '<div id="c9-lesson-browser" aria-live="polite">'+renderC9LessonBrowser(state,ui,act,esc)+'</div></section>'+
-  '<section class="c9-discovery-section c9-discovery-finder" aria-labelledby="c9-content-title"><div class="c9-discovery-section-head"><div><p class="c9-eyebrow">CONNECTED CONTENT</p><h2 id="c9-content-title">Discover words and explanations</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-content-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">CONNECTED CONTENT</p><h2 id="c9-content-title">Discover words and explanations</h2></div></div>'+
   '<div class="c9-discovery-category-list" role="group" aria-label="Filter original course content">'+FIND_CATEGORIES.map(([id,label])=>
    act('c9-content-kind',esc(label),'c9-discovery-chip'+(kind===id?' is-selected':''),'data-kind="'+id+'" aria-pressed="'+(kind===id)+'"')).join('')+'</div>'+
   '<label class="c9-discovery-saved"><input type="checkbox" id="c9-learn-saved"'+(ui.saved?' checked':'')+'> Saved or introduced entries (where supported)</label>'+
@@ -142,7 +142,7 @@ export function renderC9PathwayHub(state,act,esc){
   '<div class="c9-inline">'+act('pathway-select','Continue last attempted mission →','c9-button c9-button--primary','data-id="'+esc(m.id)+'"')+
   '<a class="c9-button c9-button--secondary" href="#/learn">Browse character lessons</a></div></div>'+
   '<div class="c9-discovery-lead-stats"><strong>'+PATHWAY_MISSIONS.length+'</strong><span>Original missions across nine authored bands</span><p>No locked levels or official HSK certificate claims.</p></div></section>'+
-  '<section class="c9-discovery-section" aria-labelledby="c9-pathway-bands-title"><div class="c9-discovery-section-head"><div><p class="c9-eyebrow">COURSE STRUCTURE</p><h2 id="c9-pathway-bands-title">Explore every band</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-pathway-bands-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">COURSE STRUCTURE</p><h2 id="c9-pathway-bands-title">Explore every band</h2></div></div>'+
   '<div class="c9-band-grid">'+PATHWAY_BANDS.map(b=>{
     const stats=pathwayStats(state,b.number);
     const missions=PATHWAY_MISSIONS.filter(x=>x.band===b.number);

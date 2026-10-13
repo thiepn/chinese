@@ -42,7 +42,7 @@ export function renderC9Review({
   if(focus==='sentences')return info.kind==='choice';
   return true;
  });
- const subnote='<p class="c9-assessment-disclaimer">The original demonstration scheduler is uncalibrated. Independent correct answers are observations, not certified mastery.</p>';
+ const subnote='<p class="c9-assessment-disclaimer c9-unified-source-note">The original demonstration scheduler is uncalibrated. Independent correct answers are observations, not certified mastery.</p>';
  if(queue===null){
   const plan=reviewPlan(state,{now:Date.now(),focus,limit:Math.min(4,size)});
   const why=plan.map(item=>'<li><strong>'+esc(item.family)+'</strong><span>'+esc(item.reason)+'</span></li>').join('');
@@ -50,16 +50,16 @@ export function renderC9Review({
     title('SCHEDULED RECALL · SETUP','Review what is due','Choose a source-backed focus and a manageable queue. Skipping does not grade or reschedule a card.')+
     '<div class="c9-assessment-stats">'+stat(due.length,'Currently due prompts')+stat(overview.cards,'Registered review targets')+
       stat(overview.successful,'Correct independent attempts')+'</div>'+
-    '<div class="c9-assessment-columns"><section class="c9-assessment-panel" aria-labelledby="c9-review-settings-title">'+
+    '<div class="c9-assessment-columns"><section class="c9-assessment-panel c9-unified-card" aria-labelledby="c9-review-settings-title">'+
      '<p class="c9-eyebrow">PERSONAL SESSION</p><h2 id="c9-review-settings-title">Set your focus</h2>'+
      '<div class="c9-assessment-selects"><label for="review-focus">Recall focus<select id="review-focus">'+
       focusOptions.map(([id,label])=>'<option value="'+id+'"'+(focus===id?' selected':'')+'>'+label+'</option>').join('')+
       '</select></label><label for="review-size">Session length<select id="review-size">'+[5,10,20,50].map(n=>
       '<option value="'+n+'"'+(size===n?' selected':'')+'>Up to '+n+' prompts</option>').join('')+'</select></label></div>'+
      '<p class="c9-assessment-note">'+filtered.length+' due prompt'+(filtered.length===1?'':'s')+' match this focus. Unanswered or skipped prompts remain due.</p>'+
-     '<div class="c9-assessment-actions">'+action('review-begin','Begin scheduled review →','c9-button c9-button--primary',filtered.length?'':'disabled')+
+     '<div class="c9-assessment-actions c9-unified-actions">'+action('review-begin','Begin scheduled review →','c9-button c9-button--primary',filtered.length?'':'disabled')+
      link('learn','Study new material')+'</div>'+
-    '</section><section class="c9-assessment-panel c9-assessment-plan" aria-labelledby="c9-review-priority-title">'+
+    '</section><section class="c9-assessment-panel c9-unified-card c9-assessment-plan" aria-labelledby="c9-review-priority-title">'+
     '<p class="c9-eyebrow">EXISTING QUEUE PRIORITIES</p><h2 id="c9-review-priority-title">Why these come first</h2>'+
     (why?'<ol class="c9-assessment-reasons">'+why+'</ol>':
       '<div class="c9-empty"><strong>No due prompts for this focus</strong><p>You can introduce another source lesson or select a different skill. No grades have been fabricated.</p></div>')+
@@ -72,8 +72,8 @@ export function renderC9Review({
    title('REVIEW · FINISHED','Session finished','The individual answers you graded were saved by the original scheduler. Skips were not graded.')+
    '<div class="c9-assessment-stats">'+stat(done,'Graded responses')+stat(correct,'Correct independent responses')+
     stat(skipped,'Skipped prompts')+stat(due.length,'Still due')+'</div>'+
-   '<section class="c9-assessment-panel c9-assessment-finish"><h2>Choose what comes next</h2><p>Repeat with another focus, return to your original lessons, or practise contextual reading. Results do not certify proficiency.</p>'+
-   '<div class="c9-assessment-actions">'+action('review-restart','Set up another review →','c9-button c9-button--primary')+
+   '<section class="c9-assessment-panel c9-unified-card c9-assessment-finish"><h2>Choose what comes next</h2><p>Repeat with another focus, return to your original lessons, or practise contextual reading. Results do not certify proficiency.</p>'+
+   '<div class="c9-assessment-actions c9-unified-actions">'+action('review-restart','Set up another review →','c9-button c9-button--primary')+
    link('learn','Learn')+link('stories','Read in context')+'</div></section>'+subnote+'</div>';
  }
  const id=queue[0],c=cardInfo(id);
@@ -88,7 +88,7 @@ export function renderC9Review({
    '<div class="answer-entry c9-assessment-entry"><label for="review-entry">'+(c.kind==='pinyin'?'Type full Pinyin with tone marks or numbers':'Type the English meaning')+'</label>'+
    '<input id="review-entry" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="'+esc(response)+
    '" placeholder="'+(c.kind==='pinyin'?'For example, nǐ or ni3':'Type your answer without hints')+'"></div>')+
-   '<div class="c9-assessment-actions">'+action('submit-review','Check answer','c9-button c9-button--primary',
+   '<div class="c9-assessment-actions c9-unified-actions">'+action('submit-review','Check answer','c9-button c9-button--primary',
       (c.kind==='choice'?!selected:!response.trim())?'disabled':'')+
    action('reveal-review','Reveal reference (assisted)','c9-button c9-button--secondary')+
    action('review-skip','Skip without grading','c9-button c9-button--quiet')+'</div></div>':
@@ -101,14 +101,14 @@ export function renderC9Review({
     (c.reading?'<p class="c9-assessment-reading">'+esc(c.reading)+'</p>':'')+
     (c.kind==='pinyin'?toneTeachingPanel(c.answer,result?.reason||''):'')+
     action('speak','Listen with device voice','c9-button c9-button--secondary c9-button--small','data-text="'+esc(c.prompt)+'"')+
-    '<div class="c9-assessment-actions">'+(result?.correct?
+    '<div class="c9-assessment-actions c9-unified-actions">'+(result?.correct?
       action('grade','Good · next','c9-button c9-button--primary','data-grade="2"')+
       action('grade','Easy · next','c9-button c9-button--secondary','data-grade="3"'):
       action('grade','Again · next','c9-button c9-button--primary','data-grade="0"'))+
     '</div><p class="c9-assessment-note">Only the native grading action writes review history. Reveals are assisted, never independent correct.</p></div>');
  return '<div class="c9-assessment c9-review-active">'+
   title('ACTIVE SCHEDULED RECALL','Recall before revealing','One original due card at a time. Your queue is local to this open session; it is not a saved resumable task.')+
-  '<div class="c9-assessment-panel c9-assessment-live"><div class="c9-assessment-queue"><span>QUESTION '+(done+skipped+1)+' OF '+total+'</span>'+
+  '<div class="c9-assessment-panel c9-unified-card c9-assessment-live"><div class="c9-assessment-queue"><span>QUESTION '+(done+skipped+1)+' OF '+total+'</span>'+
   '<span>'+queue.length+' remaining · '+correct+' independent correct</span></div>'+
   progress(done+skipped,total,'Current review session')+
   '<div class="c9-assessment-question"><p class="c9-eyebrow">'+family(c)+'</p>'+

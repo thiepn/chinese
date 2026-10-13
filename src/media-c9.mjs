@@ -31,9 +31,9 @@ export function renderC9ReadingHub(state,story,act,esc){
   fact(attempted.size,'Readings attempted')+fact(independent.size,'With an independent correct answer')+'</div>';
  return '<div class="c9-media-overview">'+intro('READING WORKSPACE','Read Mandarin in context',
  'Work through complete authored passages. Source words, language support and exercises use the original reading system.')+
- facts+'<section class="c9-media-lead"><div><p class="c9-eyebrow">CURRENT READING</p><h2>'+esc(story.title)+'</h2>'+
+ facts+'<section class="c9-media-lead c9-unified-card"><div><p class="c9-eyebrow">CURRENT READING</p><h2>'+esc(story.title)+'</h2>'+
  '<p>'+esc(story.theme)+' · '+story.lines.length+' source sentences. Translations and vocabulary hints are optional assisted support.</p>'+
- '<div class="c9-media-lead-actions">'+act('story-focus-next','Focus a sentence →','c9-button c9-button--primary')+
+ '<div class="c9-media-lead-actions c9-unified-actions">'+act('story-focus-next','Focus a sentence →','c9-button c9-button--primary')+
  link('dialogues','Continue with conversation')+'</div></div>'+
  '<div class="c9-media-lead-aside"><span>P34 READING + LISTENING</span>'+
  '<strong>'+p34.readings+' / 25</strong><p>Reading passages with independent correct practice</p>'+
@@ -41,7 +41,7 @@ export function renderC9ReadingHub(state,story,act,esc){
  '</div></section>'+
  '<details class="c9-media-discovery"><summary>Browse nearby readings <span>'+related.length+' selected source texts</span></summary>'+
  '<div class="c9-media-entry-grid">'+related.map(s=>renderedEntry(s,'story',story.id,act,esc)).join('')+'</div></details>'+
- '<p class="c9-media-provenance">Original demonstration texts. “Correct independent answer” is activity evidence, not a passed reading level or official HSK score.</p></div>';
+ '<p class="c9-media-provenance c9-unified-source-note">Original demonstration texts. “Correct independent answer” is activity evidence, not a passed reading level or official HSK score.</p></div>';
 }
 export function renderC9DialogueHub(state,dialogue,act,esc){
  const attempted=new Set((state.dialogueEvents||[]).map(e=>e.dialogueId));
@@ -52,9 +52,9 @@ export function renderC9DialogueHub(state,dialogue,act,esc){
  'Hear each turn using optional local Mandarin speech synthesis; answer before revealing the transcript or translations.')+
  '<div class="c9-media-facts">'+fact(DIALOGUES.length,'Original dialogues')+
  fact(attempted.size,'Dialogues with attempts')+fact(independent.size,'With an independent correct answer')+'</div>'+
- '<section class="c9-media-lead"><div><p class="c9-eyebrow">CURRENT CONVERSATION</p><h2>'+esc(dialogue.title)+'</h2>'+
+ '<section class="c9-media-lead c9-unified-card"><div><p class="c9-eyebrow">CURRENT CONVERSATION</p><h2>'+esc(dialogue.title)+'</h2>'+
  '<p>'+count(dialogue.lines.length,'speaking turn')+(dialogue.p34?' · P34 listening-first transcript protection active.':' · Source turns and optional translation support.')+'</p>'+
- '<div class="c9-media-lead-actions">'+act('speak','Play whole exchange via device voice','c9-button c9-button--primary','data-text="'+esc(dialogue.lines.map(l=>l.hanzi).join(' '))+'"')+
+ '<div class="c9-media-lead-actions c9-unified-actions">'+act('speak','Play whole exchange via device voice','c9-button c9-button--primary','data-text="'+esc(dialogue.lines.map(l=>l.hanzi).join(' '))+'"')+
  link('stories','Browse reading')+'</div></div><div class="c9-media-lead-aside">'+
  '<span>P34 LISTENING EVIDENCE</span><strong>'+listening.listening+' / '+P34_LISTENING.length+'</strong>'+
  '<p>Listening situations with independent correct contextual answers</p>'+
@@ -62,7 +62,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc){
  '</div></section>'+
  '<details class="c9-media-discovery"><summary>Browse conversations <span>'+related.length+' source conversations</span></summary>'+
  '<div class="c9-media-entry-grid">'+related.map(d=>renderedEntry(d,'dialogue',dialogue.id,act,esc)).join('')+'</div></details>'+
- '<p class="c9-media-provenance">Device TTS is not native-recorded audio. Transcript or hints produce assisted evidence through the existing P34 native controls.</p></div>';
+ '<p class="c9-media-provenance c9-unified-source-note">Device TTS is not native-recorded audio. Transcript or hints produce assisted evidence through the existing P34 native controls.</p></div>';
 }
 export function renderC9TurnNavigator(d,active,act,esc){
  return '<nav class="c9-media-turn-nav" aria-label="Conversation turn navigation">'+

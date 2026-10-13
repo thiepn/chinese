@@ -32,7 +32,7 @@ function last14(state){
  return {attempts:rows.length,independent:rows.filter(e=>e.correct&&!e.assisted).length};
 }
 function evidenceNotice(){
- return '<p class="c9-utility-truth">All values show saved learning observations, not a diagnostic proficiency percentage, calibrated mastery prediction or official HSK certification.</p>';
+ return '<p class="c9-utility-truth c9-unified-source-note">All values show saved learning observations, not a diagnostic proficiency percentage, calibrated mastery prediction or official HSK certification.</p>';
 }
 export function renderC9ProgressOverview(state,act,esc){
  const m=summary(state),due=dueCards(state),groups=lessonGroups(),recent=last14(state);
@@ -52,7 +52,7 @@ export function renderC9ProgressOverview(state,act,esc){
  metric(due.length,'Scheduled prompts due','due according to the native scheduler')+
  metric(m.successful,'Independent correct reviews','original graded answer history')+
  metric(recent.attempts,'Review attempts · last 14 days','including assisted or incorrect attempts')+'</div>'+
- '<section class="c9-utility-panel"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">ORIGINAL CURRICULUM</p><h2>Introduced characters by unit</h2></div>'+
+ '<section class="c9-utility-panel c9-unified-card"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">ORIGINAL CURRICULUM</p><h2>Introduced characters by unit</h2></div>'+
  localLink('learn','Learn a character →','c9-button--small')+'</div>'+
  '<p class="c9-utility-description">Opening and exploring lessons is not introduction. Unit counts only change when the original learner writer records a lesson.</p>'+
  '<div class="c9-progress-units">'+groups.map(group=>{
@@ -60,14 +60,14 @@ export function renderC9ProgressOverview(state,act,esc){
   return '<div class="c9-progress-unit"><div><strong>'+esc(group.name)+'</strong><small>Unit '+String(group.index).padStart(2,'0')+'</small></div>'+
    progress(introduced,group.lessons.length,'Introduced lessons in '+esc(group.name))+'</div>';
  }).join('')+'</div></section>'+
- '<section class="c9-utility-panel"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">DISTINCT TYPES OF EVIDENCE</p><h2>What your activity means</h2></div></div>'+
+ '<section class="c9-utility-panel c9-unified-card"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">DISTINCT TYPES OF EVIDENCE</p><h2>What your activity means</h2></div></div>'+
  '<div class="c9-progress-evidence-grid">'+
  evidence('SCHEDULED REVIEW','Correct without a revealed answer in the original review engine.',m.successful,'review','Review due prompts')+
  evidence('CONNECTED READING','Distinct texts with an independently correct comprehension answer.',readingCorrect.size+' / '+STORIES.length,'stories','Continue reading')+
  evidence('CONVERSATIONS','Distinct dialogues with an independently correct contextual answer.',dialogueCorrect.size+' / '+DIALOGUES.length,'dialogues','Continue listening')+
  evidence('RECENT ACTIVITY','Independently correct scheduled responses in the last 14 days.',recent.independent,'practice','Extra practice')+
  '</div></section>'+
- '<section class="c9-utility-panel"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">SAVED CONTINUITY</p><h2>Return to unfinished learning</h2></div></div>'+
+ '<section class="c9-utility-panel c9-unified-card"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">SAVED CONTINUITY</p><h2>Return to unfinished learning</h2></div></div>'+
  (savedWork.length?'<div class="c9-utility-continuity">'+savedWork.map(([name,_,route])=>
   '<div><span><strong>'+name+'</strong><small>Native checkpoint available in this browser</small></span>'+
   localLink(route,'Resume →','c9-button--small')+'</div>').join('')+'</div>':
@@ -84,12 +84,12 @@ export function renderC9SearchIntro(state,ui,act,esc){
  '<div class="c9-search-summary"><div><strong>'+COURSE_INDEX.length+'</strong><span>Indexed source entries</span></div>'+
  '<div><strong>'+families.length+'</strong><span>Source categories</span></div>'+
  '<div><strong>'+saved(state,'bookmarkedWords')+saved(state,'bookmarkedStories')+saved(state,'bookmarkedSentences')+'</strong><span>Saved items across word, reading and sentence libraries</span></div></div>'+
- '<section class="c9-utility-panel c9-search-start"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">START WITH A COLLECTION</p><h2>Explore by content</h2></div>'+
+ '<section class="c9-utility-panel c9-unified-card c9-search-start"><div class="c9-utility-section-heading"><div><p class="c9-eyebrow">START WITH A COLLECTION</p><h2>Explore by content</h2></div>'+
  act('c9-find-reset','Clear all filters','c9-button c9-button--quiet c9-button--small')+'</div>'+
  '<div class="c9-search-category-grid">'+families.map(row=>
   act('p30-filter','<strong>'+esc(row.label)+'</strong><span>'+row.count+' source entries</span>',
   'c9-search-category'+(ui.kind===row.id?' is-active':''),'data-kind="'+row.id+'" aria-pressed="'+(ui.kind===row.id)+'"')).join('')+
- '</div></section><p class="c9-utility-truth">Saved-only search applies only to source types with native saved or introduction records. Other categories may correctly show no results under this filter.</p></div>';
+ '</div></section><p class="c9-utility-truth c9-unified-source-note">Saved-only search applies only to source types with native saved or introduction records. Other categories may correctly show no results under this filter.</p></div>';
 }
 const settingsDestinations=Object.freeze([
  ['study','Study preferences','Pinyin, appearance and daily lesson target'],
@@ -115,7 +115,7 @@ export function renderC9SettingsIntro(state,storageReady,act,esc){
  '<nav class="c9-settings-nav" aria-label="Settings sections">'+settingsDestinations.map(([id,label,desc])=>
   act('c9-settings-target','<strong>'+esc(label)+'</strong><small>'+esc(desc)+'</small>',
   'c9-settings-nav-item','data-target="c9-settings-'+id+'"')).join('')+'</nav>'+
- '<p class="c9-utility-truth">Import and reset actions remain governed by the original backup preview, acknowledgment and learner-state replacement mechanisms.</p></div>';
+ '<p class="c9-utility-truth c9-unified-source-note">Import and reset actions remain governed by the original backup preview, acknowledgment and learner-state replacement mechanisms.</p></div>';
 }
 const TOOLS=Object.freeze([
  {route:'pinyin',name:'Pinyin & tones',description:'Hear contrasts, study initials and finals, then use the original sound-checking exercises.',category:'SOUNDS'},
@@ -161,5 +161,5 @@ export function renderC9Secondary(route,state,original,act,esc){
  '<a href="#/'+tool.route+'"><span class="c9-eyebrow">'+tool.category+'</span><strong>'+esc(tool.name)+'</strong>'+
  '<small>'+esc(tool.description)+'</small><span aria-hidden="true">↗</span></a>').join('')+'</nav></details>'+
  '<div class="c9-secondary-native" aria-label="Original '+esc(current.name)+' learning workspace">'+original+'</div>'+
- '<p class="c9-utility-truth">These activities have distinct native practice and continuation records. No HSK mastery or scheduled-review grades are generated by navigation.</p></div>';
+ '<p class="c9-utility-truth c9-unified-source-note">These activities have distinct native practice and continuation records. No HSK mastery or scheduled-review grades are generated by navigation.</p></div>';
 }

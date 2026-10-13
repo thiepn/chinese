@@ -9,7 +9,7 @@ const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(100*done/total)
 const heading=(type,name,desc)=>'<div class="c9-library-heading"><p class="c9-eyebrow">'+type+' · ORIGINAL SOURCE</p><h2>'+name+'</h2><p>'+desc+'</p></div>';
 const metrics=(items)=>'<div class="c9-library-metrics">'+items.map(([value,label])=>'<div><strong>'+value+'</strong><span>'+label+'</span></div>').join('')+'</div>';
 const bar=(done,total,label)=>'<div class="c9-library-bar"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
-const paragraph=(text)=>'<p class="c9-library-disclaimer">'+text+'</p>';
+const paragraph=(text)=>'<p class="c9-library-disclaimer c9-unified-source-note">'+text+'</p>';
 const PAGE=12;
 
 export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act,esc){
@@ -61,7 +61,7 @@ export function renderC9GrammarDirectory(state,act,esc){
   const entries=GRAMMAR_LESSONS.filter(g=>g.chapterNumber===ch.number);
   const seen=entries.filter(g=>attempted.has(g.id)).length;
   const next=entries.find(g=>!attempted.has(g.id))||entries[0];
-  return '<article class="c9-library-chapter"><div class="c9-library-tile-head"><span>'+String(ch.number).padStart(2,'0')+'</span><div><h3>'+esc(ch.name)+'</h3><small>'+count(entries.length,'authored lesson')+'</small></div></div>'+
+  return '<article class="c9-library-chapter c9-unified-card"><div class="c9-library-tile-head"><span>'+String(ch.number).padStart(2,'0')+'</span><div><h3>'+esc(ch.name)+'</h3><small>'+count(entries.length,'authored lesson')+'</small></div></div>'+
    bar(seen,entries.length,'Lessons with a recorded practice attempt')+
    '<div class="c9-library-links">'+entries.slice(0,3).map(g=>act('grammar-select',esc(g.title),'c9-library-text-button','data-id="'+esc(g.id)+'"')).join('')+'</div>'+
    (next?act('grammar-select','Open '+esc(next.title)+' →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
@@ -84,7 +84,7 @@ export function renderC9SentenceDirectory(state,act,esc){
   const examples=SENTENCE_LIBRARY.filter(s=>s.topicId===topic.id);
   const s=examples[0],savedHere=examples.filter(s=>saved.has(s.id)).length;
   const attempts=examples.filter(s=>attempted.has(s.id)).length;
-  return '<article class="c9-library-topic"><p class="c9-eyebrow">ORIGINAL TOPIC · COMPLEXITY '+topic.difficulty+'/3</p>'+
+  return '<article class="c9-library-topic c9-unified-card"><p class="c9-eyebrow">ORIGINAL TOPIC · COMPLEXITY '+topic.difficulty+'/3</p>'+
    '<h4>'+esc(topic.title)+'</h4><p>'+esc(topic.purpose)+'</p>'+
    (s?'<p class="c9-library-topic-hanzi" lang="zh-Hans">'+esc(s.hanzi)+'</p>':'')+
    '<span>'+examples.length+' sentences · '+savedHere+' saved · '+attempts+' attempted</span>'+
