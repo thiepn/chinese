@@ -13,14 +13,14 @@ const unit=(guide,state,act,esc)=>act('p31-open-lesson',
  'p31-character-card '+(seen(state,guide.id)?'introduced':''),`data-id="${guide.id}"`);
 export function p31Overview(state,act,esc,compact=false){
  const progress=P31_CHARACTER_GUIDES.filter(g=>seen(state,g.id)).length;
- const next=nextP31Guide(state);
+ const next=progress<P31_CHARACTER_GUIDES.length?nextP31Guide(state):null;
  const vocabularyKeys=P31_VOCABULARY.map(w=>canonicalWordKey(w.hanzi,w.pinyin));
  const wordCount=vocabularyKeys.filter(key=>(state.vocabularyIntroduced||[]).includes(key)).length;
  return `<section class="p31-overview ${compact?'compact':''}"><div class="p31-overview-copy"><p class="eyebrow">NEW ORIGINAL BEGINNER MANDARIN · P31</p>
  <h2>Understand more of everyday Chinese</h2>
  <p>Start with practical words, hear the tones, then use each character in two connected sentences. Original authored study groups only—not official HSK 3.0 syllabus assignments.</p>
  <div class="p31-overview-actions">
- ${next?act('p31-open-lesson',`Continue with ${esc(next.hanzi)} →`,'button primary',`data-id="${next.id}"`):''}
+ ${next?act('p31-open-lesson',`Continue with ${esc(next.hanzi)} →`,'button primary',`data-id="${next.id}"`):act('p31-open-lesson','Review the first character →','button outline',`data-id="${P31_CHARACTER_GUIDES[0].id}"`)}
  ${act('p31-open-library','Explore all new characters and words →','button outline')}
  </div></div><div class="p31-overview-numbers">
  <div><strong>${progress}<small> / ${P31_CHARACTER_GUIDES.length}</small></strong><span>Character lessons introduced</span></div>
@@ -28,19 +28,25 @@ export function p31Overview(state,act,esc,compact=false){
  <div><strong>${P31_CHARACTER_GUIDES.length*2}</strong><span>Original character example sentences</span></div>
  </div></section>`;
 }
-export function p31LessonShelf(state,act,esc,{theme='all',page=0}={}){
- const choices=P31_CHARACTER_GUIDES.filter(g=>theme==='all'||g.category===theme);
+export function p31LessonShelf(state,act,esc,{theme='all',status='all',page=0}={}){
+ const themeLessons=P31_CHARACTER_GUIDES.filter(g=>theme==='all'||g.category===theme);
+ const introduced=themeLessons.filter(g=>seen(state,g.id)).length;
+ const choices=themeLessons.filter(g=>status==='all'||(status==='introduced'?seen(state,g.id):!seen(state,g.id)));
  const maxPage=Math.max(0,Math.ceil(choices.length/12)-1),shown=Math.max(0,Math.min(page,maxPage));
- const selection=choices.slice(shown*12,(shown+1)*12),next=nextP31Guide(state,theme);
+ const selection=choices.slice(shown*12,(shown+1)*12),next=introduced<themeLessons.length?nextP31Guide(state,theme):null;
  return `<section class="p31-course-library" id="p31-course-library">
- <div class="p31-heading"><div><p class="eyebrow">58 ORIGINAL CHARACTER LESSONS · SEVEN LEARNING THEMES</p><h2>Learn new characters by situation</h2></div>
+ <div class="p31-heading"><div><p class="eyebrow">${P31_CHARACTER_GUIDES.length} ORIGINAL CHARACTER LESSONS · ${P31_THEMES.length} LEARNING THEMES</p><h2>Learn new characters by situation</h2></div>
  <span>Choose a theme, continue an unintroduced lesson or open any previous lesson.</span></div>
  <div class="p31-theme-tabs" role="group" aria-label="New character lesson themes">
  ${['all',...P31_THEMES].map(item=>act('p31-theme',item==='all'?'All new lessons':esc(item),'p31-theme '+(theme===item?'active':''),`data-theme="${esc(item)}" aria-pressed="${theme===item}"`)).join('')}
  </div>
- <div class="p31-shelf-head"><span>${choices.length} original characters · ${choices.filter(g=>seen(state,g.id)).length} introduced</span>
+ <div class="p31-status-tabs" role="group" aria-label="Filter characters by introduction status">
+ ${[['all','All'],['new','Not introduced'],['introduced','Previously introduced']].map(([key,label])=>act('p31-status',`${label} (${key==='all'?themeLessons.length:key==='new'?themeLessons.length-introduced:introduced})`,'p31-theme '+(status===key?'active':''),`data-status="${key}" aria-pressed="${status===key}"`)).join('')}
+ </div>
+ <div class="p31-shelf-head"><span>${introduced} of ${themeLessons.length} introduced in this theme · ${choices.length} shown</span>
  ${next?act('p31-open-lesson',`Next: ${esc(next.hanzi)} · ${esc(next.meaning)} →`,'button outline small',`data-id="${next.id}"`):''}</div>
  <div class="p31-character-grid">${selection.map(g=>unit(g,state,act,esc)).join('')}</div>
+ ${!selection.length?'<p class="p31-empty-status">No lessons match this filter. Choose another status or theme.</p>':''}
  <div class="p31-shelf-pagination"><span>Page ${shown+1} / ${maxPage+1}</span>
  ${act('p31-prev','← Previous','button outline small',shown?'':'disabled')}
  ${act('p31-next','Next →','button outline small',shown<maxPage?'':'disabled')}</div>
@@ -86,7 +92,7 @@ export function p31VocabularyShelf(state,act,esc,{page=0}={}){
  const shown=Math.max(0,Math.min(page,Math.ceil(P31_VOCABULARY.length/12)-1));
  const pool=P31_VOCABULARY.slice(shown*12,(shown+1)*12);
  return `<section class="p31-vocabulary-shelf">
- <div class="p31-heading"><div><p class="eyebrow">40 EXPANDED VOCABULARY TEACHING RECORDS</p><h2>Everyday words in more than one context</h2></div>
+ <div class="p31-heading"><div><p class="eyebrow">${P31_VOCABULARY.length} EXPANDED VOCABULARY TEACHING RECORDS</p><h2>Everyday words in more than one context</h2></div>
  <span>Original examples, meaning distinctions and collocations.</span></div>
  <div class="p31-vocabulary-grid">${pool.map(row=>{
  const word=findWord(canonicalWordKey(row.hanzi,row.pinyin));
