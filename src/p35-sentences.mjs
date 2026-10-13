@@ -20,7 +20,19 @@ const foci=[
  ['Choosing and hoping','Preferences','state preferences and intentions',['g57','g62']],
  ['Feelings and comparisons','Daily life','describe feelings and experiences',['g40','g64']]
 ];
-export const P35_SENTENCE_TOPICS=Object.freeze(foci.map((focus,i)=>Object.freeze([
- 'P35 · '+focus[0],focus[1],focus[2],2,focus[3],
- Object.freeze(P35_CHARACTER_GUIDES.slice(i*5,i*5+5).flatMap(g=>g.examples.map(s=>Object.freeze([s.hanzi,s.pinyin,s.english]))))
-])));
+export const P35_SENTENCE_TOPICS=Object.freeze([
+ ...foci.map((focus,i)=>Object.freeze([
+  'P35 · '+focus[0],focus[1],focus[2],2,focus[3],
+  Object.freeze(P35_CHARACTER_GUIDES.slice(i*5,i*5+5).flatMap(g=>g.examples.slice(0,2).map(s=>Object.freeze([s.hanzi,s.pinyin,s.english]))))
+ ])),
+ ...['Introducing and requesting','Sequencing and travelling','Directions and exam questions','Study and practical services',
+    'Health, shopping and borrowing','Prices, objects and aspirations','Feelings, understanding and enjoyment']
+   .map((theme,i)=>Object.freeze([
+   'P35 · Transfer · '+theme,['Communication','Travel','Study','Services','Shopping','Choices','Daily life'][i],
+   'use a newly learned character in an independently authored third example',2,
+   [['g39','g59'],['g47','g54'],['g46','g60'],['g55','g59'],['g50','g62'],['g57','g62'],['g40','g64']][i],
+   Object.freeze(P35_CHARACTER_GUIDES.slice(i*10,i*10+10).map(g=>{
+    const s=g.examples[2];return Object.freeze([s.hanzi,s.pinyin,s.english]);
+   }))
+  ]))
+]);
