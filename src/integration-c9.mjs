@@ -14,6 +14,7 @@ import {P31_CHARACTER_GUIDES} from './p31-foundations.mjs';
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {dueCards,summary} from './study.mjs';
+import {C9_ADVANCED_PHASES} from './advanced-c9.mjs';
 
 const tabs=Object.freeze([
  ['Characters','learn','Original character lessons',()=>DEMO_LESSONS.length],
@@ -22,7 +23,8 @@ const tabs=Object.freeze([
  ['Sentences','sentences','Original contextual sentences',()=>SENTENCE_LIBRARY.length],
  ['Readings','stories','Complete original passages',()=>STORIES.length],
  ['Dialogues','dialogues','Original conversation exchanges',()=>DIALOGUES.length],
- ['Pathway','pathway','Original native pathway missions',()=>PATHWAY_MISSIONS.length]
+ ['Pathway','pathway','Original native pathway missions',()=>PATHWAY_MISSIONS.length],
+ ['Advanced course','advanced','P35–P51 original curricular collections',()=>C9_ADVANCED_PHASES.reduce((n,p)=>n+p.records.length,0)]
 ]);
 
 export const C9_SOURCE_ROUTES=Object.freeze({
@@ -105,14 +107,14 @@ export function renderC9InstalledSourceAtlas(state,act,esc){
  '<div class="c9-integrated-header"><div><p class="c9-eyebrow">WHAT IS REALLY INSTALLED IN THIS BRANCH</p>'+
  '<h2 id="c9-integrated-atlas-title">Original course materials</h2>'+
  '<p>These counts come from the imported canonical learning arrays, not from HSK level labels, simulated lessons or a remote catalog.</p></div>'+
- '<a href="#/find" class="c9-button c9-button--primary c9-button--small">Search source library →</a></div>'+
+ '<div class="c9-integrated-atlas-actions"><a href="#/advanced" class="c9-button c9-button--primary c9-button--small">Explore P35–P51 →</a><a href="#/find" class="c9-button c9-button--secondary c9-button--small">Search original material →</a></div></div>'+
  '<div class="c9-integrated-atlas-grid">'+tabs.map(([name,route,desc,total])=>
  '<a href="#/'+route+'" class="c9-integrated-atlas-tile"><span>'+esc(name)+'</span><strong>'+
  total()+'</strong><small>'+esc(desc)+'</small><span aria-hidden="true">→</span></a>').join('')+'</div>'+
  '<details class="c9-integrated-source-details"><summary>Original P31–P34 authored expansions <span>'+sources.length+' installed groups</span></summary>'+
  '<div>'+sources.map(([name,total,route,desc])=>'<a href="#/'+route+'"><strong>'+esc(name)+'</strong>'+
  '<span>'+total+' source entries</span><small>'+esc(desc)+'</small></a>').join('')+'</div></details>'+
- '<p class="c9-integrated-caveat">The later P35–P51 curriculum is maintained in a separate development branch and is not included in this C9 UI branch. No official HSK certification, independent language validation or cross-branch completion is implied.</p></section>';
+ '<p class="c9-integrated-caveat">The original P35–P51 source files are present in this integration branch and their native lesson, grammar, reading, dialogue and writing exercise catalogs remain authoritative. The separate legacy P51 course-specific UI is not copied over wholesale; specialized ungraded source exploration and original native activity handoffs are available under Advanced Course. Official HSK certification and independently verified proficiency are not implied.</p></section>';
 }
 export function renderC9SourceReturn(handoff,currentRoute,act,esc){
  if(!handoff||!handoff.kind||!handoff.id||!handoff.origin)return '';
