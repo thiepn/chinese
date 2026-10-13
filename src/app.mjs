@@ -461,19 +461,17 @@ function pinyinTodayPanel(){
  <p>Explore tongue positions, vowels, lexical tones, tone sandhi and the spelling rules behind Mandarin words.</p><div class="button-row">${action('pinyin-open','Open sound foundations →','button primary')}${action('pinyin-tab','Practice tones →','button outline small',`data-section="practice" data-filter="tones"`)}</div></section>`;
 }
 function renderToday(){
-  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
-    onboardingPanel()+
-    '<details class="c9-home-extra"><summary><strong>More course material and teaching recommendations</strong><span>Beginner expansion, grammar, reading, listening and extended learning tools</span></summary><div class="c9-home-extra-inner">'+
-      gated()+
-      p31Overview(state,action,esc,true)+
-      p32LearningHub(state,action,esc)+
-      p33SceneShelf(state,null,action,esc,{compact:true})+
-      p34Overview(state,action,esc,{compact:true})+
-      '<details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>'+
-        hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
-        connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
-        pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
-      '</details></div></details>';
+ // The actual learning next steps, unit progress and contextual source entries
+ // are now visible in Home. Legacy supplementary teaching remains accessible
+ // without duplicating the primary P31–P34 course catalogs shown on Learn.
+ return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
+  onboardingPanel()+
+  '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
+  '<div class="c9-home-extra-inner">'+gated()+
+  hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
+  connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
+  pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
+  '</div></details>';
 }
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
@@ -510,7 +508,7 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearnLegacy(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearnLegacy(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function c9LearnUi(){return {query:c9LearnQuery,unit:c9LearnUnit,status:c9LearnStatus,kind:c9LearnKind,saved:c9LearnSaved,page:c9LearnPage,view:c9LearnDetail?'lesson':'catalog',selectedId:displayLessonId};}
 function refreshC9DiscoveryResults(){
  const ui=c9LearnUi(),browser=$('c9-lesson-browser'),search=$('c9-learn-search-results');
@@ -519,8 +517,17 @@ function refreshC9DiscoveryResults(){
 }
 function renderLearn(){
  if(!c9LearnDetail){
-  const extra='<details class="c9-learn-existing"><summary>Additional original curriculum and native learning tools</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
-  return renderC9LearnHub(state,c9LearnUi(),action,esc)+extra;
+  const curriculum='<section class="c9-original-curriculum" aria-labelledby="c9-original-curriculum-title">'+
+   '<header class="c9-original-curriculum-head"><div><p class="c9-eyebrow">ORIGINAL AUTHOR-SUPPLIED TEACHING</p><h2 id="c9-original-curriculum-title">Build skills beyond the character list</h2>'+
+   '<p>Characters lead into real vocabulary, grammar, sentence production, listening and connected reading. These are independent original teaching modules, not official HSK certification.</p></div>'+
+   '<a href="#/pathway" class="c9-button c9-button--secondary">Explore nine-band pathway</a></header>'+
+   '<div class="c9-original-curriculum-grid">'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p31-title"><div class="c9-original-curriculum-label"><span>01 / CHARACTERS & WORDS</span><h3 id="c9-p31-title">Character foundations</h3><p>Original P31 character families, contextual teaching and practical words.</p></div>'+p31Overview(state,action,esc,true)+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p32-title"><div class="c9-original-curriculum-label"><span>02 / GRAMMAR & SENTENCES</span><h3 id="c9-p32-title">Use Chinese in sentences</h3><p>Source-based grammar patterns, sentence applications and controlled practice.</p></div>'+p32LearningHub(state,action,esc)+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section>';
+  const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+curriculum+extra;
  }
  const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
  if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
