@@ -847,6 +847,123 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p48-enter'||name==='p48-return'||name==='p48-open'||name==='p48-next'){
+  const selected=name==='p48-open'?findP48Passage(id):
+   name==='p48-return'?findP48Passage(p48CaseId):
+   name==='p48-next'?p48Next(state,p48CaseId):findP48Passage(p48CaseId)||p48Next(state);
+  if(!selected)return alertUser('No original comparative-source lesson is available.','error');
+  if(name!=='p48-return'){
+   p48CaseId=selected.id;p48Stage='compare';p48Translations=false;p48Transcript=false;p48Models=false;
+   p48ReadingIndex=0;p48ListeningIndex=0;p48ReadingFeedback=null;p48ListeningFeedback=null;
+   p48SelfReview.clear();
+  }
+  location.hash='#/comparative/'+selected.id+'?stage='+p48Stage;
+  render();root.querySelector('.p48-lesson')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p48-stage'){
+  if(!findP48Passage(p48CaseId)||!P48_STAGES.some(x=>x.id===button.dataset.stage))return;
+  p48Stage=button.dataset.stage;p48ReadingFeedback=null;p48ListeningFeedback=null;
+  location.hash='#/comparative/'+p48CaseId+'?stage='+p48Stage;return render();
+ }
+ if(name==='p48-review')return go('review');
+ if(name==='p48-translation'||name==='p48-transcript'||name==='p48-models'){
+  if(!findP48Passage(p48CaseId))return;
+  if(name==='p48-translation'){p48Translations=!p48Translations;if(p48Translations)p48AssistedCases.add(p48CaseId);}
+  if(name==='p48-transcript'){p48Transcript=!p48Transcript;if(p48Transcript)p48AssistedCases.add(p48CaseId);}
+  if(name==='p48-models'){p48Models=!p48Models;if(p48Models)p48AssistedCases.add(p48CaseId);}
+  return render();
+ }
+ if(name==='p48-play'||name==='p48-play-slow'||name==='p48-hear-turn'){
+  const p=findP48Passage(p48CaseId),d=p&&P48_DIALOGUES.find(x=>x.readingId===p.id);
+  if(!d)return;
+  const index=Number(button.dataset.index);
+  if(name==='p48-hear-turn'&&(!Number.isInteger(index)||index<0||index>=d.turns.length))return;
+  return speak(name==='p48-hear-turn'?d.turns[index].hanzi:
+   d.turns.map(t=>t.hanzi).join(' '),name==='p48-play-slow'?0.7:demoSpeechRate);
+ }
+ if(name==='p48-reader-next'){
+  const p=findP48Passage(p48CaseId);if(!p)return;
+  if(p48ReadingIndex+1<p.questions.length){
+   p48ReadingIndex++;p48ReadingFeedback=null;return render();
+  }
+  p48Stage='listen';p48ReadingFeedback=null;
+  location.hash='#/comparative/'+p.id+'?stage=listen';return render();
+ }
+ if(name==='p48-reader-retry'){p48ReadingFeedback=null;return render();}
+ if(name==='p48-reader-answer'||name==='p48-reader-model'){
+  const p=findP48Passage(p48CaseId),story=p&&p48Story(p);
+  if(!story||p48ReadingFeedback)return;
+  const mode=['beginner-detail','beginner-reason','beginner-sequence'][p48ReadingIndex];
+  const q=beginnerQuestion(story,mode);if(!q)return;
+  const answer=name==='p48-reader-model'?'':button.dataset.option||'';
+  if(name==='p48-reader-answer'&&!q.options.includes(answer))return;
+  const assisted=p48AssistedCases.has(p.id)||name==='p48-reader-model';
+  const correct=answer===q.answer;
+  const eventId=globalThis.crypto?.randomUUID?.()||'p48-reader-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addReadingEvent(old,story.id,mode,correct,assisted,eventId));
+  if(saved){
+   p48ReadingFeedback={correct,assisted};render();
+   root.querySelector('.p48-feedback')?.scrollIntoView({block:'nearest'});
+  }
+  return;
+ }
+ if(name==='p48-listener-next'){
+  const p=findP48Passage(p48CaseId),d=p&&P48_DIALOGUES.find(x=>x.readingId===p.id);
+  if(!d)return;
+  if(p48ListeningIndex+1<d.questions.length){
+   p48ListeningIndex++;p48ListeningFeedback=null;return render();
+  }
+  p48Stage='argue';p48ListeningFeedback=null;
+  location.hash='#/comparative/'+p.id+'?stage=argue';return render();
+ }
+ if(name==='p48-listener-retry'){p48ListeningFeedback=null;return render();}
+ if(name==='p48-listener-answer'||name==='p48-listener-model'){
+  const p=findP48Passage(p48CaseId),d=p&&p48NativeDialogue(p);
+  if(!d||p48ListeningFeedback)return;
+  const q=dialogueQuestion(d.id,p48ListeningIndex);if(!q)return;
+  const answer=name==='p48-listener-model'?'':button.dataset.option||'';
+  if(name==='p48-listener-answer'&&!q.options.includes(answer))return;
+  const assisted=p48AssistedCases.has(p.id)||name==='p48-listener-model';
+  const eventId=globalThis.crypto?.randomUUID?.()||'p48-dialogue-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addDialogueEvent(old,{id:eventId,dialogueId:d.id,
+   question:p48ListeningIndex,answer,assisted}));
+  if(saved){
+   p48ListeningFeedback={correct:answer===q.answer,assisted};render();
+   root.querySelector('.p48-feedback')?.scrollIntoView({block:'nearest'});
+  }
+  return;
+ }
+ if(name==='p48-check'){
+  if(!P48_REVISION_CHECKS.some(c=>c.id===id)||!findP48Passage(p48CaseId))return;
+  if(p48SelfReview.has(id))p48SelfReview.delete(id);else p48SelfReview.add(id);
+  return render();
+ }
+ if(name==='p48-open-p43'){
+  const p=findP48Passage(p48CaseId),a=p&&findP48Argument(p.id);
+  if(!a)return;
+  p43UnitId=a.p43Id;
+  return go('production');
+ }
+ if(name==='p48-argument-write'||name==='p48-write'){
+  const p=findP48Passage(p48CaseId);if(!p)return;
+  let taskId;
+  if(name==='p48-argument-write'){
+   const a=findP48Argument(p.id),index=Number(button.dataset.index);
+   if(!a||!Number.isInteger(index)||index<0||index>=a.models.length)return;
+   taskId='p48:argument:'+p.id+':model'+index;
+  }else if(button.dataset.kind==='reading'){
+   const story=p48Story(p);if(!story)return;
+   taskId='beginner-reading:'+story.id+':writing';
+  }else{
+   const d=P48_DIALOGUES.find(x=>x.readingId===p.id);
+   if(!d||!['turn6','turn9'].includes(button.dataset.kind))return;
+   taskId='p48:dialogue:'+d.id+':'+button.dataset.kind;
+  }
+  const index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
+  if(index<0)return alertUser('The original fixed-form sentence task is unavailable.','error');
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+  sentenceSupport=p48AssistedCases.has(p.id);return go('workshop');
+ }
  if(name==='p47-enter'||name==='p47-return'||name==='p47-open'||name==='p47-next'){
   const selected=name==='p47-open'?findP47Passage(id):
    name==='p47-return'?findP47Passage(p47UnitId):
@@ -2428,6 +2545,12 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p48-search'){
+  p48Query=e.target.value;render();
+  const field=root.querySelector('#p48-search');
+  if(field){field.focus();field.setSelectionRange(p48Query.length,p48Query.length);}
+  return;
+ }
  if(e.target.id==='p47-search'){
   p47Query=e.target.value;render();
   const el=root.querySelector('#p47-search');
