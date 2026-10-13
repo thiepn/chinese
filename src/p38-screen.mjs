@@ -88,7 +88,8 @@ export function p38PassagePanel(story,act,esc,{section='all',pinyin=false,englis
  '<div class="p38-links"><h4>Transfer this reading into other practice</h4><div class="button-row">'+
  (related?act('p37-open','Open original P37 conversation →','button outline small','data-id="'+related.id+'"'):'')+
  act('p38-write','Write from this reading independently →','button primary small','data-id="'+p.id+'"')+
- act('p38-next-reading','Next unmastered reading →','button outline small')+'</div>'+
+ act('p38-sentences','Study original reading sentences →','button outline small')+
+ act('p38-next-reading','Next reading for independent practice →','button outline small')+'</div>'+
  '<div class="p38-grammar-links">'+grammar.map(g=>act('grammar-select',esc(g.title)+' →','button outline small','data-id="'+g.id+'"')).join('')+'</div>'+
  '<div class="p38-vocabulary-links">'+matchedWords.map(w=>act('lookup-word',esc(w.hanzi)+' · '+esc(w.pinyin),'button outline small','data-id="'+esc(w.key)+'"')).join('')+'</div></div>'+
  '<p class="p38-source-note">Context is adapted from earlier independently authored P37 material. Revealing Pinyin or English makes later reading answers assisted. Saving a bookmark records a personal preference, not assessed mastery.</p>'+
