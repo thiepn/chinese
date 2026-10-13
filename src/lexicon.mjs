@@ -8,6 +8,7 @@ import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P35_VOCABULARY} from './p35-vocabulary.mjs';
 import {P39_VOCABULARY} from './p39-foundations.mjs';
+import {P46_VOCABULARY} from './p46-foundations.mjs';
 import {P37_SCENES} from './p37-scenarios.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
@@ -84,6 +85,17 @@ for(const original of P39_VOCABULARY){
  for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
  for(const lessonId of original.lessonIds)if(!record.lessonIds.includes(lessonId))record.lessonIds.push(lessonId);
  if(!record.source.includes('p39'))record.source=record.source==='original-demonstration'?'original-p39':record.source+'-and-p39';
+}
+// P46 original vocabulary enters the same canonical index and Wordbook keyspace.
+for(const original of P46_VOCABULARY){
+ const record=entry(original.hanzi,original.pinyin);
+ if(!record.senses.includes(original.meaning))record.senses.push(original.meaning);
+ for(const note of [original.note,original.contrast])if(note&&!record.notes.includes(note))record.notes.push(note);
+ for(const ex of original.examples)addExample(record,ex);
+ for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
+ const lesson=DEMO_LESSONS.find(l=>l.hanzi===original.hanzi[0]);
+ if(lesson&&!record.lessonIds.includes(lesson.id))record.lessonIds.push(lesson.id);
+ if(!record.source.includes('p46'))record.source=record.source==='original-demonstration'?'original-p46':record.source+'-and-p46';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
