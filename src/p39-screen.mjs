@@ -1,7 +1,7 @@
 /** P39 source-only intermediate character and vocabulary workspaces.
  * Every learner action routes to original Course, Wordbook, Reader or Workshop.
  */
-import {P39_CHARACTER_GUIDES,P39_VOCABULARY,P39_THEMES,findP39Guide,nextP39Guide} from './p39-foundations.mjs';
+import {P39_CHARACTER_GUIDES,P39_VOCABULARY,P39_THEMES,P39_WRITING_TASKS,findP39Guide,nextP39Guide} from './p39-foundations.mjs';
 import {findWord,canonicalWordKey} from './lexicon.mjs';
 import {STORIES} from './stories.mjs';
 const known=(state,id)=>(state.learned||[]).includes(id);
@@ -19,14 +19,14 @@ export function p39Overview(state,act,esc,{compact=false}={}){
  const independent=new Set((state.sentenceEvents||[]).filter(e=>e.correct&&!e.assisted&&e.taskId.startsWith('p39:')).map(e=>e.taskId)).size;
  return '<section class="p39-overview '+(compact?'compact':'')+'" aria-label="P39 intermediate character and word study">'+
  '<div><p class="eyebrow">P39 · ORIGINAL INTERMEDIATE MANDARIN</p><h2>Read situations, distinguish meaning, produce sentences</h2>'+
- '<p>41 character lessons and 82 original contextual sentences across decisions, information, collaboration and community. HSK 3-targeted teaching only; not an official HSK 3.0 inventory or proficiency claim.</p>'+
+ '<p>'+P39_CHARACTER_GUIDES.length+' character lessons and '+P39_WRITING_TASKS.length+' original contextual sentences across decisions, information, collaboration and community. HSK 3-targeted teaching only; not an official HSK 3.0 inventory or proficiency claim.</p>'+
  '<div class="p39-stats"><span><strong>'+count+' / '+P39_CHARACTER_GUIDES.length+'</strong>characters introduced</span>'+
  '<span><strong>'+wordCount+' / '+P39_VOCABULARY.length+'</strong>context-attested words introduced</span>'+
- '<span><strong>'+independent+' / 82</strong>independent sentence models</span></div></div>'+
+ '<span><strong>'+independent+' / '+P39_WRITING_TASKS.length+'</strong>independent sentence models</span></div></div>'+
  '<div class="p39-actions">'+(next?act('p39-open','Continue '+esc(next.hanzi)+' · '+esc(next.meaning)+' →','button primary','data-id="'+next.id+'"'):'')+
- act('p39-browse','Browse 41 characters →','button outline')+
+ act('p39-browse','Browse '+P39_CHARACTER_GUIDES.length+' characters →','button outline')+
  act('p39-vocab','Open contextual words →','button outline')+
- act('p39-sentences','Practise 82 original sentences →','button outline')+'</div></section>';
+ act('p39-sentences','Practise '+P39_WRITING_TASKS.length+' original sentences →','button outline')+'</div></section>';
 }
 export function p39CharacterShelf(state,act,esc,filters={}){
  const pool=filtered(state,filters),page=Math.max(0,Math.min(Math.max(0,Math.ceil(pool.length/10)-1),Number(filters.page)||0));
