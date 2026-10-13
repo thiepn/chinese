@@ -8,6 +8,7 @@ import {GRAMMAR_ROWS_B} from './grammar-course-data-b.mjs';
 import {P32_GRAMMAR_ROWS_A} from './p32-grammar-a.mjs';
 import {P32_GRAMMAR_ROWS_B} from './p32-grammar-b.mjs';
 import {P36_GRAMMAR_ROWS} from './p36-course.mjs';
+import {P40_GRAMMAR_ROWS} from './p40-course.mjs';
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {WORDS} from './lexicon.mjs';
 import {STORIES} from './stories.mjs';
@@ -18,7 +19,7 @@ const groups=['Foundations','Questions','Nouns & classifiers','Time & location',
 const chapters=Object.freeze(groups.map((name,i)=>Object.freeze({id:'chapter-'+(i+1),name,number:i+1})));
 const lessonByChar=new Map(DEMO_LESSONS.map(lesson=>[lesson.hanzi,lesson.id]));
 function example(data){return Object.freeze({hanzi:data[0],pinyin:data[1],english:data[2]});}
-export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,...P32_GRAMMAR_ROWS_A,...P32_GRAMMAR_ROWS_B,...P36_GRAMMAR_ROWS].map((r,index)=>Object.freeze({
+export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,...P32_GRAMMAR_ROWS_A,...P32_GRAMMAR_ROWS_B,...P36_GRAMMAR_ROWS,...P40_GRAMMAR_ROWS].map((r,index)=>Object.freeze({
  id:r[0],chapter:r[1],chapterNumber:groups.indexOf(r[1])+1,
  order:index+1,title:r[2],pattern:r[3],explanation:r[4],contrast:r[5],
  pitfall:r[6],anchor:r[7],characterLessonId:lessonByChar.get(r[7])||null,
