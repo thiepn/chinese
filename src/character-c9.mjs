@@ -92,14 +92,14 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+
   '<p class="c9-character-audio-notice">Pronunciation uses the device Mandarin speech voice when installed; no certified recording is supplied.</p></div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+
-  '<section class="c9-character-info"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
+  '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
   row('Original lesson',''+(index+1)+' / '+DEMO_LESSONS.length)+
   row('Authored study unit',group?txt(group.name,esc):'Unassigned')+
   row('Official HSK level','Not supplied')+
   row('Radical and stroke count','Unverified / unavailable')+
   row('Stroke-order data','Not installed')+
   (p31?row('Original P31 category',txt(p31.category,esc)):'')+'</section>'+
-  '<section class="c9-character-info"><p class="c9-eyebrow">YOUR ACTUAL EVIDENCE</p><h3>Learning record</h3>'+
+  '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">YOUR ACTUAL EVIDENCE</p><h3>Learning record</h3>'+
   row('Introduction',introduced?'Introduced':'Not introduced')+
   row('Registered recall targets',ids.filter(id=>Boolean(state.cards?.[id])).length+' / '+ids.length)+
   row('Due for review',String(lessonDue))+
@@ -125,7 +125,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
     '<p>'+txt(p31.grammarExplanation,esc)+'</p>'+
     '<p><strong>Common misunderstanding:</strong> '+txt(p31.pitfall,esc)+'</p>'+
     '<p><strong>Pronunciation note:</strong> '+txt(p31.pronunciation,esc)+'</p></div>':'')+
-  '</div><p class="c9-character-provenance">These are authored learning explanations, not verified paleographic etymologies or decomposition metadata.</p></section>';
+  '</div><p class="c9-character-provenance c9-unified-source-note">These are authored learning explanations, not verified paleographic etymologies or decomposition metadata.</p></section>';
  const vocabulary='<section class="c9-character-section" id="c9-vocabulary" aria-labelledby="c9-vocabulary-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WHOLE-WORD MEANINGS</p><h2 id="c9-vocabulary-title">Words containing '+txt(lesson.hanzi,esc)+'</h2></div><span class="c9-badge">'+words.length+' shown</span></header>'+
   '<p>Shared writing is a discovery link, not proof that every compound has the same meaning. Study the complete word.</p>'+
@@ -152,7 +152,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
     '<small>'+txt(source,esc)+'</small></div>'+
     act('speak',icon('audio')+'Listen','c9-button c9-button--secondary c9-button--small','data-text="'+txt(s.hanzi,esc)+'"')+
     '</article>').join('')+'</div>'+
-  '<div class="c9-character-inline-actions"><a class="c9-button c9-button--secondary" href="#/sentences">Sentence library</a>'+
+  '<div class="c9-character-inline-actions c9-unified-actions"><a class="c9-button c9-button--secondary" href="#/sentences">Sentence library</a>'+
   act('c9-character-reader','Sentence comprehension →','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div></section>';
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
@@ -166,7 +166,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '</section>';
  const footer='<footer class="c9-character-footer"><div><p class="c9-eyebrow">NEXT LEARNING ACTION</p><h2>Practise with the existing learning system</h2>'+
    '<p>Practice, review and lesson introduction remain separate processes. Browsing character information never awards mastery.</p></div>'+
-   '<div class="c9-character-inline-actions">'+act('c9-character-lesson','Open original lesson →','c9-button c9-button--primary','data-id="'+txt(lesson.id,esc)+'"')+
+   '<div class="c9-character-inline-actions c9-unified-actions">'+act('c9-character-lesson','Open original lesson →','c9-button c9-button--primary','data-id="'+txt(lesson.id,esc)+'"')+
     act('practice-lesson','Independent practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
     '<a href="#/review" class="c9-button c9-button--secondary">Scheduled review</a></div></footer>';
  return '<div class="c9-character-page">'+heading+'<div class="c9-character-top">'+identity+evidence+'</div>'+navigation+

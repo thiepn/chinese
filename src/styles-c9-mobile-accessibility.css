@@ -52,32 +52,7 @@ body {overflow-x:clip;}
 .c9-app-shell .workspace main :where(
   img,video,canvas,svg:not(.c9-icon)
 ) {max-width:100%;}
-/* Min 44 CSS-pixel activation area for primary app and in-lesson controls.
- * Preserve compact legend-only elements and large data rows. */
-.c9-app-shell :where(
-  .c9-button,.c9-icon-button,.button,.text-button,
-  .c9-lesson-nav-button,.c9-character-tab,.c9-library-text-button,
-  .c9-search-category,.c9-settings-nav-item,.p30-filter,
-  .p25-mode,.p26-mode,.p26-sentence-item,.p33-theme-btn,
-  .p33-scene-item,.p34-card-actions .button,
-  .pinyin-sound,.story-line-actions button,.choice-list .choice,
-  .p24-tone-list button,.p29-mission-card button
-) {min-height:var(--c9-tap);}
-.c9-app-shell :where(
-  input:not([type="checkbox"]):not([type="radio"]),select,textarea
-) {min-height:var(--c9-tap);max-width:100%;font-size:max(16px,1rem);}
-.c9-app-shell :where(
-  input[type="checkbox"],input[type="radio"]
-) {width:max(17px,1.0625rem);height:max(17px,1.0625rem);}
-.c9-app-shell :where(label,button,summary,a) {touch-action:manipulation;}
-.c9-app-shell :where(
-  a,button,input,select,textarea,summary,[role="tab"],[tabindex]
-):focus-visible,
-.c9-mobile-drawer :where(a,button):focus-visible,
-.c9-shortcuts-dialog :where(a,button):focus-visible {
-  outline:3px solid var(--c9-focus)!important;
-  outline-offset:3px!important;
-}
+/* Shared touch targets and focus rules live in C9 system CSS. */
 /* Native section anchors are programmatically focused; avoid dropping the
  * heading behind the horizontal tab bar or the mobile bottom navigation. */
 .c9-lesson-workspace :where(

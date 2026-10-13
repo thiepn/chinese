@@ -96,7 +96,6 @@
 .c9-assessment-finish{width:min(100%,850px);margin-inline:auto}
 .c9-assessment-finish p{line-height:1.65;color:var(--c9-sub);font-size:13px}
 /* Native practice gets a clearer hierarchy without new answer paths. */
-.c9-practice-page .c9-practice-continuity,
 .c9-practice-page .c9-practice-continuity{
  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
  gap:15px;border:1px solid var(--c9-line);border-left:3px solid var(--c9-green);

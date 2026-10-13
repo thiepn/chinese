@@ -39,7 +39,7 @@ function evidencePanel(l,state,act,esc){
  const history=(state.events||[]).filter(e=>ids.has(e.cardId));
  const independent=history.filter(e=>e.correct===true&&e.assisted!==true).length;
  const introduced=(state.learned||[]).includes(l.id);
- return '<section class="c9-lesson-context-card" aria-labelledby="c9-lesson-record-title">'+
+ return '<section class="c9-lesson-context-card c9-unified-card" aria-labelledby="c9-lesson-record-title">'+
   '<p class="c9-eyebrow">YOUR ACTUAL LEARNING RECORD</p><h3 id="c9-lesson-record-title">Lesson status</h3>'+
   '<div class="c9-lesson-evidence"><div><span>Introduction</span><strong>'+(introduced?'Introduced':'Not introduced')+'</strong></div>'+
   '<div><span>Registered review targets</span><strong>'+registered.length+' / '+active+'</strong></div>'+
@@ -59,7 +59,7 @@ function continuationPanel(l,state,act,esc){
    ['#/dialogues','Natural conversations','Listen'],
    ['#/grammar','Full grammar library','Grammar']
  ];
- return '<section class="c9-lesson-context-card" aria-labelledby="c9-lesson-sources-title">'+
+ return '<section class="c9-lesson-context-card c9-unified-card" aria-labelledby="c9-lesson-sources-title">'+
   '<p class="c9-eyebrow">CONNECTED STUDY</p><h3 id="c9-lesson-sources-title">Continue in context</h3>'+
   '<p>Lesson '+number+' of '+DEMO_LESSONS.length+(group?' · Unit '+group.index+' '+esc(group.name):'')+'</p>'+
   '<div class="c9-lesson-related">'+links.map(([href,label,k])=>'<a href="'+href+'"><span><small>'+k+'</small><strong>'+label+'</strong></span><span aria-hidden="true">↗</span></a>').join('')+'</div>'+
@@ -79,7 +79,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<p class="c9-lesson-pronunciation">'+(showPinyin?esc(lesson.pinyin):'Pinyin hidden by your learning preference')+'</p></div>'+
   '<span class="c9-badge '+(introduced?'c9-badge--success':'')+'">'+(introduced?'Introduced':'Not introduced')+'</span></div>'+
   '<p>Study the character, its useful words, grammar and real sentences. Introduction and independent scheduled recall are distinct actions.</p></div>'+
-  '<div class="c9-lesson-header-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
+  '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
   act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';

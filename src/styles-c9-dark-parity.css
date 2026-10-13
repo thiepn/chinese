@@ -222,12 +222,7 @@
 :root[data-theme="dark"] :is(
   .choice:disabled,.button:disabled,.c9-button:disabled
 ) {opacity:.58;}
-:root[data-theme="dark"] :where(
-  a,button,input,select,textarea,summary,[role="tab"],[tabindex]
-):focus-visible {
-  outline:3px solid var(--c9-focus)!important;
-  outline-offset:3px;
-}
+/* Global focus ring styling is consolidated into C9 system CSS. */
 :root[data-theme="dark"] .skip-link:focus-visible {
   background:var(--c9-raised);
   color:var(--c9-ink);
