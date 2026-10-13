@@ -6,6 +6,7 @@
  */
 import {P36_GRAMMAR_ROWS} from './p36-course.mjs';
 const sentences=P36_GRAMMAR_ROWS.flatMap(r=>Object.freeze([r[8],r[9],r[11].slice(1,4)].map(x=>Object.freeze([...x]))));
+export const P36_SENTENCE_GRAMMAR_IDS=Object.freeze(P36_GRAMMAR_ROWS.flatMap(r=>[r[0],r[0],r[0]]));
 const groups=[
  ['Aspect and event boundaries','Actions','contrast completed, changed and experienced events',['g65','g66','g67','g68']],
  ['States, actions and duration','Actions','distinguish continuing states, activities and elapsed time',['g69','g70','g71']],
