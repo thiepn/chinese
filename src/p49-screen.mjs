@@ -90,7 +90,9 @@ export function p49Lesson(c,state,act,esc,{stage='sources',showSource=false,show
  act('grammar-select','Practise the original grammar lesson →','button outline small','data-id="'+g.id+'"')+'</article>':'')+
  words.map(w=>'<div class="p49-actions">'+act('lookup-word','Study '+esc(w.hanzi)+' in original Wordbook →',
  'button outline','data-id="'+esc(canonicalWordKey(w.hanzi,w.pinyin))+'"')+'</div>').join('')+
- '<div class="p49-actions">'+act('p49-stage','Continue to independent listening →','button primary','data-stage="listen"')+'</div></div>':'')+
+ '<div class="p49-actions">'+act('p39-browse','Original P39 character families →','button outline')+
+ act('grammar-open','Original P40 and later grammar progression →','button outline')+
+ act('p49-stage','Continue to independent listening →','button primary','data-stage="listen"')+'</div></div>':'')+
  (stage==='listen'?'<div class="p49-pane"><h3>3. Listen, retrieve, then justify your choice</h3>'+
  '<p>Read neither the transcript nor the reference response before answering if you want an independent attempt. Device-generated audio is not a native-speaker recording.</p>'+
  '<div class="p49-actions">'+act('p49-play','Listen to original conversation','button primary')+
