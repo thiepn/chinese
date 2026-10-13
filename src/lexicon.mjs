@@ -6,6 +6,7 @@ import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {VOCABULARY_ADDITIONS} from './vocabulary-expansion.mjs';
 import {P31_VOCABULARY} from './p31-vocabulary.mjs';
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
+import {P35_VOCABULARY} from './p35-vocabulary.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
 export const canonicalWordKey=(hanzi,pinyin)=>hanzi+'|'+plain(pinyin);
@@ -51,6 +52,17 @@ for(const scene of P33_SCENARIOS)for(const term of scene.vocabulary){
  if(!record.notes.includes(usage))record.notes.push(usage);
  for(const sentence of term.examples)addExample(record,sentence);
  if(!record.source.includes('p33'))record.source=record.source==='original-demonstration'?'original-p33-context':record.source+'-and-p33';
+}
+// P35 authored contextual vocabulary extends the existing word index and IDs.
+for(const original of P35_VOCABULARY){
+ const record=entry(original.hanzi,original.pinyin);
+ if(!record.senses.includes(original.meaning))record.senses.push(original.meaning);
+ for(const note of [original.note,original.usage,original.contrast,original.pronunciation])
+  if(note&&!record.notes.includes(note))record.notes.push(note);
+ for(const example of original.examples)addExample(record,example);
+ for(const phrase of original.collocations)if(!record.collocations.includes(phrase))record.collocations.push(phrase);
+ for(const id of original.lessonIds)if(!record.lessonIds.includes(id))record.lessonIds.push(id);
+ if(!record.source.includes('p35'))record.source=record.source==='original-demonstration'?'original-p35':record.source+'-and-p35';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
