@@ -19,6 +19,8 @@ import {P37_SCENES,P37_THEMES,findP37Scene} from './p37-scenarios.mjs';
 import {p37Overview,p37Teaching} from './p37-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
+import {P38_PASSAGES,findP38Passage} from './p38-readings.mjs';
+import {p38Overview,p38PassagePanel,p38Next} from './p38-screen.mjs';
 import {P35_CHARACTER_GUIDES,P35_THEMES,findP35Guide,P35_WRITING_TASKS} from './p35-foundations.mjs';
 import {P35_VOCABULARY} from './p35-vocabulary.mjs';
 import {p35Overview,p35CharacterShelf,p35LessonTeaching,p35VocabShelf} from './p35-screen.mjs';
@@ -80,6 +82,7 @@ const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';retu
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let drillLessonId=DEMO_LESSONS[0].id,drillMode='recognition',drillResult=null,drillPicked='',drillTyped='',drillOrder=[],drillAssisted=false;
+let p38Stage='all',p38Query='',p38Page=0,p38BrowseOpen=false,p38Section='all',p38Pinyin=false,p38English=false;
 let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,beginnerLevel='all',beginnerPart='all',beginnerWordShown=false,beginnerPartTip='',storyFocusIndex=-1,storyHelpIndex=-1,exploreSavedOnly=false;
 let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAssisted=false;
 let demoSpeechRate=0.86;
@@ -422,7 +425,7 @@ function pinyinTodayPanel(){
  return `<section class="simple-panel p24-today"><div class="panel-heading"><div><p class="eyebrow">PRONUNCIATION FOUNDATIONS</p><h2>Learn the sounds behind Pinyin</h2></div><span class="muted">${PINYIN_INITIALS.length} initials · ${PINYIN_FINALS.length} finals</span></div>
  <p>Explore tongue positions, vowels, lexical tones, tone sandhi and the spelling rules behind Mandarin words.</p><div class="button-row">${action('pinyin-open','Open sound foundations →','button primary')}${action('pinyin-tab','Practice tones →','button outline small',`data-section="practice" data-filter="tones"`)}</div></section>`;
 }
-function renderToday(){return `${title('YOUR MANDARIN WORKSPACE','One focused learning day.','Continue the next meaningful activity, then study language in context without losing access to your existing tools.')}${gated()}${onboardingPanel()}${dashboardHome(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31Overview(state,action,esc,true)}${p35Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}
+function renderToday(){return `${title('YOUR MANDARIN WORKSPACE','One focused learning day.','Continue the next meaningful activity, then study language in context without losing access to your existing tools.')}${gated()}${onboardingPanel()}${dashboardHome(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31Overview(state,action,esc,true)}${p35Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}
 <details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>
 ${hubHomePanel()}${pathwayHomePanel(state,action,esc)}${beginnerReadingTodayPanel()}${connectedReadingTodayPanel()}${sentenceTodayPanel()}${grammarTodayPanel()}${pinyinTodayPanel()}${vocabularyTodayPanel()}${finishOverviewPanel()}
 </details>`;}
@@ -461,7 +464,7 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}<details class="p35-course-details" ${findP35Guide(l.id)||p35CatalogOpen?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}<details class="p35-course-details" ${findP35Guide(l.id)||p35CatalogOpen?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
  const m=summary(state),due=dueCards(state).filter(reviewMatches);
@@ -500,6 +503,7 @@ function renderReader(){const l=readerLesson(),cloze=makeCloze(l),mode=readerMod
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
 function resetReadingNavigation(){
+ p38Section='all';p38Pinyin=false;p38English=false;
  storyParagraph=0;storyParagraphOnly=false;storyParagraphTranslations=[];
  beginnerPart='all';beginnerWordShown=false;beginnerPartTip='';
  storyFocusIndex=-1;
@@ -507,13 +511,19 @@ function resetReadingNavigation(){
  resetStoryExercise();
 }
 function resetStoryExercise(){storyResult=null;storyAssist=false;storyShowTranslation=false;storyHelpIndex=-1;storyGlossary=null;storySequence=[];storyTyped='';}
-function renderStories(){const story=findStory(storyId)||STORIES[0],isExtendedMode=DEEP_READING_MODES.some(([mode])=>mode===storyMode),isBeginnerMode=BEGINNER_MODES.some(([mode])=>mode===storyMode),exercise=isBeginnerMode?beginnerQuestion(story,storyMode):isExtendedMode?deepReadingQuestion(story,storyMode):CONTEXT_MODES.includes(storyMode)?contextQuestion(story.id,storyMode):storyExercise(story,storyMode),reading=storySummary(state);const ordering=storyMode==='ordering',coverage=introducedCharacterCoverage(story,state.learned);
+function renderStories(){const routeP38=(location.hash.match(/^#\/stories\/(p38-\d{2})/)||[])[1];
+ if(routeP38){const selected=STORIES.find(x=>x.beginner?.p38?.id===routeP38);
+  if(selected&&selected.id!==storyId){storyId=selected.id;storyMode='beginner-detail';resetReadingNavigation();}
+ }
+ const story=findStory(storyId)||STORIES[0],isExtendedMode=DEEP_READING_MODES.some(([mode])=>mode===storyMode),isBeginnerMode=BEGINNER_MODES.some(([mode])=>mode===storyMode),exercise=isBeginnerMode?beginnerQuestion(story,storyMode):isExtendedMode?deepReadingQuestion(story,storyMode):CONTEXT_MODES.includes(storyMode)?contextQuestion(story.id,storyMode):storyExercise(story,storyMode),reading=storySummary(state);const ordering=storyMode==='ordering',coverage=introducedCharacterCoverage(story,state.learned);
  const selected=new Set(storySequence);const shuffled=ordering?shuffledChunkIndices(exercise.chunks,story.id):[];
  const linkedTokens=story.lines.flatMap(line=>tokenizeSentence(line.hanzi)).filter(t=>t.entry);const introducedTokens=linkedTokens.filter(t=>t.entry.lessonIds.some(id=>state.learned.includes(id))).length;
  return `${title('CONNECTED READING','Read a little more.','Read original Mandarin texts, including multi-paragraph stories, notices, dialogues and practical information. No official HSK alignment or human-recorded audio is claimed.')}
- ${gated()}<details class="p34-catalog" ${story.beginner?.source==='original-p34'?'open':''}><summary>Open P34 Reading & Listening · 25 pairs</summary>${p34Overview(state,action,esc)}</details>${story.beginner?.source==='original-p34'?`<div class="p34-read-bridge"><strong>P34 · Paired listening</strong>${action('p34-open-listening','Listen to the separate spoken situation →','button primary small',`data-id="${P34_LISTENING.find(x=>x.readingTitle===story.title)?.id||''}"`)}</div>`:''}${beginnerReadingShelf(state,story,action,esc,beginnerLevel)}<section class="simple-panel dialogue-shortcut"><div><strong>Try a conversation after reading</strong><p>Original dialogues build on everyday Mandarin in context.</p></div>${action('open-dialogues','Open Conversation Lab →','button primary')}</section><div class="stories-top"><div><label for="story-choice">Reading lesson</label><select id="story-choice">${STORIES.filter(s=>(!storiesLongOnly||s.extended)&&(!storiesBeginnerOnly||s.beginner)&&(!storiesOnlyBookmarked||(state.bookmarkedStories||[]).includes(s.id))).map((s,i)=>`<option value="${s.id}" ${s.id===story.id?'selected':''}>${STORIES.indexOf(s)+1}. ${esc(s.title)} — ${esc(s.theme)}</option>`).join('')}</select></div><div class="story-stat"><strong>${reading.storiesRead}/${STORIES.length}</strong><span>readings with correct independent practice</span></div></div>
+ ${gated()}<details class="p38-catalog" ${story.beginner?.p38||p38BrowseOpen?'open':''}><summary>P38 · Elementary reader · 30 connected passages</summary>${p38Overview(state,action,esc,{stage:p38Stage,query:p38Query,page:p38Page,selected:story.beginner?.p38?.id})}</details>${story.beginner?.p38&&storyMode==='beginner-writing'&&!storyAssist&&!storyResult?
+ '<section class="p38-writing-cover"><strong>Independent writing — reading hidden</strong><p>The full P38 passage is withheld until you choose a teaching hint or submit your answer.</p></section>':
+ p38PassagePanel(story,action,esc,{section:p38Section,pinyin:p38Pinyin,english:p38English,assisted:storyAssist})}<details class="p34-catalog" ${story.beginner?.source==='original-p34'?'open':''}><summary>Open P34 Reading & Listening · 25 pairs</summary>${p34Overview(state,action,esc)}</details>${story.beginner?.source==='original-p34'?`<div class="p34-read-bridge"><strong>P34 · Paired listening</strong>${action('p34-open-listening','Listen to the separate spoken situation →','button primary small',`data-id="${P34_LISTENING.find(x=>x.readingTitle===story.title)?.id||''}"`)}</div>`:''}${beginnerReadingShelf(state,story,action,esc,beginnerLevel)}<section class="simple-panel dialogue-shortcut"><div><strong>Try a conversation after reading</strong><p>Original dialogues build on everyday Mandarin in context.</p></div>${action('open-dialogues','Open Conversation Lab →','button primary')}</section><div class="stories-top"><div><label for="story-choice">Reading lesson</label><select id="story-choice">${STORIES.filter(s=>(!storiesLongOnly||s.extended)&&(!storiesBeginnerOnly||s.beginner)&&(!storiesOnlyBookmarked||(state.bookmarkedStories||[]).includes(s.id))).map((s,i)=>`<option value="${s.id}" ${s.id===story.id?'selected':''}>${STORIES.indexOf(s)+1}. ${esc(s.title)} — ${esc(s.theme)}</option>`).join('')}</select></div><div class="story-stat"><strong>${reading.storiesRead}/${STORIES.length}</strong><span>readings with correct independent practice</span></div></div>
  <div class="reading-tools">${action('story-bookmark',(state.bookmarkedStories||[]).includes(story.id)?'★ Saved reading':'☆ Save reading','button outline small')}${action('story-bookmarks-only',storiesOnlyBookmarked?'Show all readings':'Show saved only','button outline small')}${action('reading-beginner-filter',storiesBeginnerOnly?'All reading lengths':'Beginner readings only','button outline small')}${action('reading-long-filter',storiesLongOnly?'All reading lengths':'Extended readings only','button outline small')}${action('reading-text-size',state.settings.readingLarge?'Standard text':'Larger Chinese text','button outline small')}<span class="muted">${(state.bookmarkedStories||[]).length} saved · ${introducedTokens}/${linkedTokens.length} glossary occurrences linked to introduced lessons</span></div><div class="stories-layout ${state.settings.readingLarge?'large-reading':''}"><article class="simple-panel story-paper"><p class="eyebrow">READING ${String(STORIES.indexOf(story)+1).padStart(2,'0')} · ${esc(story.theme)}</p><h2>${esc(story.title)}</h2>${beginnerReadingHeading(story,action,esc,beginnerPart,beginnerWordShown)}${readingExtendedHeader(story,action,esc,{paragraph:storyParagraph,only:storyParagraphOnly,translations:storyParagraphTranslations})}<p class="muted">${coverage.introduced}/${coverage.total} relevant demo lesson characters introduced. This does not measure total vocabulary or grammar knowledge. Tap an underlined word for a glossary hint; using hints makes the following answer assisted.</p>
- ${(storyMode==='passage-writing'||storyMode==='beginner-writing')&&!storyAssist&&!storyResult?`<div class="p27-writing-hide"><strong>Recall without a visible source</strong><p>The passage is hidden for reading-to-writing production. Revealing it marks this attempt assisted.</p>${action('reading-show-writing-source','Review passage · assisted','button outline small')}</div>`:story.lines.map((line,i)=>(storyParagraphOnly&&story.extended&&paragraphFor(story,i)!==storyParagraph||story.beginner&&beginnerPart!=='all'&&Math.floor(i/3)!==Number(beginnerPart))?'':`${beginnerPartMarker(story,i,action,esc,beginnerPartTip)}${readingParagraphMarker(story,i,action,esc,storyParagraphTranslations)}<section class="story-line ${storyFocusIndex===i?'reading-line-focused':''}"><div class="story-line-top"><span class="eyebrow">SENTENCE ${i+1}</span><div class="story-line-actions">${action('speak','▶ Listen','button outline small',`data-text="${esc(line.hanzi)}"`)}${action('story-help-line',storyHelpIndex===i?'Hide help':'Explain','button outline small',`data-index="${i}"`)}</div></div><p lang="zh-Hans" class="story-chinese">${tokenizeSentence(line.hanzi).map(({text,entry})=>entry?`<button type="button" class="story-token" lang="zh-Hans" data-action="story-token" data-token="${esc(entry.hanzi)}" aria-label="Look up ${esc(entry.hanzi)}">${esc(text)}</button>`:esc(text)).join('')}</p>${storyShowTranslation||storyHelpIndex===i||story.extended&&storyParagraphTranslations.includes(paragraphFor(story,i))?`<div class="line-support"><p class="story-pinyin">${esc(line.pinyin)}</p><p class="story-english">${esc(line.english)}</p></div>`:''}</section>`).join('')}
+ ${(storyMode==='passage-writing'||storyMode==='beginner-writing')&&!storyAssist&&!storyResult?`<div class="p27-writing-hide"><strong>Recall without a visible source</strong><p>The passage is hidden for reading-to-writing production. Revealing it marks this attempt assisted.</p>${action('reading-show-writing-source','Review passage · assisted','button outline small')}</div>`:story.lines.map((line,i)=>(storyParagraphOnly&&story.extended&&paragraphFor(story,i)!==storyParagraph||story.beginner&&beginnerPart!=='all'&&Math.floor(i/3)!==Number(beginnerPart)||story.beginner?.p38&&p38Section!=='all'&&!(p38Section==='1'?i<=3:p38Section==='2'?i>=4&&i<=8:i>=9))?'':`${beginnerPartMarker(story,i,action,esc,beginnerPartTip)}${readingParagraphMarker(story,i,action,esc,storyParagraphTranslations)}<section class="story-line ${storyFocusIndex===i?'reading-line-focused':''}"><div class="story-line-top"><span class="eyebrow">SENTENCE ${i+1}</span><div class="story-line-actions">${action('speak','▶ Listen','button outline small',`data-text="${esc(line.hanzi)}"`)}${action('story-help-line',storyHelpIndex===i?'Hide help':'Explain','button outline small',`data-index="${i}"`)}</div></div><p lang="zh-Hans" class="story-chinese">${tokenizeSentence(line.hanzi).map(({text,entry})=>entry?`<button type="button" class="story-token" lang="zh-Hans" data-action="story-token" data-token="${esc(entry.hanzi)}" aria-label="Look up ${esc(entry.hanzi)}">${esc(text)}</button>`:esc(text)).join('')}</p>${storyShowTranslation||storyHelpIndex===i||story.extended&&storyParagraphTranslations.includes(paragraphFor(story,i))?`<div class="line-support"><p class="story-pinyin">${esc(line.pinyin)}</p><p class="story-english">${esc(line.english)}</p></div>`:''}</section>`).join('')}
  <div class="button-row">${action('story-focus-next',storyFocusIndex===-1?'Focus first sentence':`Focus sentence ${(storyFocusIndex+1)%story.lines.length+1} / ${story.lines.length}`,'button outline small')}${storyFocusIndex!==-1?action('speak','▶ Focused sentence','button outline small',`data-text="${esc(story.lines[storyFocusIndex].hanzi)}"`):''}${storyFocusIndex!==-1?action('story-focus-off','Show all equally','button outline small'):''}${story.extended?action('reading-next-paragraph','Next paragraph →','button outline small'):''}${action('story-reveal',storyShowTranslation?'Hide teaching support':'Show pinyin & English','button outline small')}${action('speak','▶ Hear passage','button outline small',`data-text="${esc(story.lines.map(l=>l.hanzi).join(''))}"`)}${action('speech-rate','Speed: '+demoSpeechRate+'×','button outline small')}</div>
  ${storyGlossary?`<div class="story-glossary" role="status"><strong lang="zh-Hans">${esc(storyGlossary.hanzi)}</strong> · ${esc(storyGlossary.pinyin)}<p>${esc(storyGlossary.english)}</p>${WORDS.find(w=>w.hanzi===storyGlossary.hanzi)?action('word-bookmark',(state.bookmarkedWords||[]).includes(WORDS.find(w=>w.hanzi===storyGlossary.hanzi).key)?'★ Saved word':'☆ Save word','button outline small',`data-id="${esc(WORDS.find(w=>w.hanzi===storyGlossary.hanzi).key)}"`):''}${storyGlossary.wordKey?action('vocabulary-start','Learn this word →','button primary small',`data-id="${esc(storyGlossary.wordKey)}"`):''}${action('speak','▶ Listen to word','button outline small',`data-text="${esc(storyGlossary.hanzi)}"`)}${storyGlossary.lessonIds.length?action('story-linked','View related lesson →','button outline small',`data-id="${storyGlossary.lessonIds[0]}"`):''}</div>`:''}
  </article>
@@ -588,7 +598,7 @@ function catalogPager(count){
 function visibleExploreResults(){const found=searchCatalog(searchQuery,exploreKind);return exploreSavedOnly?found.filter(e=>e.type==='word'&&(state.bookmarkedWords||[]).includes(e.id)):found;}
 function renderExplore(){const results=visibleExploreResults(),selected=searchSelection;
  const selectedResult=selected?.type==='word'?findWord(selected.id):selected?.type==='character'?findLesson(selected.id):null;
- return `${title('CHARACTER & WORD LOOKUP','Explore Chinese.','Search independent characters and complete vocabulary words, including alternate definitions and related lessons.')}${gated()}${exploreWorkspace(state,action,esc)}${p37Overview(state,action,esc,{compact:true})}<div class="button-row p36-explore-links">${action('grammar-select','P36 elementary grammar →','button outline small','data-id="g65"')}${action('p36-sentences','90 new grammar sentences →','button outline small')}</div><details id="p35-explore-vocabulary" class="p35-course-details" ${p35VocabOpen?'open':''}><summary>P35 · Elementary contextual vocabulary and word families</summary>${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details><div class="button-row p32-explore-links">${action('p35-browse','P35 character expansion →','button outline small')}${action('p35-vocab-open','P35 contextual vocabulary →','button outline small')}${action('p34-open-reading','P34 guided reading →','button outline small','data-id="p34-01"')}${action('p34-open-listening','P34 listening-first →','button outline small','data-id="p34-audio-01"')}${action('p33-browse','Everyday conversations →','button outline small')}${action('grammar-select','P32 beginner grammar →','button outline small','data-id="g37"')}${action('p32-open-sentences','120 new contextual sentences →','button outline small')}</div>${p31VocabularyShelf(state,action,esc,{page:p31WordPage})}${vocabularyShelfPanel()}
+ return `${title('CHARACTER & WORD LOOKUP','Explore Chinese.','Search independent characters and complete vocabulary words, including alternate definitions and related lessons.')}${gated()}${exploreWorkspace(state,action,esc)}${p38Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}<div class="button-row p36-explore-links">${action('grammar-select','P36 elementary grammar →','button outline small','data-id="g65"')}${action('p36-sentences','90 new grammar sentences →','button outline small')}</div><details id="p35-explore-vocabulary" class="p35-course-details" ${p35VocabOpen?'open':''}><summary>P35 · Elementary contextual vocabulary and word families</summary>${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details><div class="button-row p32-explore-links">${action('p35-browse','P35 character expansion →','button outline small')}${action('p35-vocab-open','P35 contextual vocabulary →','button outline small')}${action('p34-open-reading','P34 guided reading →','button outline small','data-id="p34-01"')}${action('p34-open-listening','P34 listening-first →','button outline small','data-id="p34-audio-01"')}${action('p33-browse','Everyday conversations →','button outline small')}${action('grammar-select','P32 beginner grammar →','button outline small','data-id="g37"')}${action('p32-open-sentences','120 new contextual sentences →','button outline small')}</div>${p31VocabularyShelf(state,action,esc,{page:p31WordPage})}${vocabularyShelfPanel()}
  <div class="search-shell"><label class="field-label" for="explore-query">Find a character, word, pinyin or meaning</label><input type="search" id="explore-query" autocomplete="off" spellcheck="false" placeholder="Try 学校, xue, friend, water" value="${esc(searchQuery)}"><div class="mode-tabs" role="group" aria-label="Search category">${['all','characters','words'].map(k=>action('search-kind',k==='all'?'All':k==='words'?'Words':'Characters',exploreKind===k?'button dark small':'button outline small',`data-kind="${k}"`)).join('')}</div><div class="button-row wordbook-filter">${action('open-wordbook-practice','Practice saved words →','button primary')}${action('wordbook-filter',exploreSavedOnly?'Show all entries':'My saved words ('+(state.bookmarkedWords||[]).length+')','button outline small',`aria-pressed="${exploreSavedOnly}"`)}</div><p id="search-count" class="muted">${results.length} results · ${WORDS.length} distinct example word entries · Browsing never changes mastery.</p></div>
  <div class="explore-layout"><div class="p23-search-list"><div id="explore-results" class="results-list">${renderSearchResults(results)}</div><div id="explore-pager">${catalogPager(results.length)}</div></div><article id="explore-detail" class="explore-detail">${selectedResult?selected.type==='word'?wordDetail(selectedResult):exploreDetail(selectedResult):'<div class="empty-panel"><strong>Select an entry.</strong><p>Open a character or word to inspect its meanings, related lessons and usage.</p></div>'}</article></div>`;
 }
@@ -650,7 +660,64 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
- if(name==='p34-open-reading'){
+ if(name==='p38-open'){
+ const passage=findP38Passage(id),target=passage&&STORIES.find(st=>st.beginner?.p38?.id===id);
+ if(!target)return alertUser('The original reading adaptation is unavailable.','error');
+ storyId=target.id;storyMode='beginner-detail';storiesLongOnly=false;storiesBeginnerOnly=true;
+ p38BrowseOpen=true;resetReadingNavigation();
+ location.hash='#/stories/'+passage.id;render();root.querySelector('.p38-study')?.scrollIntoView({block:'start'});return;
+}
+if(name==='p38-browse'){
+ p38BrowseOpen=true;p38Stage='all';p38Page=0;p38Query='';
+ if(route()!=='stories')return go('stories');
+ const node=root.querySelector('.p38-catalog');if(node){node.open=true;node.scrollIntoView({block:'start'});}
+ return;
+}
+if(name==='p38-next-reading'){
+ const next=p38Next(state);
+ return act({dataset:{action:'p38-open',id:next.id}});
+}
+if(name==='p38-stage'){
+ const v=button.dataset.stage;if(!['all','2','3','4'].includes(v))return;
+ p38Stage=v;p38Page=0;p38BrowseOpen=true;return render();
+}
+if(name==='p38-page-prev'||name==='p38-page-next'){
+ const q=p38Query.trim().toLocaleLowerCase();
+ const n=P38_PASSAGES.filter(p=>(p38Stage==='all'||String(p.level)===p38Stage)&&
+ (!q||[p.title,p.theme,p.format,p.notes.teaching,...p.grammarIds].join(' ').toLocaleLowerCase().includes(q))).length;
+ p38Page=Math.max(0,Math.min(Math.max(0,Math.ceil(n/10)-1),p38Page+(name==='p38-page-next'?1:-1)));
+ p38BrowseOpen=true;return render();
+}
+if(name==='p38-section'){
+ const v=button.dataset.section;if(!['all','1','2','3'].includes(v))return;
+ p38Section=v;return render();
+}
+if(name==='p38-next-section'){
+ p38Section=p38Section==='all'?'1':p38Section==='1'?'2':p38Section==='2'?'3':'all';
+ return render();
+}
+if(name==='p38-pinyin'||name==='p38-english'){
+ if(!findStory(storyId)?.beginner?.p38)return;
+ if(name==='p38-pinyin')p38Pinyin=!p38Pinyin;else p38English=!p38English;
+ if(p38Pinyin||p38English)storyAssist=true;
+ return render();
+}
+if(name==='p38-audio'||name==='p38-audio-slow'){
+ const p=findStory(storyId)?.beginner?.p38;if(!p)return;
+ const sections=[[0,3],[4,8],[9,11]];
+ const range=p38Section==='all'?[0,11]:sections[Number(p38Section)-1]||[0,11];
+ const text=p.lines.slice(range[0],range[1]+1).map(x=>x.hanzi).join(' ');
+ return speak(text,name==='p38-audio-slow'?0.68:demoSpeechRate);
+}
+if(name==='p38-write'){
+ const p=findP38Passage(id),st=p&&STORIES.find(st=>st.beginner?.p38?.id===id);
+ if(!st)return alertUser('The reading writing task is unavailable.','error');
+ const index=SENTENCE_TASKS.findIndex(t=>t.id==='beginner-reading:'+st.id+':writing');
+ if(index<0)return alertUser('The original reading writing task is unavailable.','error');
+ sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=storyAssist||p38Pinyin||p38English;
+ return go('workshop');
+}
+if(name==='p34-open-reading'){
   const scene=P34_SCENES.find(x=>x.id===id),story=scene&&p34StoryFor(scene.id);
   if(!story)return alertUser('Original P34 reading unavailable.','error');
   storyId=story.id;storyMode='beginner-detail';storiesBeginnerOnly=true;storiesLongOnly=false;
@@ -764,7 +831,14 @@ if(name==='p33-open-scenario'){
   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=p36ViewedModels.has(idToOpen);
   return go('workshop');
  }
- if(name==='p36-sentences'){
+ if(name==='p38-sentences'){
+ librarySource='original-p38';libraryQuery='';libraryTopic='all';libraryArea='all';
+ libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
+ librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
+ librarySelected=SENTENCE_LIBRARY.find(item=>item.source==='original-p38')?.id||librarySelected;
+ sentenceUiReset();return go('sentences');
+}
+if(name==='p36-sentences'){
   librarySource='original-p36';libraryQuery='';libraryTopic='all';libraryArea='all';
   libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
   librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
@@ -1498,6 +1572,11 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p38-search'){
+  p38Query=e.target.value;p38Page=0;p38BrowseOpen=true;render();
+  const input=root.querySelector('#p38-search');if(input){input.focus();input.setSelectionRange(p38Query.length,p38Query.length);}
+  return;
+ }
  if(e.target.id==='p37-search'){
   p37Query=e.target.value;p37Page=0;p37BrowseOpen=true;render();
   const input=root.querySelector('#p37-search');if(input){input.focus();input.setSelectionRange(p37Query.length,p37Query.length);}
