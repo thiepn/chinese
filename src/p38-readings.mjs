@@ -7,6 +7,7 @@
 import {P37_SCENES} from './p37-scenarios.mjs';
 import {P38_EXTRA_A} from './p38-extra-a.mjs';
 import {P38_EXTRA_B} from './p38-extra-b.mjs';
+import {P38_INFERENCE} from './p38-inference.mjs';
 const expandedOriginal=[...P38_EXTRA_A,...P38_EXTRA_B];
 const outlines=[
  ["约好的时间有时需要改变，双方都要先确认。","Yuē hǎo de shíjiān yǒushí xūyào gǎibiàn, shuāngfāng dōu yào xiān quèrèn.","Sometimes an agreed time must change, and both sides need to confirm.","最后，大家要记清楚真正确认的日期。","Zuìhòu, dàjiā yào jì qīngchu zhēnzhèng quèrèn de rìqī.","In the end, everyone needs to remember the actual confirmed date."],
@@ -62,8 +63,7 @@ export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  const questions=[
   question(s.questions[0][0],s.questions[0][1],[s.questions[0][2],s.questions[0][3],'Not stated in this passage'],readingEvidencePairs[i][0]+2,s.teaching),
   question(s.questions[1][0],s.questions[1][1],[s.questions[1][2],s.questions[1][3],'Not stated in this passage'],readingEvidencePairs[i][1]+2,s.pitfall),
-  question('What is the best contextual conclusion after the written exchange?',
-   closure[2],[others[0],others[1],'The speakers refuse to communicate.'],11,s.pragmatics)
+  question(P38_INFERENCE[i][0],P38_INFERENCE[i][1],[P38_INFERENCE[i][2],P38_INFERENCE[i][3],'This inference is not supported by the passage.'],P38_INFERENCE[i][4],P38_INFERENCE[i][5])
  ];
  const focus=s.vocabulary.find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)))||
  ['可以','时间','老师','我们','学校','我'].map((hanzi,j)=>({
