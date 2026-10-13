@@ -3,6 +3,8 @@
  */
 import {P39_ROWS_A} from './p39-rows-a.mjs';
 import {P39_ROWS_B} from './p39-rows-b.mjs';
+import {P39_ROWS_C} from './p39-rows-c.mjs';
+import {P39_ROWS_D} from './p39-rows-d.mjs';
 function row(line,i){
  const [hanzi,pinyin,meaning,category,wordText,exampleText,explanation,pitfall]=line.split('|');
  const words=wordText.split(/;(?=[\p{Script=Han}]+~)/u).map(s=>s.split('~')).map(([hanzi,pinyin,english])=>Object.freeze({hanzi,pinyin,english}));
@@ -14,7 +16,7 @@ function row(line,i){
    grammarExplanation:explanation+' '+pitfall,
    officialHskLevel:null,source:'original-p39-authorial'});
 }
-export const P39_CHARACTER_GUIDES=Object.freeze((P39_ROWS_A+'\n'+P39_ROWS_B).trim().split('\n').filter(Boolean).map(row));
+export const P39_CHARACTER_GUIDES=Object.freeze(([P39_ROWS_A,P39_ROWS_B,P39_ROWS_C,P39_ROWS_D].join('\n')).trim().split('\n').filter(Boolean).map(row));
 export const P39_THEMES=Object.freeze([...new Set(P39_CHARACTER_GUIDES.map(g=>g.category))]);
 export const P39_CHARACTER_ROWS=Object.freeze(P39_CHARACTER_GUIDES.map(g=>Object.freeze([
  g.hanzi,g.pinyin,g.meaning,g.explanation,Object.freeze(g.words.map(w=>[w.hanzi,w.pinyin,w.english])),
@@ -55,7 +57,7 @@ export const P39_WRITING_TASKS=Object.freeze(P39_CHARACTER_GUIDES.flatMap(g=>g.e
  hanzi:s.hanzi,pinyin:s.pinyin,english:s.english,explanation:g.explanation,misconception:g.pitfall
 }))));
 /** The established Sentence Library uses append-only ten-slot topic numbers.
- * Final topic contains two sentences and leaves eight unused slots; no older ID changes.
+ * All fourteen topics contain ten original sentence records; no older IDs change.
  */
 export const P39_SENTENCE_TOPICS=Object.freeze(Array.from({length:Math.ceil(P39_CHARACTER_GUIDES.length/5)},(_,i)=>{
  const guides=P39_CHARACTER_GUIDES.slice(i*5,i*5+5);
