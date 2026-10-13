@@ -628,7 +628,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(route()==='dialogues'){render();root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});return;}
   go('dialogues');return;
  }
- if(name==='p33-browse'){p33Theme='all';p33Query='';return go('dialogues');}
+ if(name==='p33-browse'){p33Theme='all';p33Query='';return act({dataset:{action:'p33-open-scenario',id:P33_SCENARIOS[0].id}});}
  if(name==='p33-theme'){const theme=button.dataset.theme;
   if(theme!=='all'&&![...new Set(P33_SCENARIOS.map(s=>s.theme))].includes(theme))return;
   p33Theme=theme;return render();
@@ -1320,7 +1320,23 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
 }
 document.querySelector('.topbar')?.addEventListener('click',ev=>{if(ev.target.closest('[data-action="go-settings"]'))go('settings')});
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
-root.addEventListener('input',e=>{if(e.target.id==='p30-query'){
+root.addEventListener('input',e=>{
+ if(e.target.id==='p33-scenario-query'){
+  p33Query=e.target.value;
+  const q=p33Query.trim().toLocaleLowerCase();
+  let visible=0;
+  for(const button of root.querySelectorAll('.p33-scene-grid .p33-scene-item')){
+   const scene=findP33Scenario(button.dataset.id);
+   const values=[scene?.title,scene?.theme,scene?.goal,scene?.pragmatics,...(scene?.vocabulary||[]).flatMap(w=>[w.hanzi,w.pinyin,w.english])];
+   const match=!q||values.some(v=>String(v||'').toLocaleLowerCase().includes(q));
+   button.hidden=!match;
+   if(match)visible++;
+  }
+  const message=root.querySelector('.p33-no-results');
+  if(message)message.hidden=visible!==0;
+  return;
+ }
+ if(e.target.id==='p30-query'){
  p30Query=e.target.value;p30Page=0;
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
  return;
