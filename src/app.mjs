@@ -831,7 +831,14 @@ if(name==='p33-open-scenario'){
   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=p36ViewedModels.has(idToOpen);
   return go('workshop');
  }
- if(name==='p36-sentences'){
+ if(name==='p38-sentences'){
+ librarySource='original-p38';libraryQuery='';libraryTopic='all';libraryArea='all';
+ libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
+ librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
+ librarySelected=SENTENCE_LIBRARY.find(item=>item.source==='original-p38')?.id||librarySelected;
+ sentenceUiReset();return go('sentences');
+}
+if(name==='p36-sentences'){
   librarySource='original-p36';libraryQuery='';libraryTopic='all';libraryArea='all';
   libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
   librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
