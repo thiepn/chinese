@@ -10,6 +10,7 @@ import {P35_VOCABULARY} from './p35-vocabulary.mjs';
 import {P39_VOCABULARY} from './p39-foundations.mjs';
 import {P46_VOCABULARY} from './p46-foundations.mjs';
 import {P47_VOCABULARY} from './p47-foundations.mjs';
+import {P50_VOCABULARY} from './p50-foundations.mjs';
 import {P37_SCENES} from './p37-scenarios.mjs';
 
 export const plain=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[\s'’-]/g,'');
@@ -110,6 +111,19 @@ for(const original of P47_VOCABULARY){
   if(lesson&&!record.lessonIds.includes(lesson.id))record.lessonIds.push(lesson.id);
  }
  if(!record.source.includes('p47'))record.source=record.source==='original-demonstration'?'original-p47':record.source+'-and-p47';
+}
+// P50 native Wordbook extension retains pre-existing word keys and examples.
+for(const original of P50_VOCABULARY){
+ const record=entry(original.hanzi,original.pinyin);
+ if(!record.senses.includes(original.meaning))record.senses.push(original.meaning);
+ for(const note of [original.note,original.contrast])if(note&&!record.notes.includes(note))record.notes.push(note);
+ for(const example of original.examples)addExample(record,example);
+ for(const c of original.collocations)if(!record.collocations.includes(c))record.collocations.push(c);
+ for(const chr of original.hanzi){
+  const lesson=DEMO_LESSONS.find(l=>l.hanzi===chr);
+  if(lesson&&!record.lessonIds.includes(lesson.id))record.lessonIds.push(lesson.id);
+ }
+ if(!record.source.includes('p50'))record.source=record.source==='original-demonstration'?'original-p50':record.source+'-and-p50';
 }
 const characterMap=new Map(DEMO_LESSONS.map(l=>[l.hanzi,l.id]));
 export const WORDS=Object.freeze([...index.values()].map(item=>{
