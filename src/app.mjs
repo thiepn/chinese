@@ -923,6 +923,17 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    }
    refreshC9DiscoveryResults();return;
  }
+ if(name==='c9-discovery-reset'){
+   c9LearnQuery='';c9LearnUnit='all';c9LearnStatus='all';c9LearnKind='all';
+   c9LearnSaved=false;c9LearnPage=0;render();
+   root.querySelector('#c9-learn-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-discovery-full-search'){
+   // Preserve the user's current source query and category when handing off
+   // to the existing full search, without a second search index.
+   p30Query=c9LearnQuery;p30Kind=c9LearnKind;p30Saved=c9LearnSaved;p30Page=0;
+   return go('find');
+ }
  if(name==='c9-discovery-open'){
    const row=courseSearch({query:c9LearnQuery,kind:c9LearnKind,saved:c9LearnSaved,state})
      .find(x=>x.kind===button.dataset.kind&&x.id===id);
