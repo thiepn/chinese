@@ -707,9 +707,9 @@ function renderIntegrated(){
  const s=findP44Scenario(p44SessionId)||P44_SCENARIOS[0];
  return title('P44 · INTEGRATED INTERMEDIATE MANDARIN','Use language across real situations.',
  'Read original evidence, interpret a spoken exchange, answer source questions, write exact forms and prepare a meaningful spoken reply.')+
- gated()+p44Overview(state,action,esc,{selected:s.id,query:p44Query,page:p44Page})+
- p44Journey(s,state,action,esc,{phase:p44Phase,sourceHelp:p44ReadHelp,transcriptHelp:p44ListenHelp,
- assisted:p44AssistedCases.has(s.id),questionIndex:p44QuestionIndex,feedback:p44Feedback});
+ gated()+p44Journey(s,state,action,esc,{phase:p44Phase,sourceHelp:p44ReadHelp,transcriptHelp:p44ListenHelp,
+ assisted:p44AssistedCases.has(s.id),questionIndex:p44QuestionIndex,feedback:p44Feedback})+
+ p44Overview(state,action,esc,{selected:s.id,query:p44Query,page:p44Page});
 }
 function renderProduction(){
  const id=(location.hash.match(/^#\/production\/(p43-\d{2})/)||[])[1];
