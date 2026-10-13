@@ -275,3 +275,20 @@
 @media(prefers-reduced-motion:reduce){
  .c9-media-workspace :where(.c9-media-entry,.story-line,.dialogue-turn){transition:none;scroll-behavior:auto}
 }
+
+
+/* C9-23 focused speaker controls reuse the native original TTS interaction. */
+.c9-media-turn-actions{
+ display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:7px
+}
+.c9-media-turn-actions .c9-button{min-height:44px;max-width:100%;white-space:normal}
+.c9-media-turn-actions .c9-button:focus-visible{
+ outline:3px solid var(--c9-accent);outline-offset:3px
+}
+@media(max-width:750px){
+ .c9-media-turn-actions{width:100%;justify-content:stretch}
+ .c9-media-turn-actions>.c9-button{flex:1 1 145px}
+}
+@media(max-width:390px){
+ .c9-media-turn-actions>.c9-button{flex:1 1 100%}
+}
