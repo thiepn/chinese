@@ -147,6 +147,7 @@ export function renderC9Review({
     (c.reading?'<p class="c9-assessment-reading">'+esc(c.reading)+'</p>':'')+
     (c.kind==='pinyin'?toneTeachingPanel(c.answer,result?.reason||''):'')+
     experienceNote(c,result,esc)+
+    action('open-lesson','Study the original lesson (no grade)','c9-button c9-button--quiet c9-button--small','data-id="'+esc(c.lesson.id)+'"')+
     action('speak','Listen with device voice','c9-button c9-button--secondary c9-button--small','data-text="'+esc(c.prompt)+'"')+
     '<div class="c9-assessment-actions c9-unified-actions">'+(result?.correct?
       action('grade','Good · next','c9-button c9-button--primary','data-grade="2"')+
@@ -154,7 +155,7 @@ export function renderC9Review({
       action('grade','Again · next','c9-button c9-button--primary','data-grade="0"'))+
     '</div><p class="c9-assessment-note">Only the native grading action writes review history. Reveals are assisted, never independent correct.</p></div>');
  return '<div class="c9-assessment c9-review-active">'+
-  title('ACTIVE SCHEDULED RECALL','Recall before revealing','Only independently graded cards enter the original scheduler. This queue survives in-tab navigation, but not reloading or closing the tab.')+
+  title('ACTIVE SCHEDULED RECALL','Recall before revealing','Only an explicit native grade changes the card schedule. This queue survives in-tab navigation, but not reloading or closing the tab.')+
   '<div class="c9-assessment-panel c9-unified-card c9-assessment-live"><div class="c9-assessment-queue"><span>QUESTION '+(done+skipped+1)+' OF '+total+'</span>'+
   '<span>'+queue.length+' remaining · '+correct+' independent correct</span></div>'+
   progress(done+skipped,total,'Current review session')+
