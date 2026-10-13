@@ -37,6 +37,11 @@ const outlines=[
  ["帮助别人以前，先说清楚自己能做什么。","Bāngzhù biérén yǐqián, xiān shuō qīngchu zìjǐ néng zuò shénme.","Before helping someone, explain what you're able to do.","不能搬重箱子的人，也可以完成其他重要工作。","Bù néng bān zhòng xiāngzi de rén, yě kěyǐ wánchéng qítā zhòngyào gōngzuò.","A person who can't carry heavy boxes can still do other important work."],
  ["错过预约的时间以后，最好先问新的安排。","Cuòguò yùyuē de shíjiān yǐhòu, zuì hǎo xiān wèn xīn de ānpái.","After missing an appointment window, ask about new arrangements.","没有明确的回复，就不能说新时间已经确认。","Méiyǒu míngquè de huífù, jiù bù néng shuō xīn shíjiān yǐjīng quèrèn.","Without a clear reply, a new time is not confirmed."]
 ];
+const readingEvidencePairs=[
+ [7,3],[3,6],[5,8],[3,6],[7,4],[4,6],[3,6],[3,7],[6,7],[3,6],
+ [7,4],[3,6],[5,7],[6,7],[2,6],[7,3],[4,8],[3,8],[3,6],[6,7],
+ [1,6],[3,8],[4,6],[3,1],[3,6],[3,7],[4,6],[3,6],[3,5],[3,8]
+];
 export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  const intro=outlines[i][0],closure=outlines[i][1];
  const lines=[
@@ -50,12 +55,16 @@ export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
  const others=[P37_SCENES[(i+7)%P37_SCENES.length].questions[0][1],
  P37_SCENES[(i+17)%P37_SCENES.length].questions[0][1]];
  const questions=[
-  question(s.questions[0][0],s.questions[0][1],[s.questions[0][2],s.questions[0][3],'Not stated in this passage'],s.evidenceIndex+1,s.teaching),
-  question(s.questions[1][0],s.questions[1][1],[s.questions[1][2],s.questions[1][3],'Not stated in this passage'],7,s.pitfall),
+  question(s.questions[0][0],s.questions[0][1],[s.questions[0][2],s.questions[0][3],'Not stated in this passage'],readingEvidencePairs[i][0],s.teaching),
+  question(s.questions[1][0],s.questions[1][1],[s.questions[1][2],s.questions[1][3],'Not stated in this passage'],readingEvidencePairs[i][1],s.pitfall),
   question('What is the best contextual conclusion after the written exchange?',
    closure[2],[others[0],others[1],'The speakers refuse to communicate.'],9,s.pragmatics)
  ];
- const focus=s.vocabulary.find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)))||s.vocabulary[0];
+ const focus=s.vocabulary.find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)))||
+ ['可以','时间','老师','我们','学校','我'].map((hanzi,j)=>({
+  hanzi,pinyin:['kěyǐ','shíjiān','lǎoshī','wǒmen','xuéxiào','wǒ'][j],
+  english:['can','time','teacher','we','school','I'][j]
+ })).find(v=>lines.some(x=>x.hanzi.includes(v.hanzi)));
  const target=lines[5],written=lines[8];
  const clozeLine=lines.findIndex(x=>x.hanzi.includes(focus.hanzi));
  const chars=Array.from(target.hanzi);const n=Math.max(1,Math.floor(chars.length/4));
