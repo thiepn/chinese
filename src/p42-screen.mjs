@@ -7,6 +7,7 @@ import {DIALOGUES} from './dialogues.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {WORDS} from './lexicon.mjs';
 import {P39_CHARACTER_GUIDES} from './p39-foundations.mjs';
+import {P41_PASSAGES} from './p41-readings.mjs';
 const dialogueFor=s=>DIALOGUES.find(d=>d.p42?.id===s.id);
 export function p42Next(state,after=null){
  const index=P42_SCENES.findIndex(s=>s.id===after);
@@ -53,6 +54,8 @@ export function p42ListeningPanel(dialogue,act,esc,{turn=0,revealed=false,feedba
  const grammar=s.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  const words=WORDS.filter(w=>w.hanzi.length>1&&s.turns.some(t=>t[1].includes(w.hanzi))).slice(0,8);
  const chars=P39_CHARACTER_GUIDES.filter(g=>s.turns.some(t=>t[1].includes(g.hanzi))).slice(0,5);
+ const readings=P41_PASSAGES.filter(p=>p.grammarIds.some(g=>s.grammarIds.includes(g))||
+  p.lines.some(line=>line.hanzi.includes(s.vocabulary.hanzi))).slice(0,3);
  const whole=s.turns.map(t=>t[1]).join(' ');
  return '<section class="p42-listening" aria-label="P42 listening-first conversation">'+
  '<div class="p42-intro"><div><p class="eyebrow">P42 · SITUATION '+s.sequence+' / '+P42_SCENES.length+' · '+esc(s.theme)+'</p>'+
@@ -83,5 +86,6 @@ export function p42ListeningPanel(dialogue,act,esc,{turn=0,revealed=false,feedba
  (grammar.length?'<div>'+grammar.map(g=>act('grammar-select',esc(g.title)+' →','button outline small','data-id="'+g.id+'"')).join('')+'</div>':'')+
  (chars.length?'<div>'+chars.map(g=>act('p39-open',esc(g.hanzi)+' · '+esc(g.meaning),'button outline small','data-id="'+g.id+'"')).join('')+'</div>':'')+
  (words.length?'<div>'+words.map(w=>act('lookup-word',esc(w.hanzi)+' · '+esc(w.senses[0]||''),'button outline small','data-id="'+esc(w.key)+'"')).join('')+'</div>':'')+'</div>'+
+ (readings.length?'<div class="p42-links"><strong>Related original P41 readings</strong>'+readings.map(p=>act('p41-open',esc(p.title)+' →','button outline small','data-id="'+p.id+'"')).join('')+'</div>':'')+
  '<p class="p42-caveat">Revealing the script or a reference answer marks the subsequent native response assisted, including after hiding it again. Listening exercises use your device’s synthesized Chinese voice, not an approved native-speaker recording. Oral production here is self-practice only; no microphone or automatic speech grading is used.</p></section>';
 }
