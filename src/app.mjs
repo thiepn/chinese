@@ -46,6 +46,11 @@ import {P50_DIALOGUES} from './p50-dialogues.mjs';
 import {findP50Argument,P50_REVISION} from './p50-arguments.mjs';
 import {findP50Character} from './p50-foundations.mjs';
 import {p50Overview,p50Lesson,p50Next,p50Story,p50NativeDialogue,P50_STAGES} from './p50-screen.mjs';
+import {P51_PASSAGES,findP51Passage} from './p51-readings.mjs';
+import {P51_DIALOGUES} from './p51-dialogues.mjs';
+import {findP51Argument,P51_REVISION} from './p51-arguments.mjs';
+import {findP51Character} from './p51-foundations.mjs';
+import {p51Overview,p51Lesson,p51Next,p51Story,p51NativeDialogue,P51_STAGES} from './p51-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
 import {P38_PASSAGES,findP38Passage} from './p38-readings.mjs';
@@ -112,7 +117,7 @@ import {renderSentenceScreen,sentenceResultsPanel} from './sentence-screen.mjs';
 const root=document.getElementById('app-content');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const stableRoutes=new Set(['today','learn','review','explore','progress','settings','reader','stories','practice','dialogues','wordbook','senses','workshop','production','integrated','cumulative','upper','advanced','comparative','cumulative49','discourse50','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find']);
+const stableRoutes=new Set(['today','learn','review','explore','progress','settings','reader','stories','practice','dialogues','wordbook','senses','workshop','production','integrated','cumulative','upper','advanced','comparative','cumulative49','discourse50','register51','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find']);
 const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';return stableRoutes.has(v)?v:'today'};
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
@@ -157,6 +162,10 @@ let p50CaseId=null,p50Stage='language',p50ReadingHelp=false,p50ListeningHelp=fal
 let p50ReadingIndex=0,p50ListeningIndex=0,p50ReadingFeedback=null,p50ListeningFeedback=null,p50Query='';
 const p50AssistedCases=new Set(); // tab-only assistance, not an owner-scoped record
 const p50Checks=new Set(); // temporary self-review, not a grade
+let p51CaseId=null,p51Stage='language',p51ReadingHelp=false,p51ListeningHelp=false,p51Models=false;
+let p51ReadingIndex=0,p51ListeningIndex=0,p51ReadingFeedback=null,p51ListeningFeedback=null,p51Query='';
+const p51AssistedCases=new Set(); // tab-local support, never owner-scoped learning history
+const p51Checks=new Set(); // self-review only, never certified proficiency
 const p42ViewedTranscripts=new Set();
 const p37ViewedTranscripts=new Set();
 function p37RememberPosition(){
@@ -499,7 +508,7 @@ function pinyinTodayPanel(){
  return `<section class="simple-panel p24-today"><div class="panel-heading"><div><p class="eyebrow">PRONUNCIATION FOUNDATIONS</p><h2>Learn the sounds behind Pinyin</h2></div><span class="muted">${PINYIN_INITIALS.length} initials · ${PINYIN_FINALS.length} finals</span></div>
  <p>Explore tongue positions, vowels, lexical tones, tone sandhi and the spelling rules behind Mandarin words.</p><div class="button-row">${action('pinyin-open','Open sound foundations →','button primary')}${action('pinyin-tab','Practice tones →','button outline small',`data-section="practice" data-filter="tones"`)}</div></section>`;
 }
-function renderToday(){return `${title('YOUR MANDARIN WORKSPACE','One focused learning day.','Continue the next meaningful activity, then study language in context without losing access to your existing tools.')}${gated()}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p46Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${onboardingPanel()}${dashboardHome(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31Overview(state,action,esc,true)}${p39Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p40Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p42Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}${p41Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}
+function renderToday(){return `${title('YOUR MANDARIN WORKSPACE','One focused learning day.','Continue the next meaningful activity, then study language in context without losing access to your existing tools.')}${gated()}${p51Overview(state,action,esc,{compact:true})}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p46Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${onboardingPanel()}${dashboardHome(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31Overview(state,action,esc,true)}${p39Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p40Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p42Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}${p41Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}
 <details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>
 ${hubHomePanel()}${pathwayHomePanel(state,action,esc)}${beginnerReadingTodayPanel()}${connectedReadingTodayPanel()}${sentenceTodayPanel()}${grammarTodayPanel()}${pinyinTodayPanel()}${vocabularyTodayPanel()}${finishOverviewPanel()}
 </details>`;}
@@ -538,12 +547,12 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p46Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p41Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p39Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p40Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p42Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}<details class="p39-course-details" ${findP39Guide(l.id)||p39CatalogOpen?'open':''}><summary>Explore P39 character lessons and vocabulary</summary>${p39CharacterShelf(state,action,esc,{theme:p39Theme,status:p39Status,query:p39Query,page:p39Page})}${p39VocabShelf(state,action,esc,{page:p39VocabPage})}</details><details class="p35-course-details" ${findP35Guide(l.id)||p35CatalogOpen?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearn(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${p51Overview(state,action,esc,{compact:true})}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p46Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p41Overview(state,action,esc,{compact:true})}${p43Overview(action,esc,{compact:true})}${p44Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}${p38Overview(state,action,esc,{compact:true})}${p39Overview(state,action,esc,{compact:true})}${p35Overview(state,action,esc,{compact:true})}${p40Overview(state,action,esc,{compact:true})}${p36Overview(state,action,esc,{compact:true})}${p42Overview(state,action,esc,{compact:true})}${p37Overview(state,action,esc,{compact:true})}<details class="p39-course-details" ${findP39Guide(l.id)||p39CatalogOpen?'open':''}><summary>Explore P39 character lessons and vocabulary</summary>${p39CharacterShelf(state,action,esc,{theme:p39Theme,status:p39Status,query:p39Query,page:p39Page})}${p39VocabShelf(state,action,esc,{page:p39VocabPage})}</details><details class="p35-course-details" ${findP35Guide(l.id)||p35CatalogOpen?'open':''}><summary>Explore P35 character lessons and vocabulary</summary>${p35CharacterShelf(state,action,esc,{theme:p35Theme,status:p35Status,query:p35Query,page:p35Page})}${p35VocabShelf(state,action,esc,{page:p35VocabPage})}</details>${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
  const m=summary(state),due=dueCards(state).filter(reviewMatches);
  if(sessionQueue===null)return `${title('FOCUSED REVIEW','Choose your practice.','Select the skill and a manageable number of questions. All due items remain due if you leave or skip them.')}
- ${reviewWorkspace(state,action,esc)}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}<section class="simple-panel session-setup"><div class="stats-grid">${stat(dueCards(state).length,'All due cards')}${stat(m.cards,'Active recall targets')}${stat(m.successful,'Correct independent attempts')}</div>
+ ${reviewWorkspace(state,action,esc)}${p51Overview(state,action,esc,{compact:true})}${p50Overview(state,action,esc,{compact:true})}${p49Overview(state,action,esc,{compact:true})}${p48Overview(state,action,esc,{compact:true})}${p47Overview(state,action,esc,{compact:true})}${p45Overview(state,action,esc,{compact:true})}<section class="simple-panel session-setup"><div class="stats-grid">${stat(dueCards(state).length,'All due cards')}${stat(m.cards,'Active recall targets')}${stat(m.successful,'Correct independent attempts')}</div>
  <div class="session-controls"><label>Practice focus<select id="review-focus"><option value="all" ${reviewFocus==='all'?'selected':''}>All skills</option><option value="weak" ${reviewFocus==='weak'?'selected':''}>Prioritize weaker skills</option><option value="meanings" ${reviewFocus==='meanings'?'selected':''}>Character & word meanings</option><option value="pronunciation" ${reviewFocus==='pronunciation'?'selected':''}>Pinyin & tones</option><option value="sentences" ${reviewFocus==='sentences'?'selected':''}>Sentence comprehension</option></select></label>
  <label>Session length<select id="review-size">${[5,10,20,50].map(n=>`<option value="${n}" ${reviewSize===n?'selected':''}>Up to ${n} questions</option>`).join('')}</select></label></div>
  <p class="muted">${due.length} matching reviews are due. A skipped question stays due; no success is credited. Keyboard: 1–4 to choose, Enter to check, S to skip; 1–4 to grade after feedback.</p><div class="review-queue-preview"><strong>Why these reviews come first</strong><div class="review-queue-reasons">${reviewPlan(state,{focus:reviewFocus,limit:Math.min(4,reviewSize)}).map(item=>`<span>${esc(item.family)} · ${esc(item.reason)}</span>`).join('')||'<span>No reviews are due for this focus.</span>'}</div></div><div class="button-row">${action('review-begin','Begin practice →','button primary',due.length?'':'disabled')}${action('go-learn','Learn something new','button outline')}</div></section>`;
@@ -883,6 +892,28 @@ function renderDiscourse50(){
  readingFeedback:p50ReadingFeedback,listeningFeedback:p50ListeningFeedback,
  checks:[...p50Checks]})+p50Overview(state,action,esc,{selected:p?.id||'',query:p50Query});
 }
+function p51ReturnStrip(){
+ const p=findP51Passage(p51CaseId);
+ return p?'<div class="p51-return-strip"><span>Active P51 register and source transfer: '+esc(p.title)+'</span>'+
+ action('p51-return','Return to original source journey →','button outline small')+'</div>':'';
+}
+function renderRegister51(){
+ const id=(location.hash.match(/^#\/register51\/(p51-\d{2})/)||[])[1];
+ const requested=new URLSearchParams(location.hash.split('?')[1]||'').get('stage');
+ if(id&&findP51Passage(id)&&id!==p51CaseId){
+  p51CaseId=id;p51Stage='language';p51ReadingHelp=false;p51ListeningHelp=false;p51Models=false;
+  p51ReadingIndex=0;p51ListeningIndex=0;p51ReadingFeedback=null;p51ListeningFeedback=null;p51Checks.clear();
+ }
+ if(id&&P51_STAGES.some(s=>s.id===requested))p51Stage=requested;
+ const p=findP51Passage(p51CaseId)||p51Next(state);if(!p51CaseId&&p)p51CaseId=p.id;
+ return title('P51 · REGISTER AND SOURCE FLUENCY','Reason precisely across original sources.',
+ 'Authorial HSK 5-targeted character families, grammar, longer reading, dialogue and ungraded argument preparation.')+
+ gated()+p51Lesson(p,state,action,esc,{stage:p51Stage,
+ readingHelp:p51ReadingHelp,listeningHelp:p51ListeningHelp,models:p51Models,
+ readingIndex:p51ReadingIndex,listeningIndex:p51ListeningIndex,
+ readingFeedback:p51ReadingFeedback,listeningFeedback:p51ListeningFeedback,
+ checks:[...p51Checks]})+p51Overview(state,action,esc,{selected:p?.id||'',query:p51Query});
+}
 function renderProduction(){
  const id=(location.hash.match(/^#\/production\/(p43-\d{2})/)||[])[1];
  if(id&&id!==p43UnitId&&!p43Draft.trim()&&!p43Revisions.length){
@@ -894,20 +925,136 @@ function renderProduction(){
  p43ProductionStudio(u,action,esc,{draft:p43Draft,revisions:p43Revisions,compare:p43Version,reveal:p43ModelRevealed,
  step:p43Step,rubric:p43Reviewed,pending:p43Pending,showEvidence:p43SourceRevealed});
 }
-function render(){navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
+function render(){navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,register51:renderRegister51,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
  ((p44SessionId&&['stories','dialogues','production','workshop'].includes(route()))?p44ReturnStrip():'')+
  ((p45CaseId&&['stories','dialogues','production','workshop','integrated'].includes(route()))?p45ReturnStrip():'')+
  ((p46UnitId&&['learn','grammar','stories','dialogues','wordbook','workshop','production','cumulative'].includes(route()))?p46ReturnStrip():'')+
  ((p47UnitId&&['learn','grammar','stories','dialogues','wordbook','workshop','production','upper','cumulative'].includes(route()))?p47ReturnStrip():'')+
  ((p48CaseId&&['stories','dialogues','workshop','production','grammar','wordbook','advanced'].includes(route()))?p48ReturnStrip():'')+
  ((p49CaseId&&['stories','dialogues','workshop','production','grammar','wordbook','cumulative','upper','advanced','comparative','integrated'].includes(route()))?p49ReturnStrip():'')+
- ((p50CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','cumulative49','comparative'].includes(route()))?p50ReturnStrip():'')+pages[route()]();if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
+ ((p50CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','cumulative49','comparative'].includes(route()))?p50ReturnStrip():'')+
+ ((p51CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','discourse50','cumulative49','comparative'].includes(route()))?p51ReturnStrip():'')+pages[route()]();if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
 function go(page){location.hash=`#/${page}`;if(route()===page)render();}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p51-enter'||name==='p51-return'||name==='p51-open'||name==='p51-next'){
+  const selected=name==='p51-open'?findP51Passage(id):
+   name==='p51-return'?findP51Passage(p51CaseId):
+   name==='p51-next'?p51Next(state,p51CaseId):findP51Passage(p51CaseId)||p51Next(state);
+  if(!selected)return alertUser('Original P51 instructional case unavailable.','error');
+  if(name!=='p51-return'){
+   p51CaseId=selected.id;p51Stage='language';p51ReadingHelp=false;p51ListeningHelp=false;p51Models=false;
+   p51ReadingIndex=0;p51ListeningIndex=0;p51ReadingFeedback=null;p51ListeningFeedback=null;
+   p51Checks.clear();
+  }
+  location.hash='#/register51/'+selected.id+'?stage='+p51Stage;
+  render();root.querySelector('.p51-lesson')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p51-stage'){
+  if(!findP51Passage(p51CaseId)||!P51_STAGES.some(x=>x.id===button.dataset.stage))return;
+  p51Stage=button.dataset.stage;p51ReadingFeedback=null;p51ListeningFeedback=null;
+  location.hash='#/register51/'+p51CaseId+'?stage='+p51Stage;return render();
+ }
+ if(name==='p51-review')return go('review');
+ if(name==='p51-character'){
+  const guide=findP51Character(button.dataset.hanzi);
+  const lesson=guide&&DEMO_LESSONS.find(x=>x.hanzi===guide.hanzi);
+  if(!lesson)return alertUser('Original P51 character lesson unavailable.','error');
+  displayLessonId=lesson.id;return go('learn');
+ }
+ if(name==='p51-reading-help'||name==='p51-listening-help'||name==='p51-models'){
+  if(!findP51Passage(p51CaseId))return;
+  if(name==='p51-reading-help'){p51ReadingHelp=!p51ReadingHelp;if(p51ReadingHelp)p51AssistedCases.add(p51CaseId);}
+  if(name==='p51-listening-help'){p51ListeningHelp=!p51ListeningHelp;if(p51ListeningHelp)p51AssistedCases.add(p51CaseId);}
+  if(name==='p51-models'){p51Models=!p51Models;if(p51Models)p51AssistedCases.add(p51CaseId);}
+  return render();
+ }
+ if(name==='p51-play'||name==='p51-play-slow'||name==='p51-turn-play'){
+  const p=findP51Passage(p51CaseId),d=p&&P51_DIALOGUES.find(x=>x.readingId===p.id);
+  if(!d)return;
+  const i=Number(button.dataset.index);
+  if(name==='p51-turn-play'&&(!Number.isInteger(i)||i<0||i>=d.turns.length))return;
+  return speak(name==='p51-turn-play'?d.turns[i].hanzi:d.turns.map(t=>t.hanzi).join(' '),
+   name==='p51-play-slow'?0.7:demoSpeechRate);
+ }
+ if(name==='p51-reader-next'){
+  const p=findP51Passage(p51CaseId);if(!p)return;
+  if(p51ReadingIndex+1<p.questions.length){p51ReadingIndex++;p51ReadingFeedback=null;return render();}
+  p51Stage='listen';p51ReadingFeedback=null;
+  location.hash='#/register51/'+p.id+'?stage=listen';return render();
+ }
+ if(name==='p51-reader-retry'){p51ReadingFeedback=null;return render();}
+ if(name==='p51-reader-answer'||name==='p51-reader-model'){
+  const p=findP51Passage(p51CaseId),story=p&&p51Story(p);
+  if(!story||p51ReadingFeedback)return;
+  const mode=['beginner-detail','beginner-reason','beginner-sequence'][p51ReadingIndex];
+  const q=beginnerQuestion(story,mode);if(!q)return;
+  if(name==='p51-reader-model'){
+   p51AssistedCases.add(p.id);p51ReadingFeedback={revealed:true,assisted:true,correct:false};return render();
+  }
+  const answer=button.dataset.option||'';
+  if(!q.options.includes(answer))return;
+  const assisted=p51AssistedCases.has(p.id),correct=answer===q.answer;
+  const eventId=globalThis.crypto?.randomUUID?.()||'p51-reading-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addReadingEvent(old,story.id,mode,correct,assisted,eventId));
+  if(saved){p51ReadingFeedback={correct,assisted};render();
+   root.querySelector('.p51-feedback')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p51-listener-next'){
+  const p=findP51Passage(p51CaseId),d=p&&P51_DIALOGUES.find(x=>x.readingId===p.id);
+  if(!d)return;
+  if(p51ListeningIndex+1<d.questions.length){p51ListeningIndex++;p51ListeningFeedback=null;return render();}
+  p51Stage='produce';p51ListeningFeedback=null;
+  location.hash='#/register51/'+p.id+'?stage=produce';return render();
+ }
+ if(name==='p51-listener-retry'){p51ListeningFeedback=null;return render();}
+ if(name==='p51-listener-answer'||name==='p51-listener-model'){
+  const p=findP51Passage(p51CaseId),dialogue=p&&p51NativeDialogue(p);
+  if(!dialogue||p51ListeningFeedback)return;
+  const q=dialogueQuestion(dialogue.id,p51ListeningIndex);if(!q)return;
+  if(name==='p51-listener-model'){
+   p51AssistedCases.add(p.id);p51ListeningFeedback={revealed:true,assisted:true,correct:false};return render();
+  }
+  const answer=button.dataset.option||'';
+  if(!q.options.includes(answer))return;
+  const assisted=p51AssistedCases.has(p.id);
+  const eventId=globalThis.crypto?.randomUUID?.()||'p51-listening-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addDialogueEvent(old,{id:eventId,dialogueId:dialogue.id,
+   question:p51ListeningIndex,answer,assisted}));
+  if(saved){p51ListeningFeedback={correct:answer===q.answer,assisted};render();
+   root.querySelector('.p51-feedback')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p51-check'){
+  if(!P51_REVISION.some(x=>x.id===id)||!findP51Passage(p51CaseId))return;
+  if(p51Checks.has(id))p51Checks.delete(id);else p51Checks.add(id);
+  return render();
+ }
+ if(name==='p51-p43'){
+  const p=findP51Passage(p51CaseId),a=p&&findP51Argument(p.id);
+  if(!a)return;
+  p43UnitId=a.p43Id;return go('production');
+ }
+ if(name==='p51-write'||name==='p51-argument-write'){
+  const p=findP51Passage(p51CaseId);if(!p)return;
+  let taskId;
+  if(name==='p51-argument-write'){
+   const a=findP51Argument(p.id),i=Number(button.dataset.index);
+   if(!a||!Number.isInteger(i)||i<0||i>=a.models.length)return;
+   taskId='p51:argument:'+p.id+':model'+i;
+  }else if(button.dataset.kind==='reading'){
+   const story=p51Story(p);if(!story)return;
+   taskId='beginner-reading:'+story.id+':writing';
+  }else{return;}
+  const i=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
+  if(i<0)return alertUser('The native exact sentence is unavailable.','error');
+  sentenceIndex=i;sentenceTyped='';sentenceFeedback=null;
+  sentenceSupport=p51AssistedCases.has(p.id);return go('workshop');
+ }
  if(name==='p50-enter'||name==='p50-return'||name==='p50-open'||name==='p50-next'){
   const selected=name==='p50-open'?findP50Passage(id):
    name==='p50-return'?findP50Passage(p50CaseId):
@@ -2808,6 +2955,12 @@ root.addEventListener('toggle',ev=>{
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
+ if(e.target.id==='p51-search'){
+  p51Query=e.target.value;render();
+  const el=root.querySelector('#p51-search');
+  if(el){el.focus();el.setSelectionRange(p51Query.length,p51Query.length);}
+  return;
+ }
  if(e.target.id==='p50-search'){
   p50Query=e.target.value;render();
   const el=root.querySelector('#p50-search');
