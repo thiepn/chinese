@@ -63,11 +63,13 @@ export function renderC9LearningContinuity(state,act,esc,{compact=false}={}){
  const metrics=summary(state),due=dueCards(state).length;
  const lesson=DEMO_LESSONS.find(l=>!(state.learned||[]).includes(l.id))||DEMO_LESSONS[0];
  const passage=nextReading(state),dialogue=nextDialogue(state),sessions=sessionRoutes(state);
+ const allReadingObserved=STORIES.length>0&&STORIES.every(s=>resultCount(state.readingEvents||[],s.id,'storyId'));
+ const allDialogueObserved=DIALOGUES.length>0&&DIALOGUES.every(d=>resultCount(state.dialogueEvents||[],d.id,'dialogueId'));
  const content=[
   {id:'lesson',source:lesson,body:lesson?'<span lang="zh-Hans">'+esc(lesson.hanzi)+'</span> '+esc(lesson.pinyin)+' · '+esc(lesson.meaning):'Original lesson unavailable',context:lesson&&state.learned?.includes(lesson.id)?'All currently installed character lessons have been introduced':'Next not-yet-introduced original lesson'},
   {id:'review',source:null,body:due+' due scheduled prompt'+(due===1?'':'s'),context:due?'Review queue comes from the canonical scheduler':'Nothing scheduled as due right now'},
-  {id:'reading',source:passage,body:passage?esc(passage.title):'No original passages available',context:passage?'Prioritises texts lacking any independent correct recorded answer':'No readable source is installed'},
-  {id:'dialogue',source:dialogue,body:dialogue?esc(dialogue.title):'No original conversations available',context:dialogue?'Prioritises dialogues lacking an independently correct recorded response':'No conversation source is installed'}
+  {id:'reading',source:passage,body:passage?esc(passage.title):'No original passages available',context:passage?(allReadingObserved?'All original passages have at least one independently correct recorded response; revisit any text':'Prioritises texts lacking any independent correct recorded answer'):'No readable source is installed'},
+  {id:'dialogue',source:dialogue,body:dialogue?esc(dialogue.title):'No original conversations available',context:dialogue?(allDialogueObserved?'All original dialogues have at least one independently correct recorded response; revisit any conversation':'Prioritises dialogues lacking an independently correct recorded response'):'No conversation source is installed'}
  ];
  return '<section class="c9-integrated-flow'+(compact?' is-compact':'')+'" aria-labelledby="c9-integrated-flow-title">'+
  '<header class="c9-integrated-header"><div><p class="c9-eyebrow">ONE ORIGINAL LEARNING PATH · NO SYNTHETIC GRADES</p>'+
