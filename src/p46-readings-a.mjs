@@ -1,0 +1,51 @@
+/** P46 original upper-intermediate three-paragraph readings A. */
+export const P46_READINGS_A=String.raw`A public proposal and a private booking|Public information and personal arrangements|Trace how proposals, published notices, staff decisions and personal plans interact.|g100,g115,g116|审核~shěnhé~review for approval|Public information cannot by itself confirm a private booking.|Explain the chain of decisions without turning an acknowledgment into a confirmed appointment.
+L|星期一早上，学校宣布正在考虑延长图书馆的开放时间。|Xīngqīyī zǎoshang, xuéxiào xuānbù zhèngzài kǎolǜ yáncháng túshūguǎn de kāifàng shíjiān.|On Monday morning, the university announced it was considering extending library hours.
+L|有些学生以为这个计划已经得到批准，于是提前安排了晚上的学习。|Yǒuxiē xuésheng yǐwéi zhège jìhuà yǐjīng dédào pīzhǔn, yúshì tíqián ānpái le wǎnshang de xuéxí.|Some students thought the plan had been approved and arranged evening study in advance.
+L|但网站当时没有修改时间，工作人员也无法确认具体的安排。|Dàn wǎngzhàn dàngshí méiyǒu xiūgǎi shíjiān, gōngzuò rényuán yě wúfǎ quèrèn jùtǐ de ānpái.|But the website had not changed its hours, and staff could not confirm specific arrangements.
+L|小陈因此决定先保留原来的复习时间，等待正式通知。|Xiǎo Chén yīncǐ juédìng xiān bǎoliú yuánlái de fùxí shíjiān, děngdài zhèngshì tōngzhī.|Xiao Chen therefore kept the original revision schedule while waiting for an official notice.
+L|到了星期四，学校正式确认星期五将开放到晚上九点。|Dào le Xīngqīsì, xuéxiào zhèngshì quèrèn Xīngqīwǔ jiāng kāifàng dào wǎnshang jiǔ diǎn.|By Thursday, the university officially confirmed the library would stay open until nine Friday.
+L|不过，新的开放时间并不意味着所有学习室都会自动延长预约。|Búguò, xīn de kāifàng shíjiān bìng bù yìwèizhe suǒyǒu xuéxíshì dōu huì zìdòng yáncháng yùyuē.|However, new opening hours did not mean all study-room reservations automatically extended.
+L|小陈原本预约了下午三点的房间，现在希望改到四点。|Xiǎo Chén yuánběn yùyuē le xiàwǔ sān diǎn de fángjiān, xiànzài xīwàng gǎi dào sì diǎn.|Xiao Chen had booked a room at three and now wanted to move it to four.
+L|他发出申请以后，只收到一封表示已经收到消息的邮件。|Tā fā chū shēnqǐng yǐhòu, zhǐ shōu dào yì fēng biǎoshì yǐjīng shōu dào xiāoxi de yóujiàn.|After submitting the request, he received only an acknowledgment email.
+L|为了避免误会，他没有立刻通知朋友，而是再次询问工作人员。|Wèile bìmiǎn wùhuì, tā méiyǒu lìkè tōngzhī péngyou, érshì zàicì xúnwèn gōngzuò rényuán.|To avoid misunderstanding, he did not immediately tell his friend and instead asked staff again.
+L|工作人员核对记录后解释说，四点的房间确实还有空位。|Gōngzuò rényuán héduì jìlù hòu jiěshì shuō, sì diǎn de fángjiān quèshí hái yǒu kòngwèi.|After checking the records, staff explained that the room was still available at four.
+L|直到预约正式修改完成，小陈才把新的见面时间发给朋友。|Zhídào yùyuē zhèngshì xiūgǎi wánchéng, Xiǎo Chén cái bǎ xīn de jiànmiàn shíjiān fā gěi péngyou.|Only after the booking was formally changed did Xiao Chen send the new meeting time to his friend.
+L|这次经历提醒他，公开通知和个人预约虽然相关，却需要分别确认。|Zhè cì jīnglì tíxǐng tā, gōngkāi tōngzhī hé gèrén yùyuē suīrán xiāngguān, què xūyào fēnbié quèrèn.|The experience reminded him that public notices and personal reservations, although related, require separate confirmation.
+Q|What was confirmed on Thursday?|Friday library closing at nine.|All study rooms were booked at four.|The library would close at ten.|4|The official notice concerned operating hours, not a private reservation.
+Q|What did the first email establish?|The request was received, not approved.|The room had already changed.|The friend had accepted a time.|7|Receipt cannot be read as approval.
+Q|When did Xiao Chen contact his friend?|After staff formally changed the reservation.|Before he submitted the request.|When the university first discussed longer opening hours.|10|The actual booking change precedes notifying the friend.
+
+Why a small survey cannot explain everything|Data, interpretation and limitations|Develop an evidence-supported critique of numerical conclusions and methodological scope.|g98,g115,g123|缺乏~quēfá~lack|A reliable count cannot support an explanation the questionnaire never measured.|Present the observed data, the mistaken claim, and the question that remains unanswered.
+L|一所学校调查了二十名学生对自习时间的选择。|Yì suǒ xuéxiào diàochá le èrshí míng xuésheng duì zìxí shíjiān de xuǎnzé.|A school surveyed twenty students about their preferred independent study time.
+L|其中八个人选择晚上，另外十二个人选择白天。|Qízhōng bā ge rén xuǎnzé wǎnshang, lìngwài shí'èr ge rén xuǎnzé báitiān.|Eight chose evening, while the other twelve chose daytime.
+L|负责写报告的同学却在初稿中说，大多数人喜欢晚上学习。|Fùzé xiě bàogào de tóngxué què zài chūgǎo zhōng shuō, dàduōshù rén xǐhuan wǎnshang xuéxí.|The student responsible for the report nonetheless wrote that most preferred evenings.
+L|老师没有直接修改结论，而是要求他们重新核对原始答案。|Lǎoshī méiyǒu zhíjiē xiūgǎi jiélùn, érshì yāoqiú tāmen chóngxīn héduì yuánshǐ dá'àn.|The teacher did not directly rewrite the conclusion but asked them to check the original responses.
+L|核对以后，大家发现白天的选择实际上比晚上的多。|Héduì yǐhòu, dàjiā fāxiàn báitiān de xuǎnzé shíjì shàng bǐ wǎnshang de duō.|After checking, they discovered daytime had actually received more selections.
+L|一名成员建议解释说，学生是因为白天环境更安静才这样选择。|Yì míng chéngyuán jiànyì jiěshì shuō, xuésheng shì yīnwèi báitiān huánjìng gèng ānjìng cái zhèyàng xuǎnzé.|A member suggested explaining that students chose daytime because it was quieter.
+L|另一名成员提醒大家，问卷中根本没有询问选择的原因。|Lìng yì míng chéngyuán tíxǐng dàjiā, wènjuàn zhōng gēnběn méiyǒu xúnwèn xuǎnzé de yuányīn.|Another member reminded everyone the questionnaire had never asked why.
+L|即使这种解释听起来很合理，也缺乏直接的数据支持。|Jíshǐ zhè zhǒng jiěshì tīng qǐlai hěn hélǐ, yě quēfá zhíjiē de shùjù zhīchí.|Even if that explanation sounded reasonable, it lacked direct data support.
+L|于是，小组将人数和百分比分别写进修订后的报告。|Yúshì, xiǎozǔ jiāng rénshù hé bǎifēnbǐ fēnbié xiě jìn xiūdìng hòu de bàogào.|The group then put both counts and percentages into the revised report.
+L|他们还专门增加了一段，说明调查没有收集有关原因的信息。|Tāmen hái zhuānmén zēngjiā le yí duàn, shuōmíng diàochá méiyǒu shōují yǒuguān yuányīn de xìnxī.|They added a paragraph explaining that no information about reasons had been collected.
+L|新的结论不再把个人猜测当作所有学生共同的想法。|Xīn de jiélùn bú zài bǎ gèrén cāicè dàng zuò suǒyǒu xuésheng gòngtóng de xiǎngfǎ.|The new conclusion no longer treated a personal guess as the view of all students.
+L|这份报告虽然没有回答每一个问题，但清楚说明了证据能够支持什么。|Zhè fèn bàogào suīrán méiyǒu huídá měi yí ge wèntí, dàn qīngchu shuōmíng le zhèngjù nénggòu zhīchí shénme.|Although the report did not answer every question, it clearly explained what the evidence supported.
+Q|Which group had more respondents?|Daytime, twelve of twenty.|Evening, twelve of twenty.|Everyone preferred evening.|1|The original counts favor daytime.
+Q|Why was the quiet-environment explanation removed?|The questionnaire did not ask about reasons.|The teacher disliked daytime study.|The explanation had been proven false experimentally.|6|A plausible conjecture is still outside the collected data.
+Q|What did the revised report add?|An explicit statement of the survey's limits.|An invented reason for every response.|An official certification of language proficiency.|9|The revised section acknowledges missing reasons.
+
+A report that needs one more review|Workplace communication and revision|Follow an editorial process from the first draft to fact checking and authorization.|g106,g115,g116|审核~shěnhé~review for approval|A checked field, a revised manuscript, and formal publication approval are distinct steps.|Explain which tasks the editor completed and what remains pending.
+L|社区中心准备发表一份有关志愿活动的年度报告。|Shèqū zhōngxīn zhǔnbèi fābiǎo yí fèn yǒuguān zhìyuàn huódòng de niándù bàogào.|The community center prepared an annual report about volunteer activities.
+L|负责写作的小黄先根据活动记录草拟了第一版。|Fùzé xiězuò de Xiǎo Huáng xiān gēnjù huódòng jìlù cǎonǐ le dì yī bǎn.|Xiao Huang, responsible for writing, first drafted a version based on activity records.
+L|因为时间紧张，他没有检查每一项活动的人数。|Yīnwèi shíjiān jǐnzhāng, tā méiyǒu jiǎnchá měi yí xiàng huódòng de rénshù.|Because time was tight, he had not checked attendance figures for every activity.
+L|编辑发现两个表格里的数字不一致，于是要求补充原始资料。|Biānjí fāxiàn liǎng ge biǎogé lǐ de shùzì bù yízhì, yúshì yāoqiú bǔchōng yuánshǐ zīliào.|The editor noticed inconsistent figures in two tables and requested original records.
+L|第二天，工作人员把签到表和报名表交给了小黄。|Dì èr tiān, gōngzuò rényuán bǎ qiāndàobiǎo hé bàomíngbiǎo jiāo gěi le Xiǎo Huáng.|The next day, staff gave Xiao Huang attendance sheets and registration forms.
+L|他核对以后才知道，有些报名者并没有真正参加活动。|Tā héduì yǐhòu cái zhīdào, yǒuxiē bàomíngzhě bìng méiyǒu zhēnzhèng cānjiā huódòng.|After checking, he learned that some registrants had not actually participated.
+L|因此，报告不能把报名人数直接写成实际参加人数。|Yīncǐ, bàogào bù néng bǎ bàomíng rénshù zhíjiē xiě chéng shíjì cānjiā rénshù.|Therefore, the report could not simply treat registrations as actual attendance.
+L|小黄在修改稿中把这两种数字分开，并说明了计算的方法。|Xiǎo Huáng zài xiūgǎogǎo zhōng bǎ zhè liǎng zhǒng shùzì fēnkāi, bìng shuōmíng le jìsuàn de fāngfǎ.|Xiao Huang distinguished the two kinds of figures in the revised draft and explained the calculation.
+L|编辑认为内容现在更清楚，但是仍然需要负责人的最后审核。|Biānjí rènwéi nèiróng xiànzài gèng qīngchu, dànshì réngrán xūyào fùzérén de zuìhòu shěnhé.|The editor found the content clearer but said the manager's final review was still required.
+L|小黄没有把修改稿立刻发到社区网站上。|Xiǎo Huáng méiyǒu bǎ xiūgǎogǎo lìkè fā dào shèqū wǎngzhàn shàng.|Xiao Huang did not immediately publish the revised draft on the community website.
+L|他先附上有关证据，再把文章提交给负责人。|Tā xiān fù shàng yǒuguān zhèngjù, zài bǎ wénzhāng tíjiāo gěi fùzérén.|He attached supporting evidence and submitted the article to the manager.
+L|只有审核通过以后，这份报告才能正式公布。|Zhǐyǒu shěnhé tōngguò yǐhòu, zhè fèn bàogào cái néng zhèngshì gōngbù.|Only after the review passes can the report be officially published.
+Q|Why was the first report unreliable?|Registrations were mixed with actual attendance.|The community had no volunteers.|The report was approved immediately.|6|People signing up are not necessarily participants.
+Q|What did the editor still require after revision?|Final review by the responsible manager.|A new website password.|A second year of volunteer work.|8|Editing and authorization are separate steps.
+Q|When could the report become public?|After the final review passes.|As soon as the first draft was written.|Before any records were checked.|11|The final sentence explicitly makes release conditional.`;
