@@ -72,7 +72,8 @@ export function p48Overview(state,act,esc,{compact=false,selected='',query=''}={
  }).join('')+'</div>'+
  (!cases.length?'<p class="muted">No source-backed dossier matches this search.</p>':'')+
  '<div class="p48-actions">'+act('p48-review','Original due-card Review →','button outline')+
- act('p47-enter','Return to P47 advanced contextual language →','button outline')+'</div>')+
+ act('p47-enter','Return to P47 advanced contextual language →','button outline')+
+ act('p49-enter','Continue to P49 cumulative source transfer →','button primary')+'</div>')+
  '</section>';
 }
 function sectionLines(p,s,esc,act,translation){
@@ -190,6 +191,7 @@ export function p48Lesson(p,state,act,esc,{stage='compare',translations=false,tr
  act('p47-enter','P47 contextual reading →','button outline')+
  act('p46-enter','P46 upper-intermediate foundations →','button outline')+
  act('p45-enter','P45 cumulative review →','button outline')+
+ act('p49-enter','P49 source-specific independent transfer →','button outline')+
  act('p44-enter','P44 integrated scenes →','button outline')+'</div></aside>'+
  '<p class="p48-caveat">Independent oral responses and freely written arguments have no invented scores, microphones or certifications. Source translations, answer reference and model reveals mark subsequent native attempts as assisted for this tab. Draft and checklist controls never create new Account state or a second scheduler.</p></section>';
 }
