@@ -120,8 +120,7 @@ export function p52Lesson(c,state,act,esc,{stage='records',readingIndex=0,listen
  ['limits','Did I avoid converting missing evidence into certainty?'],
  ['register','Can I explain the same supported facts in formal and familiar language?'],
  ['oral','Can I deliver the conclusion aloud without reading a model?']
- ].map(([id,label])=>'<label class="p52-check"><input type="checkbox" data-action="p52-check" data-id="'+id+'" '+
- (chosen.has(id)?'checked':'')+'> '+esc(label)+'</label>').join('')+
+ ].map(([id,label])=>act('p52-check',(chosen.has(id)?'✓ ':'○ ')+esc(label),'p52-check '+(chosen.has(id)?'selected':''),'data-id="'+id+'" aria-pressed="'+chosen.has(id)+'"')).join('')+
  '<p class="muted">These temporary checkboxes are self-review cues, not recorded attempts or mastery.</p>'+
  '<div class="p52-actions">'+act('p52-next','Next independent dossier →','button primary')+
  act('p51-return','Review P51 foundation →','button outline')+'</div></div>':'')+
