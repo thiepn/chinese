@@ -42,9 +42,13 @@ export function p43ProductionStudio(u,act,esc,{draft='',revisions=[],compare=-1,
  '<div class="p43-studio-top"><div><p class="eyebrow">P43 · UNIT '+u.sequence+' / '+P43_UNITS.length+' · '+esc(stageLabel(u.stage))+'</p>'+
  '<h2>'+esc(u.title)+'</h2><p>'+esc(u.goal)+'</p></div>'+
  act('p43-next','Next topic →','button outline')+'</div>'+
- (pending?'<div class="p43-warning" role="status"><strong>Unsaved work in this tab</strong><p>Changing topics will clear the current unsent draft and its in-session snapshots. This does not change any persisted study records.</p>'+
+ (pending?'<div class="p43-warning" role="status"><strong>'+
+ (pending==='discard'?'Discard this session?':pending.startsWith('restore:')?'Replace the current unsaved text?':'Unsaved work in this tab')+'</strong><p>'+
+ (pending==='discard'?'The current composition and all in-tab snapshots will be cleared. This does not change saved practice records.':
+ pending.startsWith('restore:')?'Restoring an earlier snapshot will replace current editor text. Existing in-tab snapshots remain available.':
+ 'Changing topics will clear the current unsent draft and its in-session snapshots. This does not change any persisted study records.')+'</p>'+
  '<div class="button-row">'+act('p43-stay','Keep my current work','button outline')+
- act('p43-switch-confirm','Discard this work and switch','button primary')+'</div></div>':'')+
+ act('p43-switch-confirm',pending==='discard'?'Confirm discard':pending.startsWith('restore:')?'Replace editor with saved snapshot':'Discard work and switch topic','button primary')+'</div></div>':'')+
  '<div class="p43-tabs" role="group" aria-label="Production steps">'+
  [['plan','1. Plan'],['compose','2. Compose'],['revise','3. Revise'],['speak','4. Speak']].map(([v,name])=>
  act('p43-step',name,'p43-tab '+(step===v?'active':''),'data-step="'+v+'" aria-pressed="'+(step===v)+'"')).join('')+'</div>'+
