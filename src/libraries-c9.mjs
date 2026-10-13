@@ -1,3 +1,4 @@
+import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain} from './lexicon.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
@@ -32,7 +33,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
    '<small>'+esc(w.source)+' · Original vocabulary</small></div>'+
    '<div class="c9-library-word-actions">'+act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
    act('c9-word-open','Full details →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+'</div></article>';
- }).join('')+'</div>':'<div class="c9-empty"><strong>No matching words</strong><p>Try another word, Pinyin spelling or meaning, or change the saved/introduction filter.</p></div>')+
+ }).join('')+'</div>':renderC9EmptyState('No matching words','Try another word, Pinyin spelling or meaning, or change the saved/introduction filter.'))+
  '<div class="c9-library-pages"><span>'+ (words.length?String(current*PAGE+1)+'–'+String(current*PAGE+results.length):'0')+' of '+words.length+'</span>'+
  '<div class="c9-inline">'+act('c9-word-page','Previous','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(current===0?'disabled':''))+
  act('c9-word-page','Next','c9-button c9-button--secondary c9-button--small','data-delta="1" '+(current===last?'disabled':''))+'</div></div>';

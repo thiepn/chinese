@@ -4,39 +4,22 @@
  * This module only updates shell labels/group context and controls the native
  * mobile destination dialog. No storage, routing or academic writes.
  */
-export const C9_ROUTE_LABELS = Object.freeze({
-  today:'Home', plan:'Study Plan', pathway:'Learning Pathway',
-  learn:'Learn', character:'Character Study', review:'Review', explore:'Explore', find:'Search',
-  progress:'Progress', settings:'Settings', reader:'Character Reading',
-  stories:'Reading & Stories', practice:'Practice Lab', dialogues:'Conversations',
-  wordbook:'My Wordbook', senses:'Word Senses', workshop:'Sentence Workshop',
-  journey:'Daily Journey', ladder:'Sentence Ladder', block:'Study Blocks',
-  fluency:'Fluency Studio', pinyin:'Pinyin & Sounds', grammar:'Grammar',
-  sentences:'Sentence Library'
-});
-const COURSE_ROUTES=new Set([
-  'learn','character','reader','stories','practice','dialogues','wordbook','senses',
-  'workshop','journey','ladder','block','fluency','pinyin','grammar',
-  'sentences','pathway','plan'
-]);
-const EXPLORE_ROUTES=new Set(['explore','find']);
-const PERSONAL_ROUTES=new Set(['progress','settings']);
+import {C9_ROUTE_LABELS,c9RouteInfo} from './ui-c9.mjs';
+export {C9_ROUTE_LABELS} from './ui-c9.mjs';
 let connected=false;
 let restoreDrawerFocus=false;
 let modalSupported=false;
 
-function contextFor(route){
-  if(COURSE_ROUTES.has(route))return 'learn';
-  if(EXPLORE_ROUTES.has(route))return 'explore';
-  if(PERSONAL_ROUTES.has(route))return 'more';
-  if(route==='today'||route==='review')return route;
-  return 'more';
-}
+function contextFor(route){return c9RouteInfo(route).parent;}
 
-export function syncC9Shell(route){
+export function syncC9Shell(route,{due=0,storageReady=true}={}){
   const label=C9_ROUTE_LABELS[route]||'Home';
   const current=document.getElementById('c9-current-section');
   if(current)current.textContent=label;
+  const category=document.getElementById('c9-current-category');
+  if(category)category.textContent=c9RouteInfo(route).area;
+  document.documentElement.dataset.c9Area=c9RouteInfo(route).group;
+  document.documentElement.dataset.c9Route=route;
   const mobile=document.getElementById('c9-mobile-current');
   if(mobile)mobile.textContent=label;
   const active=contextFor(route);
@@ -44,18 +27,31 @@ export function syncC9Shell(route){
   // Mobile has one selected destination: a direct page or More for secondary
   // routes. Desktop may additionally highlight the Learn parent context.
   for(const a of document.querySelectorAll('.c9-mobile-nav [data-c9-primary]')){
-    a.classList.remove('is-context');
+    a.classList.toggle('is-context',a.dataset.c9Primary===active&&a.dataset.route!==route);
   }
   for(const a of document.querySelectorAll('.c9-sidebar [data-c9-context]')){
     a.classList.toggle('is-context',a.dataset.c9Context===active&&a.dataset.route!==route);
   }
   const more=document.getElementById('c9-more-toggle');
   if(more){
-    const inMore=active==='more'||!['today','learn','review','explore'].includes(route);
+    const inMore=active==='more';
     more.classList.toggle('is-context',inMore);
     more.setAttribute('aria-label',inMore
       ?'More destinations, current section '+label
       :'More learning destinations');
+  }
+  const count=Number.isFinite(due)?Math.max(0,Math.floor(due)):0;
+  for(const id of ['c9-review-count','c9-mobile-review-count']){
+    const el=document.getElementById(id);
+    if(!el)continue;
+    el.hidden=count===0;
+    el.textContent=count>99?'99+':String(count);
+    el.setAttribute('aria-label',count+' scheduled review prompts due');
+  }
+  const storage=document.getElementById('c9-storage-state');
+  if(storage){
+    storage.textContent=storageReady?'Local learning record':'Storage unavailable';
+    storage.dataset.status=storageReady?'ready':'unavailable';
   }
   const details=document.querySelector('.c9-sidebar .more-tools');
   if(details&&details.querySelector('[data-route="'+route+'"]'))details.open=true;

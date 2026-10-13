@@ -4,6 +4,7 @@
  * No new route, store, progress engine, assessment or official HSK claims.
  */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
+import {renderC9EmptyState} from './ui-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {plain} from './lexicon.mjs';
 import {WORKSPACE_DESTINATIONS,courseSearch,FIND_CATEGORIES} from './workspace-p30.mjs';
@@ -21,7 +22,7 @@ const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(done/total*100)
 const summaryText=(count,noun)=>count+' '+noun+(count===1?'':'s');
 const title=(name,subtitle)=>'<header class="c9-discovery-head"><p class="c9-eyebrow">THIEPN CHINESE · ORIGINAL STUDY MATERIAL</p><h1>'+name+'</h1><p>'+subtitle+'</p></header>';
 const progress=(done,total,label)=>'<div class="c9-discovery-progress"><div class="c9-discovery-progress-meta"><span>'+label+'</span><strong class="c9-tabular">'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
-const empty=(heading,description)=>'<div class="c9-empty c9-discovery-empty"><strong>'+heading+'</strong><p>'+description+'</p></div>';
+const empty=renderC9EmptyState;
 const lessonCount=(group,learned)=>group.lessons.filter(l=>learned.has(l.id)).length;
 const nextLesson=(group,learned)=>group.lessons.find(l=>!learned.has(l.id))||group.lessons[0];
 const isKnownKind=kind=>FIND_CATEGORIES.some(([id])=>id===kind);
