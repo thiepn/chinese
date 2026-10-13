@@ -204,11 +204,16 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  '<p class="c9-media-provenance c9-unified-source-note">Audio is device speech synthesis, not human-recorded or pronunciation-assessed audio. Transcript reveals remain explicitly assisted.</p></div>';
 }
 export function renderC9TurnNavigator(d,active,act,esc){
+ const current=Math.max(0,Math.min(active,d.lines.length-1)),line=d.lines[current];
  return '<nav class="c9-media-turn-nav" aria-label="Conversation turn navigation">'+
- '<div><p class="c9-eyebrow">FOLLOW THE EXCHANGE</p><strong>Turn '+(active+1)+' / '+d.lines.length+'</strong>'+
- '<span>Speaker '+esc(d.lines[active]?.speaker||'A')+' · navigation does not reveal hidden listening-first text</span></div>'+
- '<div class="c9-inline">'+act('c9-media-turn','← Previous turn','c9-button c9-button--secondary c9-button--small','data-dir="-1" '+(active===0?'disabled':''))+
- act('c9-media-turn','Next turn →','c9-button c9-button--secondary c9-button--small','data-dir="1" '+(active===d.lines.length-1?'disabled':''))+'</div></nav>';
+ '<div><p class="c9-eyebrow">SPEAKER-BY-SPEAKER LISTENING</p><strong>Turn '+(current+1)+' / '+d.lines.length+'</strong>'+
+ '<span>Speaker '+esc(line?.speaker||'A')+' · moving between turns does not reveal the source transcript or record an answer</span></div>'+
+ '<div class="c9-media-turn-actions">'+
+ act('c9-media-turn','← Previous','c9-button c9-button--secondary c9-button--small','data-dir="-1" '+(current===0?'disabled':''))+
+ act('c9-media-listen-turn','Play focused turn','c9-button c9-button--primary c9-button--small')+
+ act('c9-media-listen-turn-slow','Slower · focused turn','c9-button c9-button--secondary c9-button--small')+
+ act('c9-media-turn','Next turn →','c9-button c9-button--secondary c9-button--small','data-dir="1" '+(current===d.lines.length-1?'disabled':''))+
+ '</div></nav>';
 }
 export function renderC9ReaderIntro(lesson,act,esc){
  return intro('SENTENCE READING','Read one sentence carefully',
