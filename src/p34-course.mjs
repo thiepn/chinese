@@ -12,6 +12,19 @@ export const P34_SCENES=Object.freeze(
  .map((s,i)=>Object.freeze({...s,id:'p34-'+String(i+1).padStart(2,'0'),order:i+1}))
 );
 export const p34Scene=id=>P34_SCENES.find(s=>s.id===id)||null;
+const contrastDistractors={
+ '闹钟':['手机','电话','书包'],'办公室':['教室','图书馆','商店'],
+ '汤面':['米饭','辣面条','水果'],'地图':['课本','菜单','词典'],
+ '约好':['忘了','没有','听说'],'借':['买','看','拿'],'卡片':['书包','手机','牛奶'],
+ '布袋':['纸袋','箱子','书包'],'楼层':['时间','号码','方向'],'停':['下','走','来'],
+ '通知':['广告','消息','故事'],'出口':['入口','路口','车站'],'蛋糕':['面包','米饭','面条'],
+ '出发':['到达','回家','下车'],'号码':['名字','时间','书包'],
+ '座位':['车票','书包','椅子'],'改到':['来到','看到','走到'],'笔记':['照片','手机','雨伞'],
+ '市场':['学校','书店','银行'],'预约':['工作','比赛','作业'],'看错':['听懂','认识','知道'],
+ '安静':['热闹','明亮','漂亮'],'暖和':['便宜','新鲜','好看'],'散步':['看书','坐车','唱歌'],
+ '志愿者':['老师','学生','游客']
+};
+
 export const P34_READING_ROWS=Object.freeze(P34_SCENES.map(s=>{
  const questions=s.readQ.map(q=>Object.freeze([
    q[0],q[1],q[2],q[3],'The passage does not provide this detail.',q[4],q[5]
@@ -21,7 +34,7 @@ export const P34_READING_ROWS=Object.freeze(P34_SCENES.map(s=>{
  const clozeAt=s.reading.findIndex(line=>line[0].includes(s.word[0]));
  const lineIndex=clozeAt<0?0:clozeAt;
  const word=clozeAt<0?[...s.reading[0][0]][0]:s.word[0];
- const alternatives=['因为','老师','明天','朋友','一个','正在','没有','学校'].filter(w=>w!==word&&
+ const alternatives=(contrastDistractors[word]||['因为','老师','明天','朋友','一个','正在','没有','学校']).filter(w=>w!==word&&
   !s.reading[lineIndex][0].includes(w)).slice(0,3);
  return Object.freeze([
   s.title,s.theme,'P34 reading: '+s.teach,s.level,s.reading,questions,
