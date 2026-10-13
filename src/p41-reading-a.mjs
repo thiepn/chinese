@@ -20,7 +20,7 @@ Q|detail|What closing time was only proposed in the first notice?|Ten in the eve
 Q|reason|Why did Xiaolin ask a staff member before relying on the time?|The notice and website disagreed.|She had lost her library card.|Her exam had been canceled.|The library had moved to another campus.|7|The conflict between messages led to a request for clarification.
 Q|sequence|What happened after the staff explained the proposal was still under discussion?|The university later issued an official notice confirming nine o'clock.|The students immediately used the proposed ten o'clock hours.|The library closed permanently.|The university canceled all evening study.|12|The confirmed time was nine o'clock, not the earlier proposed ten.
 
-A volunteer project with two plans|Community & collaboration|connected project report|g100,g105,g108,g114|合作~hézuò~cooperate|A team compares two methods while keeping proposals distinct from completed action.|Agreement to discuss an idea is not agreement to implement it.
+A volunteer project with two plans|Community & collaboration|connected project report|g100,g105,g108,g114|决定~juédìng~decide|A team compares two methods while keeping proposals distinct from completed action.|Agreement to discuss an idea is not agreement to implement it.
 L|社区的小组打算在星期六帮助老人整理院子。|Shèqū de xiǎozǔ dǎsuàn zài Xīngqīliù bāngzhù lǎorén zhěnglǐ yuànzi.|A neighborhood group planned to help older residents tidy their yards on Saturday.
 L|组长先向大家介绍了活动的目的。|Zǔzhǎng xiān xiàng dàjiā jièshào le huódòng de mùdì.|The leader first introduced the purpose of the activity to everyone.
 L|为了减少浪费，他们希望尽量使用已经有的工具。|Wèile jiǎnshǎo làngfèi, tāmen xīwàng jǐnliàng shǐyòng yǐjīng yǒu de gōngjù.|To reduce waste, they hoped to use tools they already had.
