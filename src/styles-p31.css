@@ -86,3 +86,7 @@
 @media(max-width:480px){.p31-course-library,.p31-vocabulary-shelf{padding:13px}.p31-theme{flex:1 1 40%;text-align:center}.p31-character-grid{grid-template-columns:1fr}.p31-related-words,.p31-rel-sentences{grid-template-columns:1fr}.p31-word{padding:11px}.p31-word>p{min-height:0}.p31-lesson-kicker{display:block}.p31-lesson-kicker span{display:block;margin-bottom:6px}.p31-overview-actions>.button{flex:1 1 100%}.p31-shelf-head>.button{flex:1 1 100%}.p31-practice-bridge .button-row>.button{flex:1 1 100%}}
 @media(prefers-reduced-motion:reduce){.p31-character-card,.p31-context-link,.p31-theme{transition:none}}
 .p31-writing-feedback{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}.p31-writing-feedback strong{display:block;margin:12px 0 4px;font-size:12px;color:var(--accent)}.p31-writing-feedback p{font-size:13px;line-height:1.65;color:var(--sub)}
+
+/* P31 intentional study-status segmentation, matched to the compact square lesson shelf. */
+.p31-status-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 14px;padding-top:12px;border-top:1px solid var(--line)}
+.p31-empty-status{margin:0;padding:17px 12px;border:1px dashed var(--line);font-size:13px;color:var(--sub);grid-column:1/-1}
