@@ -782,7 +782,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='c9-find-example'){
   const kind=button.dataset.kind,query=button.dataset.query;
   if(!FIND_CATEGORIES.some(([key])=>key===kind)||typeof query!=='string'||query.length>120)return;
-  const source=COURSE_INDEX.some(x=>x.kind===kind&&(x.title===query||x.title.includes(query)));
+  const source=courseSearch({query,kind,saved:false,state}).some(x=>x.kind===kind&&(x.title===query||x.title.includes(query)));
   if(!source)return alertUser('This original source is unavailable.','error');
   p30Query=query;p30Kind=kind;p30Saved=false;p30Page=0;render();
   const input=root.querySelector('#p30-query');input?.scrollIntoView({block:'nearest',behavior:'auto'});
