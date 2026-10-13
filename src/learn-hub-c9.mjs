@@ -47,7 +47,7 @@ export function renderC9LessonBrowser(state,ui,act,esc){
  const groups=lessonGroups();
  const filter=groups.filter(g=>unitMatches(g,ui.query,ui.unit,learned,ui.status));
  const lessons=filter.flatMap(g=>g.lessons.filter(l=>lessonMatch(l,ui.query,g.name)
-   &&(ui.status==='all'||(ui.status==='introduced'?learned.has(l.id):!learned.has(l.id)))
+   &&(ui.status==='all'||(ui.status==='introduced'?learned.has(l.id):!learned.has(l.id))))
    .map(l=>({lesson:l,unit:g})));
  const pageSize=12;
  const pages=Math.max(1,Math.ceil(lessons.length/pageSize));
