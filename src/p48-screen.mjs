@@ -116,7 +116,7 @@ export function p48Lesson(p,state,act,esc,{stage='compare',translations=false,tr
  '<div class="p48-questions"><h4>Original Reader question '+(readingIndex+1)+' / '+p.questions.length+'</h4>'+
  '<p>'+esc(rq?.prompt||'')+'</p>'+
  (readingFeedback?'<div class="p48-feedback" role="status"><strong>'+(
- readingFeedback.correct?(readingFeedback.assisted?'Correct with assistance':'Correct native Reader answer'):
+ readingFeedback.revealed?'Reference revealed — no Reader answer submitted':readingFeedback.correct?(readingFeedback.assisted?'Correct with assistance':'Correct native Reader answer'):
  'The source does not support that selection')+'</strong>'+
  '<p>Reference answer: '+esc(rq.answer)+'</p>'+
  '<p><strong>Evidence line '+(rq.evidence+1)+'</strong></p><p lang="zh-Hans">'+esc(p.lines[rq.evidence]?.hanzi||'')+'</p>'+
@@ -145,7 +145,7 @@ export function p48Lesson(p,state,act,esc,{stage='compare',translations=false,tr
  '<div class="p48-questions"><h4>Native spoken-evidence decision '+(listeningIndex+1)+' / '+(d?.questions.length||0)+'</h4>'+
  '<p>'+esc(lq?.prompt||'')+'</p>'+
  (listeningFeedback?'<div class="p48-feedback" role="status"><strong>'+(
- listeningFeedback.correct?(listeningFeedback.assisted?'Correct with assistance':'Correct native Dialogue answer'):
+ listeningFeedback.revealed?'Reference revealed — no Dialogue answer submitted':listeningFeedback.correct?(listeningFeedback.assisted?'Correct with assistance':'Correct native Dialogue answer'):
  'That interpretation is not supported')+'</strong>'+
  '<p>Reference answer: '+esc(lq.answer)+'</p>'+
  '<p><strong>Evidence turn '+(lq.evidenceIndex+1)+'</strong></p>'+
@@ -186,6 +186,7 @@ export function p48Lesson(p,state,act,esc,{stage='compare',translations=false,tr
  '<p>'+e.reading.length+' Reader attempts; '+e.listening.length+' Dialogue attempts; '+
  e.writing.length+' exact native Sentence Workshop attempts. These are distinct from free argumentation.</p>'+
  '<div class="p48-actions">'+act('p48-review','Original due-card Review →','button outline')+
+ (p.priorCase?act(p.priorCase.startsWith('p46')?'p46-open':'p47-open','Earlier source-matched '+esc(p.priorCase)+' →','button outline','data-id="'+p.priorCase+'"'):'')+
  act('p47-enter','P47 contextual reading →','button outline')+
  act('p46-enter','P46 upper-intermediate foundations →','button outline')+
  act('p45-enter','P45 cumulative review →','button outline')+
