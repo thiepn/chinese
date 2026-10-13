@@ -90,6 +90,11 @@ let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeed
 let p33Theme='all',p33Query='',p33Branch=null;
 let p34ShadowLine=0,p34TranscriptViewed=false;
 let p37Theme='all',p37Query='',p37Page=0,p37BrowseOpen=false,p37Branch=null,p37Turn=0,p37TranscriptViewed=false;
+const p37ViewedTranscripts=new Set();
+function p37RememberPosition(){
+ const scene=findDialogue(dialogueId)?.p37;if(!scene)return;
+ location.hash='#/dialogues/'+scene.id+'?turn='+p37Turn+(p37Branch===null?'':'&branch='+p37Branch);
+}
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
@@ -132,9 +137,16 @@ function onboardingPanel(){const p=state.placement, suggestion=placementSuggesti
 }
 function studyPathPanel(){const items=lessonPath(state,{limit:4}),units=unitOverview(state);return `<section class="simple-panel pathway-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR NEXT STEPS</p><h2>Personal learning path</h2></div><span class="muted">Transparent suggestions · not a proficiency level</span></div><div class="pathway-steps">${items.map((item,i)=>`<button type="button" class="pathway-step" data-action="open-lesson" data-id="${esc(item.id)}"><span class="pathway-rank">${i+1}</span><span lang="zh-Hans" class="pathway-hanzi">${esc(item.lesson.hanzi)}</span><span><strong>${esc(item.lesson.meaning)}</strong><small>${esc(item.kind==='new'?'Introduce next':'Revisit')} · ${esc(item.reason)}</small></span><span aria-hidden="true">→</span></button>`).join('')}</div><p class="muted">${units.filter(u=>u.status==='Introduced').length} of ${units.length} demo units fully introduced. Review errors are not counted as completed lessons.</p></section>`;}
 function renderDialogues(){const routeScene=(location.hash.match(/^#\/dialogues\/(p37-\d{2})/)||[])[1];
- if(routeScene){const target=DIALOGUES.find(x=>x.p37?.id===routeScene);if(target&&dialogueId!==target.id){
-  dialogueId=target.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;p37TranscriptViewed=false;
-  p37Turn=0;p37Branch=null;missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
+ if(routeScene){const target=DIALOGUES.find(x=>x.p37?.id===routeScene);if(target){
+  if(dialogueId!==target.id){
+   dialogueId=target.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
+   missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
+  }
+  const params=new URLSearchParams(location.hash.split('?')[1]||'');
+  const position=Number(params.get('turn')||0),choice=params.get('branch');
+  p37Turn=Number.isInteger(position)?Math.max(0,Math.min(7,position)):0;
+  p37Branch=choice==='0'||choice==='1'?Number(choice):null;
+  p37TranscriptViewed=p37ViewedTranscripts.has(routeScene);
  }}
  const d=findDialogue(dialogueId)||DIALOGUES[0],q=dialogueQuestion(d.id,dialogueStep),stats=dialogueSummary(state);return `${title('CONVERSATION LAB','Understand everyday Chinese in context.','Read original multi-turn dialogues, choose responses, listen optionally and practise independent production.')}${gated()}<details class="p37-catalog" ${d.p37||p37BrowseOpen?'open':''}><summary>P37 · Browse 30 practical conversations</summary>${p37Overview(state,action,esc,{selected:d.p37?.id,theme:p37Theme,query:p37Query,page:p37Page})}</details>${p37Teaching(d,p37Branch,action,esc,{turn:p37Turn,assisted:p37TranscriptViewed||dialogueSupport})}<details class="p34-catalog" ${d.p34?'open':''}><summary>Open P34 listening-first course · 25 situations</summary>${p34Overview(state,action,esc)}</details>${p34ListeningPanel(d,state,action,esc,{line:p34ShadowLine})}<details class="p33-browser" ${d.p33?'open':''}><summary>Browse ${P33_SCENARIOS.length} everyday communication situations</summary>${p33SceneShelf(state,d.p33?.id,action,esc,{theme:p33Theme,query:p33Query})}</details>
 <section class="simple-panel dialogue-top"><label for="dialogue-choice">Choose a dialogue<select id="dialogue-choice">${DIALOGUES.map((item,i)=>`<option value="${item.id}" ${d.id===item.id?'selected':''}>${i+1}. ${esc(item.title)}</option>`).join('')}</select></label><div class="stats-grid">${stat(stats.practiced,'Conversations practiced')}${stat(stats.independent,'Independent correct answers')}${stat(stats.attempts,'Supplementary responses')}</div></section><div class="content-continuation" aria-label="Conversation navigation">${action('dialogue-prev','← Previous conversation','button outline small')}${action('dialogue-next-context','Next conversation →','button outline small')}</div>
@@ -669,7 +681,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  const scene=findP37Scene(id),target=scene&&DIALOGUES.find(d=>d.p37?.id===id);
  if(!target)return alertUser('The authored conversation is unavailable.','error');
  dialogueId=target.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
- p37Turn=0;p37Branch=null;p37TranscriptViewed=false;p37BrowseOpen=true;
+ p37Turn=0;p37Branch=null;p37TranscriptViewed=p37ViewedTranscripts.has(scene.id);p37BrowseOpen=true;
  p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;
  missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
  location.hash='#/dialogues/'+scene.id;render();
@@ -694,12 +706,12 @@ if(name==='p37-page-prev'||name==='p37-page-next'){
 }
 if(name==='p37-branch'){
  const i=Number(button.dataset.index);if(!findDialogue(dialogueId)?.p37||![0,1].includes(i))return;
- p37Branch=i;return render();
+ p37Branch=i;p37RememberPosition();return render();
 }
-if(name==='p37-branch-clear'){p37Branch=null;return render();}
+if(name==='p37-branch-clear'){p37Branch=null;p37RememberPosition();return render();}
 if(name==='p37-turn-prev'||name==='p37-turn-next'){
  if(!findDialogue(dialogueId)?.p37)return;
- p37Turn=Math.max(0,Math.min(7,p37Turn+(name==='p37-turn-next'?1:-1)));return render();
+ p37Turn=Math.max(0,Math.min(7,p37Turn+(name==='p37-turn-next'?1:-1)));p37RememberPosition();return render();
 }
 if(name==='p37-slow-all'||name==='p37-slow-turn'){
  const scene=findDialogue(dialogueId)?.p37;if(!scene)return;
@@ -1340,7 +1352,7 @@ if(name==='p33-open-scenario'){
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
  if(name==='open-dialogues')return go('dialogues');
  if(name==='open-wordbook-practice'){wordbookFeedback=null;wordbookTyped='';return go('wordbook');}
- if(name==='dialogue-support'){dialogueSupport=!dialogueSupport;if(dialogueSupport&&findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;if(dialogueSupport&&findDialogue(dialogueId)?.p37)p37TranscriptViewed=true;if(dialogueSupport&&missionActive)missionSupport=true;return render();}
+ if(name==='dialogue-support'){dialogueSupport=!dialogueSupport;if(dialogueSupport&&findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;if(dialogueSupport&&findDialogue(dialogueId)?.p37){p37TranscriptViewed=true;p37ViewedTranscripts.add(findDialogue(dialogueId).p37.id);}if(dialogueSupport&&missionActive)missionSupport=true;return render();}
  if(name==='dialogue-prev'||name==='dialogue-next-context'){p37Turn=0;p37Branch=null;p37TranscriptViewed=false;location.hash='#/dialogues';p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;const step=name==='dialogue-prev'?-1:1;dialogueId=DIALOGUES[(DIALOGUES.findIndex(d=>d.id===dialogueId)+step+DIALOGUES.length)%DIALOGUES.length].id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;return render();}
  if(name==='dialogue-next'){p37Turn=0;p37Branch=null;p34ShadowLine=0;p33Branch=null;missionActive=false;missionFeedback=null;const d=findDialogue(dialogueId);if(dialogueStep+1<d.questions.length){dialogueStep++;}else{dialogueId=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length].id;dialogueStep=0;p34TranscriptViewed=false;p37TranscriptViewed=false;location.hash='#/dialogues';}dialogueFeedback=null;dialogueSupport=false;return render();}
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
