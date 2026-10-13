@@ -726,6 +726,12 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p43-discard'){p43Pending='discard';return render();}
  if(name==='p43-switch-confirm'){
   if(!p43Pending)return;
+  if(p43Pending.startsWith('restore:')){
+   const i=Number(p43Pending.slice(8));
+   if(!Number.isInteger(i)||i<0||i>=p43Revisions.length){p43Pending='';return render();}
+   p43Draft=p43Revisions[i];p43Reviewed=[];p43Pending='';
+   p43Step='revise';render();root.querySelector('#p43-draft')?.focus();return;
+  }
   const selected=p43Pending==='discard'?p43UnitId:p43Pending;
   if(!findP43Unit(selected))return;
   p43Draft='';p43Revisions=[];p43Version=-1;p43Reviewed=[];
@@ -758,6 +764,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p43-restore'){
   const i=Number(button.dataset.version);
   if(!Number.isInteger(i)||i<0||i>=p43Revisions.length)return;
+  if(p43Draft.trim()&&p43Draft!==p43Revisions[i]){
+   p43Pending='restore:'+i;return render();
+  }
   p43Draft=p43Revisions[i];p43Reviewed=[];
   render();root.querySelector('#p43-draft')?.focus();return;
  }
