@@ -60,7 +60,7 @@ function lineOf(entry){
  };
  return null;
 }
-function sourceLines(source){
+export function c9AdvancedSourceLines(source){
  const fields=['lines','turns','examples','brief','models','responses'];
  for(const field of fields){
   const rows=safeRows(source?.[field]).map(lineOf).filter(x=>x?.hanzi);
@@ -76,7 +76,7 @@ function plainFields(source){
   source?.meaning,source?.goal,source?.teaching,source?.misconception,source?.pitfall,
   source?.contrast,source?.explanation,source?.sourceClaim,
   typeof vocab==='object'?vocab.hanzi:vocab,
-  ...sourceLines(source).slice(0,22).flatMap(x=>[x.hanzi,x.pinyin,x.english])
+  ...c9AdvancedSourceLines(source).slice(0,22).flatMap(x=>[x.hanzi,x.pinyin,x.english])
  ].filter(Boolean).join(' ').toLocaleLowerCase();
 }
 function titleOf(source,phase){
@@ -136,7 +136,7 @@ export function renderC9AdvancedWorkspace(state,ui,act,esc){
  const list=rows.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
  const selected=phase.records.find(r=>r.id===ui.selected)||null;
  const activeLinks=selected?c9AdvancedNativeLinks(phase,selected):[];
- const lineRows=selected?sourceLines(selected):[];
+ const lineRows=selected?c9AdvancedSourceLines(selected):[];
  const live=selected?sourceStatus(state,activeLinks):[];
  const intro='<header class="c9-advanced-intro"><div><p class="c9-eyebrow">C9 UI + ORIGINAL P35–P51 CURRICULUM</p>'+
  '<h1>Chinese across real contexts</h1>'+
@@ -158,7 +158,7 @@ export function renderC9AdvancedWorkspace(state,ui,act,esc){
  '<span>'+rows.length+' matching source'+(rows.length===1?'':'s')+'</span>'+
  '<span>Page '+(page+1)+' of '+pages+'</span></div>'+
  '<div class="c9-advanced-source-grid">'+(list.length?list.map(source=>{
-  const links=c9AdvancedNativeLinks(phase,source),evidence=sourceStatus(state,links),lines=sourceLines(source),first=lines[0];
+  const links=c9AdvancedNativeLinks(phase,source),evidence=sourceStatus(state,links),lines=c9AdvancedSourceLines(source),first=lines[0];
   return act('c9-advanced-source','<span class="c9-eyebrow">ORIGINAL P'+phase.phase+' / '+esc(source.id)+'</span>'+
    '<strong'+(source.hanzi?' lang="zh-Hans"':'')+'>'+esc(titleOf(source,phase.phase))+'</strong>'+
    (first?'<span class="c9-advanced-source-line" lang="zh-Hans">'+esc(first.hanzi)+'</span>':'')+
