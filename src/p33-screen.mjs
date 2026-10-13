@@ -16,7 +16,7 @@ export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',com
  const q=String(query).trim().toLocaleLowerCase();
  const candidates=P33_SCENARIOS.filter(s=>theme==='all'||s.theme===theme);
  const matches=candidates.filter(s=>!q||
- [s.title,s.theme,s.goal,s.pragmatics,...s.vocabulary.flatMap(v=>[v.hanzi,v.pinyin,v.english])].join(' ').toLocaleLowerCase().includes(q)));
+ [s.title,s.theme,s.goal,s.pragmatics,...s.vocabulary.flatMap(v=>[v.hanzi,v.pinyin,v.english])].join(' ').toLocaleLowerCase().includes(q));
  const current=selectedId&&findP33Scenario(selectedId);
  const completed=P33_SCENARIOS.filter(s=>attempted(state,s.id)>0).length;
  const next=P33_SCENARIOS.find(s=>!attempted(state,s.id))||P33_SCENARIOS[0];
