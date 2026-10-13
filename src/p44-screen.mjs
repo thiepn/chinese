@@ -2,6 +2,7 @@
  * scheduler remain the only assessors. All phase selection is tab/UI context.
  */
 import {P44_SCENARIOS,P44_PHASES,p44Evidence} from './p44-course.mjs';
+import {P45_TRANSFERS} from './p45-course.mjs';
 import {DIALOGUES,dialogueQuestion} from './dialogues.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {P39_CHARACTER_GUIDES} from './p39-foundations.mjs';
@@ -50,6 +51,7 @@ export function p44Overview(state,act,esc,{compact=false,selected='',query='',pa
 export function p44Journey(s,state,act,esc,{phase='read',sourceHelp=false,transcriptHelp=false,assisted=false,questionIndex=0,feedback=null}={}){
  if(!s)return '';
  const native=dialogueFor(s),question=dialogueQuestion(native?.id,questionIndex);
+ const transfers=P45_TRANSFERS.filter(t=>t.sourceId===s.id);
  const sourceEvidence=feedback?p44Evidence(s.id,questionIndex):null;
  const grammar=s.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  const chars=P39_CHARACTER_GUIDES.filter(g=>s.brief.some(l=>l.hanzi.includes(g.hanzi))).slice(0,5);
@@ -116,6 +118,7 @@ export function p44Journey(s,state,act,esc,{phase='read',sourceHelp=false,transc
  '<div class="p44-actions">'+act('p44-oral-model','Hear a source-backed spoken model · assisted','button outline')+
  act('p44-next-case','Continue to another scenario →','button primary')+'</div></article>':'')+
  '<aside class="p44-connect"><h3>Source-linked course connections</h3><div class="p44-actions">'+
+ transfers.map(t=>act('p45-open','Cumulative transfer '+t.sequence+': '+esc(t.title)+' →','button outline small','data-id="'+t.id+'"')).join('')+
  act('p41-open','P41 · Original reading →','button outline small','data-id="'+s.readingId+'"')+
  act('p42-open','P42 · Spoken practice →','button outline small','data-id="'+s.dialogueId+'"')+
  act('p43-open','P43 · Independent composition →','button outline small','data-id="'+s.writingId+'"')+'</div>'+

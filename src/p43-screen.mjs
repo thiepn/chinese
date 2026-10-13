@@ -4,6 +4,7 @@
  */
 import {P43_UNITS,P43_REVIEW_CRITERIA} from './p43-course.mjs';
 import {P44_SCENARIOS} from './p44-course.mjs';
+import {P45_TRANSFERS} from './p45-course.mjs';
 import {P41_PASSAGES} from './p41-readings.mjs';
 import {P42_SCENES} from './p42-course.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
@@ -33,6 +34,7 @@ export function p43Overview(act,esc,{compact=false,selected='',filter='all',quer
 export function p43ProductionStudio(u,act,esc,{draft='',revisions=[],compare=-1,reveal=false,step='compose',rubric=[],pending='',showEvidence=false}={}){
  if(!u)return '<p class="muted">Select an authored production unit.</p>';
  const applied=P44_SCENARIOS.find(s=>s.writingId===u.id);
+ const cumulative=P45_TRANSFERS.find(s=>s.sourceCase?.writingId===u.id);
  const passage=P41_PASSAGES.find(p=>p.id===u.readingId);
  const dialogue=P42_SCENES.find(d=>d.id===u.dialogueId);
  const patterns=u.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
@@ -99,7 +101,8 @@ export function p43ProductionStudio(u,act,esc,{draft='',revisions=[],compare=-1,
  '<div class="p43-native"><h4>Optional native exact-form practice</h4><p>These two fixed sentences are assessed only as exact reconstruction by the original Sentence Workshop. They are not an evaluation of your essay.</p>'+
  act('p43-workshop','Reconstruct the key sentence →','button outline small','data-line="4"')+
  act('p43-workshop','Reconstruct the conclusion →','button outline small','data-line="9"')+
- (applied?act('p44-open','Apply this writing in an integrated scenario →','button outline small','data-id="'+applied.id+'"'):'')+'</div>'+
+ (applied?act('p44-open','Apply this writing in an integrated scenario →','button outline small','data-id="'+applied.id+'"'):'')+
+ (cumulative?act('p45-open','Independent evidence transfer →','button outline small','data-id="'+cumulative.id+'"'):'')+'</div>'+
  '<div class="p43-crosslinks"><h4>Source-backed language links</h4>'+
  (passage?act('p41-open','Original P41 reading →','button outline small','data-id="'+passage.id+'"'):'')+
  (dialogue?act('p42-open','Original P42 dialogue →','button outline small','data-id="'+dialogue.id+'"'):'')+

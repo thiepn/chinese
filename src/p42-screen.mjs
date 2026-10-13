@@ -10,6 +10,7 @@ import {P39_CHARACTER_GUIDES} from './p39-foundations.mjs';
 import {P41_PASSAGES} from './p41-readings.mjs';
 import {P43_UNITS} from './p43-course.mjs';
 import {P44_SCENARIOS} from './p44-course.mjs';
+import {P45_TRANSFERS} from './p45-course.mjs';
 const dialogueFor=s=>DIALOGUES.find(d=>d.p42?.id===s.id);
 export function p42Next(state,after=null){
  const index=P42_SCENES.findIndex(s=>s.id===after);
@@ -60,6 +61,7 @@ export function p42ListeningPanel(dialogue,act,esc,{turn=0,revealed=false,feedba
   p.lines.some(line=>line.hanzi.includes(s.vocabulary.hanzi))).slice(0,3);
  const writing=P43_UNITS.find(u=>u.dialogueId===s.id);
  const applied=P44_SCENARIOS.find(u=>u.dialogueId===s.id);
+ const cumulative=P45_TRANSFERS.find(t=>t.sourceCase?.dialogueId===s.id);
  const whole=s.turns.map(t=>t[1]).join(' ');
  return '<section class="p42-listening" aria-label="P42 listening-first conversation">'+
  '<div class="p42-intro"><div><p class="eyebrow">P42 · SITUATION '+s.sequence+' / '+P42_SCENES.length+' · '+esc(s.theme)+'</p>'+
@@ -86,6 +88,7 @@ export function p42ListeningPanel(dialogue,act,esc,{turn=0,revealed=false,feedba
  act('p42-write','Reconstruct the final response →','button outline','data-id="'+s.id+'" data-turn="7"')+
  (writing?act('p43-open','Prepare an independent paragraph and oral response →','button outline','data-id="'+writing.id+'"'):'')+
  (applied?act('p44-open','Apply this conversation across five skills →','button outline','data-id="'+applied.id+'"'):'')+
+ (cumulative?act('p45-open','Apply this conversation independently in P45 →','button outline','data-id="'+cumulative.id+'"'):'')+
  act('mission-start','Three-stage comprehension mission →','button outline')+
  act('p42-next','Next listening situation →','button outline')+'</div></div>'+
  '<div class="p42-links"><strong>Continue with authorized P39 / P40 material</strong>'+
