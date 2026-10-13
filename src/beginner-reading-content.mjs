@@ -31,9 +31,9 @@ export const BEGINNER_READING_ROWS=Object.freeze(raw.map((r,i)=>{
   bridge,writing:Object.freeze({prompt:writing[0],hanzi:writing[1],pinyin:writing[2],
    english:writing[3],explanation:writing[4]}),
   paragraphs:Object.freeze(i>=p34End?[
-  {start:0,end:2,title:'Situation and first exchange'},
-  {start:3,end:6,title:'Decision and supporting details'},
-  {start:7,end:9,title:'Outcome and interpretation'}
+  {start:0,end:3,title:'Context and situation'},
+  {start:4,end:8,title:'Development and spoken evidence'},
+  {start:9,end:11,title:'Decision and conclusion'}
  ]:[{start:0,end:2,title:'Read the situation'},{start:3,end:5,title:'Follow what happens next'}]),
  p38:i>=p34End?P38_PASSAGES[i-p34End]:null
  });
