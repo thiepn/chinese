@@ -1,0 +1,52 @@
+/* P40 native intermediate grammar and meaning repair. Flat responsive layout,
+   system typography and existing dark/light design tokens; no decorative gradients. */
+.p40-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,280px);gap:17px;border:1px solid var(--line);border-top:3px solid var(--accent);padding:clamp(14px,2vw,23px);margin:16px 0;background:var(--surface);min-width:0}
+.p40-overview h2{font-size:clamp(20px,2.2vw,28px);line-height:1.25;margin:6px 0 12px}
+.p40-overview p:not(.eyebrow){font-size:13px;line-height:1.7;color:var(--sub);max-width:780px}
+.p40-stats{display:flex;gap:23px;flex-wrap:wrap;margin-top:17px}
+.p40-stats span{display:flex;flex-direction:column;color:var(--sub);font-size:11px;gap:4px}
+.p40-stats strong{color:var(--ink);font-size:22px;font-variant-numeric:tabular-nums}
+.p40-actions{display:flex;flex-direction:column;justify-content:center;gap:9px}
+.p40-actions>.button{min-height:42px;white-space:normal;font-size:12px}
+.p40-catalog{display:grid;gap:10px;margin:18px 0}
+.p40-unit{border:1px solid var(--line);padding:18px;background:var(--surface);min-width:0}
+.p40-unit h3{font-size:18px;margin:0 0 7px}
+.p40-unit>p{font-size:13px;line-height:1.55;color:var(--sub);margin:0 0 7px}
+.p40-unit>small{color:var(--sub);font-size:11px}
+.p40-lessons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+.p40-lesson-row{border:1px solid var(--line);background:var(--background);color:var(--ink);font:inherit;padding:11px;text-align:left;cursor:pointer;display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:10px;align-items:start}
+.p40-lesson-row:hover,.p40-lesson-row:focus-visible{border-color:var(--accent)}
+.p40-lesson-row>span{grid-row:span 3;color:var(--accent);font-weight:700;font-size:12px}
+.p40-lesson-row>strong{font-size:13px;line-height:1.4}
+.p40-lesson-row>small{font-size:11px;color:var(--sub);margin:4px 0;line-height:1.4;min-width:0;overflow-wrap:anywhere}
+.p40-lesson-row>em{font-style:normal;color:var(--sub);font-size:10px}
+.p40-teaching{border:1px solid var(--line);padding:clamp(13px,2vw,23px);background:var(--surface);margin:22px 0}
+.p40-teaching-head h3{font-size:18px;margin:6px 0 10px}
+.p40-teaching-head p:not(.eyebrow){font-size:13px;line-height:1.65;color:var(--sub)}
+.p40-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
+.p40-comparison>div{border:1px solid var(--line);background:var(--background);padding:14px;min-width:0}
+.p40-comparison strong{font-size:10px;letter-spacing:.06em;color:var(--accent);display:block}
+.p40-comparison p[lang]{font-size:19px;line-height:1.7;font-weight:600;color:var(--ink)}
+.p40-comparison p:not([lang]){font-size:12px;line-height:1.6;color:var(--sub)}
+.p40-comparison small{color:var(--accent);font-size:12px;line-height:1.5}
+.p40-explanation{border-left:3px solid var(--accent);padding:12px 16px;background:var(--soft);margin-bottom:16px}
+.p40-explanation h4{font-size:13px;margin:5px 0 6px}
+.p40-explanation p{color:var(--ink);font-size:12px;line-height:1.7;margin:0 0 12px}
+.p40-teaching .button-row{display:flex;flex-wrap:wrap;gap:8px}
+.p40-teaching .button-row>.button{white-space:normal}
+.p40-source-links{border-top:1px solid var(--line);padding-top:18px;margin-top:20px}
+.p40-source-links h4{font-size:14px;margin:0 0 13px}
+.p40-linkrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.p40-linkrow>strong{font-size:11px;width:100%;color:var(--sub)}
+.p40-sentence-link{display:block;text-align:left;color:var(--ink);padding:9px;border:1px solid var(--line);background:var(--background);cursor:pointer;min-width:0;max-width:100%;font:inherit}
+.p40-sentence-link:hover{border-color:var(--accent)}
+.p40-sentence-link span{font-size:14px;line-height:1.55;display:block}
+.p40-sentence-link small{display:block;color:var(--sub);font-size:11px;line-height:1.4;margin-top:3px}
+.p40-caveat{font-size:11px;color:var(--sub);padding-top:13px;margin:16px 0 0;border-top:1px solid var(--line);line-height:1.6}
+.p40-grammar-catalog{border:1px solid var(--line);background:var(--surface);margin:16px 0}
+.p40-grammar-catalog>summary{padding:15px;cursor:pointer;font-weight:700;font-size:13px}
+.p40-grammar-catalog[open]>summary{border-bottom:1px solid var(--line)}
+.p40-grammar-catalog>.p40-catalog{padding:10px;margin:0}
+@media(max-width:900px){.p40-overview{grid-template-columns:1fr}.p40-actions{flex-direction:row;flex-wrap:wrap}.p40-actions>.button{flex:1 1 180px}}
+@media(max-width:700px){.p40-lessons,.p40-comparison{grid-template-columns:1fr}.p40-unit,.p40-teaching{padding:13px}.p40-stats{gap:14px}.p40-linkrow>.button{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.p40-overview *,.p40-teaching *,.p40-catalog *{scroll-behavior:auto!important;transition:none!important}}
