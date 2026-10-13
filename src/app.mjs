@@ -757,6 +757,76 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+ if(name==='p45-enter'||name==='p45-return'||name==='p45-open'||name==='p45-next'){
+  let target;
+  if(name==='p45-open')target=findP45Transfer(id);
+  else if(name==='p45-return')target=findP45Transfer(p45CaseId);
+  else if(name==='p45-next')target=p45Recommendations(state).find(x=>x.caseItem.id!==p45CaseId)?.caseItem;
+  else target=findP45Transfer(p45CaseId)||p45Recommendations(state)[0]?.caseItem;
+  if(!target)return alertUser('No original P45 cumulative task is available.','error');
+  if(name!=='p45-return'){
+   p45CaseId=target.id;p45Stage='read';p45SourceHelp=false;p45Transcript=false;
+   p45Question=0;p45Feedback=null;
+  }
+  location.hash='#/cumulative/'+target.id+'?stage='+p45Stage;
+  render();root.querySelector('.p45-learning')?.scrollIntoView({block:'start'});
+  return;
+ }
+ if(name==='p45-filter'){
+  if(!['all','needs','new','independent'].includes(button.dataset.filter))return;
+  p45Filter=button.dataset.filter;return render();
+ }
+ if(name==='p45-stage'){
+  const stage=button.dataset.stage;
+  if(!findP45Transfer(p45CaseId)||!['read','listen','check','produce'].includes(stage))return;
+  p45Stage=stage;p45Feedback=null;
+  location.hash='#/cumulative/'+p45CaseId+'?stage='+stage;return render();
+ }
+ if(name==='p45-source-help'||name==='p45-transcript'){
+  if(!findP45Transfer(p45CaseId))return;
+  if(name==='p45-source-help'){p45SourceHelp=!p45SourceHelp;if(p45SourceHelp)p45AssistedCases.add(p45CaseId);}
+  else{p45Transcript=!p45Transcript;if(p45Transcript)p45AssistedCases.add(p45CaseId);}
+  return render();
+ }
+ if(name==='p45-native-review'){return go('review');}
+ if(name==='p45-play'||name==='p45-play-slow'||name==='p45-turn-audio'||name==='p45-oral-model'){
+  const source=findP45Transfer(p45CaseId);if(!source)return;
+  const index=Number(button.dataset.index);
+  if(name==='p45-turn-audio'&&(!Number.isInteger(index)||index<0||index>=source.turns.length))return;
+  if(name==='p45-oral-model')p45AssistedCases.add(source.id);
+  const words=name==='p45-turn-audio'?source.turns[index].hanzi:
+    name==='p45-oral-model'?source.response.hanzi:source.turns.map(t=>t.hanzi).join(' ');
+  return speak(words,name==='p45-play-slow'?0.68:demoSpeechRate);
+ }
+ if(name==='p45-question-next'){
+  const c=findP45Transfer(p45CaseId);if(!c)return;
+  if(p45Question+1<c.questions.length){p45Question++;p45Feedback=null;return render();}
+  p45Stage='produce';p45Feedback=null;
+  location.hash='#/cumulative/'+c.id+'?stage=produce';return render();
+ }
+ if(name==='p45-question-retry'){p45Feedback=null;return render();}
+ if(name==='p45-answer'||name==='p45-reveal'){
+  const c=findP45Transfer(p45CaseId);if(!c||p45Feedback)return;
+  const original=DIALOGUES.find(d=>d.p45?.id===c.id);
+  const q=original&&dialogueQuestion(original.id,p45Question);if(!q)return;
+  const answer=name==='p45-reveal'?'':button.dataset.option||'';
+  if(name==='p45-answer'&&!q.options.includes(answer))return;
+  const assisted=p45AssistedCases.has(c.id)||name==='p45-reveal';
+  const eventId=globalThis.crypto?.randomUUID?.()||'p45-dialogue-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addDialogueEvent(old,{id:eventId,
+    dialogueId:original.id,question:p45Question,answer,assisted}));
+  if(saved){p45Feedback={correct:answer===q.answer,assisted};render();
+   root.querySelector('.p45-feedback')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p45-write'){
+  const c=findP45Transfer(p45CaseId);if(!c)return;
+  const index=SENTENCE_TASKS.findIndex(t=>t.id==='p45:'+c.id+':response');
+  if(index<0)return alertUser('The P45 response is not registered in the original Sentence Workshop.','error');
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+  sentenceSupport=p45AssistedCases.has(c.id);
+  return go('workshop');
+ }
  if(name==='p44-enter'||name==='p44-return'){
   const chosen=findP44Scenario(p44SessionId)||p44Next(state);
   p44SessionId=chosen.id;
