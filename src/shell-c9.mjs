@@ -39,9 +39,10 @@ export function syncC9Shell(route){
   if(mobile)mobile.textContent=label;
   const active=contextFor(route);
 
-  // Context highlights do not pretend that a parent link is the active page.
+  // Mobile has one selected destination: a direct page or More for secondary
+  // routes. Desktop may additionally highlight the Learn parent context.
   for(const a of document.querySelectorAll('.c9-mobile-nav [data-c9-primary]')){
-    a.classList.toggle('is-context',a.dataset.c9Primary===active&&a.dataset.route!==route);
+    a.classList.remove('is-context');
   }
   for(const a of document.querySelectorAll('.c9-sidebar [data-c9-context]')){
     a.classList.toggle('is-context',a.dataset.c9Context===active&&a.dataset.route!==route);
