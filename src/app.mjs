@@ -688,7 +688,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const node=root.querySelector('.p41-catalog');if(node){node.open=true;node.scrollIntoView({block:'start'});}
   return;
  }
- if(name==='p41-next-reading')return act({dataset:{action:'p41-open',id:p41Next(state).id}});
+ if(name==='p41-next-reading')return act({dataset:{action:'p41-open',id:p41Next(state,findStory(storyId)?.beginner?.p41?.id).id}});
  if(name==='p41-stage'){
   const v=button.dataset.stage;if(!['all','3','4','5'].includes(v))return;
   p41Stage=v;p41Page=0;p41BrowseOpen=true;return render();
