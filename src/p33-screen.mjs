@@ -14,7 +14,8 @@ const attempted=(state,id)=>new Set((state.dialogueEvents||[]).filter(e=>e.dialo
 const say=(act,esc,hanzi,text='Listen')=>act('speak',esc(text),'button outline small','data-text="'+esc(hanzi)+'"');
 export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',compact=false}={}){
  const q=String(query).trim().toLocaleLowerCase();
- const matches=P33_SCENARIOS.filter(s=>(theme==='all'||s.theme===theme)&&(!q||
+ const candidates=P33_SCENARIOS.filter(s=>theme==='all'||s.theme===theme);
+ const matches=candidates.filter(s=>!q||
  [s.title,s.theme,s.goal,s.pragmatics,...s.vocabulary.flatMap(v=>[v.hanzi,v.pinyin,v.english])].join(' ').toLocaleLowerCase().includes(q)));
  const current=selectedId&&findP33Scenario(selectedId);
  const completed=P33_SCENARIOS.filter(s=>attempted(state,s.id)>0).length;
@@ -28,14 +29,14 @@ export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',com
  ['all',...P33_THEMES].map(item=>act('p33-theme',esc(item==='all'?'All situations':item),'p33-theme-btn '+(theme===item?'active':''),'data-theme="'+esc(item)+'" aria-pressed="'+(theme===item)+'"')).join('')+'</div>'+
  '<label class="p33-search-label" for="p33-scenario-query">Find a situation or word</label>'+
  '<input id="p33-scenario-query" type="search" autocomplete="off" value="'+esc(query)+'" placeholder="Search restaurant, family, 学校...">':'')+
- '<div class="p33-scene-grid">'+(compact?P33_SCENARIOS.slice(0,4):matches).map(s=>{
+ '<div class="p33-scene-grid">'+(compact?P33_SCENARIOS.slice(0,4):candidates).map(s=>{
  const count=attempted(state,s.id),d=sceneDialogue(s.id);
  return '<button type="button" class="p33-scene-item '+(s.id===current?.id?'active':'')+
- '" data-action="p33-open-scenario" data-id="'+s.id+'" aria-current="'+(s.id===current?.id)+'"><span>'+
+ '" data-action="p33-open-scenario" data-id="'+s.id+'" aria-current="'+(s.id===current?.id)+'"'+(!compact&&!matches.includes(s)?' hidden':'')+'><span>'+
  String(s.sequence).padStart(2,'0')+' · '+esc(s.theme)+'</span><strong>'+esc(s.title)+'</strong>'+
  '<small>'+esc(s.goal)+'</small><em>'+s.turns.length+' dialogue turns · '+(count?count+' questions attempted':'Not attempted')+'</em></button>';
  }).join('')+'</div>'+
- (!compact&&matches.length===0?'<p class="p33-no-results">No scenes match this query. Change the category or search term.</p>':'')+
+ (!compact?'<p class="p33-no-results"'+(matches.length?' hidden':'')+'>No scenes match this query. Change the category or search term.</p>':'')+
  (compact?'<div class="p33-compact-footer">'+act('p33-browse','Browse all '+P33_SCENARIOS.length+' conversations →','button outline')+'</div>':'')+
  '</section>';
 }
