@@ -107,12 +107,34 @@ def main():
                 return "Original lesson introduction populated native Review"
             check("lesson to scheduled Review",review)
             def grade():
+                # Verify custody in the *original* learner object store rather
+                # than accepting a successful DOM reload as evidence.
+                read_events="""async () => new Promise((resolve,reject) => {
+                  const open=indexedDB.open('character-study-local-v2');
+                  open.onerror=()=>reject(open.error);
+                  open.onsuccess=()=>{
+                    const db=open.result,tx=db.transaction('learner','readonly');
+                    const req=tx.objectStore('learner').get('state');
+                    req.onerror=()=>reject(req.error);
+                    req.onsuccess=()=>{resolve(req.result?.events?.length||0);db.close();};
+                  };
+                })"""
+                before=page.evaluate(read_events)
                 page.locator('[data-action="reveal-review"]').click()
                 page.locator('[data-action="grade"][data-grade="0"]').click()
+                page.wait_for_function("""() =>
+                    document.getElementById('c9-interaction-announcement')
+                    ?.textContent?.includes('Native review grade saved')""")
+                after=page.evaluate(read_events)
+                if after!=before+1:
+                    raise AssertionError("Native event writer did not persist exactly one grade")
                 page.reload()
                 page.locator("#app-content").wait_for(state="visible")
+                persisted=page.evaluate(read_events)
+                if persisted!=after:
+                    raise AssertionError("Review grade was not retained after reload")
                 if errors: raise RuntimeError("; ".join(errors[:2]))
-                return "Native grade submitted, IndexedDB page reopened"
+                return "Original learner IndexedDB events: "+str(before)+" → "+str(persisted)
             check("native grading and reload",grade)
             ctx.close()
             ctx,page,errors=session()
