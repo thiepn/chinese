@@ -1,4 +1,5 @@
 import { DEMO_LESSONS, demoSearch, findLesson } from './demo-lessons.mjs';
+import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
 import { openDatabase, readState, updateState, resetState, backupDocument, importBackup, replaceState } from './study-storage.mjs';
@@ -108,7 +109,7 @@ document.addEventListener('keydown',e=>{
  if(target&&(target.closest('input,textarea,select,[contenteditable=true]')))return;
  e.preventDefault();go('find');root.querySelector('#p30-query')?.focus();
 });
-function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}document.title=`${current[0].toUpperCase()+current.slice(1)} | Character Study`;}
+function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}syncC9Shell(current);document.title=`${C9_ROUTE_LABELS[current]||'Home'} | THIEPN Chinese`;}
 function gated(){return `<div class="permission-note" role="note"><strong>Demo curriculum, not official HSK</strong><p>These ${DEMO_LESSONS.length} original Mandarin examples show how the app will work. They have not undergone independent linguistic review. The official 2025 HSK lists are not included or claimed as mastered.</p></div>`}
 
 function onboardingPanel(){const p=state.placement, suggestion=placementSuggestion(state);
@@ -1418,4 +1419,5 @@ async function setupSW(){if(!('serviceWorker'in navigator)||location.protocol===
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
  void setupSW();}
+connectC9Shell();
 init();
