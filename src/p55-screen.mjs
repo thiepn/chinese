@@ -6,6 +6,7 @@ import {P55_BRIEFS} from './p55-briefs.mjs';
 import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords} from './p55-study.mjs';
 import {dueCards} from './study.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
+import {p57TransferFor} from './p57-transfer-contexts.mjs';
 export const P55_STEPS=Object.freeze([
  {id:'sources',label:'Source comparison'},
  {id:'language',label:'Register and repair'},
@@ -77,7 +78,7 @@ export function p55Overview(state,act,esc,{selected='',query=''}={}){
 }
 export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,showModel=false,showSupport=false,showRepair=false}={}){
  if(!b)return '';
- const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id);
+ const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id),transfer=p57TransferFor(b.id);
  return '<section class="p55-study" aria-label="Original advanced Mandarin learning consolidation">'+
  '<header class="p55-heading"><p class="eyebrow">P55 · PAIRED LEARNING CONTEXT '+b.sequence+' / '+P55_BRIEFS.length+'</p>'+
  '<h2>'+esc(b.title)+'</h2><p>'+esc(b.retrieval)+'</p>'+
@@ -136,6 +137,8 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  ].map(([name,copy])=>'<article><h4>'+esc(name)+'</h4><p>'+esc(copy)+'</p></article>').join('')+'</div>'+
  '<p><strong>Specific unsupported claim to remove:</strong> '+esc(repair?.wrong||b.pitfall)+'</p>'+
  '<p><strong>Source-bound revision principle:</strong> '+esc(repair?.principle||b.pitfall)+'</p>'+
+ (transfer?'<p><strong>Unfamiliar context for draft three:</strong> '+esc(transfer.setting)+'</p>'+
+ '<p><strong>New independent revision task:</strong> '+esc(transfer.prompt)+'</p>':'')+
  '<p><strong>Fair counterargument:</strong> '+esc(b.objection)+'</p>'+
  '<div class="p55-actions">'+act('p55-copy-brief','Copy source-grounded writing task','button outline')+
  act('p55-p43','Open existing P43 independent writing →','button primary')+
@@ -149,6 +152,22 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  ['Reply · justified scope',b.pitfall],
  ['Close · register transfer','Give a formal conclusion and a shorter natural conversational explanation without exaggerating either one.']
  ].map(([name,copy])=>'<article><h4>'+esc(name)+'</h4><p>'+esc(copy)+'</p></article>').join('')+'</div>'+
+ (transfer?'<section class="p57-transfer" aria-label="New independent context transfer">'+
+ '<p class="eyebrow">P57 · DIFFERENT-DOMAIN INDEPENDENT TRANSFER</p>'+
+ '<h4>'+esc(transfer.title)+'</h4>'+
+ '<p>'+esc(transfer.setting)+'</p>'+
+ '<p><strong>Your fresh-source challenge:</strong> '+esc(transfer.prompt)+'</p>'+
+ '<div class="p57-transfer-lines">'+transfer.lines.map((line,i)=>'<article>'+
+ '<span>Original fictional source · sentence '+(i+1)+'</span>'+
+ '<p lang="zh-Hans">'+esc(line.hanzi)+'</p>'+
+ (showSupport?'<small>'+esc(line.pinyin)+'</small><p>'+esc(line.english)+'</p>':'')+
+ '</article>').join('')+'</div>'+
+ '<p><strong>Reasonable objection:</strong> '+esc(transfer.objection)+'</p>'+
+ '<p><strong>What must not transfer:</strong> '+esc(transfer.limit)+'</p>'+
+ '<div class="p55-actions">'+act('p55-support',showSupport?
+ 'Hide bilingual language support':'Reveal original Pinyin and English · assisted','button outline')+'</div>'+
+ '<p class="muted">Compose your own formal response and a natural spoken explanation before consulting earlier models. This activity is ungraded and stores no speaking attempt.</p>'+
+ '</section>':'')+
  '<p>Speak before revealing any authored sentence. Neither device text-to-speech nor your own response is assessed as independent speaking.</p>'+
  '<div class="p55-actions">'+act('p55-reveal-model',showModel?'Hide original bilingual model':
  'Compare an original evidence-qualified Mandarin model after speaking','button outline')+

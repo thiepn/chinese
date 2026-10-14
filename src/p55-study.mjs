@@ -106,7 +106,8 @@ export function p55BriefEvidence(state,brief){
    right.reading.length+right.listening.length+sentences.length};
 }
 function needsAttention(events){
- return events.length>0&&events.at(-1).correct===false;
+ // Assisted correctness is not independent evidence; suggest a fresh native attempt.
+ return events.length>0&&(events.at(-1).correct===false||events.at(-1).assisted===true);
 }
 export function p55Next(state,current=null){
  const start=Math.max(0,P55_BRIEFS.findIndex(x=>x.id===current));
