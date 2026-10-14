@@ -53,6 +53,7 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const offlineNotice='<div id="c9-home-offline-notice" class="c9-home-notice" role="status"'+(offline?'':' hidden')+'><strong>Offline</strong><span>'+
  (offlineShell==='ready'?'The original static source cache is complete according to the controlling service worker. Original progress still depends on local browser storage.':
  offlineShell==='incomplete'?'Some original offline assets are missing from the current cache. Reconnect before starting an offline lesson.':
+ offlineShell==='outdated'?'The active offline worker is from an older source manifest. Reconnect and reload online to finish updating before offline study.':
  'The offline source cache is not confirmed complete on this device. Reconnect to prepare it.')+
  '</span></div>';
  const offlineRecovery='<div id="c9-home-offline-repair" class="c9-home-notice c9-home-offline-repair" role="note"'+
@@ -62,6 +63,9 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   '<span data-c9-offline-count>Cache coverage has not yet been verified by this service worker.</span>'+
   act('c9-offline-repair','Prepare missing offline assets','c9-button c9-button--secondary c9-button--small')+
   '</div>';
+ const offlineUpgrade='<div id="c9-home-offline-upgrade" class="c9-home-notice" role="status"'+
+  (!offline&&offlineShell==='outdated'?'':' hidden')+'>'+
+  '<strong>Update offline lessons</strong><span>An older cached version currently controls this tab. Before reloading, copy or export any unsaved private P43 writing. Reload online to let the current service worker prepare its original lessons. Your local review history is not reset.</span></div>';
  const scenery='<svg class="c9-home-mountains" viewBox="0 0 430 175" aria-hidden="true" focusable="false"><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130V175H0Z" fill="currentColor" opacity=".08"/><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130" fill="none" stroke="currentColor" opacity=".17"/><path d="M181 133h91m-76 0 17-18h38l17 18m-60-19 5-10h37l7 10m-12 19v-16m-22 16v-16m-21-15h69" fill="none" stroke="currentColor" opacity=".19"/><path d="M20 157h150m132 0h128" stroke="currentColor" opacity=".13"/></svg>';
  const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">YOUR NEXT STEP · ORIGINAL COURSE</span><h2 id="c9-home-next">'+esc(primary.label)+'</h2><p>'+esc(primary.detail)+'</p><div class="c9-home-hero-actions">'+act('hub-primary',primaryLabel+' '+icon('arrow'),'c9-button c9-button--primary')+'<a class="c9-button c9-button--secondary" href="#/plan">View study plan</a></div></div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">学</span></div></section>';
  const greeting='<header class="c9-home-heading"><div><p class="c9-home-kicker">THIEPN CHINESE · TODAY</p><h1>One focused learning day.</h1><p>Continue the most useful activity, then practise Chinese in context.</p></div><span class="c9-home-date" aria-label="Local activity status">Local-first learning</span></header>';
@@ -116,9 +120,10 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  (offline?'Offline':'Online')+' · '+
  (offlineShell==='ready'?'Static source cache verified':offlineShell==='checking'?'Checking offline cache':
  offlineShell==='incomplete'?'Offline cache incomplete':
+ offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
- return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+hero+metrics+
+ return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+hero+metrics+
   '<div class="c9-home-columns"><div class="c9-home-main-column">'+today+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+connected+
   readiness+'</div>';
 }
