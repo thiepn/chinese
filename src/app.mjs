@@ -1079,7 +1079,10 @@ function p55ContextKind(){
  const locationRoute=route(),hash=location.hash,params=new URLSearchParams(hash.split('?')[1]||'');
  const linked=params.get('p55')===b.id;
  const native=[p55Native(b.from),p55Native(b.to)].filter(Boolean);
- if(locationRoute==='production')return linked&&p43UnitId===b.writingId?'writing':null;
+ if(locationRoute==='production'){
+  const routeUnit=(hash.match(/^#\/production\/(p43-\d{2})/)||[])[1]||p43UnitId;
+  return linked&&routeUnit===b.writingId?'writing':null;
+ }
  if(locationRoute==='workshop'){
   const taskId=params.get('task'),task=taskId?SENTENCE_TASKS.find(t=>t.id===taskId):sentenceTask(sentenceIndex);
   return linked&&task?.p55BriefId===b.id?'return':null;
@@ -1102,7 +1105,11 @@ function p55ContextKind(){
  return [b.from,b.to].includes(caseId)?'return':null;
 }
 function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
- if(findP55Brief(linkedP55))p55FocusId=linkedP55;
+ if(findP55Brief(linkedP55)){
+  p55FocusId=linkedP55;
+  const backStep=new URLSearchParams(location.hash.split('?')[1]||'').get('p55step');
+  if(P55_STEPS.some(x=>x.id===backStep))p55Step=backStep;
+ }
  const p55Context=p55ContextKind();
  navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,register51:renderRegister51,synthesis52:renderSynthesis52,argument53:renderArgument53,fluency54:renderFluency54,advanced55:renderAdvanced55,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
  ((p44SessionId&&['stories','dialogues','production','workshop'].includes(route()))?p44ReturnStrip():'')+
@@ -1159,7 +1166,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!b||!p55NativeWords(b).some(x=>x.key===key)||!findWord(key))
    return alertUser('The linked original Wordbook entry is unavailable.','error');
   searchSelection={type:'word',id:key};
-  location.hash='#/explore?word='+encodeURIComponent(key)+'&p55='+b.id;return render();
+  location.hash='#/explore?word='+encodeURIComponent(key)+'&p55='+b.id+'&p55step=language';return render();
  }
  if(name==='p55-open-original'){
   const b=findP55Brief(p55FocusId),original=p55Source(button.dataset.source);
@@ -1167,7 +1174,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const actionName=original.id.split('-')[0]+'-open';
   await act({dataset:{action:actionName,id:original.id}});
   const sep=location.hash.includes('?')?'&':'?';
-  location.hash=location.hash+sep+'p55='+b.id;
+  location.hash=location.hash+sep+'p55='+b.id+'&p55step='+p55Step;
   return;
  }
  if(name==='p55-native-read'||name==='p55-native-listen'){
@@ -1176,11 +1183,11 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const native=p55Native(sourceId);
   if(name==='p55-native-read'&&native?.story){
    storyId=native.story.id;storyMode='beginner-detail';resetReadingNavigation();
-   location.hash='#/stories/'+native.story.id+'?p55='+b.id;return render();
+   location.hash='#/stories/'+native.story.id+'?p55='+b.id+'&p55step='+p55Step;return render();
   }
   if(name==='p55-native-listen'&&native?.dialogue){
    dialogueId=native.dialogue.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
-   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id;return render();
+   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id+'&p55step='+p55Step;return render();
   }
   return alertUser('Original reading or conversation not available.','error');
  }
@@ -1190,13 +1197,13 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(p43UnitId!==target.id&&(p43Draft.trim()||p43Revisions.length)){
    p43Pending=target.id;
    // Keep the old unit visible until the existing P43 explicit discard/switch confirmation.
-   location.hash='#/production/'+p43UnitId+'?p55='+b.id;return render();
+   location.hash='#/production/'+p43UnitId+'?p55='+b.id+'&p55step=write';return render();
   }
   if(p43UnitId!==target.id){
    p43UnitId=target.id;p43Step='plan';p43Reviewed=[];p43Version=-1;
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Pending='';
   }
-  location.hash='#/production/'+target.id+'?p55='+b.id;return render();
+  location.hash='#/production/'+target.id+'?p55='+b.id+'&p55step=write';return render();
  }
  if(name==='p55-copy-brief'){
   const b=findP55Brief(p55FocusId);if(!b)return;
@@ -1221,7 +1228,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const pos=SENTENCE_TASKS.findIndex(x=>x.id===taskId);
   if(pos<0)return alertUser('Original fixed-form transfer sentence unavailable.','error');
   sentenceIndex=pos;sentenceTyped='';sentenceFeedback=null;sentenceSupport=true;
-  location.hash='#/workshop?task='+encodeURIComponent(taskId)+'&p55='+b.id;
+  location.hash='#/workshop?task='+encodeURIComponent(taskId)+'&p55='+b.id+'&p55step=speak';
   return render();
  }
 
@@ -2450,7 +2457,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const linkedWriting=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
   const sourceBrief=findP55Brief(linkedWriting);
   location.hash='#/production/'+selected+
-   (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id:'');return render();
+   (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id+'&p55step=write':'');return render();
  }
  if(name==='p43-step'){
   const stage=button.dataset.step;if(!['plan','compose','revise','speak'].includes(stage))return;
