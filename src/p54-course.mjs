@@ -44,13 +44,14 @@ export const P54_READING_ROWS=Object.freeze(P54_CASES.map(c=>{
  const ending=c.lines.at(-1),characters=[...ending.hanzi],step=Math.max(2,Math.ceil(characters.length/7));
  const chunks=[];for(let i=0;i<characters.length;i+=step)chunks.push(characters.slice(i,i+step).join(''));
  const focus=c.focusWord.hanzi;
+ const focusLine=Math.max(0,c.lines.findIndex(x=>x.hanzi.includes(focus)));
  const rivals=['计划','说明','报告','理由'].filter(x=>x!==focus).slice(0,3);
  return Object.freeze([c.title,c.theme,c.goal,9,
   Object.freeze(c.lines.map(x=>Object.freeze([x.hanzi,x.pinyin,x.english]))),
   Object.freeze(c.questions.map(q=>Object.freeze([q.prompt,...q.options,
    'None of those conclusions is supported by the named sources.',
    q.evidenceIndex,q.explanation]))),
-  Object.freeze(chunks),Object.freeze([0,focus,...rivals]),
+  Object.freeze(chunks),Object.freeze([focusLine,focus,...rivals]),
   Object.freeze(['Reconstruct the original evidence-limited Mandarin conclusion.',
    ending.hanzi,ending.pinyin,ending.english,c.pitfall]),
   Object.freeze(['g157','g162','g164']),
