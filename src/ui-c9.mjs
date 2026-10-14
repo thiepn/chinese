@@ -29,6 +29,7 @@ const META=Object.freeze({
  sentences:{label:'Sentence Library',area:'Language library',parent:'learn',group:'library'},
  pathway:{label:'Learning Pathway',area:'Course',parent:'learn',group:'course'},
  advanced:{label:'Advanced Course',area:'Original Curriculum · P35–P51',parent:'learn',group:'course'},
+ writing:{label:'Writing Studio',area:'Independent writing & revision',parent:'learn',group:'course'},
  plan:{label:'Study Plan',area:'Course',parent:'learn',group:'course'}
 });
 export const C9_ROUTE_META=META;
@@ -37,7 +38,7 @@ export const C9_ROUTE_LABELS=Object.freeze(Object.fromEntries(
 ));
 export const c9RouteInfo=route=>META[route]||META.today;
 export const C9_CONTEXT_LINKS=Object.freeze({
- course:['learn','advanced','pathway','plan','journey'],
+ course:['learn','advanced','writing','pathway','plan','journey'],
  practice:['review','practice','fluency','block'],
  media:['stories','dialogues','reader','pinyin'],
  library:['wordbook','grammar','sentences','senses'],

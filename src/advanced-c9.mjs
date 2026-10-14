@@ -25,6 +25,7 @@ import {P48_PASSAGES} from './p48-readings.mjs';
 import {P49_CASES} from './p49-course.mjs';
 import {P50_PASSAGES} from './p50-readings.mjs';
 import {P51_PASSAGES} from './p51-readings.mjs';
+import {c9WritingLinkedUnit} from './writing-c9.mjs';
 
 const grammarByIds=ids=>ids.map(id=>GRAMMAR_LESSONS.find(l=>l.id===id)).filter(Boolean);
 const nativePhase=(phase,title,focus,records,kind,goal)=>Object.freeze({phase,title,focus,records,kind,goal});
@@ -182,6 +183,10 @@ export function renderC9AdvancedWorkspace(state,ui,act,esc){
   '<div><span>'+['Learning goal or explanation','Context and distinction','Misconception and revision','Further source guidance','Independent transfer'][i]+'</span>'+
   '<p>'+esc(note)+'</p></div>').join('')+'</div>':'')+
  '<div class="c9-advanced-native-links"><h3>Continue in the original learning workspace</h3>'+
+ (c9WritingLinkedUnit(phase.phase,selected.id)?
+ '<div class="c9-advanced-write-handoff">'+act('c9-writing-source','Write & revise an evidence-based response →',
+ 'c9-button c9-button--primary','data-phase="'+phase.phase+'" data-id="'+esc(selected.id)+'"')+
+ '<p>Use the single original P43 independent writing editor, with source-specific revision criteria.</p></div>':'')+
  (activeLinks.length?'<div>'+activeLinks.map(link=>act('c9-advanced-native',
    esc(link.label)+' →','c9-button c9-button--secondary c9-button--small',
    'data-kind="'+link.kind+'" data-id="'+esc(link.id)+'"')).join('')+'</div>':
