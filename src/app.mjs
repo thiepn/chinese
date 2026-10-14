@@ -8,7 +8,9 @@ import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9Guid
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
 import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,hasC9UncopiedWriting} from './writing-c9.mjs';
-import {renderC9NativeHandoff,renderC9DraftContinuation} from './navigation-c9.mjs';
+import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
+import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
+import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp} from './accessibility-c9.mjs';
@@ -83,7 +85,7 @@ import {renderSentenceScreen,sentenceResultsPanel} from './sentence-screen.mjs';
 const root=document.getElementById('app-content');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const stableRoutes=new Set(['today','learn','review','explore','progress','settings','character','reader','stories','practice','dialogues','wordbook','senses','workshop','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find','advanced','writing']);
+const stableRoutes=new Set(['today','learn','review','explore','progress','settings','character','reader','stories','practice','dialogues','wordbook','senses','workshop','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find','advanced','writing','skills']);
 const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';return stableRoutes.has(v)?v:'today'};
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
@@ -114,6 +116,16 @@ window.addEventListener('beforeunload',e=>{
  if(hasC9UncopiedWriting()||c9OpenNativeAnswer()){e.preventDefault();e.returnValue='';}
 });
 let c9AdvancedPhase=35,c9AdvancedQuery='',c9AdvancedPage=0,c9AdvancedSelected=null,c9AdvancedTranslation=false;
+const c9SkillsUi={track:'reading',phase:46,sourceId:null,stage:'orientation',
+ query:'',page:0,phaseOnly:false,support:false};
+let c9SkillWritingHandoff=null; // Only in-tab navigation; no other essay writer.
+function selectC9SkillSource(phase,id){
+ if(!c9SkillPhaseInTrack(c9SkillsUi.track,phase)||!c9SkillSource(phase,id))return false;
+ c9SkillsUi.phase=Number(phase);c9SkillsUi.sourceId=id;
+ c9SkillsUi.stage=c9SkillStageId(phase,null);
+ c9SkillsUi.support=false;c9SkillsUi.page=0;c9SkillsUi.phaseOnly=false;
+ return true;
+}
 let drillLessonId=DEMO_LESSONS[0].id,drillMode='recognition',drillResult=null,drillPicked='',drillTyped='',drillOrder=[],drillAssisted=false;
 let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,beginnerLevel='all',beginnerPart='all',beginnerWordShown=false,beginnerPartTip='',storyFocusIndex=-1,storyHelpIndex=-1,exploreSavedOnly=false;
 let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAssisted=false;
@@ -805,9 +817,9 @@ function c9SourceReturnMarkup(){
  return renderC9SourceReturn(trail,current,action,esc);
 }
 function rememberC9NativeHandoff(origin,targetRoute,targetId,title){
- if(!['writing','advanced'].includes(origin)||!targetRoute||!targetId)return;
+ if(!['writing','advanced','skills'].includes(origin)||!targetRoute||!targetId)return;
  c9NativeTrail={origin,targetRoute,targetId,title:String(title||'Original source'),
-  sourceId:origin==='writing'?c9WritingState.unitId:c9AdvancedSelected};
+  sourceId:origin==='writing'?c9WritingState.unitId:origin==='skills'?c9SkillsUi.sourceId:c9AdvancedSelected};
  c9DiscoveryTrail=null;
 }
 function currentC9NativeTarget(routeName){
@@ -839,12 +851,15 @@ function refreshC9AdvancedResults(){
  if(next)target.innerHTML=next.innerHTML;
 }
 function renderAdvanced(){return renderC9AdvancedWorkspace(state,c9AdvancedUi(),action,esc);}
-function renderWriting(){return renderC9WritingWorkspace(state,c9WritingState,action,esc);}
+function renderSkills(){return renderC9SkillsWorkspace(state,c9SkillsUi,action,esc);}
+function renderWriting(){return (c9SkillWritingHandoff?
+ renderC9SkillWritingReturn(c9SkillWritingHandoff,action,esc):'')+
+ renderC9WritingWorkspace(state,c9WritingState,action,esc);}
 function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
   renderC9SearchIntro(state,ui,action,esc)+
   '<div class="c9-search-native" id="c9-original-search" tabindex="-1">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
 
-function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
+function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting,skills:renderSkills};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page,answerConfirmed=false){
  const target='#/'+page;
  if(location.hash===target){render();return true;}
@@ -881,6 +896,10 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    currentC9NativeTarget(route())!==c9NativeTrail.targetId)return;
   const previous=c9NativeTrail;c9NativeTrail=null;
   const target=previous.origin;
+  if(target==='skills'){
+   c9ReturnFocus='c9-skills-active';
+   return go('skills',true);
+  }
   if(target==='advanced'){
    c9ReturnFocus='c9-advanced-detail';
    return go('advanced',true);
@@ -897,6 +916,126 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   c9NativeTrail=null;
   c9ReturnFocus=c9WritingState.step==='compose'||c9WritingState.step==='revise'?'p43-draft':null;
   return go('writing',true);
+ }
+ if(name==='c9-skills-return-writing'){
+  if(!c9SkillWritingHandoff)return;
+  const previous=c9SkillWritingHandoff;c9SkillWritingHandoff=null;
+  if(c9SkillPhaseInTrack(c9SkillsUi.track,previous.phase)&&
+   c9SkillSource(previous.phase,previous.sourceId)){
+   c9SkillsUi.phase=previous.phase;c9SkillsUi.sourceId=previous.sourceId;
+  }
+  c9ReturnFocus='c9-skills-active';return go('skills');
+ }
+ if(name==='c9-skills-track'){
+  const t=c9SkillTrack(button.dataset.track);if(!t)return;
+  Object.assign(c9SkillsUi,{track:t.id,phase:t.phases[0],sourceId:null,
+   stage:c9SkillStageId(t.phases[0],null),query:'',page:0,phaseOnly:false,support:false});
+  render();root.querySelector('#c9-skills-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-skills-phase'){
+  const phase=Number(button.dataset.phase);
+  if(!c9SkillPhaseInTrack(c9SkillsUi.track,phase))return;
+  c9SkillsUi.phase=phase;c9SkillsUi.phaseOnly=true;c9SkillsUi.page=0;
+  c9SkillsUi.sourceId=null;c9SkillsUi.support=false;
+  c9SkillsUi.stage=c9SkillStageId(phase,null);render();return;
+ }
+ if(name==='c9-skills-all'){
+  c9SkillsUi.phaseOnly=false;c9SkillsUi.page=0;render();return;
+ }
+ if(name==='c9-skills-source'||name==='c9-skills-continue'){
+  if(!selectC9SkillSource(button.dataset.phase,id))return;
+  render();
+  const panel=root.querySelector('#c9-skills-active');
+  if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}
+  return;
+ }
+ if(name==='c9-skills-page'){
+  const dir=Number(button.dataset.dir);if(![-1,1].includes(dir))return;
+  c9SkillsUi.page=Math.max(0,c9SkillsUi.page+dir);render();
+  root.querySelector('#c9-skills-query')?.scrollIntoView({block:'nearest'});return;
+ }
+ if(name==='c9-skills-dismiss'){
+  c9SkillsUi.sourceId=null;c9SkillsUi.support=false;render();
+  root.querySelector('#c9-skills-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-skills-stage'||name==='c9-skills-step'){
+  const stages=c9SkillStages(c9SkillsUi.phase);
+  let chosen=name==='c9-skills-stage'?button.dataset.stage:null;
+  if(name==='c9-skills-step'){
+   const dir=Number(button.dataset.dir);
+   if(![-1,1].includes(dir))return;
+   const at=stages.findIndex(x=>x.id===c9SkillsUi.stage);
+   chosen=stages[at+dir]?.id;
+  }
+  if(!chosen||!stages.some(x=>x.id===chosen)||!c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId))return;
+  c9SkillsUi.stage=chosen;render();
+  root.querySelector('#c9-skills-active')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-skills-support'){
+  if(!c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId))return;
+  c9SkillsUi.support=!c9SkillsUi.support;render();return;
+ }
+ if(name==='c9-skills-voice'){
+  const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  if(!source)return;
+  const index=Number(button.dataset.index);if(!Number.isInteger(index)||index<0)return;
+  let lines=c9AdvancedSourceLines(source);
+  if(button.dataset.audio==='listening'){
+   const dialogue=DIALOGUES.find(d=>d['p'+c9SkillsUi.phase]?.readingId===source.id||
+    d['p'+c9SkillsUi.phase]?.id===source.id);
+   lines=dialogue?.lines||source.turns||[];
+  }
+  if(index<lines.length&&lines[index]?.hanzi)return speak(lines[index].hanzi);
+  return;
+ }
+ if(name==='c9-skills-word'){
+  const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  if(!source||!WORDS.some(w=>w.key===id))return;
+  rememberC9NativeHandoff('skills','explore',id,source.title||source.hanzi||source.id);
+  return act({dataset:{action:'lookup-word',id}});
+ }
+ if(name==='c9-skills-grammar'){
+  const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  if(!source||!source.grammarIds?.includes(id)||!findGrammarLesson(id))return;
+  rememberC9NativeHandoff('skills','grammar',id,source.title||source.hanzi||source.id);
+  return act({dataset:{action:'grammar-select',id}});
+ }
+ if(name==='c9-skills-writing'){
+  const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  const unit=source&&c9WritingLinkedUnit(c9SkillsUi.phase,source.id);
+  if(!unit)return alertUser('No original P43 writing unit is linked to this source.','error');
+  c9SkillWritingHandoff={phase:c9SkillsUi.phase,sourceId:source.id,title:source.title||source.hanzi||source.id};
+  return act({dataset:{action:'c9-writing-source',id:source.id,phase:String(c9SkillsUi.phase)}});
+ }
+ if(name==='c9-skills-native'){
+  const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  const linked=source&&c9SkillLinks(c9SkillsUi.phase,source).find(l=>
+   l.id===id&&l.kind===button.dataset.kind);
+  if(!linked)return alertUser('Original native source not available for this case.','error');
+  const target={lesson:'learn',grammar:'grammar',story:'stories',
+   dialogue:'dialogues',workshop:'workshop'}[linked.kind];
+  if(!target)return;
+  if(linked.kind==='workshop'&&!SENTENCE_TASKS.some(x=>x.id===id))return;
+  rememberC9NativeHandoff('skills',target,id,source.title||source.hanzi||source.id);
+  if(linked.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id}});
+  if(linked.kind==='grammar')return act({dataset:{action:'grammar-select',id}});
+  if(linked.kind==='story'){
+   await act({dataset:{action:'c9-media-open-story',id}});
+   if(c9SkillsUi.support){storyAssist=true;storyShowTranslation=true;c9StoryEnglish=true;render();}
+   return;
+  }
+  if(linked.kind==='dialogue'){
+   await act({dataset:{action:'c9-media-open-dialogue',id}});
+   if(c9SkillsUi.support){dialogueSupport=true;render();}
+   return;
+  }
+  if(linked.kind==='workshop'){
+   const index=SENTENCE_TASKS.findIndex(x=>x.id===id);
+   if(index<0)return;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=c9SkillsUi.support;
+   return go('workshop');
+  }
+  return;
  }
  if(name==='c9-advanced-phase'){
   const phase=findC9AdvancedPhase(button.dataset.phase);if(!phase)return;
@@ -2036,6 +2175,17 @@ document.addEventListener('click',ev=>{
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
  if(handleC9WritingInput(e,root))return;
+ if(e.target.id==='c9-skills-query'){
+  c9SkillsUi.query=e.target.value;c9SkillsUi.page=0;
+  const target=root.querySelector('#c9-skills-results');
+  if(target){
+   const template=document.createElement('template');
+   template.innerHTML=renderC9SkillsWorkspace(state,c9SkillsUi,action,esc);
+   const next=template.content.querySelector('#c9-skills-results');
+   if(next)target.innerHTML=next.innerHTML;
+  }
+  return;
+ }
  if(e.target.id==='c9-advanced-query'){c9AdvancedQuery=e.target.value;c9AdvancedPage=0;refreshC9AdvancedResults();return;}
  if(e.target.id==='c9-reading-query'){c9ReadingQuery=e.target.value;c9ReadingPage=0;refreshC9MediaCatalog('reading');return;}
  if(e.target.id==='c9-dialogue-query'){c9DialogueQuery=e.target.value;c9DialoguePage=0;refreshC9MediaCatalog('dialogue');return;}
