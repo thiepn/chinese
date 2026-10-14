@@ -177,5 +177,6 @@ export function p53Lesson(c,state,act,esc,{stage='sources',readingIndex=0,listen
  ' submissions · exact-form sentence: '+e.writing.length+' submissions</p>'+
  '<p>Assistance is distinguished from independently correct submissions. Free writing, conversation and HSK proficiency are not automatically assessed.</p>'+
  '<div class="p53-actions">'+act('p53-due','Scheduled Review →','button outline')+
+  act('p54-enter','Advance to P54 cumulative Mandarin fluency →','button primary')+
  act('p53-prior','Original P52 context →','button outline','data-id="'+esc(c.priorCase)+'"')+'</div></footer></section>';
 }
