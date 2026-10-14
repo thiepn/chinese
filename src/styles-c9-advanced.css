@@ -15,6 +15,8 @@
  font:400 13px/1.75 var(--c9-ui);color:var(--c9-sub);margin:0
 }
 .c9-advanced-intro>a{min-height:44px}
+.c9-advanced-primary-links{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.c9-advanced-primary-links a{min-height:44px;display:inline-flex;align-items:center}
 .c9-advanced-stages{
  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;
  min-width:0
