@@ -84,7 +84,7 @@ export function renderC9SearchIntro(state,ui,act,esc){
  }));
  return '<div class="c9-utility-page c9-search-intro">'+
  intro('FIND ORIGINAL MATERIAL','Search your Chinese library',
- 'Search original characters, words, grammar, complete sentences, readings, dialogues and pathway missions. Results open the existing source workspace.')+
+ 'Search characters, words, grammar, sentences, readings, dialogues, pathway missions and every P35–P51 original advanced source. A result opens its original teaching and native learning workspace.')+
  '<div class="c9-search-summary"><div><strong>'+COURSE_INDEX.length+'</strong><span>Indexed source entries</span></div>'+
  '<div><strong>'+families.length+'</strong><span>Source categories</span></div>'+
  '<div><strong>'+saved(state,'bookmarkedWords')+saved(state,'bookmarkedStories')+saved(state,'bookmarkedSentences')+'</strong><span>Saved items across word, reading and sentence libraries</span></div></div>'+
@@ -93,7 +93,7 @@ export function renderC9SearchIntro(state,ui,act,esc){
  '<div class="c9-search-category-grid">'+families.map(row=>
   act('p30-filter','<strong>'+esc(row.label)+'</strong><span>'+row.count+' source entries</span>',
   'c9-search-category'+(ui.kind===row.id?' is-active':''),'data-kind="'+row.id+'" aria-pressed="'+(ui.kind===row.id)+'"')).join('')+
- '</div></section>'+renderC9SearchAssist(state,ui,act,esc)+'<p class="c9-utility-truth c9-unified-source-note">Saved-only search applies only to source types with native saved or introduction records. Other categories may correctly show no results under this filter.</p></div>';
+ '</div></section>'+renderC9SearchAssist(state,ui,act,esc)+'<p class="c9-utility-truth c9-unified-source-note">Saved-only applies only to native bookmarked or introduced materials. Advanced authored source records have no bookmark authority, so use the Advanced sources filter with saved-only turned off.</p></div>';
 }
 const settingsDestinations=Object.freeze([
  ['study','Study preferences','Pinyin, appearance and daily lesson target'],

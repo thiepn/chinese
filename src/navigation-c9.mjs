@@ -22,7 +22,7 @@ export function renderC9DraftContinuation(hasDraft,route,act,esc){
  if(!hasDraft||route==='writing')return '';
  return '<aside class="c9-writing-continuation" aria-label="Unsent writing in this tab" role="note">'+
  '<div><strong>Unsent Chinese writing remains in this tab</strong>'+
- '<p>Continue editing your original P43 composition, or copy it before refreshing or closing. Drafts and snapshots are not saved to learner progress.</p></div>'+
+ '<p>Continue editing your original P43 composition, or export its private JSON backup before closing. Your draft and snapshots remain in-tab unless you explicitly export; they are not learning grades.</p></div>'+
  act('c9-native-resume-writing','Resume my writing →','c9-button c9-button--secondary c9-button--small')+
  '</aside>';
 }

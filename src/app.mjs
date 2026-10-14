@@ -7,7 +7,7 @@ import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
-import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,hasC9UncopiedWriting} from './writing-c9.mjs';
+import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting} from './writing-c9.mjs';
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
@@ -809,12 +809,20 @@ function c9CurrentSourceIdForTrail(trail){
  if(trail.kind==='reading')return storyId;
  if(trail.kind==='dialogues')return dialogueId;
  if(trail.kind==='pathway')return pathwaySelection()?.id||pathwaySelected;
+ if(trail.kind==='advanced')return c9AdvancedSelected?'p'+c9AdvancedPhase+':'+c9AdvancedSelected:null;
  return null;
 }
 function c9SourceReturnMarkup(){
  if(!c9DiscoveryTrail)return '';
  const current=route(),trail=c9DiscoveryTrail;
- if(current!==trail.route&&current!==trail.origin){c9DiscoveryTrail=null;return '';}
+ if(current!==trail.route&&current!==trail.origin){
+  // Preserve Find → original Advanced source → canonical native exercise
+  // while the verified C9-28 handoff remains active. Never show a stale
+  // Find return on an unrelated destination.
+  if(trail.kind==='advanced'&&c9NativeTrail?.origin==='advanced'&&
+   c9NativeTrail.targetRoute===current)return '';
+  c9DiscoveryTrail=null;return '';
+ }
  if(current===trail.route){
   const activeId=c9CurrentSourceIdForTrail(trail);
   if(activeId&&activeId!==trail.id){c9DiscoveryTrail=null;return '';}
@@ -825,7 +833,8 @@ function rememberC9NativeHandoff(origin,targetRoute,targetId,title){
  if(!['writing','advanced','skills'].includes(origin)||!targetRoute||!targetId)return;
  c9NativeTrail={origin,targetRoute,targetId,title:String(title||'Original source'),
   sourceId:origin==='writing'?c9WritingState.unitId:origin==='skills'?c9SkillsUi.sourceId:c9AdvancedSelected};
- c9DiscoveryTrail=null;
+ if(origin!=='advanced'||c9DiscoveryTrail?.kind!=='advanced')
+  c9DiscoveryTrail=null;
 }
 function currentC9NativeTarget(routeName){
  if(routeName==='learn')return c9LearnDetail?displayLessonId:null;
@@ -1569,6 +1578,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!source)return alertUser('Original indexed source is unavailable.','error');
   // In-memory return context: no duplicate source store or browser history mutation.
   c9DiscoveryTrail={...source,origin:route()==='learn'?'learn':'find'};
+  if(kind==='advanced'){
+    const phase=findC9AdvancedPhase(source.phase);
+    if(!phase?.records.some(x=>x.id===source.sourceId))return;
+    c9AdvancedPhase=phase.phase;c9AdvancedSelected=source.sourceId;
+    c9AdvancedPage=0;c9AdvancedQuery='';c9AdvancedTranslation=false;
+    return go('advanced');
+  }
   const mapped={characters:'open-lesson',words:'lookup-word',grammar:'grammar-select',sentences:'sentence-select',
     reading:'open-story-link',dialogues:'hub-dialogue',pathway:'pathway-select'};
   const target=mapped[kind];if(!target)return;
@@ -2230,6 +2246,7 @@ if(e.target.id==='sentence-library-query'){
 }
 if(e.target.id==='grammar-entry'){grammarTyped=e.target.value;const b=root.querySelector('[data-action="grammar-answer"]');if(b)b.disabled=!grammarTyped.trim();return;}if(e.target.id==='grammar-query'){grammarQuery=e.target.value;for(const item of root.querySelectorAll('[data-grammar-search]'))item.hidden=!item.dataset.grammarSearch.includes(grammarQuery.toLowerCase());return;}if(e.target.id==='pinyin-answer-entry'){pinyinTyped=e.target.value;const button=root.querySelector('[data-action="pinyin-answer"]');if(button)button.disabled=!pinyinTyped.trim();return;}if(e.target.id==='wordbook-entry'){wordbookTyped=e.target.value;const b=root.querySelector('[data-action="wordbook-answer"]');if(b)b.disabled=!wordbookTyped.trim();return;}if(e.target.id==='guided-entry'){guidedTyped=e.target.value;const b=root.querySelector('[data-action="guided-check"]');if(b)b.disabled=!guidedTyped.trim();return;}if(e.target.id==='drill-entry'){drillTyped=e.target.value;const b=root.querySelector('[data-action="drill-check"]');if(b)b.disabled=!drillTyped.trim();return;}if(e.target.id==='story-entry'){storyTyped=e.target.value;const b=root.querySelector('[data-action="story-check"]');if(b)b.disabled=!storyTyped.trim();return;}if(e.target.id==='review-entry'){typedAnswer=e.target.value;const check=root.querySelector('[data-action="submit-review"]');if(check)check.disabled=!typedAnswer.trim();return;}if(e.target.id==='explore-query'){searchQuery=e.target.value;explorePage=0;const matches=visibleExploreResults();$('search-count').textContent=`${matches.length} results · ${WORDS.length} distinct demo word entries · Browsing never changes mastery.`;$('explore-results').innerHTML=renderSearchResults(matches);if($('explore-pager'))$('explore-pager').innerHTML=catalogPager(matches.length);}});
 root.addEventListener('change',async e=>{
+ if(await handleC9WritingBackupFile(e,{render,alertUser}))return;
  if(e.target.id==='c9-advanced-phase-select'){
   const phase=findC9AdvancedPhase(e.target.value);
   if(phase)return act({dataset:{action:'c9-advanced-phase',phase:String(phase.phase)}});

@@ -29,7 +29,7 @@ const tabs=Object.freeze([
 
 export const C9_SOURCE_ROUTES=Object.freeze({
  characters:'learn',words:'explore',grammar:'grammar',sentences:'sentences',
- reading:'stories',dialogues:'dialogues',pathway:'pathway'
+ reading:'stories',dialogues:'dialogues',pathway:'pathway',advanced:'advanced'
 });
 const skillSteps=[
  {kind:'lesson',title:'Understand a character',caption:'Open the existing lesson and its teaching sections'},
@@ -131,6 +131,15 @@ export function renderC9SourceReturn(handoff,currentRoute,act,esc){
 }
 export const c9LookupSource=(kind,id)=>{
  if(!Object.hasOwn(C9_SOURCE_ROUTES,kind))return null;
+ if(kind==='advanced'){
+  const m=/^p(3[5-9]|4\d|5[01]):(.+)$/.exec(id);
+  if(!m)return null;
+  const phase=C9_ADVANCED_PHASES.find(p=>p.phase===Number(m[1]));
+  const source=phase?.records.find(x=>x.id===m[2]);
+  if(!source)return null;
+  return {kind,id,title:source.title||source.hanzi||source.goal||source.id,
+   route:'advanced',phase:phase.phase,sourceId:source.id};
+ }
  const list={
   characters:DEMO_LESSONS,words:WORDS,grammar:GRAMMAR_LESSONS,
   sentences:SENTENCE_LIBRARY,reading:STORIES,dialogues:DIALOGUES,pathway:PATHWAY_MISSIONS
