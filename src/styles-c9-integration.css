@@ -149,3 +149,13 @@
 @media(prefers-reduced-motion:reduce){
  :where(.c9-integrated-flow,.c9-integrated-atlas,.c9-integrated-return) *{transition:none;scroll-behavior:auto}
 }
+
+/* C9-26: keep both native source-discovery destinations visible. */
+.c9-integrated-atlas-actions{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px;max-width:100%
+}
+.c9-integrated-atlas-actions>a{min-height:44px;white-space:normal}
+@media(max-width:760px){
+ .c9-integrated-atlas-actions{width:100%}
+ .c9-integrated-atlas-actions>a{flex:1 1 170px}
+}
