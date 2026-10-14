@@ -809,6 +809,7 @@ function c9CurrentSourceIdForTrail(trail){
  if(trail.kind==='reading')return storyId;
  if(trail.kind==='dialogues')return dialogueId;
  if(trail.kind==='pathway')return pathwaySelection()?.id||pathwaySelected;
+ if(trail.kind==='advanced')return c9AdvancedSelected?'p'+c9AdvancedPhase+':'+c9AdvancedSelected:null;
  return null;
 }
 function c9SourceReturnMarkup(){
@@ -1569,6 +1570,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!source)return alertUser('Original indexed source is unavailable.','error');
   // In-memory return context: no duplicate source store or browser history mutation.
   c9DiscoveryTrail={...source,origin:route()==='learn'?'learn':'find'};
+  if(kind==='advanced'){
+    const phase=findC9AdvancedPhase(source.phase);
+    if(!phase?.records.some(x=>x.id===source.sourceId))return;
+    c9AdvancedPhase=phase.phase;c9AdvancedSelected=source.sourceId;
+    c9AdvancedPage=0;c9AdvancedQuery='';c9AdvancedTranslation=false;
+    return go('advanced');
+  }
   const mapped={characters:'open-lesson',words:'lookup-word',grammar:'grammar-select',sentences:'sentence-select',
     reading:'open-story-link',dialogues:'hub-dialogue',pathway:'pathway-select'};
   const target=mapped[kind];if(!target)return;
