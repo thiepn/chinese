@@ -15,7 +15,7 @@ import {P50_ARGUMENTS} from './p50-arguments.mjs';
 import {P51_ARGUMENTS} from './p51-arguments.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
-import {WORDS,canonicalWordKey} from './lexicon.mjs';
+import {WORDS,canonicalWordKey,plain} from './lexicon.mjs';
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 
@@ -101,17 +101,24 @@ export function c9SkillNextSource(state,trackId,after=null){
  const start=records.findIndex(({phase,source})=>after?.phase===phase&&after?.id===source.id);
  const ordered=start<0?records:[...records.slice(start+1),...records.slice(0,start+1)];
  // Native events are the only evidence; browsing a source never advances it.
+ // A continuation is a real native practice opportunity, not a guess that
+ // browsing an ungraded editorial source means the learner made progress.
  return ordered.find(({phase,source})=>{
   const e=c9SkillSourceStatus(state,phase,source);
-  return e.links.some(l=>l.kind!=='lesson')&&!e.hasIndependent;
- })||ordered.find(({phase,source})=>!c9SkillSourceStatus(state,phase,source).hasIndependent)||ordered[0];
+  return e.links.some(l=>['story','dialogue','workshop'].includes(l.kind))&&!e.hasIndependent;
+ })||null;
 }
 const match=(source,q)=>{
- const text=[source.title,source.hanzi,source.pinyin,source.theme,source.category,
- source.goal,source.contrast,source.misconception,
- ...c9AdvancedSourceLines(source).slice(0,12).flatMap(r=>[r.hanzi,r.pinyin,r.english])]
-  .filter(Boolean).join(' ').toLocaleLowerCase();
- return text.includes(q.toLocaleLowerCase());
+ const text=[source.id,source.title,source.hanzi,source.pinyin,
+ source.theme,source.category,source.goal,source.contrast,
+ source.misconception,source.focusWord?.hanzi,source.focusWord?.pinyin,
+ source.focusWord?.english,source.sourceId,source.sourceType,
+ ...(source.grammarIds||[]),
+ ...c9AdvancedSourceLines(source).slice(0,20).flatMap(r=>[r.hanzi,r.pinyin,r.english])]
+  .filter(Boolean).join(' ');
+ // Share the existing Wordbook/Find Pinyin-folding normalization: tone-less
+ // typing must discover the same originally authored material.
+ return plain(text).includes(plain(q));
 };
 function sourceTitle(source,phase){
  return source.title||source.hanzi||source.grammarTitle||source.goal||'Original P'+phase+' source';
@@ -157,6 +164,28 @@ function stagePanel(phase,source,stage,ui,links,act,esc){
  const type=stageType(stage),lines=c9AdvancedSourceLines(source),
   models=modelsOf(phase,source.id),dialogue=sourceAudio(phase,source.id),
   support=Boolean(ui.support);
+ const originalPhase=source.sourceType&&/^p(4[4-9])$/.test(source.sourceType)?
+  c9SkillPhase(Number(source.sourceType.slice(1))):null;
+ const originalRecord=originalPhase?.records.find(x=>x.id===source.sourceId);
+ const preferredKind=type==='listening'?'dialogue':
+  type==='reading'||type==='review'?'story':
+  type==='production'?'workshop':null;
+ const primary=links.find(x=>x.kind===preferredKind);
+ const primaryAction=primary?'<div class="c9-skills-primary-handoff">'+
+   act('c9-skills-native',
+    type==='listening'?'Open the original assessed conversation →':
+    type==='production'?'Reconstruct the original exact-form response →':
+    'Open the original assessed reading →',
+    'c9-button c9-button--primary c9-button--small',
+    'data-kind="'+primary.kind+'" data-id="'+esc(primary.id)+'"')+
+   '<small>Only the native assessment can write learning evidence.</small></div>':'';
+ const historicalAccess=originalRecord?
+  '<aside class="c9-skills-related-evidence"><strong>Original source connection · P'+
+   originalPhase.phase+'</strong><p>'+esc(originalRecord.title||originalRecord.hanzi||originalRecord.goal||originalRecord.id)+
+   '</p>'+act('c9-skills-related-source','Read the original referenced source →',
+    'c9-button c9-button--secondary c9-button--small',
+    'data-phase="'+originalPhase.phase+'" data-id="'+esc(originalRecord.id)+'"')+
+   '</aside>':'';
  const intro={
   orientation:'Start with what the source actually says. Distinguish the original situation, participants, vocabulary and stated limitation.',
   reading:'Read the Chinese first. Follow each paragraph or authored line and avoid treating an inference as a quoted fact.',
@@ -165,7 +194,8 @@ function stagePanel(phase,source,stage,ui,links,act,esc){
   production:'Give a reasoned response independently, then review source scope, register and sentence structure.'
  }[type];
  const header='<div class="c9-skills-stage-intro"><p>'+esc(intro)+'</p>'+
- (source.goal?'<blockquote>'+esc(source.goal)+'</blockquote>':'')+'</div>';
+ (source.goal?'<blockquote>'+esc(source.goal)+'</blockquote>':'')+
+ historicalAccess+primaryAction+'</div>';
  let content='';
  if(type==='orientation'){
   const focus=source.focusWord;
@@ -260,7 +290,9 @@ export function renderC9SkillsWorkspace(state,ui,act,esc){
  '<h2>Choose a genuine source.</h2><p>'+esc(track.reason)+'</p></div>'+
  '<span>'+total+' original source entries · '+track.phases.length+' source collections</span></header>'+
  '<div class="c9-skills-directory-actions">'+
- act('c9-skills-continue','Continue from real native evidence →','c9-button c9-button--primary c9-button--small',
+ act('c9-skills-continue',next?'Continue with original native practice →':
+  'No unattempted native source is mapped in this skill',
+  'c9-button c9-button--primary c9-button--small',
  next?'data-phase="'+next.phase+'" data-id="'+esc(next.source.id)+'"':'disabled')+
  '<label for="c9-skills-query">Find within this skill</label>'+
  '<input id="c9-skills-query" type="search" autocomplete="off" spellcheck="false" value="'+esc(ui.query||'')+

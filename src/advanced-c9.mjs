@@ -93,15 +93,23 @@ function detail(source){
  * the native owners. A missing story must never compare equal to an absent
  * task.storyId, and coincidentally equal titles are NOT a source identity.
  */
-const C9_DIRECT_TASK_SOURCE_FIELDS=Object.freeze([
- 'p35LessonId','p39LessonId','p37SceneId','p42SceneId','p43UnitId',
- 'p44ScenarioId','p45TransferId','p46PassageId','p46DialogueId',
- 'p47PassageId','p47DialogueId','p48ArgumentId','p49CaseId',
- 'p50ArgumentId','p51ArgumentId'
-]);
+// A source ID can occur in more than one historical phase. Restrict
+// metadata matches to the actual phase rather than allowing, for example,
+// a P46 passage to inherit an unrelated P47 native task with the same ID.
+const C9_TASK_SOURCE_FIELDS_BY_PHASE=Object.freeze({
+ 35:['p35LessonId'],36:['p36LessonId'],37:['p37SceneId'],38:['p38PassageId'],
+ 39:['p39LessonId'],40:['p40LessonId'],41:['p41PassageId'],
+ 42:['p42SceneId'],43:['p43UnitId'],44:['p44ScenarioId'],45:['p45TransferId'],
+ 46:['p46PassageId','p46DialogueId'],
+ 47:['p47PassageId','p47DialogueId'],
+ 48:['p48ArgumentId','p48PassageId'],
+ 49:['p49CaseId'],50:['p50ArgumentId','p50PassageId'],
+ 51:['p51ArgumentId','p51PassageId']
+});
 function matchingC9NativeTasks(phase,source,story){
  const prefix='p'+phase.phase+':';
- const direct=t=>C9_DIRECT_TASK_SOURCE_FIELDS.some(field=>t[field]===source.id)||
+ const fields=C9_TASK_SOURCE_FIELDS_BY_PHASE[phase.phase]||[];
+ const direct=t=>fields.some(field=>t[field]===source.id)||
   typeof t.id==='string'&&t.id.startsWith(prefix+source.id+':')||
   typeof t.id==='string'&&t.id.startsWith(prefix+'argument:'+source.id+':');
  const explicit=SENTENCE_TASKS.filter(direct);

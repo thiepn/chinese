@@ -164,3 +164,25 @@
  .c9-skills-handoffs>div button{flex:1 1 100%}
 }
 @media(prefers-reduced-motion:reduce){.c9-skills-workspace *{animation:none;transition:none}}
+
+/* C9-32 · Genuine source-to-assessment and historically linked evidence */
+.c9-skills-primary-handoff,.c9-skills-related-evidence{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ flex-wrap:wrap;padding:13px 15px;background:var(--c9-surface-2);
+ border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);
+ min-width:0;
+}
+.c9-skills-related-evidence{border-left:3px solid var(--c9-accent)}
+.c9-skills-primary-handoff>small{font:400 11px/1.6 var(--c9-ui);
+ color:var(--c9-sub);flex:1 1 180px}
+.c9-skills-related-evidence>strong{font:650 12px/1.5 var(--c9-ui);
+ color:var(--c9-ink);flex:1 1 100%}
+.c9-skills-related-evidence>p{font:400 12px/1.7 var(--c9-ui);
+ color:var(--c9-sub);margin:0;flex:1 1 240px;overflow-wrap:anywhere}
+.c9-skills-primary-handoff>button,.c9-skills-related-evidence>button{
+ min-height:44px;white-space:normal;text-align:left}
+@media(max-width:640px){
+ .c9-skills-primary-handoff,.c9-skills-related-evidence{
+  display:grid;grid-template-columns:minmax(0,1fr);padding:13px}
+ .c9-skills-primary-handoff>button,.c9-skills-related-evidence>button{width:100%}
+}
