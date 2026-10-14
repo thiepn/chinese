@@ -339,19 +339,27 @@ const PRECACHE_BATCH_SIZE=24;
  * Only user-visible shell status is returned. Never send learner data.
  */
 self.addEventListener('message',event=>{
- if(event.data?.type!=='c9-offline-status'||!event.ports?.[0])return;
+ if(!['c9-offline-status','c9-offline-repair'].includes(event.data?.type)||
+  !event.ports?.[0])return;
  const reply=event.ports[0];
  event.waitUntil((async()=>{
+  let cached=0,failed=false;
   try{
    const cache=await caches.open(CACHE);
-   const keys=new Set((await cache.keys()).map(request=>request.url));
-   const cached=ASSETS.filter(path=>keys.has(new URL(path,self.location.href).href)).length;
-   reply.postMessage({type:'c9-offline-status',version:CACHE,
-    cached,total:ASSETS.length,complete:cached===ASSETS.length});
-  }catch{
-   reply.postMessage({type:'c9-offline-status',version:CACHE,
-    cached:0,total:ASSETS.length,complete:false});
-  }
+   const known=()=>new Set((await cache.keys()).map(request=>request.url));
+   if(event.data.type==='c9-offline-repair'){
+    const entries=await known();
+    const missing=ASSETS.filter(path=>!entries.has(new URL(path,self.location.href).href));
+    // Explicit owner-requested cache repair; no user data or history writes.
+    // A failed source remains missing and is never counted as available.
+    for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE)
+     await cache.addAll(missing.slice(i,i+PRECACHE_BATCH_SIZE));
+   }
+   const keys=await known();
+   cached=ASSETS.filter(path=>keys.has(new URL(path,self.location.href).href)).length;
+  }catch{failed=true;}
+  reply.postMessage({type:'c9-offline-status',version:CACHE,
+   cached,total:ASSETS.length,complete:cached===ASSETS.length&&!failed,failed});
  })());
 });
 self.addEventListener('install',event=>{
