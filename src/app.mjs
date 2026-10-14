@@ -106,6 +106,13 @@ const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  learn:['lesson-check-entry']
 });
 function c9OpenNativeAnswer(screen=c9RenderedRoute){
+ // A visible answer may remain in the original input after submitting it.
+ // Warn only about UNSUBMITTED text, not a graded native response.
+ if((screen==='review'&&checkResult!==null)||
+  (screen==='workshop'&&sentenceFeedback!==null)||
+  (screen==='grammar'&&grammarFeedback!==null)||
+  (screen==='stories'&&storyResult!==null)||
+  (screen==='pinyin'&&pinyinFeedback!==null))return null;
  const candidates=C9_ACTIVE_ANSWER_IDS[screen]||[];
  return candidates.map(id=>root.querySelector('#'+id))
   .find(el=>el&&!el.disabled&&el.getClientRects().length&&String(el.value||'').trim())||null;
