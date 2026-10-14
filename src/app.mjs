@@ -129,6 +129,12 @@ let c9AdvancedPhase=35,c9AdvancedQuery='',c9AdvancedPage=0,c9AdvancedSelected=nu
 const c9SkillsUi={track:'reading',phase:46,sourceId:null,stage:'orientation',
  query:'',page:0,phaseOnly:false,support:false};
 let c9SkillWritingHandoff=null; // Only in-tab navigation; no other essay writer.
+let c9PendingSkillWritingHandoff=null; // The original P43 switch must be confirmed first.
+function c9WriterMatchesSkillBridge(bridge){
+ return Boolean(bridge&&c9WritingState.transferPhase===bridge.phase&&
+  c9WritingState.sourceId===bridge.sourceId&&
+  c9WritingLinkedUnit(bridge.phase,bridge.sourceId)?.id===c9WritingState.unitId);
+}
 function selectC9SkillSource(phase,id){
  if(!c9SkillPhaseInTrack(c9SkillsUi.track,phase)||!c9SkillSource(phase,id))return false;
  c9SkillsUi.phase=Number(phase);c9SkillsUi.sourceId=id;
@@ -879,8 +885,7 @@ function refreshC9AdvancedResults(){
 }
 function renderAdvanced(){return renderC9AdvancedWorkspace(state,c9AdvancedUi(),action,esc);}
 function renderSkills(){return renderC9SkillsWorkspace(state,c9SkillsUi,action,esc);}
-function renderWriting(){return (c9SkillWritingHandoff&&
- c9WritingLinkedUnit(c9SkillWritingHandoff.phase,c9SkillWritingHandoff.sourceId)?.id===c9WritingState.unitId?
+function renderWriting(){return (c9WriterMatchesSkillBridge(c9SkillWritingHandoff)?
  renderC9SkillWritingReturn(c9SkillWritingHandoff,action,esc):'')+
  renderC9WritingWorkspace(state,c9WritingState,action,esc);}
 function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
@@ -904,7 +909,7 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
- if(await handleC9WritingAction(button,{
+ const handledWriting=await handleC9WritingAction(button,{
   go,render,alertUser,speak,act,currentRoute:route,
   rememberHandoff:(targetRoute,targetId)=>rememberC9NativeHandoff(
    'writing',targetRoute,targetId,c9WritingState.unitId),
@@ -921,7 +926,18 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    c9AdvancedPhase=phase;c9AdvancedSelected=sourceId;c9AdvancedQuery='';c9AdvancedPage=0;
    go('advanced');
   }
- }))return;
+ });
+ if(handledWriting){
+  // Only commit a source-return link after the original P43 unit/source
+  // actually changed. Declining a source replacement retains the old link.
+  if(name==='p43-stay')c9PendingSkillWritingHandoff=null;
+  if(name==='p43-switch-confirm'){
+   if(c9WriterMatchesSkillBridge(c9PendingSkillWritingHandoff))
+    c9SkillWritingHandoff=c9PendingSkillWritingHandoff;
+   c9PendingSkillWritingHandoff=null;
+  }
+  return;
+ }
 
  if(name==='c9-native-handoff-return'){
   if(!c9NativeTrail||!c9ConfirmLeaveNativeAnswer()||route()!==c9NativeTrail.targetRoute||
@@ -1055,8 +1071,16 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   // Secure the departure before assigning source-return UI. The original
   // P43 handler operates on the one existing editor after navigation succeeds.
   if(!go('writing'))return;
-  c9SkillWritingHandoff={phase:c9SkillsUi.phase,sourceId:source.id,title:source.title||source.hanzi||source.id};
-  return act({dataset:{action:'c9-writing-source',id:source.id,phase:String(c9SkillsUi.phase)}});
+  const proposed={phase:c9SkillsUi.phase,sourceId:source.id,
+   title:source.title||source.hanzi||source.id};
+  await act({dataset:{action:'c9-writing-source',id:source.id,phase:String(c9SkillsUi.phase)}});
+  if(c9WriterMatchesSkillBridge(proposed)){
+   c9SkillWritingHandoff=proposed;c9PendingSkillWritingHandoff=null;
+  }else if(c9WritingState.pending==='switch'){
+   c9PendingSkillWritingHandoff=proposed;
+  }
+  return;
+
  }
  if(name==='c9-skills-native'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
