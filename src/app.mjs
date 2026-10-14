@@ -816,6 +816,7 @@ function currentC9NativeTarget(routeName){
  if(routeName==='stories')return storyId;
  if(routeName==='dialogues')return dialogueId;
  if(routeName==='workshop')return sentenceTask(sentenceIndex)?.id||null;
+ if(routeName==='explore')return searchSelection?.type==='word'?searchSelection.id:null;
  if(routeName==='advanced')return c9AdvancedSelected;
  return null;
 }
@@ -857,7 +858,7 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
  if(await handleC9WritingAction(button,{
-  go,render,alertUser,speak,act,
+  go,render,alertUser,speak,act,currentRoute:route,
   rememberHandoff:(targetRoute,targetId)=>rememberC9NativeHandoff(
    'writing',targetRoute,targetId,c9WritingState.unitId),
   setWorkshopTask:(taskId,assisted)=>{
