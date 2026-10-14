@@ -62,7 +62,7 @@ import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {p54Overview,p54Lesson,p54Next,p54Story,p54NativeDialogue,P54_STAGES} from './p54-screen.mjs';
 import {P55_BRIEFS,findP55Brief} from './p55-briefs.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
-import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
+import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,p59NativePending,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
 import {p55Overview,p55Lesson,p55WritingContext,P55_STEPS} from './p55-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
@@ -194,6 +194,7 @@ const p54AssistedCases=new Set(); // temporary disclosure only
 const p54Checks=new Set(); // temporary self-review only
 let p55FocusId=null,p55Step='sources',p55Question=0,p55Reveal=false,p55Model=false,p55Support=false,p55RepairShown=false,p55Query='';
 let p58ReaderRouteApplied='',p58DialogueRouteApplied=''; // Ephemeral once-per-URL native question selection.
+let p59FocusedWordHash=''; // Navigation-only; never learner data.
 // P55 UI state only; native academic writers and P43 own attempts and drafts.
 const p42ViewedTranscripts=new Set();
 const p37ViewedTranscripts=new Set();
@@ -631,6 +632,14 @@ function renderReader(){const l=readerLesson(),cloze=makeCloze(l),mode=readerMod
  </section></div>`;
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
+function p59LeaveSourceReaderLink(){
+ // A voluntary original Reader change must not be overridden by an old
+ // #/stories/story-N?p55=... deep link on the next render.
+ if(route()==='stories'&&/^#\/stories\/story-\d+/.test(location.hash)){
+  history.replaceState(null,'',location.pathname+location.search+'#/stories');
+  p58ReaderRouteApplied='';
+ }
+}
 function resetReadingNavigation(){
  p38Section='all';p38Pinyin=false;p38English=false;
  p41Section='all';p41Pinyin=false;p41English=false;
@@ -1171,7 +1180,19 @@ function render(){
  ((p53CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','synthesis52'].includes(route()))?p53ReturnStrip():'')+
  ((p54CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','argument53'].includes(route()))?p54ReturnStrip():'')+
  ((p55Context==='return')?p55ReturnStrip():'')+
- ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+page;if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
+ ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+page;
+ const wordKey=route()==='explore'?
+  new URLSearchParams(location.hash.split('?')[1]||'').get('word'):null;
+ if(wordKey&&findWord(wordKey)&&p59FocusedWordHash!==location.hash){
+  const targetHash=location.hash;p59FocusedWordHash=targetHash;
+  requestAnimationFrame(()=>{
+   if(location.hash!==targetHash)return;
+   const detail=root.querySelector('#explore-detail');
+   if(detail){detail.tabIndex=-1;detail.focus({preventScroll:true});
+    detail.scrollIntoView({block:'start'});}
+  });
+ }else if(!wordKey)p59FocusedWordHash='';
+ if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
 function go(page){location.hash=`#/${page}`;if(route()===page)render();}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
@@ -1235,6 +1256,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   params.set('p55q',String(p55Question));
   location.hash=path+'?'+params.toString();
   return;
+ }
+ if(name==='p59-practise-source'){
+  const b=findP55Brief(p55FocusId);if(!b)return;
+  const next=p59NativePending(state,b).next;
+  if(!next||next.sourceId!==button.dataset.source||
+   String(next.question)!==button.dataset.question)return;
+  return act({dataset:{action:next.kind==='reading'?'p55-native-read':'p55-native-listen',
+   source:next.sourceId,question:String(next.question)}});
  }
  if(name==='p55-native-read'||name==='p55-native-listen'){
   const b=findP55Brief(p55FocusId),sourceId=button.dataset.source;
@@ -3652,8 +3681,8 @@ if(name==='p36-sentences'){
  if(name==='story-bookmark'){const ok=await mutate(s=>toggleStoryBookmark(s,storyId));if(ok&&storiesOnlyBookmarked&&!(state.bookmarkedStories||[]).includes(storyId)){storyId=state.bookmarkedStories?.[0]||STORIES[0].id;if(!(state.bookmarkedStories||[]).length)storiesOnlyBookmarked=false;render();}return;}
  if(name==='story-bookmarks-only'){if(!storiesOnlyBookmarked&&!(state.bookmarkedStories||[]).length)return alertUser('Save a reading first to use the saved-only filter.');storiesOnlyBookmarked=!storiesOnlyBookmarked;if(storiesOnlyBookmarked&&!(state.bookmarkedStories||[]).includes(storyId))storyId=state.bookmarkedStories?.[0]||storyId;if(storiesOnlyBookmarked&&!(state.bookmarkedStories||[]).length)storiesOnlyBookmarked=false;return render();}
  if(name==='reading-text-size'){await mutate(s=>({...structuredClone(s),settings:{...s.settings,readingLarge:!s.settings.readingLarge}}));return;}
- if(name==='story-prev'){storyId=STORIES[(STORIES.findIndex(s=>s.id===storyId)-1+STORIES.length)%STORIES.length].id;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';return render();}
- if(name==='story-next'){storyId=STORIES[(STORIES.findIndex(s=>s.id===storyId)+1)%STORIES.length].id;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';return render();}
+ if(name==='story-prev'){p59LeaveSourceReaderLink();storyId=STORIES[(STORIES.findIndex(s=>s.id===storyId)-1+STORIES.length)%STORIES.length].id;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';return render();}
+ if(name==='story-next'){p59LeaveSourceReaderLink();storyId=STORIES[(STORIES.findIndex(s=>s.id===storyId)+1)%STORIES.length].id;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';return render();}
  if(name==='story-focus-next'){const story=findStory(storyId);storyFocusIndex=(storyFocusIndex+1)%story.lines.length;if(storyParagraphOnly&&story.extended)storyParagraph=paragraphFor(story,storyFocusIndex);return render();}
  if(name==='story-help-line'){const i=Number(button.dataset.index);if(!Number.isInteger(i)||i<0||i>=findStory(storyId).lines.length)return;storyHelpIndex=storyHelpIndex===i?-1:i;if(storyHelpIndex!==-1)storyAssist=true;return render();}
  if(name==='story-focus-off'){storyFocusIndex=-1;return render();}
@@ -3696,7 +3725,22 @@ if(name==='p36-sentences'){
  if(name==='reveal-review'){checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();return}
  if(name==='grade'){if(!revealed||!activeReviewId)return;const c=activeReviewId,g=Number(button.dataset.grade);const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;const ok=await mutate(s=>gradeCard(s,c,g,Date.now(),eventId,{correct:Boolean(checkResult?.correct),assisted:checkResult?.reason==='assisted',errorType:checkResult?.reason}));if(ok){sessionDone++;if(checkResult?.correct)sessionCorrect++;if(sessionQueue?.[0]===c)sessionQueue.shift();revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();}return}
  if(name==='speak')return speak(button.dataset.text||'');
- if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
+ if(name==='select-explore'){
+  const typ=button.dataset.type;
+  const selected=typ==='word'&&findWord(id)?{type:'word',id}:
+   typ==='character'&&findLesson(id)?{type:'character',id}:null;
+  if(!selected)return;
+  searchSelection=selected;
+  // An exact-key entry URL must stop overriding voluntary subsequent browsing.
+  // Selecting another entry also leaves source-specific P55 return context.
+  if(route()==='explore'&&location.hash.includes('?')){
+   history.replaceState(null,'',location.pathname+location.search+'#/explore');
+  }
+  render();
+  const detail=root.querySelector('#explore-detail');
+  if(detail){detail.tabIndex=-1;detail.focus({preventScroll:true});detail.scrollIntoView({block:'nearest'});}
+  return;
+ }
  if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
  if(name==='import-open')return $('import-file')?.click();
  if(name==='reset'){if(!confirm('Delete all demo learning progress in this browser? Export a backup first if you want to keep it.'))return;const cleared=await mutate(_=>freshState());if(cleared){pendingRestore=null;restoreAcknowledgement='';}return}
@@ -3861,7 +3905,7 @@ root.addEventListener('change',async e=>{if(e.target.id==='p30-saved'){p30Saved=
  libraryPage=0;render();return;
 }
 if(e.target.id==='sentence-library-saved'){librarySavedOnly=e.target.checked;libraryPage=0;render();return;}
-if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c=>String(c.number)===e.target.value);if(!chapter){grammarChapter='all';return render();}grammarChapter=e.target.value;openGrammarLesson(chapter.lessons[0]);return;}if(e.target.id==='pinyin-filter'){pinyinFilter=e.target.value;pinyinIndex=0;pinyinFeedback=null;pinyinTyped='';render();return;}if(e.target.id==='wordbook-mode'){if(WORD_PRACTICE_MODES.includes(e.target.value)&&!state.vocabularyJourney){wordbookMode=e.target.value;wordbookFeedback=null;wordbookTyped='';render();}return;}if(e.target.id==='wordbook-focus'){wordbookFocus=e.target.value;wordbookIndex=0;wordbookFeedback=null;wordbookTyped='';render();return;}if(e.target.id==='dialogue-choice'){if(findDialogue(e.target.value)){p42Turn=0;p42TranscriptViewed=p42ViewedTranscripts.has(findDialogue(e.target.value)?.p42?.id);p37Turn=0;p37Branch=null;p37TranscriptViewed=false;location.hash='#/dialogues';p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;dialogueId=e.target.value;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;render();}return;}if(e.target.id==='guided-size'){guidedLimit=Number(e.target.value);return;}if(e.target.id==='guided-focus'){guidedFocus=e.target.value;return;} if(e.target.id==='drill-lesson'){if(findLesson(e.target.value)){drillLessonId=e.target.value;resetDrill();render();}return;}if(e.target.id==='review-focus'){reviewFocus=e.target.value;return render();}if(e.target.id==='review-size'){reviewSize=Number(e.target.value);return render();}if(e.target.id==='story-choice'){if(findStory(e.target.value)){storyId=e.target.value;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';render();}return;}if(e.target.id==='reader-lesson'){readerLessonId=e.target.value;readerResult=null;showLessonTranslation=false;render();return;}
+if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c=>String(c.number)===e.target.value);if(!chapter){grammarChapter='all';return render();}grammarChapter=e.target.value;openGrammarLesson(chapter.lessons[0]);return;}if(e.target.id==='pinyin-filter'){pinyinFilter=e.target.value;pinyinIndex=0;pinyinFeedback=null;pinyinTyped='';render();return;}if(e.target.id==='wordbook-mode'){if(WORD_PRACTICE_MODES.includes(e.target.value)&&!state.vocabularyJourney){wordbookMode=e.target.value;wordbookFeedback=null;wordbookTyped='';render();}return;}if(e.target.id==='wordbook-focus'){wordbookFocus=e.target.value;wordbookIndex=0;wordbookFeedback=null;wordbookTyped='';render();return;}if(e.target.id==='dialogue-choice'){if(findDialogue(e.target.value)){p42Turn=0;p42TranscriptViewed=p42ViewedTranscripts.has(findDialogue(e.target.value)?.p42?.id);p37Turn=0;p37Branch=null;p37TranscriptViewed=false;location.hash='#/dialogues';p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;dialogueId=e.target.value;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;missionActive=false;missionStep=0;missionFeedback=null;render();}return;}if(e.target.id==='guided-size'){guidedLimit=Number(e.target.value);return;}if(e.target.id==='guided-focus'){guidedFocus=e.target.value;return;} if(e.target.id==='drill-lesson'){if(findLesson(e.target.value)){drillLessonId=e.target.value;resetDrill();render();}return;}if(e.target.id==='review-focus'){reviewFocus=e.target.value;return render();}if(e.target.id==='review-size'){reviewSize=Number(e.target.value);return render();}if(e.target.id==='story-choice'){if(findStory(e.target.value)){p59LeaveSourceReaderLink();storyId=e.target.value;resetReadingNavigation();if(findStory(storyId)?.beginner)storyMode='beginner-detail';render();}return;}if(e.target.id==='reader-lesson'){readerLessonId=e.target.value;readerResult=null;showLessonTranslation=false;render();return;}
  if(e.target.id==='import-file'&&e.target.files?.length){if(!db)return;try{const file=e.target.files[0];if(file.size>MAX_BACKUP_BYTES)throw new Error('Backup exceeds 8 MB size limit');const doc=JSON.parse(await file.text());const inspected=previewBackup(doc,state,{bytes:file.size});pendingRestore={learner:importBackup(doc),preview:inspected};restoreAcknowledgement='';e.target.value='';go('settings');render();alertUser('Backup validated. Review the comparison below before choosing to replace any learner data.');}catch(err){pendingRestore=null;restoreAcknowledgement='';alertUser(`Import rejected: ${err.message}`,'error')}}
 });
 document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Enter'&&e.ctrlKey&&e.target.id==='sentence-library-entry'){

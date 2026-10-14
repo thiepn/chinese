@@ -123,19 +123,42 @@ export function p55BriefEvidence(state,brief){
   nativeAttempts:left.reading.length+left.listening.length+
    right.reading.length+right.listening.length+sentences.length};
 }
-function needsAttention(events){
- // Assisted correctness is not independent evidence; suggest a fresh native attempt.
- return events.length>0&&(events.at(-1).correct===false||events.at(-1).assisted===true);
+/** Read-only suggestions per actual canonical question, not one event per
+ * whole passage. Missing Reader/Dialogue modules do not become phantom tasks.
+ * This is navigation guidance, never a mastery or completion score.
+ */
+export function p59NativePending(state,brief){
+ const groups=[brief.from,brief.to].map(id=>p55Evidence(state,id));
+ const tasks=[];
+ for(const e of groups){
+  const native=e.native;if(!native)continue;
+  if(native.story){
+   for(let i=0;i<Math.min(ORIGINAL_READER_MODES.length,p58SourceQuestionCount(native.case.id,'reading'));i++){
+    const mode=ORIGINAL_READER_MODES[i];
+    tasks.push({sourceId:native.case.id,kind:'reading',question:i,
+     event:e.reading.filter(x=>x.mode===mode).at(-1)||null});
+   }
+  }
+  if(native.dialogue){
+   for(let i=0;i<Math.min(3,p58SourceQuestionCount(native.case.id,'dialogue'));i++)
+    tasks.push({sourceId:native.case.id,kind:'dialogue',question:i,
+     event:e.listening.filter(x=>x.question===i).at(-1)||null});
+  }
+ }
+ const next=tasks.find(x=>x.event&&(!x.event.correct||x.event.assisted))||
+  tasks.find(x=>!x.event)||null;
+ return Object.freeze({available:tasks.length,
+  needsRepair:tasks.filter(x=>x.event&&(!x.event.correct||x.event.assisted)).length,
+  untried:tasks.filter(x=>!x.event).length,
+  next:next?Object.freeze({sourceId:next.sourceId,kind:next.kind,question:next.question}):null});
 }
 export function p55Next(state,current=null){
- const start=Math.max(0,P55_BRIEFS.findIndex(x=>x.id===current));
- const order=current?[...P55_BRIEFS.slice(start+1),...P55_BRIEFS.slice(0,start+1)]:P55_BRIEFS;
- return order.find(b=>{const e=p55BriefEvidence(state,b);return needsAttention(e.left.reading)||
-  needsAttention(e.left.listening)||needsAttention(e.right.reading)||needsAttention(e.right.listening);
- })||order.find(b=>{const e=p55BriefEvidence(state,b);
- return !e.left.reading.length||!e.left.listening.length||
-  !e.right.reading.length||!e.right.listening.length;
- })||order[0];
+ const start=P55_BRIEFS.findIndex(x=>x.id===current);
+ const order=start<0?P55_BRIEFS:
+  [...P55_BRIEFS.slice(start+1),...P55_BRIEFS.slice(0,start+1)];
+ return order.find(b=>p59NativePending(state,b).needsRepair>0)||
+  order.find(b=>p59NativePending(state,b).untried>0)||
+  order[0]||null;
 }
 /** Exact source IDs and their native route action only: no parallel reader. */
 export const P55_ROUTE_BY_PHASE=Object.freeze({
