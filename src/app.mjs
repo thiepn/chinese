@@ -151,6 +151,7 @@ let p37Theme='all',p37Query='',p37Page=0,p37BrowseOpen=false,p37Branch=null,p37T
 let p42Query='',p42Page=0,p42BrowseOpen=false,p42Turn=0,p42TranscriptViewed=false;
 let p43UnitId=P43_UNITS[0].id,p43Draft='',p43Revisions=[],p43Version=-1,p43Step='plan';
 let p43ModelRevealed=false,p43SourceRevealed=false,p43Assisted=false,p43Pending='',p43Filter='all',p43Query='';
+let p58P43SourceBriefId=null; // In-tab source context only, not an essay, grade or persistent writer.
 let p43Reviewed=[]; // Ephemeral UI-only composition and self-review. Not an authorized learner record.
 let p44SessionId=null,p44Phase='read',p44ReadHelp=false,p44ListenHelp=false;
 let p44QuestionIndex=0,p44Feedback=null,p44Query='',p44Page=0;
@@ -976,13 +977,22 @@ function renderRegister51(){
 function renderProduction(){
  const id=(location.hash.match(/^#\/production\/(p43-\d{2})/)||[])[1];
  // An external or interrupted deep link must obey the original P43 draft guard.
- if(id&&id!==p43UnitId&&findP43Unit(id)){
+ const linked=findP55Brief(new URLSearchParams(location.hash.split('?')[1]||'').get('p55'));
+ const changesUnit=Boolean(id&&id!==p43UnitId&&findP43Unit(id));
+ const changesBrief=Boolean(linked&&id===p43UnitId&&
+  p58P43SourceBriefId!==linked.id);
+ if(changesUnit||changesBrief){
   if(p43Draft.trim()||p43Revisions.length){
-   if(p43Pending!==id)p43Pending=id;
+   const requested=changesUnit?id:p43UnitId;
+   if(p43Pending!==requested)p43Pending=requested;
   }else{
-   p43UnitId=id;p43Step='plan';p43Version=-1;p43Reviewed=[];
-   p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;
-   p43Pending='';p43Revisions=[];p43Draft='';
+   if(changesUnit){
+    p43UnitId=id;p43Step='plan';p43Version=-1;p43Reviewed=[];
+    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;
+    p43Revisions=[];p43Draft='';
+   }
+   p58P43SourceBriefId=linked?.id||null;
+   p43Pending='';
   }
  }
  const u=findP43Unit(p43UnitId)||P43_UNITS[0];
@@ -1250,7 +1260,8 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p55-p43'){
   const b=findP55Brief(p55FocusId),target=b&&findP43Unit(b.writingId);
   if(!target)return alertUser('Original P43 writing unit unavailable.','error');
-  if(p43UnitId!==target.id&&(p43Draft.trim()||p43Revisions.length)){
+  if((p43UnitId!==target.id||p58P43SourceBriefId!==b.id)&&
+   (p43Draft.trim()||p43Revisions.length)){
    p43Pending=target.id;
    // Keep the old unit visible until the existing P43 explicit discard/switch confirmation.
    location.hash='#/production/'+p43UnitId+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
@@ -1259,6 +1270,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    p43UnitId=target.id;p43Step='plan';p43Reviewed=[];p43Version=-1;
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Pending='';
   }
+  p58P43SourceBriefId=b.id;
   location.hash='#/production/'+target.id+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
  }
  if(name==='p55-copy-brief'){
@@ -2495,6 +2507,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(selected!==p43UnitId){
    p43UnitId=selected;p43Draft='';p43Revisions=[];p43Version=-1;p43Step='plan';
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Reviewed=[];p43Pending='';
+   p58P43SourceBriefId=null;
   }
   location.hash='#/production/'+selected;return render();
  }
@@ -2507,9 +2520,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   // Cancel a pending source-unit switch without leaving its requested target in the URL.
   if(route()==='production'){
    const active='production/'+p43UnitId;
-   const context=findP55Brief(new URLSearchParams(location.hash.split('?')[1]||'').get('p55'));
-   location.hash='#/'+active+(context?.writingId===p43UnitId?
-     '?p55='+context.id+'&p55step=write':'');
+   const previous=findP55Brief(p58P43SourceBriefId);
+   location.hash='#/'+active+(previous?.writingId===p43UnitId?
+     '?p55='+previous.id+'&p55step=write&p55q='+p55Question:'');
   }
   return render();
  }
@@ -2529,6 +2542,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   p43Step='plan';p43UnitId=selected;p43Pending='';
   const linkedWriting=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
   const sourceBrief=findP55Brief(linkedWriting);
+  p58P43SourceBriefId=sourceBrief?.writingId===selected?sourceBrief.id:null;
   location.hash='#/production/'+selected+
    (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id+'&p55step=write&p55q='+p55Question:'');return render();
  }
