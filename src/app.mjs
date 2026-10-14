@@ -1095,34 +1095,32 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
   const linked=source&&c9SkillLinks(c9SkillsUi.phase,source).find(l=>
    l.id===id&&l.kind===button.dataset.kind);
-  if(!linked)return alertUser('Original native source not available for this case.','error');
-  const target={lesson:'learn',grammar:'grammar',story:'stories',
+  if(!linked){alertUser('Original native source not available for this case.','error');return false;}
+  const destination={lesson:'learn',grammar:'grammar',story:'stories',
    dialogue:'dialogues',workshop:'workshop'}[linked.kind];
-  if(!target)return;
-  if(linked.kind==='workshop'&&!SENTENCE_TASKS.some(x=>x.id===id))return;
-  if(route()!==target&&!go(target))return false;
-  if(target==='workshop'&&sentenceTask(sentenceIndex)?.id!==id&&
-    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
-  rememberC9NativeHandoff('skills',target,id,source.title||source.hanzi||source.id);
-  if(linked.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id}});
-  if(linked.kind==='grammar')return act({dataset:{action:'grammar-select',id}});
-  if(linked.kind==='story'){
-   await act({dataset:{action:'c9-media-open-story',id}});
-   if(c9SkillsUi.support){storyAssist=true;storyShowTranslation=true;c9StoryEnglish=true;render();}
-   return;
-  }
-  if(linked.kind==='dialogue'){
-   await act({dataset:{action:'c9-media-open-dialogue',id}});
-   if(c9SkillsUi.support){dialogueSupport=true;render();}
-   return;
-  }
+  if(!destination)return false;
+  // Only create the return trail when the actual original native source
+  // changed successfully. An unsubmitted answer can refuse that change.
+  if(route()!==destination&&!go(destination))return false;
   if(linked.kind==='workshop'){
    const index=SENTENCE_TASKS.findIndex(x=>x.id===id);
-   if(index<0)return;
-   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=c9SkillsUi.support;
-   return go('workshop');
+   if(index<0)return false;
+   if(sentenceIndex!==index&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(c9SkillsUi.support);
+  }else{
+   const actionName={lesson:'c9-lesson-open',grammar:'grammar-select',
+    story:'c9-media-open-story',dialogue:'c9-media-open-dialogue'}[linked.kind];
+   if(!actionName||await act({dataset:{action:actionName,id}})===false)return false;
+   if(linked.kind==='story'&&c9SkillsUi.support){
+    storyAssist=true;storyShowTranslation=true;c9StoryEnglish=true;
+   }
+   if(linked.kind==='dialogue'&&c9SkillsUi.support)dialogueSupport=true;
   }
-  return;
+  rememberC9NativeHandoff('skills',destination,id,
+   source.title||source.hanzi||source.id);
+  render();
+  return true;
  }
  if(name==='c9-advanced-phase'){
   const phase=findC9AdvancedPhase(button.dataset.phase);if(!phase)return;
@@ -1161,32 +1159,31 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return speak(lines[i].hanzi);
  }
  if(name==='c9-advanced-native'){
-  const phase=findC9AdvancedPhase(c9AdvancedPhase),source=phase?.records.find(x=>x.id===c9AdvancedSelected);
-  const link=source&&c9AdvancedNativeLinks(phase,source).find(l=>l.kind===button.dataset.kind&&l.id===id);
-  if(!link)return alertUser('This original source activity is unavailable.','error');
-  const routeByKind={lesson:'learn',grammar:'grammar',story:'stories',
-   dialogue:'dialogues',workshop:'workshop'};
-  const destination=routeByKind[link.kind];
-  if(!destination)return;
-  if(link.kind==='workshop'&&!SENTENCE_TASKS.some(t=>t.id===link.id))
-   return alertUser('Original writing task is unavailable.','error');
+  const phase=findC9AdvancedPhase(c9AdvancedPhase);
+  const source=phase?.records.find(x=>x.id===c9AdvancedSelected);
+  const link=source&&c9AdvancedNativeLinks(phase,source).find(l=>
+   l.kind===button.dataset.kind&&l.id===id);
+  if(!link){alertUser('This original source activity is unavailable.','error');return false;}
+  const destination={lesson:'learn',grammar:'grammar',story:'stories',
+   dialogue:'dialogues',workshop:'workshop'}[link.kind];
+  if(!destination)return false;
   if(route()!==destination&&!go(destination))return false;
-  if(destination==='workshop'&&sentenceTask(sentenceIndex)?.id!==link.id&&
-    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
+  if(link.kind==='workshop'){
+   const index=SENTENCE_TASKS.findIndex(t=>t.id===link.id);
+   if(index<0)return false;
+   if(sentenceIndex!==index&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(c9AdvancedTranslation);
+  }else{
+   const actionName={lesson:'c9-lesson-open',grammar:'grammar-select',
+    story:'c9-media-open-story',dialogue:'c9-media-open-dialogue'}[link.kind];
+   if(!actionName||await act({dataset:{action:actionName,id:link.id}})===false)return false;
+  }
   rememberC9NativeHandoff('advanced',destination,link.id,
    source.title||source.hanzi||source.id);
-  if(link.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id:link.id}});
-  if(link.kind==='grammar')return act({dataset:{action:'grammar-select',id:link.id}});
-  if(link.kind==='story')return act({dataset:{action:'c9-media-open-story',id:link.id}});
-  if(link.kind==='dialogue')return act({dataset:{action:'c9-media-open-dialogue',id:link.id}});
-  if(link.kind==='workshop'){
-   sentenceIndex=SENTENCE_TASKS.findIndex(t=>t.id===link.id);
-   sentenceTyped='';sentenceFeedback=null;sentenceSupport=Boolean(c9AdvancedTranslation);
-   return go('workshop');
-  }
-  return;
+  render();
+  return true;
  }
-
  if(name==='c9-integrate-return'){
   if(!c9DiscoveryTrail)return;
   const from=c9DiscoveryTrail.origin;
