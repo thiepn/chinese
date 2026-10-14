@@ -123,7 +123,8 @@ export function p52Lesson(c,state,act,esc,{stage='records',readingIndex=0,listen
  ].map(([id,label])=>act('p52-check',(chosen.has(id)?'✓ ':'○ ')+esc(label),'p52-check '+(chosen.has(id)?'selected':''),'data-id="'+id+'" aria-pressed="'+chosen.has(id)+'"')).join('')+
  '<p class="muted">These temporary checkboxes are self-review cues, not recorded attempts or mastery.</p>'+
  '<div class="p52-actions">'+act('p52-next','Next independent dossier →','button primary')+
- act('p51-return','Review P51 foundation →','button outline')+'</div></div>':'')+
+ act('p51-return','Review P51 foundation →','button outline')+
+ act('p53-enter','Advance to P53 independent source argumentation →','button primary')+'</div></div>':'')+
  '<footer class="p52-evidence"><span>Actual native evidence · Reader: '+evidence.reading.length+
  ' · Dialogue: '+evidence.listening.length+' · exact-form sentence attempts: '+evidence.writing.length+
  '</span><p>Not an automatic CEFR/HSK result. Source records are original educational fiction.</p></footer></section>';
