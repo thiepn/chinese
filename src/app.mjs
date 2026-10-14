@@ -447,11 +447,17 @@ function renderGrammar(){
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
- const selected=findGrammarLesson(id);if(!selected)return;
+ const selected=findGrammarLesson(id);if(!selected)return false;
+ // Original grammar handlers also open from source-linked activities. Route
+ // approval and native unsent input protection must precede any reset.
+ if(route()==='grammar'&&selectedGrammarId()!==id&&
+  !c9ConfirmLeaveNativeAnswer('grammar'))return false;
+ if(route()!=='grammar'&&!go('grammar'))return false;
  grammarSelected=id;grammarChapter=String(selected.chapterNumber);
  grammarQuery='';grammarSessionReset();
  location.hash='#/grammar/'+id;
  render();
+ return true;
 }
 function grammarUnitSelector(character){
  const related=GRAMMAR_LESSONS.filter(g=>g.anchor===character).slice(0,3);
@@ -1306,7 +1312,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
  }
   if(name==='c9-media-open-story'){
-  const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
+  const target=findStory(id);if(!target){alertUser('Original reading unavailable.','error');return false;}
   if(route()==='stories'&&storyId!==target.id&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
   if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
@@ -1314,10 +1320,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   resetReadingNavigation();
   if(route()==='stories'){render();root.querySelector('.story-paper')?.scrollIntoView({block:'start'});}
   else go('stories');
-  return;
+  return true;
  }
  if(name==='c9-media-open-dialogue'){
-  const target=findDialogue(id);if(!target)return alertUser('Original conversation unavailable.','error');
+  const target=findDialogue(id);if(!target){alertUser('Original conversation unavailable.','error');return false;}
+  if(route()==='dialogues'&&dialogueId!==target.id&&
+   !c9ConfirmLeaveNativeAnswer('dialogues'))return false;
   if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
@@ -1325,7 +1333,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   c9DialogueSourceId=null;c9DialogueTurn=0;
   if(route()==='dialogues'){render();root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});}
   else go('dialogues');
-  return;
+  return true;
  }
  if(name==='c9-media-turn'){
   const dialogue=findDialogue(dialogueId);
@@ -1459,13 +1467,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
-   if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+   if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
    if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
    if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
    else go('learn');
-   return;
+   return true;
  }
  if(name==='c9-unit-open'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
@@ -1832,7 +1840,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return;
  }
  if(name==='grammar-open'){return go('grammar');}
- if(name==='grammar-select'){if(findGrammarLesson(id))openGrammarLesson(id);return;}
+ if(name==='grammar-select')return findGrammarLesson(id)?openGrammarLesson(id):false;
  if(name==='grammar-next'||name==='grammar-previous'){
   if(!grammarFeedback&&grammarTyped.trim()&&!c9ConfirmLeaveNativeAnswer())return;
   const next=nextGrammarLesson(selectedGrammarId(),name==='grammar-next'?1:-1);if(next)openGrammarLesson(next.id);return;
