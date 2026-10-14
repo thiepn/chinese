@@ -166,7 +166,7 @@ function requestC9Writing(target,{go}){
 }
 export function hasC9UncopiedWriting(){
  const w=c9WritingState;
- return Boolean(w.draft.trim()&&w.draft!==w.revisions.at(-1));
+ return Boolean(w.draft.trim()||w.revisions.length);
 }
 export function handleC9WritingInput(e,root){
  const w=c9WritingState;
