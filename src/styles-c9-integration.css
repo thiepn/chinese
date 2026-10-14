@@ -159,3 +159,23 @@
  .c9-integrated-atlas-actions{width:100%}
  .c9-integrated-atlas-actions>a{flex:1 1 170px}
 }
+
+
+/* C9-28 · Real source-scoped returns and in-tab unsent composition continuity. */
+.c9-native-handoff,.c9-writing-continuation{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:13px;
+ margin:0 0 15px;padding:15px clamp(14px,2vw,21px);
+ background:var(--c9-surface);color:var(--c9-ink);
+ border:1px solid var(--c9-line);border-left:3px solid var(--c9-accent);
+ border-radius:var(--c9-r-sm)
+}
+.c9-writing-continuation{border-left-color:var(--c9-sage)}
+.c9-native-handoff>div,.c9-writing-continuation>div{display:grid;gap:4px;min-width:0;flex:1 1 290px}
+.c9-native-handoff strong,.c9-writing-continuation strong{font:600 13px/1.4 var(--c9-ui);overflow-wrap:anywhere}
+.c9-native-handoff p,.c9-writing-continuation p{margin:0;color:var(--c9-sub);font:400 11px/1.65 var(--c9-ui)}
+.c9-native-handoff button,.c9-writing-continuation button{min-height:44px;white-space:normal}
+.c9-native-handoff :focus-visible,.c9-writing-continuation :focus-visible{outline:3px solid var(--c9-accent);outline-offset:2px}
+@media(max-width:620px){
+ .c9-native-handoff,.c9-writing-continuation{padding:13px}
+ .c9-native-handoff>button,.c9-writing-continuation>button{flex:1 1 100%}
+}
