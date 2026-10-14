@@ -203,6 +203,12 @@ export function handleC9WritingInput(e,root){
 export async function handleC9WritingAction(button,api){
  const name=button.dataset.action,id=button.dataset.id,w=c9WritingState;
  const {go,render,alertUser,speak,act,setWorkshopTask,openAdvanced,rememberHandoff}=api;
+ // P43 authorial teaching crosslinks use the original native handlers, but
+ // retain a source-scoped path back to this exact in-tab composition.
+ if(api.currentRoute?.()==='writing'&&(name==='grammar-select'||name==='lookup-word')){
+  rememberHandoff(name==='grammar-select'?'grammar':'explore',id);
+  return false;
+ }
  if(name==='c9-writing-source')return openC9WritingSource(Number(button.dataset.phase),id,api);
  if(name==='c9-writing-models'){
   if(c9WritingTransfer(w.transferPhase,w.sourceId)){w.transferModels=!w.transferModels;render();}
