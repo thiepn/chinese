@@ -100,3 +100,5 @@
  .c9-writing-workspace .p43-studio textarea{font-size:18px;min-height:210px}
 }
 @media(prefers-reduced-motion:reduce){.c9-writing-workspace *{transition:none;animation:none}}
+
+.c9-writing-workspace .p43-unit[hidden]{display:none}
