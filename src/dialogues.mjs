@@ -1,5 +1,15 @@
 import {P33_SCENARIOS} from './p33-scenarios.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
+import {P37_SCENES} from './p37-scenarios.mjs';
+import {P42_SCENES} from './p42-course.mjs';
+import {P44_SCENARIOS} from './p44-course.mjs';
+import {P45_TRANSFERS} from './p45-course.mjs';
+import {P46_DIALOGUES} from './p46-dialogues.mjs';
+import {P47_DIALOGUES} from './p47-dialogues.mjs';
+import {P48_DIALOGUES} from './p48-dialogues.mjs';
+import {P49_CASES} from './p49-course.mjs';
+import {P50_DIALOGUES} from './p50-dialogues.mjs';
+import {P51_DIALOGUES} from './p51-dialogues.mjs';
 /** Independent demo conversations. Editorial samples; no official HSK membership or audio qualification. */
 const data=[
  ['At the library',[['A','你想看什么书？','Nǐ xiǎng kàn shénme shū?','What book would you like to read?'],['B','我想看一本中文书。','Wǒ xiǎng kàn yì běn Zhōngwén shū.','I want to read a Chinese-language book.'],['A','我们一起找吧。','Wǒmen yìqǐ zhǎo ba.','Let’s look for it together.']],[['What kind of book does B want?','A Chinese-language book.','A book about trains.','A math textbook.'],['What does A suggest doing together?','Looking for the book.','Going home.','Taking a train.']]],
@@ -252,11 +262,54 @@ data.push(...P33_SCENARIOS.map((s,i)=>{
 }));
 // P34 listening scripts follow historical dialogues without renumbering.
 data.push(...P34_LISTENING.map(s=>[s.title,s.lines,s.questions]));
+// P37 eight-turn scenarios use the same canonical question/event system.
+data.push(...P37_SCENES.map((s,i)=>{
+ const otherA=P37_SCENES[(i+11)%P37_SCENES.length].turns[7][1];
+ const otherB=P37_SCENES[(i+19)%P37_SCENES.length].turns[7][1];
+ return [s.title,s.turns,[...s.questions,
+ ['Which Chinese reply completes the final exchange after: '+s.turns[6][3],
+  s.turns[7][1],otherA,otherB]]];
+}));
+// P42 original intermediate spoken scenarios append after all historical dialogue IDs.
+data.push(...P42_SCENES.map(s=>[s.title,s.turns,
+ s.questions.map(q=>[q.prompt,q.answer,...q.wrong])]));
+// P44 original integrated spoken exchanges append after all existing dialogue identities.
+data.push(...P44_SCENARIOS.map(s=>[s.title,
+ s.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),
+ s.questions.map(q=>[q.prompt,...q.options])]));
+// P45 mixed-skill transfer questions append after all historical dialogue IDs.
+data.push(...P45_TRANSFERS.map(c=>[c.title,c.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),
+ c.questions.map(q=>[q.prompt,...q.options])]));
+// P46 listening scripts append after all P45 and earlier dialogue identities.
+data.push(...P46_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),
+ d.questions.map(q=>[q.prompt,...q.options])]));
+// P47 original eight-turn conversations follow all historical native dialogue IDs.
+data.push(...P47_DIALOGUES.map(d=>[d.title,
+ d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),
+ d.questions.map(q=>[q.prompt,...q.options])]));
+// P48 original multi-speaker cases append after all existing dialogue identities.
+data.push(...P48_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),d.questions.map(q=>[q.prompt,...q.options])]));
+// P49 cumulative scenarios append without rewriting any earlier dialogue or source ID.
+data.push(...P49_CASES.map(c=>[c.title,c.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),c.questions.map(q=>[q.prompt,...q.options])]));
+// P50 original three- and four-speaker cases append after all earlier IDs.
+data.push(...P50_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),d.questions.map(q=>[q.prompt,...q.options])]));
+// P51 original source- and register-aware listening appends after earlier dialogue identities.
+data.push(...P51_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),d.questions.map(q=>[q.prompt,...q.options])]));
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
  const p33=P33_SCENARIOS.find(s=>s.title===title)||null;
  const p34=P34_LISTENING.find(s=>s.title===title)||null;
- return Object.freeze({id,title,p33,p34,
+ const p37=P37_SCENES.find(s=>s.title===title)||null;
+ const p42=P42_SCENES.find(s=>s.title===title)||null;
+ const p44=P44_SCENARIOS.find(s=>s.title===title)||null;
+ const p45=P45_TRANSFERS.find(s=>s.title===title)||null;
+ const p46=P46_DIALOGUES.find(s=>s.title===title)||null;
+ const p47=P47_DIALOGUES.find(s=>s.title===title)||null;
+ const p48=P48_DIALOGUES.find(s=>s.title===title)||null;
+ const p49=P49_CASES.find(s=>s.title===title)||null;
+ const p50=P50_DIALOGUES.find(s=>s.title===title)||null;
+ const p51=P51_DIALOGUES.find(s=>s.title===title)||null;
+ return Object.freeze({id,title,p33,p34,p37,p42,p44,p45,p46,p47,p48,p49,p50,p51,
   lines:Object.freeze(lines.map(([speaker,hanzi,pinyin,english])=>Object.freeze({speaker,hanzi,pinyin,english}))),
   questions:Object.freeze(questions.map(([prompt,answer,...wrong],j)=>Object.freeze({
    id:`${id}:q${j}`,prompt,answer,options:Object.freeze([answer,...wrong].sort((a,b)=>a.localeCompare(b)))
