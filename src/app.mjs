@@ -91,7 +91,28 @@ let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId
 let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
 let c9NativeTrail=null; // Source-scoped return for native P35–P51 and P43 activity handoffs.
 let c9ReturnFocus=null;
-window.addEventListener('beforeunload',e=>{if(hasC9UncopiedWriting()){e.preventDefault();e.returnValue='';}});
+const C9_ACTIVE_ANSWER_IDS=Object.freeze({
+ review:['review-entry'],workshop:['workshop-entry'],
+ grammar:['grammar-entry'],sentences:['sentence-library-entry'],
+ pinyin:['pinyin-answer-entry'],pathway:['pathway-write'],
+ practice:['guided-entry','drill-entry','mission-entry'],
+ journey:['course-entry','repair-entry'],ladder:['ladder-entry'],
+ block:['block-entry','trail-entry'],fluency:['fluency-entry'],
+ stories:['story-entry'],wordbook:['wordbook-entry'],
+ learn:['lesson-check-entry']
+});
+function c9OpenNativeAnswer(){
+ const candidates=C9_ACTIVE_ANSWER_IDS[route()]||[];
+ return candidates.map(id=>root.querySelector('#'+id))
+  .find(el=>el&&!el.disabled&&el.getClientRects().length&&String(el.value||'').trim())||null;
+}
+function c9ConfirmLeaveNativeAnswer(){
+ const field=c9OpenNativeAnswer();
+ return !field||window.confirm('A typed answer is still in this learning screen. Leaving may discard the unsubmitted text. Leave anyway?');
+}
+window.addEventListener('beforeunload',e=>{
+ if(hasC9UncopiedWriting()||c9OpenNativeAnswer()){e.preventDefault();e.returnValue='';}
+});
 let c9AdvancedPhase=35,c9AdvancedQuery='',c9AdvancedPage=0,c9AdvancedSelected=null,c9AdvancedTranslation=false;
 let drillLessonId=DEMO_LESSONS[0].id,drillMode='recognition',drillResult=null,drillPicked='',drillTyped='',drillOrder=[],drillAssisted=false;
 let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,beginnerLevel='all',beginnerPart='all',beginnerWordShown=false,beginnerPartTip='',storyFocusIndex=-1,storyHelpIndex=-1,exploreSavedOnly=false;
@@ -823,7 +844,12 @@ function renderFind(){const ui=c9FindContext();return '<div class="c9-search-pag
   '<div class="c9-search-native" id="c9-original-search" tabindex="-1">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
 
 function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
-function go(page){const target=`#/${page}`;if(location.hash===target){render();return;}location.hash=target;}
+function go(page,answerConfirmed=false){
+ const target='#/'+page;
+ if(location.hash===target){render();return true;}
+ if(route()!==page&&!answerConfirmed&&!c9ConfirmLeaveNativeAnswer())return false;
+ location.hash=target;return true;
+}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
@@ -850,26 +876,26 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }))return;
 
  if(name==='c9-native-handoff-return'){
-  if(!c9NativeTrail||route()!==c9NativeTrail.targetRoute||
+  if(!c9NativeTrail||!c9ConfirmLeaveNativeAnswer()||route()!==c9NativeTrail.targetRoute||
    currentC9NativeTarget(route())!==c9NativeTrail.targetId)return;
   const previous=c9NativeTrail;c9NativeTrail=null;
   const target=previous.origin;
   if(target==='advanced'){
    c9ReturnFocus='c9-advanced-detail';
-   return go('advanced');
+   return go('advanced',true);
   }
   if(target==='writing'){
    c9ReturnFocus=c9WritingState.step==='plan'?'c9-transfer-title':
     c9WritingState.step==='compose'||c9WritingState.step==='revise'?'p43-draft':null;
-   return go('writing');
+   return go('writing',true);
   }
   return;
  }
  if(name==='c9-native-resume-writing'){
-  if(!hasC9UncopiedWriting())return;
+  if(!hasC9UncopiedWriting()||!c9ConfirmLeaveNativeAnswer())return;
   c9NativeTrail=null;
   c9ReturnFocus=c9WritingState.step==='compose'||c9WritingState.step==='revise'?'p43-draft':null;
-  return go('writing');
+  return go('writing',true);
  }
  if(name==='c9-advanced-phase'){
   const phase=findC9AdvancedPhase(button.dataset.phase);if(!phase)return;
@@ -1998,6 +2024,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='reset'){if(!confirm('Delete all demo learning progress in this browser? Export a backup first if you want to keep it.'))return;const cleared=await mutate(_=>freshState());if(cleared){pendingRestore=null;restoreAcknowledgement='';}return}
 }
 document.querySelector('.topbar')?.addEventListener('click',ev=>{if(ev.target.closest('[data-action="go-settings"]'))go('settings')});
+document.addEventListener('click',ev=>{
+ const link=ev.target.closest?.('a[href^="#/"]');
+ if(!link||ev.defaultPrevented||ev.button!==0||ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.altKey)return;
+ const target=(link.getAttribute('href').match(/^#\/(\w+)/)||[])[1];
+ if(target&&target!==route()&&!c9ConfirmLeaveNativeAnswer())ev.preventDefault();
+},true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
  if(handleC9WritingInput(e,root))return;
@@ -2039,6 +2071,11 @@ if(e.target.id==='sentence-library-query'){
 }
 if(e.target.id==='grammar-entry'){grammarTyped=e.target.value;const b=root.querySelector('[data-action="grammar-answer"]');if(b)b.disabled=!grammarTyped.trim();return;}if(e.target.id==='grammar-query'){grammarQuery=e.target.value;for(const item of root.querySelectorAll('[data-grammar-search]'))item.hidden=!item.dataset.grammarSearch.includes(grammarQuery.toLowerCase());return;}if(e.target.id==='pinyin-answer-entry'){pinyinTyped=e.target.value;const button=root.querySelector('[data-action="pinyin-answer"]');if(button)button.disabled=!pinyinTyped.trim();return;}if(e.target.id==='wordbook-entry'){wordbookTyped=e.target.value;const b=root.querySelector('[data-action="wordbook-answer"]');if(b)b.disabled=!wordbookTyped.trim();return;}if(e.target.id==='guided-entry'){guidedTyped=e.target.value;const b=root.querySelector('[data-action="guided-check"]');if(b)b.disabled=!guidedTyped.trim();return;}if(e.target.id==='drill-entry'){drillTyped=e.target.value;const b=root.querySelector('[data-action="drill-check"]');if(b)b.disabled=!drillTyped.trim();return;}if(e.target.id==='story-entry'){storyTyped=e.target.value;const b=root.querySelector('[data-action="story-check"]');if(b)b.disabled=!storyTyped.trim();return;}if(e.target.id==='review-entry'){typedAnswer=e.target.value;const check=root.querySelector('[data-action="submit-review"]');if(check)check.disabled=!typedAnswer.trim();return;}if(e.target.id==='explore-query'){searchQuery=e.target.value;explorePage=0;const matches=visibleExploreResults();$('search-count').textContent=`${matches.length} results · ${WORDS.length} distinct demo word entries · Browsing never changes mastery.`;$('explore-results').innerHTML=renderSearchResults(matches);if($('explore-pager'))$('explore-pager').innerHTML=catalogPager(matches.length);}});
 root.addEventListener('change',async e=>{
+ if(e.target.id==='c9-advanced-phase-select'){
+  const phase=findC9AdvancedPhase(e.target.value);
+  if(phase)return act({dataset:{action:'c9-advanced-phase',phase:String(phase.phase)}});
+  return;
+ }
  if(e.target.id==='c9-reading-filter'){if(!['all','unattempted','repair','saved','independent'].includes(e.target.value))return;c9ReadingFilter=e.target.value;c9ReadingPage=0;refreshC9MediaCatalog('reading');return;}
  if(e.target.id==='c9-dialogue-filter'){if(!['all','unattempted','repair','independent','listening'].includes(e.target.value))return;c9DialogueFilter=e.target.value;c9DialoguePage=0;refreshC9MediaCatalog('dialogue');return;}
  if(e.target.id==='c9-word-status'){if(!C9_WORD_FILTERS.includes(e.target.value))return;c9WordFilter=e.target.value;c9WordPage=0;refreshC9Words();return;}
