@@ -62,7 +62,7 @@ import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {p54Overview,p54Lesson,p54Next,p54Story,p54NativeDialogue,P54_STAGES} from './p54-screen.mjs';
 import {P55_BRIEFS,findP55Brief} from './p55-briefs.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
-import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
+import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
 import {p55Overview,p55Lesson,p55WritingContext,P55_STEPS} from './p55-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
@@ -151,6 +151,7 @@ let p37Theme='all',p37Query='',p37Page=0,p37BrowseOpen=false,p37Branch=null,p37T
 let p42Query='',p42Page=0,p42BrowseOpen=false,p42Turn=0,p42TranscriptViewed=false;
 let p43UnitId=P43_UNITS[0].id,p43Draft='',p43Revisions=[],p43Version=-1,p43Step='plan';
 let p43ModelRevealed=false,p43SourceRevealed=false,p43Assisted=false,p43Pending='',p43Filter='all',p43Query='';
+let p58P43SourceBriefId=null; // In-tab source context only, not an essay, grade or persistent writer.
 let p43Reviewed=[]; // Ephemeral UI-only composition and self-review. Not an authorized learner record.
 let p44SessionId=null,p44Phase='read',p44ReadHelp=false,p44ListenHelp=false;
 let p44QuestionIndex=0,p44Feedback=null,p44Query='',p44Page=0;
@@ -192,6 +193,7 @@ let p54ReadingIndex=0,p54ListeningIndex=0,p54ReadingFeedback=null,p54ListeningFe
 const p54AssistedCases=new Set(); // temporary disclosure only
 const p54Checks=new Set(); // temporary self-review only
 let p55FocusId=null,p55Step='sources',p55Question=0,p55Reveal=false,p55Model=false,p55Support=false,p55RepairShown=false,p55Query='';
+let p58ReaderRouteApplied='',p58DialogueRouteApplied=''; // Ephemeral once-per-URL native question selection.
 // P55 UI state only; native academic writers and P43 own attempts and drafts.
 const p42ViewedTranscripts=new Set();
 const p37ViewedTranscripts=new Set();
@@ -242,8 +244,17 @@ function onboardingPanel(){const p=state.placement, suggestion=placementSuggesti
 }
 function studyPathPanel(){const items=lessonPath(state,{limit:4}),units=unitOverview(state);return `<section class="simple-panel pathway-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR NEXT STEPS</p><h2>Personal learning path</h2></div><span class="muted">Transparent suggestions · not a proficiency level</span></div><div class="pathway-steps">${items.map((item,i)=>`<button type="button" class="pathway-step" data-action="open-lesson" data-id="${esc(item.id)}"><span class="pathway-rank">${i+1}</span><span lang="zh-Hans" class="pathway-hanzi">${esc(item.lesson.hanzi)}</span><span><strong>${esc(item.lesson.meaning)}</strong><small>${esc(item.kind==='new'?'Introduce next':'Revisit')} · ${esc(item.reason)}</small></span><span aria-hidden="true">→</span></button>`).join('')}</div><p class="muted">${units.filter(u=>u.status==='Introduced').length} of ${units.length} demo units fully introduced. Review errors are not counted as completed lessons.</p></section>`;}
 function renderDialogues(){const routeAdvanced=(location.hash.match(/^#\/dialogues\/(dialogue-\d+)/)||[])[1];
- if(routeAdvanced&&DIALOGUES.some(d=>d.id===routeAdvanced&&['p50','p51','p52','p53','p54'].some(k=>d[k]))&&routeAdvanced!==dialogueId){
-  dialogueId=routeAdvanced;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
+ if(routeAdvanced&&DIALOGUES.some(d=>d.id===routeAdvanced&&['p50','p51','p52','p53','p54'].some(k=>d[k]))){
+  if(routeAdvanced!==dialogueId){
+   dialogueId=routeAdvanced;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
+  }
+  const question=new URLSearchParams(location.hash.split('?')[1]||'').get('question');
+  const chosen=Number(question);
+  const original=findDialogue(routeAdvanced);
+  if(question!==null&&['0','1','2'].includes(question)&&chosen<original.questions.length&&
+    p58DialogueRouteApplied!==location.hash){
+   dialogueStep=chosen;dialogueFeedback=null;p58DialogueRouteApplied=location.hash;
+  }
  }
  const routeP42=(location.hash.match(/^#\/dialogues\/(p42-\d{2})/)||[])[1];
  if(routeP42){const target=DIALOGUES.find(x=>x.p42?.id===routeP42);if(target){
@@ -631,8 +642,15 @@ function resetReadingNavigation(){
 }
 function resetStoryExercise(){storyResult=null;storyAssist=Boolean(findStory(storyId)?.beginner?.p41&&(p41Pinyin||p41English));storyShowTranslation=false;storyHelpIndex=-1;storyGlossary=null;storySequence=[];storyTyped='';}
 function renderStories(){const routeAdvanced=(location.hash.match(/^#\/stories\/(story-\d+)/)||[])[1];
- if(routeAdvanced&&STORIES.some(x=>x.id===routeAdvanced&&/^original-p5[0-4]$/.test(x.beginner?.source||''))&&routeAdvanced!==storyId){
-  storyId=routeAdvanced;storyMode='beginner-detail';resetReadingNavigation();
+ if(routeAdvanced&&STORIES.some(x=>x.id===routeAdvanced&&/^original-p5[0-4]$/.test(x.beginner?.source||''))){
+  if(routeAdvanced!==storyId){
+   storyId=routeAdvanced;storyMode='beginner-detail';resetReadingNavigation();
+  }
+  const chosenMode=new URLSearchParams(location.hash.split('?')[1]||'').get('mode');
+  if(['beginner-detail','beginner-reason','beginner-sequence'].includes(chosenMode)&&
+    p58ReaderRouteApplied!==location.hash){
+   storyMode=chosenMode;resetStoryExercise();p58ReaderRouteApplied=location.hash;
+  }
  }
  const routeP41=(location.hash.match(/^#\/stories\/(p41-\d{2})/)||[])[1];
  if(routeP41){const selected=STORIES.find(x=>x.beginner?.p41?.id===routeP41);
@@ -959,13 +977,22 @@ function renderRegister51(){
 function renderProduction(){
  const id=(location.hash.match(/^#\/production\/(p43-\d{2})/)||[])[1];
  // An external or interrupted deep link must obey the original P43 draft guard.
- if(id&&id!==p43UnitId&&findP43Unit(id)){
+ const linked=findP55Brief(new URLSearchParams(location.hash.split('?')[1]||'').get('p55'));
+ const changesUnit=Boolean(id&&id!==p43UnitId&&findP43Unit(id));
+ const changesBrief=Boolean(linked&&id===p43UnitId&&
+  p58P43SourceBriefId!==linked.id);
+ if(changesUnit||changesBrief){
   if(p43Draft.trim()||p43Revisions.length){
-   if(p43Pending!==id)p43Pending=id;
+   const requested=changesUnit?id:p43UnitId;
+   if(p43Pending!==requested)p43Pending=requested;
   }else{
-   p43UnitId=id;p43Step='plan';p43Version=-1;p43Reviewed=[];
-   p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;
-   p43Pending='';p43Revisions=[];p43Draft='';
+   if(changesUnit){
+    p43UnitId=id;p43Step='plan';p43Version=-1;p43Reviewed=[];
+    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;
+    p43Revisions=[];p43Draft='';
+   }
+   p58P43SourceBriefId=linked?.id||null;
+   p43Pending='';
   }
  }
  const u=findP43Unit(p43UnitId)||P43_UNITS[0];
@@ -1093,7 +1120,7 @@ function p55ContextKind(){
  if(!linked)return null; // Never show a stale P55 handoff during unrelated original learning.
  if(locationRoute==='production'){
   const routeUnit=(hash.match(/^#\/production\/(p43-\d{2})/)||[])[1]||p43UnitId;
-  return linked&&routeUnit===b.writingId?'writing':null;
+  return linked&&routeUnit===p43UnitId&&!p43Pending&&routeUnit===b.writingId?'writing':null;
  }
  if(locationRoute==='workshop'){
   const taskId=params.get('task'),task=taskId?SENTENCE_TASKS.find(t=>t.id===taskId):sentenceTask(sentenceIndex);
@@ -1116,7 +1143,12 @@ function p55ContextKind(){
   ({p50:p50CaseId,p51:p51CaseId,p52:p52CaseId,p53:p53CaseId,p54:p54CaseId})[rPrefix];
  return [b.from,b.to].includes(caseId)?'return':null;
 }
-function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
+function render(){
+ // A native question deep link is applied once per visit, not every redraw.
+ // Leaving the original module allows re-opening an older URL to restore its question.
+ if(route()!=='stories')p58ReaderRouteApplied='';
+ if(route()!=='dialogues')p58DialogueRouteApplied='';
+ const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
  if(findP55Brief(linkedP55)){
   p55FocusId=linkedP55;
   const backStep=new URLSearchParams(location.hash.split('?')[1]||'').get('p55step');
@@ -1125,8 +1157,8 @@ function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1
   if(savedQuestion!==null&&['0','1','2'].includes(savedQuestion))
    p55Question=Number(savedQuestion);
  }
- const p55Context=p55ContextKind();
- navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,register51:renderRegister51,synthesis52:renderSynthesis52,argument53:renderArgument53,fluency54:renderFluency54,advanced55:renderAdvanced55,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
+ navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,register51:renderRegister51,synthesis52:renderSynthesis52,argument53:renderArgument53,fluency54:renderFluency54,advanced55:renderAdvanced55,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};const page=pages[route()](),p55Context=p55ContextKind();
+ root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
  ((p44SessionId&&['stories','dialogues','production','workshop'].includes(route()))?p44ReturnStrip():'')+
  ((p45CaseId&&['stories','dialogues','production','workshop','integrated'].includes(route()))?p45ReturnStrip():'')+
  ((p46UnitId&&['learn','grammar','stories','dialogues','wordbook','workshop','production','cumulative'].includes(route()))?p46ReturnStrip():'')+
@@ -1139,7 +1171,7 @@ function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1
  ((p53CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','synthesis52'].includes(route()))?p53ReturnStrip():'')+
  ((p54CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','argument53'].includes(route()))?p54ReturnStrip():'')+
  ((p55Context==='return')?p55ReturnStrip():'')+
- ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+pages[route()]();if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
+ ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+page;if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
 function go(page){location.hash=`#/${page}`;if(route()===page)render();}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
@@ -1207,21 +1239,34 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p55-native-read'||name==='p55-native-listen'){
   const b=findP55Brief(p55FocusId),sourceId=button.dataset.source;
   if(!b||![b.from,b.to].includes(sourceId))return;
-  const native=p55Native(sourceId);
-  if(name==='p55-native-read'&&native?.story){
-   storyId=native.story.id;storyMode='beginner-detail';resetReadingNavigation();
-   location.hash='#/stories/'+native.story.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
+  const native=p55Native(sourceId),index=Number(button.dataset.question);
+  if(!Number.isInteger(index)||index<0||index>2)return;
+  const isRead=name==='p55-native-read';
+  if(index>=p58SourceQuestionCount(sourceId,isRead?'reading':'dialogue'))
+   return alertUser('Original source has no question at that position.','error');
+  const params=new URLSearchParams({
+   p55:b.id,p55step:p55Step,p55q:String(index)
+  });
+  if(isRead&&native?.story){
+   const modes=['beginner-detail','beginner-reason','beginner-sequence'];
+   storyId=native.story.id;storyMode=modes[index];resetReadingNavigation();
+   params.set('mode',modes[index]);
+   location.hash='#/stories/'+native.story.id+'?'+params.toString();
+   return render();
   }
-  if(name==='p55-native-listen'&&native?.dialogue){
-   dialogueId=native.dialogue.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
-   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
+  if(!isRead&&native?.dialogue){
+   dialogueId=native.dialogue.id;dialogueStep=index;dialogueFeedback=null;dialogueSupport=false;
+   params.set('question',String(index));
+   location.hash='#/dialogues/'+native.dialogue.id+'?'+params.toString();
+   return render();
   }
-  return alertUser('Original reading or conversation not available.','error');
+  return alertUser('Original question is not accessible in the native learning module.','error');
  }
  if(name==='p55-p43'){
   const b=findP55Brief(p55FocusId),target=b&&findP43Unit(b.writingId);
   if(!target)return alertUser('Original P43 writing unit unavailable.','error');
-  if(p43UnitId!==target.id&&(p43Draft.trim()||p43Revisions.length)){
+  if((p43UnitId!==target.id||p58P43SourceBriefId!==b.id)&&
+   (p43Draft.trim()||p43Revisions.length)){
    p43Pending=target.id;
    // Keep the old unit visible until the existing P43 explicit discard/switch confirmation.
    location.hash='#/production/'+p43UnitId+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
@@ -1230,6 +1275,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    p43UnitId=target.id;p43Step='plan';p43Reviewed=[];p43Version=-1;
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Pending='';
   }
+  p58P43SourceBriefId=b.id;
   location.hash='#/production/'+target.id+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
  }
  if(name==='p55-copy-brief'){
@@ -2466,6 +2512,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(selected!==p43UnitId){
    p43UnitId=selected;p43Draft='';p43Revisions=[];p43Version=-1;p43Step='plan';
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Reviewed=[];p43Pending='';
+   p58P43SourceBriefId=null;
   }
   location.hash='#/production/'+selected;return render();
  }
@@ -2478,9 +2525,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   // Cancel a pending source-unit switch without leaving its requested target in the URL.
   if(route()==='production'){
    const active='production/'+p43UnitId;
-   const context=findP55Brief(new URLSearchParams(location.hash.split('?')[1]||'').get('p55'));
-   location.hash='#/'+active+(context?.writingId===p43UnitId?
-     '?p55='+context.id+'&p55step=write':'');
+   const previous=findP55Brief(p58P43SourceBriefId);
+   location.hash='#/'+active+(previous?.writingId===p43UnitId?
+     '?p55='+previous.id+'&p55step=write&p55q='+p55Question:'');
   }
   return render();
  }
@@ -2500,6 +2547,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   p43Step='plan';p43UnitId=selected;p43Pending='';
   const linkedWriting=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
   const sourceBrief=findP55Brief(linkedWriting);
+  p58P43SourceBriefId=sourceBrief?.writingId===selected?sourceBrief.id:null;
   location.hash='#/production/'+selected+
    (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id+'&p55step=write&p55q='+p55Question:'');return render();
  }

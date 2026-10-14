@@ -62,3 +62,15 @@
  .p55-source-actions .button{width:100%;text-align:left;white-space:normal}
  .p55-actions .button{min-width:0;max-width:100%;white-space:normal}
 }
+
+/* P58 optional original source-qualified models in the P57 transfer panel. */
+.p58-reference{margin:1rem 0;padding:.85rem 0;border-top:1px solid var(--line,#c4cfca)}
+.p58-reference h5{font-size:1rem;margin:.25rem 0}
+.p58-reference-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.p58-reference-pair article{min-width:0;padding:.9rem;border:1px solid var(--line,#c4cfca)}
+.p58-reference-pair h6{font-size:.92rem;margin:0 0 .5rem}
+.p58-reference-pair p[lang]{font-size:1.15rem;line-height:1.7;overflow-wrap:anywhere}
+.p58-reference-pair small{font-size:.83rem;color:var(--muted,#64736d)}
+.p55-question-history{font-size:.85rem;font-weight:600}
+.p55-question-repair{border-left:2px solid currentColor;padding-left:.7rem;line-height:1.6}
+@media(max-width:750px){.p58-reference-pair{grid-template-columns:1fr}}
