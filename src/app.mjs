@@ -1026,6 +1026,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
   const unit=source&&c9WritingLinkedUnit(c9SkillsUi.phase,source.id);
   if(!unit)return alertUser('No original P43 writing unit is linked to this source.','error');
+  // Secure the departure before assigning source-return UI. The original
+  // P43 handler operates on the one existing editor after navigation succeeds.
+  if(!go('writing'))return;
   c9SkillWritingHandoff={phase:c9SkillsUi.phase,sourceId:source.id,title:source.title||source.hanzi||source.id};
   return act({dataset:{action:'c9-writing-source',id:source.id,phase:String(c9SkillsUi.phase)}});
  }
