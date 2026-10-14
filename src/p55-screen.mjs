@@ -103,7 +103,13 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  '<p><strong>Fair objection:</strong> '+esc(b.objection)+'</p>'+
  '<p>Translate the claim for an institutional audience and then explain it conversationally. Check that the source, quantifier, date, measurement and certainty do not change.</p>'+
  '<div class="p55-register-grid">'+words.map(w=>'<article class="p55-register"><h4 lang="zh-Hans">'+esc(w.hanzi)+'</h4>'+
- (showSupport?'<p>'+esc(w.pinyin)+' · '+esc(w.meaning)+'</p>':'<p class="muted">Recall the reading and scope first.</p>')+
+ (w.attested?'<p class="p55-attestation">Attested in '+esc(w.sourceId)+
+ ' · original sentence '+(w.lineIndex+1)+'</p>'+
+ '<p lang="zh-Hans">'+esc(w.context.hanzi)+'</p>':
+ '<p class="p55-attestation">Additional P54 register contrast; not attested in this source pair.</p>')+
+ (showSupport?'<p>'+esc(w.pinyin)+' · '+esc(w.meaning)+'</p>'+
+ (w.context?'<small>'+esc(w.context.pinyin)+'</small><p>'+esc(w.context.english)+'</p>':''):
+ '<p class="muted">Recall the meaning before revealing Pinyin and translation.</p>')+
  (w.key?act('p55-native-word','Open original Wordbook entry →','button outline small','data-id="'+esc(w.key)+'"'):'<p>Canonical entry unavailable.</p>')+'</article>').join('')+'</div>'+
  '<section class="p55-repair" aria-label="Original Mandarin register-specific correction">'+
  '<h4>Original P56 language repair in this source context</h4>'+

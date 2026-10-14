@@ -1080,6 +1080,7 @@ function p55ContextKind(){
  const locationRoute=route(),hash=location.hash,params=new URLSearchParams(hash.split('?')[1]||'');
  const linked=params.get('p55')===b.id;
  const native=[p55Native(b.from),p55Native(b.to)].filter(Boolean);
+ if(!linked)return null; // Never show a stale P55 handoff during unrelated original learning.
  if(locationRoute==='production'){
   const routeUnit=(hash.match(/^#\/production\/(p43-\d{2})/)||[])[1]||p43UnitId;
   return linked&&routeUnit===b.writingId?'writing':null;
@@ -1141,6 +1142,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   p55FocusId=chosen.id;
   if(name==='p55-open'||name==='p55-next'||different){
    p55Step='sources';p55Question=0;p55Reveal=false;p55Model=false;p55Support=false;
+   p55RepairShown=false; // A new context must not expose previously revealed solutions.
   }
   location.hash='#/advanced55/'+chosen.id+'?step='+p55Step;
   render();
@@ -1173,9 +1175,17 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const b=findP55Brief(p55FocusId),original=p55Source(button.dataset.source);
   if(!b||!original||![b.from,b.to].includes(original.id))return;
   const actionName=original.id.split('-')[0]+'-open';
+  const expectedRoute=P55_ROUTE_BY_PHASE[original.id.split('-')[0]];
+  if(!expectedRoute)return alertUser('Original source route unavailable.','error');
   await act({dataset:{action:actionName,id:original.id}});
-  const sep=location.hash.includes('?')?'&':'?';
-  location.hash=location.hash+sep+'p55='+b.id+'&p55step='+p55Step;
+  const actualCase=(location.hash.match(new RegExp('^#/'+expectedRoute+'/(p[0-9]+-[0-9]{2})'))||[])[1];
+  if(route()!==expectedRoute||actualCase!==original.id){
+   return alertUser('Original source did not open. P55 handoff was not attached to another page.','error');
+  }
+  const [path,query='']=location.hash.split('?');
+  const params=new URLSearchParams(query);
+  params.set('p55',b.id);params.set('p55step',p55Step);
+  location.hash=path+'?'+params.toString();
   return;
  }
  if(name==='p55-native-read'||name==='p55-native-listen'){
@@ -2430,7 +2440,12 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const selected=name==='p43-next'?P43_UNITS[(P43_UNITS.findIndex(x=>x.id===p43UnitId)+1)%P43_UNITS.length]?.id:id;
   if(!findP43Unit(selected))return;
   if(selected!==p43UnitId&&(p43Draft.trim()||p43Revisions.length)){
-   p43Pending=selected;return go('production');
+   p43Pending=selected;
+   const params=new URLSearchParams(location.hash.split('?')[1]||'');
+   const context=findP55Brief(params.get('p55'));
+   location.hash='#/production/'+p43UnitId+
+    (context?'?p55='+context.id+'&p55step=write':'');
+   return render();
   }
   if(selected!==p43UnitId){
    p43UnitId=selected;p43Draft='';p43Revisions=[];p43Version=-1;p43Step='plan';
@@ -2442,7 +2457,17 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!['all','1','2','3'].includes(button.dataset.filter))return;
   p43Filter=button.dataset.filter;return render();
  }
- if(name==='p43-stay'){p43Pending='';return render();}
+ if(name==='p43-stay'){
+  p43Pending='';
+  // Cancel a pending source-unit switch without leaving its requested target in the URL.
+  if(route()==='production'){
+   const active='production/'+p43UnitId;
+   const context=findP55Brief(new URLSearchParams(location.hash.split('?')[1]||'').get('p55'));
+   location.hash='#/'+active+(context?.writingId===p43UnitId?
+     '?p55='+context.id+'&p55step=write':'');
+  }
+  return render();
+ }
  if(name==='p43-discard'){p43Pending='discard';return render();}
  if(name==='p43-switch-confirm'){
   if(!p43Pending)return;
