@@ -379,3 +379,8 @@
  .c9-home-offline-repair{display:grid;grid-template-columns:minmax(0,1fr)}
  .c9-home-offline-repair button{width:100%}
 }
+
+/* C9-36: async PWA status controls must remain genuinely hidden even though
+ * these notices use custom display layouts. No theme/layout replacement. */
+#c9-home-offline-repair[hidden],#c9-home-offline-notice[hidden]{display:none!important;}
+#c9-home-offline-repair [data-c9-offline-count]{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
