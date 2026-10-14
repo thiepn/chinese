@@ -2,6 +2,7 @@
  * exclusively through the original Reader, Dialogue and Sentence Workshop.
  */
 import {P53_CASES,P53_SELF_REVIEW} from './p53-course.mjs';
+import {p53TransfersFor} from './p53-transfer.mjs';
 import {STORIES} from './stories.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 export const P53_STAGES=Object.freeze([
@@ -16,7 +17,9 @@ export function p53Evidence(state,c){
  const story=p53Story(c),dialogue=p53NativeDialogue(c);
  const reading=(state.readingEvents||[]).filter(x=>x.storyId===story?.id);
  const listening=(state.dialogueEvents||[]).filter(x=>x.dialogueId===dialogue?.id);
+ const bridgePrefixes=p53TransfersFor(c.id).map(t=>'p53:transfer:'+t.id+':');
  const writing=(state.sentenceEvents||[]).filter(x=>x.taskId?.startsWith('p53:argument:'+c.id+':')||
+  bridgePrefixes.some(prefix=>x.taskId?.startsWith(prefix))||
   x.taskId==='beginner-reading:'+story?.id+':writing');
  return {story,dialogue,reading,listening,writing};
 }
@@ -147,6 +150,21 @@ export function p53Lesson(c,state,act,esc,{stage='sources',readingIndex=0,listen
  (models?'<div class="p53-models">'+c.models.map((m,i)=>'<article><p lang="zh-Hans">'+esc(m.hanzi)+'</p>'+
  '<small>'+esc(m.pinyin)+'</small><p>'+esc(m.english)+'</p><p>'+esc(m.purpose)+'</p>'+
  act('p53-write','Native exact-form reconstruction '+(i+1)+' →','button outline small','data-index="'+i+'"')+'</article>').join('')+'</div>':'')+
+ '<h4>Cross-context independent transfer: two different sources, one reasoning principle</h4>'+
+ '<p>Use each linked case to identify the analogy and its limits. Prepare an original two-case comparison before revealing any authored sentence model; then reconstruct selected exact sentences in the native Workshop.</p>'+
+ '<div class="p53-bridges">'+p53TransfersFor(c.id).map(t=>
+ '<article class="p53-bridge"><h4>'+esc(t.title)+'</h4>'+
+ '<p><strong>Transfer task:</strong> '+esc(t.brief)+'</p>'+
+ '<p><strong>Fair counterpoint:</strong> '+esc(t.objection)+'</p>'+
+ '<p><strong>Non-equivalence to preserve:</strong> '+esc(t.distinction)+'</p>'+
+ '<p><strong>Independent spoken explanation:</strong> '+esc(t.oralTask)+'</p>'+
+ '<div class="p53-actions">'+act('p53-open','Read '+esc(t.from)+' →','button outline small','data-id="'+t.from+'"')+
+ act('p53-open','Read '+esc(t.to)+' →','button outline small','data-id="'+t.to+'"')+'</div>'+
+ (models?t.models.map((m,i)=>'<div class="p53-bridge-model"><p lang="zh-Hans">'+esc(m.hanzi)+'</p>'+
+ '<small>'+esc(m.pinyin)+'</small><p>'+esc(m.english)+'</p><p>'+esc(m.purpose)+'</p>'+
+ act('p53-transfer-write','Reconstruct cross-case model '+(i+1)+' →','button outline small',
+ 'data-bridge="'+t.id+'" data-index="'+i+'"')+'</div>').join(''):'<p class="muted">Write the comparison first; model sentences remain hidden.</p>')+
+ '</article>').join('')+'</div>'+
  '<h4>Independent self-review (tab-only, not a grade)</h4>'+
  '<div class="p53-check-grid">'+P53_SELF_REVIEW.map(x=>
  act('p53-check',(picked.has(x.id)?'✓ ':'○ ')+esc(x.label),

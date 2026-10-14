@@ -34,3 +34,12 @@
 @media(max-width:760px){.p53-source-grid,.p53-argument-grid,.p53-transfer-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.p53-choices,.p53-models{grid-template-columns:1fr}.p53-stage{flex-basis:100%}.p53-turn{grid-template-columns:minmax(0,1fr) auto}.p53-turn>strong{grid-column:1/-1}.p53-source-line{grid-template-columns:1.25rem minmax(0,1fr)}.p53-source-line .button{grid-column:2;justify-self:start}}
 @media(forced-colors:active){.p53-case.active,.p53-stage.active,.p53-check.selected{outline:2px solid Highlight}}
+
+/* P53 paired-case evidence transfer and responsive exact-form handoffs */
+.p53-bridges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.p53-bridge{border:1px solid var(--line,#cbd4d1);padding:.9rem;min-width:0}
+.p53-bridge h4{margin:0 0 .6rem}.p53-bridge p{line-height:1.6}
+.p53-bridge-model{border-top:1px solid var(--line,#cbd4d1);margin-top:1rem;padding-top:.8rem}
+.p53-bridge-model p[lang]{font-size:1.15rem;line-height:1.7}
+.p53-bridge-model small{color:var(--muted,#697670)}
+@media(max-width:760px){.p53-bridges{grid-template-columns:1fr}}
