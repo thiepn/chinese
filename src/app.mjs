@@ -1047,6 +1047,132 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
+ if(name==='p54-enter'||name==='p54-open'||name==='p54-next'||name==='p54-return'){
+  const chosen=name==='p54-open'?findP54Case(id):
+   name==='p54-return'?findP54Case(p54CaseId):
+   name==='p54-next'?p54Next(state,p54CaseId):findP54Case(p54CaseId)||p54Next(state);
+  if(!chosen)return alertUser('Original P54 source dossier unavailable.','error');
+  if(name!=='p54-return'){
+   p54CaseId=chosen.id;p54Stage='register';p54ReadingIndex=0;p54ListeningIndex=0;
+   p54ReadingFeedback=null;p54ListeningFeedback=null;p54ReadingHelp=false;
+   p54ListeningHelp=false;p54Models=false;p54Checks.clear();
+  }
+  location.hash='#/fluency54/'+chosen.id+'?stage='+p54Stage;
+  render();root.querySelector('.p54-journey')?.scrollIntoView({block:'start'});return;
+ }
+ if(name==='p54-prior'){
+  const c=findP54Case(p54CaseId),prior=findP53Case(id||c?.priorCase);
+  if(!prior)return alertUser('Source-specific original P53 case unavailable.','error');
+  p53CaseId=prior.id;p53Stage='sources';p53ReadingIndex=0;p53ListeningIndex=0;
+  p53ReadingFeedback=null;p53ListeningFeedback=null;
+  location.hash='#/argument53/'+prior.id+'?stage=sources';return render();
+ }
+ if(name==='p54-stage'){
+  if(!findP54Case(p54CaseId)||!P54_STAGES.some(s=>s.id===button.dataset.stage))return;
+  p54Stage=button.dataset.stage;p54ReadingFeedback=null;p54ListeningFeedback=null;
+  location.hash='#/fluency54/'+p54CaseId+'?stage='+p54Stage;return render();
+ }
+ if(name==='p54-review')return go('review');
+ if(name==='p54-reading-help'||name==='p54-listening-help'||name==='p54-models'){
+  if(!findP54Case(p54CaseId))return;
+  if(name==='p54-reading-help'){p54ReadingHelp=!p54ReadingHelp;if(p54ReadingHelp)p54AssistedCases.add(p54CaseId);}
+  if(name==='p54-listening-help'){p54ListeningHelp=!p54ListeningHelp;if(p54ListeningHelp)p54AssistedCases.add(p54CaseId);}
+  if(name==='p54-models'){p54Models=!p54Models;if(p54Models)p54AssistedCases.add(p54CaseId);}
+  return render();
+ }
+ if(name==='p54-play'||name==='p54-slow'||name==='p54-turn'){
+  const c=findP54Case(p54CaseId);if(!c)return;
+  const i=Number(button.dataset.index);
+  if(name==='p54-turn'&&(!Number.isInteger(i)||i<0||i>=c.turns.length))return;
+  return speak(name==='p54-turn'?c.turns[i].hanzi:c.turns.map(t=>t.hanzi).join(' '),
+   name==='p54-slow'?0.7:demoSpeechRate);
+ }
+ if(name==='p54-reader-next'){
+  const c=findP54Case(p54CaseId);if(!c)return;
+  if(p54ReadingIndex+1<c.questions.length){p54ReadingIndex++;p54ReadingFeedback=null;return render();}
+  p54Stage='listen';p54ReadingFeedback=null;
+  location.hash='#/fluency54/'+c.id+'?stage=listen';return render();
+ }
+ if(name==='p54-reader-retry'){p54ReadingFeedback=null;return render();}
+ if(name==='p54-reader-answer'||name==='p54-reader-model'){
+  const c=findP54Case(p54CaseId),story=c&&p54Story(c);
+  if(!story||p54ReadingFeedback)return;
+  const mode=['beginner-detail','beginner-reason','beginner-sequence'][p54ReadingIndex];
+  const q=beginnerQuestion(story,mode);if(!q)return;
+  if(name==='p54-reader-model'){
+   p54AssistedCases.add(c.id);p54ReadingFeedback={revealed:true,assisted:true,correct:false};return render();
+  }
+  const answer=button.dataset.option||'';if(!q.options.includes(answer))return;
+  const assisted=p54AssistedCases.has(c.id),correct=answer===q.answer;
+  const eventId=globalThis.crypto?.randomUUID?.()||'p54-reading-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addReadingEvent(old,story.id,mode,correct,assisted,eventId));
+  if(saved){p54ReadingFeedback={correct,assisted};render();
+   root.querySelector('.p54-feedback')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p54-listener-next'){
+  const c=findP54Case(p54CaseId);if(!c)return;
+  if(p54ListeningIndex+1<c.dialogueQuestions.length){p54ListeningIndex++;p54ListeningFeedback=null;return render();}
+  p54Stage='produce';p54ListeningFeedback=null;
+  location.hash='#/fluency54/'+c.id+'?stage=produce';return render();
+ }
+ if(name==='p54-listener-retry'){p54ListeningFeedback=null;return render();}
+ if(name==='p54-listener-answer'||name==='p54-listener-model'){
+  const c=findP54Case(p54CaseId),d=c&&p54NativeDialogue(c);
+  if(!d||p54ListeningFeedback)return;
+  const q=dialogueQuestion(d.id,p54ListeningIndex);if(!q)return;
+  if(name==='p54-listener-model'){
+   p54AssistedCases.add(c.id);p54ListeningFeedback={revealed:true,assisted:true,correct:false};return render();
+  }
+  const answer=button.dataset.option||'';if(!q.options.includes(answer))return;
+  const assisted=p54AssistedCases.has(c.id);
+  const eventId=globalThis.crypto?.randomUUID?.()||'p54-listening-'+Date.now()+'-'+Math.random();
+  const saved=await mutate(old=>addDialogueEvent(old,{id:eventId,dialogueId:d.id,
+   question:p54ListeningIndex,answer,assisted}));
+  if(saved){p54ListeningFeedback={correct:answer===q.answer,assisted};render();
+   root.querySelector('.p54-feedback')?.scrollIntoView({block:'nearest'});}
+  return;
+ }
+ if(name==='p54-native-read'){
+  const c=findP54Case(p54CaseId),story=c&&p54Story(c);
+  if(!story)return;storyId=story.id;resetReadingNavigation();storyMode='beginner-detail';return go('stories');
+ }
+ if(name==='p54-native-listen'){
+  const c=findP54Case(p54CaseId),d=c&&p54NativeDialogue(c);
+  if(!d)return;dialogueId=d.id;dialogueStep=0;dialogueFeedback=null;
+  dialogueSupport=false;return go('dialogues');
+ }
+ if(name==='p54-p43'){
+  const c=findP54Case(p54CaseId);if(!c||!findP43Unit(c.p43Id))return;
+  if(p43UnitId!==c.p43Id&&(p43Draft.trim()||p43Revisions.length)){
+   return alertUser('The current P43 draft or snapshots are tab-local. Copy or resolve them before switching writing units.','error');
+  }
+  p43UnitId=c.p43Id;return go('production');
+ }
+ if(name==='p54-register-write'){
+  const c=findP54Case(p54CaseId),pairIndex=P54_REGISTER_PAIRS.findIndex(x=>x.id===button.dataset.pair);
+  const i=Number(button.dataset.index);
+  if(!c||pairIndex<(c.sequence-1)*3||pairIndex>=c.sequence*3||
+   !Number.isInteger(i)||i<0||i>1)return;
+  const target='p54:register:'+P54_REGISTER_PAIRS[pairIndex].id+':example'+i;
+  const pos=SENTENCE_TASKS.findIndex(t=>t.id===target);
+  if(pos<0)return alertUser('Original contextual sentence unavailable.','error');
+  sentenceIndex=pos;sentenceTyped='';sentenceFeedback=null;sentenceSupport=true;return go('workshop');
+ }
+ if(name==='p54-write'){
+  const c=findP54Case(p54CaseId),i=Number(button.dataset.index);
+  if(!c||!Number.isInteger(i)||i<0||i>=c.models.length)return;
+  const target='p54:source:'+c.id+':model'+i;
+  const pos=SENTENCE_TASKS.findIndex(t=>t.id===target);
+  if(pos<0)return alertUser('Original source reconstruction unavailable.','error');
+  sentenceIndex=pos;sentenceTyped='';sentenceFeedback=null;sentenceSupport=true;return go('workshop');
+ }
+ if(name==='p54-check'){
+  if(!findP54Case(p54CaseId)||!P54_SELF_REVIEW.some(x=>x.id===id))return;
+  if(p54Checks.has(id))p54Checks.delete(id);else p54Checks.add(id);return render();
+ }
+
+
  if(name==='p53-enter'||name==='p53-open'||name==='p53-next'||name==='p53-return'){
   const chosen=name==='p53-open'?findP53Case(id):
    name==='p53-return'?findP53Case(p53CaseId):
