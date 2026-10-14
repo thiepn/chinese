@@ -189,8 +189,9 @@ function requestC9Writing(target,{go,currentRoute,render}){
  const changed=w.unitId!==target.unitId||w.transferPhase!==Number(target.phase||0)||
   w.sourceId!==(target.sourceId||null);
  if(changed&&writingHasWork()){
+  ++c9WritingFileReadToken;
   w.pending='switch';w.pendingTarget=target;
- }else if(changed)resetWriting(target);
+ }else if(changed){++c9WritingFileReadToken;resetWriting(target);}
  else{w.pending='';w.pendingTarget=null;}
  // Same-route go() renders immediately; update the controller first instead.
  if(alreadyHere)render();
@@ -245,19 +246,27 @@ function parseC9WritingBackup(raw){
    compare<b.revisions.length?compare:-1,step,rubric,showEvidence:!!b.showEvidence,
   reveal:!!b.reveal,transferModels:!!b.transferModels,transferReview:reviews};
 }
-export async function handleC9WritingBackupFile(e,{render,alertUser}){
+let c9WritingFileReadToken=0; // In-tab async read cancellation, not persisted.
+export async function handleC9WritingBackupFile(e,{render,alertUser,currentRoute}){
  if(e.target.id!=='c9-writing-backup-file')return false;
  const file=e.target.files?.[0];e.target.value='';
  if(!file)return true;
- const w=c9WritingState;
+ const w=c9WritingState,token=++c9WritingFileReadToken;
+ const owner={unitId:w.unitId,phase:w.transferPhase,sourceId:w.sourceId};
+ const current=()=>token===c9WritingFileReadToken&&currentRoute?.()==='writing'&&
+  w.unitId===owner.unitId&&w.transferPhase===owner.phase&&w.sourceId===owner.sourceId;
  try{
   if(file.size>C9_WRITING_BACKUP_MAX_BYTES)throw Error('File exceeds the 420 KB writing backup limit.');
   if(file.size===0)throw Error('The selected backup file is empty.');
   const candidate=parseC9WritingBackup(await file.text());
+  // A slow local file read must not reopen an old import after a route/unit
+  // change, cancellation or a newer file selection.
+  if(!current())return true;
   w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
   render();
   document.getElementById('c9-writing-pending')?.focus({preventScroll:false});
  }catch(err){
+  if(!current())return true;
   w.importCandidate=null;w.pending='';w.importError=err instanceof Error?
    err.message:'The writing file could not be read.';
   render();
@@ -397,6 +406,7 @@ export async function handleC9WritingAction(button,api){
   return true;
  }
  if(name==='p43-stay'){
+  ++c9WritingFileReadToken;
   w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';
   render();
   (document.getElementById('p43-draft')||document.querySelector('.c9-writing-catalog summary'))
@@ -404,6 +414,7 @@ export async function handleC9WritingAction(button,api){
   return true;
  }
  if(name==='p43-switch-confirm'){
+  ++c9WritingFileReadToken;
   if(w.pending==='import'&&w.importCandidate){
    const b=w.importCandidate;
    resetWriting({unitId:b.unitId,phase:b.phase,sourceId:b.sourceId});
