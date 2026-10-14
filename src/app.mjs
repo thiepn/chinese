@@ -1094,7 +1094,7 @@ function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alert
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
- if(name==='p55-open'||name==='p55-next'||name==='p55-return'||name==='p55-overview'){
+ if(name==='p55-enter'||name==='p55-open'||name==='p55-next'||name==='p55-return'||name==='p55-overview'){
   const chosen=name==='p55-open'?findP55Brief(id):
    name==='p55-next'?p55Next(state,p55FocusId):findP55Brief(p55FocusId)||p55Next(state);
   if(!chosen)return alertUser('Original advanced source pair unavailable.','error');

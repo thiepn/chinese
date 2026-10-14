@@ -193,5 +193,6 @@ export function p54Lesson(c,state,act,esc,{stage='register',readingIndex=0,liste
  e.registerEvents.length+' contextual sentence events</p>'+
  '<p>Only real submitted questions appear here; revealing answers, self-review checkmarks and oral rehearsal never create artificial attempts.</p>'+
  '<div class="p54-actions">'+act('p54-review','Original scheduled Review →','button outline')+
+ act('p55-enter','Continue through P55 consolidated advanced learning →','button primary')+
  act('p53-return','Return to P53 →','button outline')+'</div></footer></section>';
 }
