@@ -129,9 +129,10 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  const pending=session.pending?'<section class="c9-writing-pending" role="alert"><h2>Confirm what happens to the unsent draft</h2>'+
  '<p>'+(session.pending==='discard'?'Discard this tab’s draft and snapshot history?':
  session.pending.startsWith('restore:')?'Replace the active editor text with the selected snapshot?':
- session.pending==='import'?'Replace the current in-tab writing with the selected private backup ('+
- esc(session.importCandidate?.unitId||'unknown unit')+', '+
- (session.importCandidate?.revisions?.length||0)+' snapshots)? The current draft and revisions will be lost unless exported first.':
+ session.pending==='import'?'Import the selected private backup for '+
+ esc(session.importCandidate?.unitId||'unknown unit')+' ('+
+ (session.importCandidate?.revisions?.length||0)+' snapshots, '+
+ (session.importCandidate?.draft?.length||0)+' draft characters)? This will replace the current editor and all its revisions. Export your current writing first if needed.':
  'Switching source contexts would replace the current tab-local composition. Copy your writing first if you want to keep it.')+'</p>'+
  '<div>'+act('p43-stay',session.pending==='import'?'Cancel import':'Keep current writing','c9-button c9-button--secondary')+
  act('p43-switch-confirm','Confirm change','c9-button c9-button--primary')+'</div></section>':'';
@@ -204,14 +205,18 @@ function parseC9WritingBackup(raw){
   throw Error('Not a supported C9 P43 writing backup.');
  if(!findP43Unit(b.unitId))throw Error('The original P43 writing unit does not exist.');
  const phase=Number(b.transferPhase||0),sourceId=b.sourceId||null;
- if(![0,43,48,50,51].includes(phase)||phase!==0&&
-   c9WritingLinkedUnit(phase,sourceId)?.id!==b.unitId)
+ if(![0,43,48,50,51].includes(phase)||
+   (phase===0&&sourceId!==null)||
+   (phase!==0&&(typeof sourceId!=='string'||
+    c9WritingLinkedUnit(phase,sourceId)?.id!==b.unitId)))
   throw Error('The backup source does not match the original P43 unit.');
  if(typeof b.draft!=='string'||b.draft.length>C9_WRITING_TEXT_MAX||
    !Array.isArray(b.revisions)||b.revisions.length>12||
    b.revisions.some(t=>typeof t!=='string'||t.length>C9_WRITING_TEXT_MAX))
   throw Error('Backup draft or revision content is invalid.');
- const compare=Number(b.compare);
+ // Imported backups are strictly editorial. An invalid phase or source
+ // never becomes a second P43 learner identity.
+ const compare=b.compare===null||b.compare===undefined?-1:Number(b.compare);
  const step=['plan','compose','revise','speak'].includes(b.step)?b.step:'compose';
  const rubric=Array.isArray(b.rubric)?b.rubric.filter(id=>
   P43_REVIEW_CRITERIA.some(c=>c.id===id)).slice(0,12):[];
@@ -230,6 +235,7 @@ export async function handleC9WritingBackupFile(e,{render,alertUser}){
  const w=c9WritingState;
  try{
   if(file.size>C9_WRITING_BACKUP_MAX_BYTES)throw Error('File exceeds the 420 KB writing backup limit.');
+  if(file.size===0)throw Error('The selected backup file is empty.');
   const candidate=parseC9WritingBackup(await file.text());
   w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
   render();
