@@ -67,7 +67,7 @@ export function courseSearchResults(ui,act,esc){
  const matches=courseSearch(ui),last=Math.max(0,Math.ceil(matches.length/18)-1);
  const page=Math.min(last,Math.max(0,ui.page||0));
  const list=matches.slice(page*18,(page+1)*18);
- return {total:matches.length,page,pages:last+1,html:`<div class="p30-find-head"><strong>${matches.length} source entries</strong><span>${list.length?`${page*18+1}–${page*18+list.length}`:'0'} shown</span></div>
+ return {total:matches.length,page,pages:last+1,html:`<div class="p30-find-head"><strong role="status" aria-live="polite" aria-atomic="true">${matches.length} matching original source ${matches.length===1?'entry':'entries'}</strong><span>${list.length?`${page*18+1}–${page*18+list.length}`:'0'} shown</span></div>
  <div class="p30-find-list">${list.length?list.map(x=>act('p30-open-result',`<span class="p30-result-type">${esc(x.kind)}</span><strong>${esc(x.title)}</strong><small>${esc(x.description)}</small><span aria-hidden="true">↗</span>`,'p30-result',`data-kind="${x.kind}" data-id="${esc(x.id)}"`)).join(''):'<p class="p30-no-results">No entries match these filters. Try a source term, Chinese text, Pinyin, or clear saved-only filtering.</p>'}</div>
  <div class="p30-pagination"><span>Page ${page+1} / ${last+1}</span>${act('p30-page-prev','← Previous','button outline small',page?'':'disabled')}${act('p30-page-next','Next →','button outline small',page<last?'':'disabled')}</div>`};
 }

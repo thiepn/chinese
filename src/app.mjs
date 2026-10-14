@@ -998,7 +998,8 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(button.dataset.audio==='listening'){
    const dialogue=DIALOGUES.find(d=>d['p'+c9SkillsUi.phase]?.readingId===source.id||
     d['p'+c9SkillsUi.phase]?.id===source.id);
-   lines=dialogue?.lines||source.turns||[];
+   lines=dialogue?.lines?.length?dialogue.lines:
+    Array.isArray(source.turns)&&source.turns.length?source.turns:lines;
   }
   if(index<lines.length&&lines[index]?.hanzi)return speak(lines[index].hanzi);
   return;

@@ -121,17 +121,18 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
  '<label for="c9-writing-backup-file">Import a previous backup</label>'+
  '<input id="c9-writing-backup-file" type="file" accept=".json,application/json" aria-describedby="c9-writing-backup-title"></div>'+
- (session.importError?'<p class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
+ (session.importError?'<p id="c9-writing-import-error" tabindex="-1" class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
  '<p class="c9-writing-portability-note">Your file contains private writing. Keep it in a trusted location; importing never automatically overwrites current work.</p>'+
  '</section>';
  const links='<details class="c9-writing-catalog" '+(session.catalogOpen?'open':'')+'><summary>Choose a P43 original composition topic · '+P43_UNITS.length+' units</summary>'+
  p43Overview(act,esc,{selected:unit.id,filter:session.filter||'all',query:session.query||''})+'</details>';
- const pending=session.pending?'<section class="c9-writing-pending" role="alert"><h2>Confirm what happens to the unsent draft</h2>'+
+ const pending=session.pending?'<section id="c9-writing-pending" class="c9-writing-pending" role="alert" tabindex="-1"><h2>Confirm what happens to the unsent draft</h2>'+
  '<p>'+(session.pending==='discard'?'Discard this tab’s draft and snapshot history?':
  session.pending.startsWith('restore:')?'Replace the active editor text with the selected snapshot?':
- session.pending==='import'?'Replace the current in-tab writing with the selected private backup ('+
- esc(session.importCandidate?.unitId||'unknown unit')+', '+
- (session.importCandidate?.revisions?.length||0)+' snapshots)? The current draft and revisions will be lost unless exported first.':
+ session.pending==='import'?'Import the selected private backup for '+
+ esc(session.importCandidate?.unitId||'unknown unit')+' ('+
+ (session.importCandidate?.revisions?.length||0)+' snapshots, '+
+ (session.importCandidate?.draft?.length||0)+' draft characters)? This will replace the current editor and all its revisions. Export your current writing first if needed.':
  'Switching source contexts would replace the current tab-local composition. Copy your writing first if you want to keep it.')+'</p>'+
  '<div>'+act('p43-stay',session.pending==='import'?'Cancel import':'Keep current writing','c9-button c9-button--secondary')+
  act('p43-switch-confirm','Confirm change','c9-button c9-button--primary')+'</div></section>':'';
@@ -204,14 +205,18 @@ function parseC9WritingBackup(raw){
   throw Error('Not a supported C9 P43 writing backup.');
  if(!findP43Unit(b.unitId))throw Error('The original P43 writing unit does not exist.');
  const phase=Number(b.transferPhase||0),sourceId=b.sourceId||null;
- if(![0,43,48,50,51].includes(phase)||phase!==0&&
-   c9WritingLinkedUnit(phase,sourceId)?.id!==b.unitId)
+ if(![0,43,48,50,51].includes(phase)||
+   (phase===0&&sourceId!==null)||
+   (phase!==0&&(typeof sourceId!=='string'||
+    c9WritingLinkedUnit(phase,sourceId)?.id!==b.unitId)))
   throw Error('The backup source does not match the original P43 unit.');
  if(typeof b.draft!=='string'||b.draft.length>C9_WRITING_TEXT_MAX||
    !Array.isArray(b.revisions)||b.revisions.length>12||
    b.revisions.some(t=>typeof t!=='string'||t.length>C9_WRITING_TEXT_MAX))
   throw Error('Backup draft or revision content is invalid.');
- const compare=Number(b.compare);
+ // Imported backups are strictly editorial. An invalid phase or source
+ // never becomes a second P43 learner identity.
+ const compare=b.compare===null||b.compare===undefined?-1:Number(b.compare);
  const step=['plan','compose','revise','speak'].includes(b.step)?b.step:'compose';
  const rubric=Array.isArray(b.rubric)?b.rubric.filter(id=>
   P43_REVIEW_CRITERIA.some(c=>c.id===id)).slice(0,12):[];
@@ -230,13 +235,17 @@ export async function handleC9WritingBackupFile(e,{render,alertUser}){
  const w=c9WritingState;
  try{
   if(file.size>C9_WRITING_BACKUP_MAX_BYTES)throw Error('File exceeds the 420 KB writing backup limit.');
+  if(file.size===0)throw Error('The selected backup file is empty.');
   const candidate=parseC9WritingBackup(await file.text());
   w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
   render();
+  document.getElementById('c9-writing-pending')?.focus({preventScroll:false});
  }catch(err){
   w.importCandidate=null;w.pending='';w.importError=err instanceof Error?
    err.message:'The writing file could not be read.';
-  render();alertUser(w.importError,'error');
+  render();
+  document.getElementById('c9-writing-import-error')?.focus({preventScroll:false});
+  alertUser(w.importError,'error');
  }
  return true;
 }
@@ -342,7 +351,13 @@ export async function handleC9WritingAction(button,api){
   if(u)requestC9Writing({unitId:u.id,phase:0,sourceId:null},api);
   return true;
  }
- if(name==='p43-stay'){w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';render();return true;}
+ if(name==='p43-stay'){
+  w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';
+  render();
+  (document.getElementById('p43-draft')||document.querySelector('.c9-writing-catalog summary'))
+   ?.focus({preventScroll:true});
+  return true;
+ }
  if(name==='p43-switch-confirm'){
   if(w.pending==='import'&&w.importCandidate){
    const b=w.importCandidate;
@@ -361,7 +376,10 @@ export async function handleC9WritingAction(button,api){
   }else if(w.pending==='switch'&&w.pendingTarget){
    resetWriting(w.pendingTarget);
   }else{w.pending='';w.pendingTarget=null;}
-  render();return true;
+  render();
+  (document.getElementById('p43-draft')||document.querySelector('.c9-writing-catalog summary'))
+   ?.focus({preventScroll:true});
+  return true;
  }
  if(name==='p43-step'){
   if(['plan','compose','revise','speak'].includes(button.dataset.step)){

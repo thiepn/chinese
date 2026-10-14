@@ -197,11 +197,15 @@ function stagePanel(phase,source,stage,ui,links,act,esc){
     '</div>').join('')+'</section>').join('')+'</div>';
  }
  if(type==='listening'){
-  const turns=dialogue?.lines||source.turns||[];
+  // Not every editorial case has a source-linked native dialogue. In that
+  // case, play ONLY actual authored Chinese lines, not empty fake turns.
+  const turns=dialogue?.lines?.length?dialogue.lines:
+   Array.isArray(source.turns)&&source.turns.length?source.turns:lines;
   content='<div class="c9-skills-listening">'+
-   '<p>'+(dialogue?'Original native dialogue linked to this source.':
-    'No native paired dialogue identified; the authored source lines may still be read with device voice.')+'</p>'+
-   turns.slice(0,30).map((line,i)=>'<article><span>'+esc(line.speaker||'Speaker')+' · '+(i+1)+'</span>'+
+   '<p>'+(dialogue?.lines?.length?'Original native dialogue linked to this source.':
+    'No native paired dialogue identified. Hear the original source lines with your device voice; this is a reading aid, not a scored listening exercise.')+'</p>'+
+   (!turns.length?'<p>No original Chinese source lines are available for device playback.</p>':'')+
+   turns.slice(0,30).map((line,i)=>'<article><span>'+esc(line.speaker||'Source line')+' · '+(i+1)+'</span>'+
     act('c9-skills-voice','Play this turn →','c9-button c9-button--secondary c9-button--small',
     'data-index="'+i+'" data-audio="listening"')+
     (support?'<div><strong lang="zh-Hans">'+esc(line.hanzi)+'</strong>'+
