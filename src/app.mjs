@@ -1059,11 +1059,14 @@ function p55ReturnStrip(){
 }
 function renderAdvanced55(){
  const id=(location.hash.match(/^#\/advanced55\/(p55-\d{2})/)||[])[1];
- const requested=new URLSearchParams(location.hash.split('?')[1]||'').get('step');
+ const params=new URLSearchParams(location.hash.split('?')[1]||'');
+ const requested=params.get('step');
  if(id&&findP55Brief(id)&&id!==p55FocusId){
   p55FocusId=id;p55Step='sources';p55Question=0;p55Reveal=false;p55Model=false;p55Support=false;p55RepairShown=false;
  }
  if(requested&&P55_STEPS.some(x=>x.id===requested))p55Step=requested;
+ const q=params.get('question');
+ if(q!==null&&['0','1','2'].includes(q))p55Question=Number(q);
  const b=findP55Brief(p55FocusId)||p55Next(state);
  if(!p55FocusId&&b)p55FocusId=b.id;
  return title('P55 · ADVANCED MANDARIN SOURCE CONSOLIDATION',
@@ -1111,6 +1114,9 @@ function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1
   p55FocusId=linkedP55;
   const backStep=new URLSearchParams(location.hash.split('?')[1]||'').get('p55step');
   if(P55_STEPS.some(x=>x.id===backStep))p55Step=backStep;
+  const savedQuestion=new URLSearchParams(location.hash.split('?')[1]||'').get('p55q');
+  if(savedQuestion!==null&&['0','1','2'].includes(savedQuestion))
+   p55Question=Number(savedQuestion);
  }
  const p55Context=p55ContextKind();
  navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,production:renderProduction,integrated:renderIntegrated,cumulative:renderCumulative,upper:renderUpper,advanced:renderAdvanced,comparative:renderComparative,cumulative49:renderCumulative49,discourse50:renderDiscourse50,register51:renderRegister51,synthesis52:renderSynthesis52,argument53:renderArgument53,fluency54:renderFluency54,advanced55:renderAdvanced55,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+
@@ -1144,7 +1150,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    p55Step='sources';p55Question=0;p55Reveal=false;p55Model=false;p55Support=false;
    p55RepairShown=false; // A new context must not expose previously revealed solutions.
   }
-  location.hash='#/advanced55/'+chosen.id+'?step='+p55Step;
+  location.hash='#/advanced55/'+chosen.id+'?step='+p55Step+'&question='+p55Question;
   render();
   (name==='p55-overview'?root.querySelector('.p55-overview'):root.querySelector('.p55-study'))?.
    scrollIntoView({block:'start'});return;
@@ -1152,12 +1158,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p55-step'){
   if(!findP55Brief(p55FocusId)||!P55_STEPS.some(x=>x.id===button.dataset.step))return;
   p55Step=button.dataset.step;
-  location.hash='#/advanced55/'+p55FocusId+'?step='+p55Step;return render();
+  location.hash='#/advanced55/'+p55FocusId+'?step='+p55Step+'&question='+p55Question;return render();
  }
  if(name==='p55-review')return go('review');
  if(name==='p55-question-prev'||name==='p55-question-next'){
   p55Question=(p55Question+(name==='p55-question-next'?1:2))%3;
-  p55Reveal=false;return render();
+  p55Reveal=false;
+  location.hash='#/advanced55/'+p55FocusId+'?step=sources&question='+p55Question;
+  return render();
  }
  if(name==='p55-reveal'){p55Reveal=!p55Reveal;return render();}
  if(name==='p55-support'){p55Support=!p55Support;return render();}
@@ -1169,7 +1177,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!b||!p55NativeWords(b).some(x=>x.key===key)||!findWord(key))
    return alertUser('The linked original Wordbook entry is unavailable.','error');
   searchSelection={type:'word',id:key};
-  location.hash='#/explore?word='+encodeURIComponent(key)+'&p55='+b.id+'&p55step=language';return render();
+  location.hash='#/explore?word='+encodeURIComponent(key)+'&p55='+b.id+'&p55step=language&p55q='+p55Question;return render();
  }
  if(name==='p55-open-original'){
   const b=findP55Brief(p55FocusId),original=p55Source(button.dataset.source);
@@ -1185,6 +1193,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const [path,query='']=location.hash.split('?');
   const params=new URLSearchParams(query);
   params.set('p55',b.id);params.set('p55step',p55Step);
+  params.set('p55q',String(p55Question));
   location.hash=path+'?'+params.toString();
   return;
  }
@@ -1194,11 +1203,11 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const native=p55Native(sourceId);
   if(name==='p55-native-read'&&native?.story){
    storyId=native.story.id;storyMode='beginner-detail';resetReadingNavigation();
-   location.hash='#/stories/'+native.story.id+'?p55='+b.id+'&p55step='+p55Step;return render();
+   location.hash='#/stories/'+native.story.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
   }
   if(name==='p55-native-listen'&&native?.dialogue){
    dialogueId=native.dialogue.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
-   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id+'&p55step='+p55Step;return render();
+   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
   }
   return alertUser('Original reading or conversation not available.','error');
  }
@@ -1208,13 +1217,13 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(p43UnitId!==target.id&&(p43Draft.trim()||p43Revisions.length)){
    p43Pending=target.id;
    // Keep the old unit visible until the existing P43 explicit discard/switch confirmation.
-   location.hash='#/production/'+p43UnitId+'?p55='+b.id+'&p55step=write';return render();
+   location.hash='#/production/'+p43UnitId+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
   }
   if(p43UnitId!==target.id){
    p43UnitId=target.id;p43Step='plan';p43Reviewed=[];p43Version=-1;
    p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;p43Pending='';
   }
-  location.hash='#/production/'+target.id+'?p55='+b.id+'&p55step=write';return render();
+  location.hash='#/production/'+target.id+'?p55='+b.id+'&p55step=write&p55q='+p55Question;return render();
  }
  if(name==='p55-copy-brief'){
   const b=findP55Brief(p55FocusId);if(!b)return;
@@ -1241,7 +1250,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const pos=SENTENCE_TASKS.findIndex(x=>x.id===taskId);
   if(pos<0)return alertUser('Original fixed-form transfer sentence unavailable.','error');
   sentenceIndex=pos;sentenceTyped='';sentenceFeedback=null;sentenceSupport=true;
-  location.hash='#/workshop?task='+encodeURIComponent(taskId)+'&p55='+b.id+'&p55step=speak';
+  location.hash='#/workshop?task='+encodeURIComponent(taskId)+'&p55='+b.id+'&p55step=speak&p55q='+p55Question;
   return render();
  }
 
@@ -2485,7 +2494,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const linkedWriting=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
   const sourceBrief=findP55Brief(linkedWriting);
   location.hash='#/production/'+selected+
-   (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id+'&p55step=write':'');return render();
+   (sourceBrief?.writingId===selected?'?p55='+sourceBrief.id+'&p55step=write&p55q='+p55Question:'');return render();
  }
  if(name==='p43-step'){
   const stage=button.dataset.step;if(!['plan','compose','revise','speak'].includes(stage))return;

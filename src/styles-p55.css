@@ -52,3 +52,13 @@
 .p57-transfer-lines article p[lang]{font-size:1.15rem;line-height:1.75;overflow-wrap:anywhere}
 .p57-transfer .button{white-space:normal}
 @media(max-width:770px){.p57-transfer-lines{grid-template-columns:1fr}}
+
+/* P57 touch and keyboard continuation affordances (native buttons only). */
+.p55-step,.p55-source-actions .button,.p55-actions .button,
+.p55-catalog-card,.p57-transfer .button{min-height:44px}
+.p55-revealed,.p55-source-card,.p57-transfer-lines article{overflow-wrap:anywhere}
+@media(max-width:500px){
+ .p55-source-actions{display:grid;grid-template-columns:1fr}
+ .p55-source-actions .button{width:100%;text-align:left;white-space:normal}
+ .p55-actions .button{min-width:0;max-width:100%;white-space:normal}
+}
