@@ -7,7 +7,7 @@ import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
-import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting} from './writing-c9.mjs';
+import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting,cancelC9WritingFileRead} from './writing-c9.mjs';
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
@@ -1094,6 +1094,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    dialogue:'dialogues',workshop:'workshop'}[linked.kind];
   if(!target)return;
   if(linked.kind==='workshop'&&!SENTENCE_TASKS.some(x=>x.id===id))return;
+  if(route()!==target&&!go(target))return false;
+  if(target==='workshop'&&sentenceTask(sentenceIndex)?.id!==id&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
   rememberC9NativeHandoff('skills',target,id,source.title||source.hanzi||source.id);
   if(linked.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id}});
   if(linked.kind==='grammar')return act({dataset:{action:'grammar-select',id}});
@@ -1161,6 +1164,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!destination)return;
   if(link.kind==='workshop'&&!SENTENCE_TASKS.some(t=>t.id===link.id))
    return alertUser('Original writing task is unavailable.','error');
+  if(route()!==destination&&!go(destination))return false;
+  if(destination==='workshop'&&sentenceTask(sentenceIndex)?.id!==link.id&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
   rememberC9NativeHandoff('advanced',destination,link.id,
    source.title||source.hanzi||source.id);
   if(link.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id:link.id}});
@@ -1301,6 +1307,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
   if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
+  if(route()==='stories'&&storyId!==target.id&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
   resetReadingNavigation();
@@ -1310,6 +1318,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-media-open-dialogue'){
   const target=findDialogue(id);if(!target)return alertUser('Original conversation unavailable.','error');
+  if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
   missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
@@ -1451,6 +1460,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
    if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+   if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+   if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
    if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
    else go('learn');
@@ -2215,7 +2226,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!ok)alertUser('Answer checked but not saved. Export existing progress if storage is unreliable.','error');return;
  }
  if(name==='search-kind'){exploreKind=button.dataset.kind||'all';searchSelection=null;explorePage=0;return render();}
- if(name==='lookup-word'){const w=id?findWord(id):WORDS.find(w=>w.hanzi===button.dataset.word);if(w){searchSelection={type:'word',id:w.key};return go('explore');}return alertUser('Word not available in the indexed demo lessons.','error');}
+ if(name==='lookup-word'){const w=id?findWord(id):WORDS.find(w=>w.hanzi===button.dataset.word);if(w){if(route()!=='explore'&&!go('explore'))return false;searchSelection={type:'word',id:w.key};return go('explore');}return alertUser('Word not available in the indexed demo lessons.','error');}
  if(name==='c9-practice-jump'){const target=button.dataset.target;if(!['c9-native-guided','c9-native-drills'].includes(target))return;
    const section=root.querySelector('#'+target);if(section){section.scrollIntoView({block:'start',behavior:'smooth'});section.focus({preventScroll:true});}return;}
  if(name==='review-begin'){sessionQueue=reviewPlan(state,{now:Date.now(),focus:reviewFocus,limit:reviewSize}).map(item=>item.id);
@@ -2314,7 +2325,7 @@ if(e.target.id==='sentence-library-query'){
 }
 if(e.target.id==='grammar-entry'){grammarTyped=e.target.value;const b=root.querySelector('[data-action="grammar-answer"]');if(b)b.disabled=!grammarTyped.trim();return;}if(e.target.id==='grammar-query'){grammarQuery=e.target.value;for(const item of root.querySelectorAll('[data-grammar-search]'))item.hidden=!item.dataset.grammarSearch.includes(grammarQuery.toLowerCase());return;}if(e.target.id==='pinyin-answer-entry'){pinyinTyped=e.target.value;const button=root.querySelector('[data-action="pinyin-answer"]');if(button)button.disabled=!pinyinTyped.trim();return;}if(e.target.id==='wordbook-entry'){wordbookTyped=e.target.value;const b=root.querySelector('[data-action="wordbook-answer"]');if(b)b.disabled=!wordbookTyped.trim();return;}if(e.target.id==='guided-entry'){guidedTyped=e.target.value;const b=root.querySelector('[data-action="guided-check"]');if(b)b.disabled=!guidedTyped.trim();return;}if(e.target.id==='drill-entry'){drillTyped=e.target.value;const b=root.querySelector('[data-action="drill-check"]');if(b)b.disabled=!drillTyped.trim();return;}if(e.target.id==='story-entry'){storyTyped=e.target.value;const b=root.querySelector('[data-action="story-check"]');if(b)b.disabled=!storyTyped.trim();return;}if(e.target.id==='review-entry'){typedAnswer=e.target.value;const check=root.querySelector('[data-action="submit-review"]');if(check)check.disabled=!typedAnswer.trim();return;}if(e.target.id==='explore-query'){searchQuery=e.target.value;explorePage=0;const matches=visibleExploreResults();$('search-count').textContent=`${matches.length} results · ${WORDS.length} distinct demo word entries · Browsing never changes mastery.`;$('explore-results').innerHTML=renderSearchResults(matches);if($('explore-pager'))$('explore-pager').innerHTML=catalogPager(matches.length);}});
 root.addEventListener('change',async e=>{
- if(await handleC9WritingBackupFile(e,{render,alertUser}))return;
+ if(await handleC9WritingBackupFile(e,{render,alertUser,currentRoute:route}))return;
  if(e.target.id==='c9-advanced-phase-select'){
   const phase=findC9AdvancedPhase(e.target.value);
   if(phase)return act({dataset:{action:'c9-advanced-phase',phase:String(phase.phase)}});
@@ -2382,6 +2393,7 @@ window.addEventListener('hashchange',()=>{
   history.replaceState(null,'','#/'+previous);
   return;
  }
+ if(previous==='writing'&&destination!=='writing')cancelC9WritingFileRead();
  if(sessionQueue?.length&&destination!=='review')reviewPaused=true;
  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
  render();window.scrollTo(0,0);

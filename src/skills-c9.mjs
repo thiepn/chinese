@@ -108,18 +108,26 @@ export function c9SkillNextSource(state,trackId,after=null){
   return e.links.some(l=>['story','dialogue','workshop'].includes(l.kind))&&!e.hasIndependent;
  })||null;
 }
-const match=(source,q)=>{
- const text=[source.id,source.title,source.hanzi,source.pinyin,
- source.theme,source.category,source.goal,source.contrast,
- source.misconception,source.focusWord?.hanzi,source.focusWord?.pinyin,
- source.focusWord?.english,source.sourceId,source.sourceType,
- ...(source.grammarIds||[]),
- ...c9AdvancedSourceLines(source).slice(0,20).flatMap(r=>[r.hanzi,r.pinyin,r.english])]
-  .filter(Boolean).join(' ');
- // Share the existing Wordbook/Find Pinyin-folding normalization: tone-less
- // typing must discover the same originally authored material.
- return plain(text).includes(plain(q));
-};
+// The historical original records are immutable in the loaded curriculum.
+// Cache normalized teaching/search text by *source object*, not by a mutable
+// learner ID or achievement. Typing should not rebuild the original line
+// corpus for every source on every keystroke.
+const c9SkillSearchText=new WeakMap();
+function match(source,q){
+ let haystack=c9SkillSearchText.get(source);
+ if(haystack===undefined){
+  const text=[source.id,source.title,source.hanzi,source.pinyin,
+   source.theme,source.category,source.goal,source.contrast,
+   source.misconception,source.focusWord?.hanzi,source.focusWord?.pinyin,
+   source.focusWord?.english,source.sourceId,source.sourceType,
+   ...(source.grammarIds||[]),
+   ...c9AdvancedSourceLines(source).slice(0,20).flatMap(r=>[r.hanzi,r.pinyin,r.english])]
+   .filter(Boolean).join(' ');
+  haystack=plain(text);
+  c9SkillSearchText.set(source,haystack);
+ }
+ return haystack.includes(plain(q));
+}
 function sourceTitle(source,phase){
  return source.title||source.hanzi||source.grammarTitle||source.goal||'Original P'+phase+' source';
 }
