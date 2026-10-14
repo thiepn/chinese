@@ -834,7 +834,9 @@ function c9SourceReturnMarkup(){
  }
  if(current===trail.route){
   const activeId=c9CurrentSourceIdForTrail(trail);
-  if(activeId&&activeId!==trail.id){c9DiscoveryTrail=null;return '';}
+  // A closed Advanced detail or changed native selection is no longer
+  // the exact original source. Do not expose a misleading return banner.
+  if(activeId!==trail.id){c9DiscoveryTrail=null;return '';}
  }
  return renderC9SourceReturn(trail,current,action,esc);
 }
@@ -1147,9 +1149,11 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='c9-integrate-return'){
   if(!c9DiscoveryTrail)return;
   const from=c9DiscoveryTrail.origin;
+  if(!['learn','find'].includes(from))return;
+  if(!go(from))return;
   c9DiscoveryTrail=null;
-  if(from==='learn'){c9LearnDetail=false;return go('learn');}
-  if(from==='find')return go('find');
+  if(from==='learn'){c9LearnDetail=false;render();}
+  if(from==='find')c9SearchFocusPending=true;
   return;
  }
  if(name==='c9-integrate-lesson'){
