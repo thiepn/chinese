@@ -107,7 +107,7 @@ export function renderC9InstalledSourceAtlas(state,act,esc){
  '<div class="c9-integrated-header"><div><p class="c9-eyebrow">WHAT IS REALLY INSTALLED IN THIS BRANCH</p>'+
  '<h2 id="c9-integrated-atlas-title">Original course materials</h2>'+
  '<p>These counts come from the imported canonical learning arrays, not from HSK level labels, simulated lessons or a remote catalog.</p></div>'+
- '<div class="c9-integrated-atlas-actions"><a href="#/advanced" class="c9-button c9-button--primary c9-button--small">Explore P35–P51 →</a><a href="#/find" class="c9-button c9-button--secondary c9-button--small">Search original material →</a></div></div>'+
+ '<div class="c9-integrated-atlas-actions"><a href="#/skills" class="c9-button c9-button--primary c9-button--small">Learn by skill →</a><a href="#/advanced" class="c9-button c9-button--secondary c9-button--small">Original source collections →</a><a href="#/find" class="c9-button c9-button--secondary c9-button--small">Search original material →</a></div></div>'+
  '<div class="c9-integrated-atlas-grid">'+tabs.map(([name,route,desc,total])=>
  '<a href="#/'+route+'" class="c9-integrated-atlas-tile"><span>'+esc(name)+'</span><strong>'+
  total()+'</strong><small>'+esc(desc)+'</small><span aria-hidden="true">→</span></a>').join('')+'</div>'+
