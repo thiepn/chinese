@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v43-c9-discovery-and-writing-portability';
+const CACHE='character-study-working-v44-c9-ui-recovery';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -330,9 +330,46 @@ const ADVANCED_SOURCE_ASSETS=[
   './styles-p50.css',
   './styles-p51.css',
 ];
-const ASSETS=[...SHELL_ASSETS,...CONCEPT9_ASSETS,...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('character-study-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;
- e.respondWith((async()=>{const cached=await caches.match(e.request,{ignoreSearch:true});if(cached)return cached;if(e.request.mode==='navigate')return await caches.match('./index.html')||Response.error();return fetch(e.request)})());
+// C9-31: The C9-29 stage modules also occur in ADVANCED_SOURCE_ASSETS.
+// Duplicate Request URLs make Cache.addAll() reject, preventing installation.
+const ASSETS=[...new Set([...SHELL_ASSETS,...CONCEPT9_ASSETS,
+ ...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS])];
+const PRECACHE_BATCH_SIZE=24;
+self.addEventListener('install',event=>{
+ event.waitUntil((async()=>{
+  const cache=await caches.open(CACHE);
+  // Limit simultaneous requests while preserving all-or-nothing installation:
+  // any unavailable *required* module must prevent claiming offline readiness.
+  for(let i=0;i<ASSETS.length;i+=PRECACHE_BATCH_SIZE){
+   await cache.addAll(ASSETS.slice(i,i+PRECACHE_BATCH_SIZE));
+  }
+  await self.skipWaiting();
+ })());
+});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  const keys=await caches.keys();
+  await Promise.all(keys.filter(k=>k.startsWith('character-study-')&&k!==CACHE)
+   .map(k=>caches.delete(k)));
+  await self.clients.claim();
+ })());
+});
+self.addEventListener('fetch',event=>{
+ if(event.request.method!=='GET')return;
+ const url=new URL(event.request.url);
+ if(url.origin!==self.location.origin)return;
+ event.respondWith((async()=>{
+  const cache=await caches.open(CACHE);
+  // Do not accidentally serve stale assets from another cache revision.
+  const cached=await cache.match(event.request,{ignoreSearch:true});
+  if(cached)return cached;
+  try{
+   const response=await fetch(event.request);
+   return response;
+  }catch(error){
+   if(event.request.mode==='navigate')
+    return await cache.match('./index.html')||Response.error();
+   return Response.error();
+  }
+ })());
 });
