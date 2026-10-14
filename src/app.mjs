@@ -2425,7 +2425,8 @@ function networkLabel(){
  const online=navigator.onLine;
  const status=c9OfflineShell==='ready'?'Offline shell active':
   c9OfflineShell==='installing'?'Preparing offline content':
-  c9OfflineShell==='checking'?'Checking offline setup':'Offline shell not ready';
+  c9OfflineShell==='checking'?'Checking offline setup':
+  c9OfflineShell==='incomplete'?'Offline cache incomplete':'Offline shell not ready';
  $('network-state').textContent='Local data · '+(online?'Online':'Offline')+' · '+status;
  const homeStatus=$('c9-home-connectivity');
  if(homeStatus)homeStatus.textContent=(online?'Online':'Offline')+' · '+status;
@@ -2435,40 +2436,62 @@ function networkLabel(){
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
    'The offline shell is active. Cached material may be available; original progress still depends on local browser storage.':
-   'The offline shell is not confirmed ready. Reconnect to prepare original source material for offline use.';
+   'The offline source cache is incomplete or unverified. Reconnect while this page is open to prepare original material.';
  }
+}
+// Read-only SW cache integrity check. No network, learner state, local
+// storage or background authority is involved.
+let c9OfflineCheck=0;
+async function verifyC9OfflineShell(){
+ const controller=navigator.serviceWorker?.controller;
+ const generation=++c9OfflineCheck;
+ if(!controller){c9OfflineShell='installing';networkLabel();return;}
+ c9OfflineShell='checking';networkLabel();
+ const report=await new Promise(resolve=>{
+  const channel=new MessageChannel();let finished=false;
+  const finish=value=>{
+   if(finished)return;finished=true;clearTimeout(timeout);
+   channel.port1.close();resolve(value);
+  };
+  const timeout=setTimeout(()=>finish(null),2500);
+  channel.port1.onmessage=event=>finish(event.data);
+  try{controller.postMessage({type:'c9-offline-status'},[channel.port2]);}
+  catch{finish(null);}
+ });
+ if(generation!==c9OfflineCheck||navigator.serviceWorker.controller!==controller)return;
+ // Older controlling service workers might not recognize this request.
+ // That is a reason to disclose uncertainty, not claim all assets are cached.
+ c9OfflineShell=report?.type==='c9-offline-status'?
+  (report.complete===true&&report.cached===report.total?'ready':'incomplete'):'checking';
+ networkLabel();
 }
 async function setupSW(){
  if(!('serviceWorker' in navigator)||location.protocol==='file:'){
   c9OfflineShell='unsupported';networkLabel();return;
  }
- // Registration only requests a worker: a controlled page is evidence that
- // installation completed, not certification of every offline learning flow.
- c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
+ c9OfflineShell=navigator.serviceWorker.controller?'checking':'installing';
  networkLabel();
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
-  networkLabel();
+  void verifyC9OfflineShell();
  });
  try{
   const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
   const installing=registration.installing;
   if(installing){
    installing.addEventListener('statechange',()=>{
-    if(installing.state==='redundant'&&!navigator.serviceWorker.controller)
-     c9OfflineShell='failed';
-    if(installing.state==='activated'&&navigator.serviceWorker.controller)
-     c9OfflineShell='ready';
-    networkLabel();
+    if(installing.state==='redundant'&&!navigator.serviceWorker.controller){
+     ++c9OfflineCheck;c9OfflineShell='failed';networkLabel();
+    }else if(installing.state==='activated'){
+     void verifyC9OfflineShell();
+    }
    });
   }
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':
-   registration.installing?'installing':'checking';
-  networkLabel();
- }catch(e){
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':'failed';
-  networkLabel();
-  console.warn('Offline shell unavailable',e);
+  if(navigator.serviceWorker.controller)await verifyC9OfflineShell();
+  else{c9OfflineShell=registration.installing?'installing':'checking';networkLabel();}
+ }catch(error){
+  if(navigator.serviceWorker.controller)await verifyC9OfflineShell();
+  else{++c9OfflineCheck;c9OfflineShell='failed';networkLabel();}
+  console.warn('Offline shell unavailable',error);
  }
 }
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
