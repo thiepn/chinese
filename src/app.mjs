@@ -1143,7 +1143,12 @@ function p55ContextKind(){
   ({p50:p50CaseId,p51:p51CaseId,p52:p52CaseId,p53:p53CaseId,p54:p54CaseId})[rPrefix];
  return [b.from,b.to].includes(caseId)?'return':null;
 }
-function render(){const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
+function render(){
+ // A native question deep link is applied once per visit, not every redraw.
+ // Leaving the original module allows re-opening an older URL to restore its question.
+ if(route()!=='stories')p58ReaderRouteApplied='';
+ if(route()!=='dialogues')p58DialogueRouteApplied='';
+ const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
  if(findP55Brief(linkedP55)){
   p55FocusId=linkedP55;
   const backStep=new URLSearchParams(location.hash.split('?')[1]||'').get('p55step');
