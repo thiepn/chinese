@@ -194,6 +194,7 @@ const p54AssistedCases=new Set(); // temporary disclosure only
 const p54Checks=new Set(); // temporary self-review only
 let p55FocusId=null,p55Step='sources',p55Question=0,p55Reveal=false,p55Model=false,p55Support=false,p55RepairShown=false,p55Query='';
 let p58ReaderRouteApplied='',p58DialogueRouteApplied=''; // Ephemeral once-per-URL native question selection.
+let p60PreviouslyRenderedHash=null; // Apply a deep-link position once per actual route visit.
 let p59FocusedWordHash=''; // Navigation-only; never learner data.
 // P55 UI state only; native academic writers and P43 own attempts and drafts.
 const p42ViewedTranscripts=new Set();
@@ -1153,8 +1154,15 @@ function p55ContextKind(){
  return [b.from,b.to].includes(caseId)?'return':null;
 }
 function render(){
- // A native question deep link is applied once per visit, not every redraw.
- // Leaving the original module allows re-opening an older URL to restore its question.
+ // Browser Back/Forward can revisit an earlier exact source hash without
+ // leaving the original Reader/Dialogue module. Re-arm that URL's initial
+ // question only when the hash actually changes; never on state redraws
+ // or on native Next, answer submission or help reveals.
+ if(p60PreviouslyRenderedHash!==location.hash){
+  p60PreviouslyRenderedHash=location.hash;
+  p58ReaderRouteApplied='';
+  p58DialogueRouteApplied='';
+ }
  if(route()!=='stories')p58ReaderRouteApplied='';
  if(route()!=='dialogues')p58DialogueRouteApplied='';
  const linkedP55=new URLSearchParams(location.hash.split('?')[1]||'').get('p55');
