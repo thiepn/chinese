@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v37-c9-advanced-progress-search';
+const CACHE='character-study-working-v38-c9-integrated-source-workspaces';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -36,6 +36,8 @@ const CONCEPT9_ASSETS=[
   './media-c9.mjs',
   './styles-c9-utilities.css',
   './utilities-c9.mjs',
+  './styles-c9-integration.css',
+  './integration-c9.mjs',
   './styles-c9-dark-parity.css',
   './styles-c9-mobile-accessibility.css',
   './accessibility-c9.mjs',

@@ -5,6 +5,7 @@ import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
 import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
+import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp} from './accessibility-c9.mjs';
@@ -84,6 +85,7 @@ const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';retu
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
+let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
 let drillLessonId=DEMO_LESSONS[0].id,drillMode='recognition',drillResult=null,drillPicked='',drillTyped='',drillOrder=[],drillAssisted=false;
 let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,beginnerLevel='all',beginnerPart='all',beginnerWordShown=false,beginnerPartTip='',storyFocusIndex=-1,storyHelpIndex=-1,exploreSavedOnly=false;
 let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAssisted=false;
@@ -477,7 +479,7 @@ function renderToday(){
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
-  onboardingPanel()+
+  renderC9LearningContinuity(state,action,esc)+onboardingPanel()+
   '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
   '<div class="c9-home-extra-inner">'+gated()+
   hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
@@ -539,7 +541,7 @@ function renderLearn(){
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section>';
   const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
-  return renderC9LearnHub(state,c9LearnUi(),action,esc)+curriculum+extra;
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra;
  }
  const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
  if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
@@ -753,17 +755,66 @@ function refreshC9FindWorkbench(){
  const panel=$('c9-search-assist');
  if(panel)panel.outerHTML=renderC9SearchAssist(state,c9FindContext(),action,esc);
 }
+function c9CurrentSourceIdForTrail(trail){
+ if(!trail)return null;
+ if(trail.kind==='characters')return c9LearnDetail?displayLessonId:null;
+ if(trail.kind==='words')return searchSelection?.type==='word'?searchSelection.id:null;
+ if(trail.kind==='grammar')return selectedGrammarId();
+ if(trail.kind==='sentences')return selectedLibraryId();
+ if(trail.kind==='reading')return storyId;
+ if(trail.kind==='dialogues')return dialogueId;
+ if(trail.kind==='pathway')return pathwaySelection()?.id||pathwaySelected;
+ return null;
+}
+function c9SourceReturnMarkup(){
+ if(!c9DiscoveryTrail)return '';
+ const current=route(),trail=c9DiscoveryTrail;
+ if(current!==trail.route&&current!==trail.origin){c9DiscoveryTrail=null;return '';}
+ if(current===trail.route){
+  const activeId=c9CurrentSourceIdForTrail(trail);
+  if(activeId&&activeId!==trail.id){c9DiscoveryTrail=null;return '';}
+ }
+ return renderC9SourceReturn(trail,current,action,esc);
+}
 function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
   renderC9SearchIntro(state,ui,action,esc)+
   '<div class="c9-search-native" id="c9-original-search" tabindex="-1">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
 
-function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
+function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page){const target=`#/${page}`;if(location.hash===target){render();return;}location.hash=target;}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
+
+ if(name==='c9-integrate-return'){
+  if(!c9DiscoveryTrail)return;
+  const from=c9DiscoveryTrail.origin;
+  c9DiscoveryTrail=null;
+  if(from==='learn'){c9LearnDetail=false;return go('learn');}
+  if(from==='find')return go('find');
+  return;
+ }
+ if(name==='c9-integrate-lesson'){
+  if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+  c9DiscoveryTrail=null;
+  return act({dataset:{action:'c9-lesson-open',id}});
+ }
+ if(name==='c9-integrate-reading'){
+  if(!findStory(id))return alertUser('Original reading unavailable.','error');
+  c9DiscoveryTrail=null;
+  return act({dataset:{action:'c9-media-open-story',id}});
+ }
+ if(name==='c9-integrate-dialogue'){
+  if(!findDialogue(id))return alertUser('Original conversation unavailable.','error');
+  c9DiscoveryTrail=null;
+  return act({dataset:{action:'c9-media-open-dialogue',id}});
+ }
+ if(name==='c9-integrate-review'){
+  c9DiscoveryTrail=null;
+  return go('review'); // Keep current queue and original due-only scheduler.
+ }
 
  if(name==='c9-find-reset'){
   p30Query='';p30Kind='all';p30Saved=false;p30Page=0;
@@ -1199,6 +1250,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const kind=button.dataset.kind;
   const hits=courseSearch({query:p30Query,kind:p30Kind,saved:p30Saved,state});
   if(!hits.some(x=>x.kind===kind&&x.id===id))return;
+  const source=c9LookupSource(kind,id);
+  if(!source)return alertUser('Original indexed source is unavailable.','error');
+  // In-memory return context: no duplicate source store or browser history mutation.
+  c9DiscoveryTrail={...source,origin:route()==='learn'?'learn':'find'};
   const mapped={characters:'open-lesson',words:'lookup-word',grammar:'grammar-select',sentences:'sentence-select',
     reading:'open-story-link',dialogues:'hub-dialogue',pathway:'pathway-select'};
   const target=mapped[kind];if(!target)return;
