@@ -114,6 +114,9 @@ function c9OpenNativeAnswer(screen=c9RenderedRoute){
  if((screen==='review'&&checkResult!==null)||
   (screen==='workshop'&&sentenceFeedback!==null)||
   (screen==='grammar'&&grammarFeedback!==null)||
+  (screen==='sentences'&&libraryFeedback!==null)||
+  (screen==='pathway'&&pathwayFeedback!==null)||
+  (screen==='wordbook'&&wordbookFeedback!==null)||
   (screen==='stories'&&storyResult!==null)||
   (screen==='dialogues'&&missionFeedback!==null)||
   (screen==='pinyin'&&pinyinFeedback!==null))return null;
@@ -451,10 +454,12 @@ function renderGrammar(){
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
  const selected=findGrammarLesson(id);if(!selected)return false;
- // Original grammar handlers also open from source-linked activities. Route
- // approval and native unsent input protection must precede any reset.
- if(route()==='grammar'&&selectedGrammarId()!==id&&
-  !c9ConfirmLeaveNativeAnswer('grammar'))return false;
+ // Reopening the same selected grammar unit must not erase a typed answer.
+ if(route()==='grammar'&&selectedGrammarId()===id){
+  root.querySelector('#c9-native-grammar')?.scrollIntoView({block:'start'});
+  return true;
+ }
+ if(route()==='grammar'&&!c9ConfirmLeaveNativeAnswer('grammar'))return false;
  if(route()!=='grammar'&&!go('grammar'))return false;
  grammarSelected=id;grammarChapter=String(selected.chapterNumber);
  grammarQuery='';grammarSessionReset();
@@ -482,9 +487,15 @@ function selectedLibraryId(){
 }
 function sentenceUiReset(){libraryMode='meaning';libraryTyped='';libraryOrder=[];libraryFeedback=null;libraryAssisted=false;}
 function openLibrarySentence(id){
- if(!findLibrarySentence(id))return;
+ if(!findLibrarySentence(id))return false;
+ if(route()==='sentences'&&selectedLibraryId()===id){
+  root.querySelector('#c9-native-sentences')?.scrollIntoView({block:'start'});
+  return true;
+ }
+ if(route()==='sentences'&&!c9ConfirmLeaveNativeAnswer('sentences'))return false;
+ if(route()!=='sentences'&&!go('sentences'))return false;
  librarySelected=id;sentenceUiReset();
- location.hash='#/sentences/'+id;render();
+ location.hash='#/sentences/'+id;render();return true;
 }
 function renderSentences(){
  const native=renderSentenceScreen({selected:selectedLibraryId(),query:libraryQuery,topic:libraryTopic,
@@ -499,7 +510,13 @@ function renderSentences(){
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
 function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;}
-function openPathwayMission(id){const m=findPathwayMission(id);if(!m)return;pathwaySelected=m.id;pathwayReset();location.hash='#/pathway/'+id;render();}
+function openPathwayMission(id){
+ const m=findPathwayMission(id);if(!m)return false;
+ if(route()==='pathway'&&pathwaySelection()===id)return true;
+ if(route()==='pathway'&&!c9ConfirmLeaveNativeAnswer('pathway'))return false;
+ if(route()!=='pathway'&&!go('pathway'))return false;
+ pathwaySelected=m.id;pathwayReset();location.hash='#/pathway/'+id;render();return true;
+}
 function renderPathway(){
  if(!/^#\/pathway\/path-\d{2}$/.test(location.hash))return renderC9PathwayHub(state,action,esc);
  const m=findPathwayMission(pathwaySelection())||PATHWAY_MISSIONS[0];
@@ -1342,27 +1359,28 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
   if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target){alertUser('Original reading unavailable.','error');return false;}
-  if(route()==='stories'&&storyId!==target.id&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  if(route()==='stories'&&storyId===target.id){
+   root.querySelector('.story-paper')?.scrollIntoView({block:'start'});return true;
+  }
+  if(route()==='stories'&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
   if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
-  resetReadingNavigation();
-  if(route()==='stories'){render();root.querySelector('.story-paper')?.scrollIntoView({block:'start'});}
-  else go('stories');
-  return true;
+  resetReadingNavigation();render();
+  root.querySelector('.story-paper')?.scrollIntoView({block:'start'});return true;
  }
  if(name==='c9-media-open-dialogue'){
   const target=findDialogue(id);if(!target){alertUser('Original conversation unavailable.','error');return false;}
-  if(route()==='dialogues'&&dialogueId!==target.id&&
-   !c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  if(route()==='dialogues'&&dialogueId===target.id){
+   root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});return true;
+  }
+  if(route()==='dialogues'&&!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
   if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
   missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
-  c9DialogueSourceId=null;c9DialogueTurn=0;
-  if(route()==='dialogues'){render();root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});}
-  else go('dialogues');
-  return true;
+  c9DialogueSourceId=null;c9DialogueTurn=0;render();
+  root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});return true;
  }
  if(name==='c9-media-turn'){
   const dialogue=findDialogue(dialogueId);
@@ -1459,13 +1477,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return;
  }
  if(name==='c9-sentence-topic'){
-  const topic=SENTENCE_TOPICS.find(x=>x.id===id);if(!topic)return;
+  const topic=SENTENCE_TOPICS.find(x=>x.id===id);if(!topic)return false;
   const first=SENTENCE_LIBRARY.find(x=>x.topicId===topic.id);
-  if(!first)return;
+  if(!first||!openLibrarySentence(first.id))return false;
   libraryTopic=topic.id;libraryQuery='';libraryArea='all';libraryDifficulty='all';
   libraryGrammar='all';libraryPurpose='all';libraryTone='all';librarySource='all';
   librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
-  return openLibrarySentence(first.id);
+  render();return true;
  }
  if(name==='c9-sentence-all'){
   libraryTopic='all';libraryQuery='';libraryArea='all';libraryDifficulty='all';
@@ -1488,20 +1506,29 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-lesson-select'){
   const next=findLesson(id);
-  if(!next)return alertUser('Lesson unavailable.','error');
+  if(!next){alertUser('Lesson unavailable.','error');return false;}
+  if(c9LearnDetail&&displayLessonId!==next.id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+  if(c9LearnDetail&&displayLessonId===next.id)return true;
   displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';
   showLessonTranslation=state.settings.showPinyin;
   render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
-  root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});return;
+  root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});return true;
  }
- if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
+ if(name==='c9-learn-back'){
+  if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
+  c9LearnDetail=false;render();
+  root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return true;
+ }
  if(name==='c9-lesson-open'){
    if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
+   if(route()==='learn'&&c9LearnDetail&&displayLessonId===id){
+    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+    return true;
+   }
    if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
-   if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
-   else go('learn');
+   render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
    return true;
  }
  if(name==='c9-unit-open'){
@@ -1691,22 +1718,29 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!hits.some(x=>x.kind===kind&&x.id===id))return;
   const source=c9LookupSource(kind,id);
   if(!source)return alertUser('Original indexed source is unavailable.','error');
-  // In-memory return context: no duplicate source store or browser history mutation.
-  c9DiscoveryTrail={...source,origin:route()==='learn'?'learn':'find'};
+  // Source provenance must follow successful original navigation, never a
+  // rejected click. Retain earlier search-return context on failed actions.
+  const nextTrail={...source,origin:route()==='learn'?'learn':'find'};
   if(kind==='advanced'){
     const phase=findC9AdvancedPhase(source.phase);
-    if(!phase?.records.some(x=>x.id===source.sourceId))return;
+    if(!phase?.records.some(x=>x.id===source.sourceId))return false;
+    if(!go('advanced'))return false;
     c9AdvancedPhase=phase.phase;c9AdvancedSelected=source.sourceId;
     c9AdvancedPage=0;c9AdvancedQuery='';c9AdvancedTranslation=false;
-    return go('advanced');
+    c9DiscoveryTrail=nextTrail;render();return true;
   }
-  const mapped={characters:'open-lesson',words:'lookup-word',grammar:'grammar-select',sentences:'sentence-select',
-    reading:'open-story-link',dialogues:'hub-dialogue',pathway:'pathway-select'};
-  const target=mapped[kind];if(!target)return;
-  return act({dataset:{action:target,id}});
+  const mapped={characters:'c9-lesson-open',words:'lookup-word',grammar:'grammar-select',
+    sentences:'sentence-select',reading:'c9-media-open-story',
+    dialogues:'c9-media-open-dialogue',pathway:'pathway-select'};
+  const target=mapped[kind];if(!target)return false;
+  if(await act({dataset:{action:target,id}})!==true)return false;
+  c9DiscoveryTrail=nextTrail;render();return true;
  }
- if(name==='pathway-open'){const mission=pathwayResume(state);pathwaySelected=mission.id;return go('pathway');}
- if(name==='pathway-select'){if(findPathwayMission(id))openPathwayMission(id);return;}
+ if(name==='pathway-open'){
+  const mission=pathwayResume(state);if(!mission||!go('pathway'))return false;
+  pathwaySelected=mission.id;render();return true;
+ }
+ if(name==='pathway-select')return openPathwayMission(id);
  if(name==='pathway-band'||name==='pathway-prev-band'||name==='pathway-next-band'){
   const current=findPathwayMission(pathwaySelection())||PATHWAY_MISSIONS[0];
   const number=name==='pathway-band'?Number(button.dataset.band):current.band+(name==='pathway-next-band'?1:-1);
@@ -1733,9 +1767,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const next=pathwayNext(state,current.band,current.id);if(next)openPathwayMission(next.id);return;
  }
  if(name==='pathway-workshop'){
-  const m=findPathwayMission(pathwaySelection());if(!m)return;
-  const index=SENTENCE_TASKS.findIndex(t=>t.id==='pathway:'+m.id+':production');if(index<0)return;
-  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;return go('workshop');
+  const m=findPathwayMission(pathwaySelection());if(!m)return false;
+  const index=SENTENCE_TASKS.findIndex(t=>t.id==='pathway:'+m.id+':production');
+  if(index<0){alertUser('Original pathway production exercise unavailable.','error');return false;}
+  if(!go('workshop'))return false;
+  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
+  render();return true;
  }
  if(name==='pathway-open-words')return go('explore');
  if(name==='pathway-open-grammar')return go('grammar');
@@ -1803,7 +1840,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='sentence-grammar-filter'){if(!GRAMMAR_LESSONS.some(g=>g.id===id))return;
   libraryGrammar=id;libraryTopic='all';librarySource='all';libraryPage=0;libraryQuery='';return go('sentences');}
  
- if(name==='sentence-select'){if(findLibrarySentence(id))openLibrarySentence(id);return;}
+ if(name==='sentence-select')return openLibrarySentence(id);
  if(name==='sentence-prev-page'||name==='sentence-next-page'){
   const count=searchSentences({query:libraryQuery,topic:libraryTopic,area:libraryArea,
    difficulty:libraryDifficulty,grammar:libraryGrammar,purpose:libraryPurpose,tone:libraryTone,source:librarySource,savedOnly:librarySavedOnly,state}).length;
@@ -1818,7 +1855,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const options=matches.length?matches:SENTENCE_LIBRARY;
   const i=Math.max(0,options.findIndex(x=>x.id===selectedLibraryId()));
   const index=(i+(name==='sentence-next'?1:-1)+options.length)%options.length;
-  libraryPage=Math.floor(index/18);openLibrarySentence(options[index].id);return;
+  if(openLibrarySentence(options[index].id)){libraryPage=Math.floor(index/18);render();return true;}
+  return false;
  }
  if(name==='sentence-mode'||name==='sentence-next-mode'){
   const record=findLibrarySentence(selectedLibraryId());if(!record)return;
@@ -1970,8 +2008,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)displayLessonId=item.lessonId;if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
  if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
- if(name==='hub-lesson'){if(findLesson(id)){displayLessonId=id;c9LearnDetail=true;return go('learn');}return;}
- if(name==='hub-dialogue'){if(findDialogue(id)){p34ShadowLine=0;p34TranscriptViewed=false;dialogueId=id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;p33Branch=null;return go('dialogues');}return;}
+ if(name==='hub-lesson')return act({dataset:{action:'c9-lesson-open',id}});
+ if(name==='hub-dialogue')return act({dataset:{action:'c9-media-open-dialogue',id}});
  if(name==='plan-open'||name==='plan-mistakes'){planMistakeFilter=name==='plan-mistakes'?'unresolved':planMistakeFilter;return go('plan');}
  if(name==='plan-minutes'){const minutes=Number(button.dataset.minutes);return mutate(s=>setPlanPreferences(s,{minutes,focus:planPreferences(s).focus}));}
  if(name==='plan-focus')return mutate(s=>setPlanPreferences(s,{minutes:planPreferences(s).minutes,focus:button.dataset.focus}));
@@ -2247,11 +2285,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(name==='guided-abandon'&&!confirm('End this session? Already saved practice answers will be retained.'))return;
   const ok=await mutate(s=>abandonGuidedSession(s));if(ok){guidedTyped='';guidedOrder=[];guidedAssisted=false;}return;
  }
- if(name==='open-story-link'){const story=findStory(id);if(!story)return alertUser('Reading unavailable.','error');storyId=story.id;resetReadingNavigation();if(story.beginner)storyMode='beginner-detail';return go('stories');}
+ if(name==='open-story-link')return act({dataset:{action:'c9-media-open-story',id}});
  if(name==='go-settings')return go('settings');
  if(name==='go-learn')return go('learn');
  if(name==='go-progress')return go('progress');
- if(name==='open-stories'){resetStoryExercise();return go('stories');}
+ if(name==='open-stories'){
+  if(!go('stories'))return false;resetStoryExercise();render();return true;
+ }
  if(name==='open-practice'){resetDrill();return go('practice');}
  if(name==='practice-lesson'){drillLessonId=findLesson(id)?.id||DEMO_LESSONS[0].id;resetDrill();return go('practice');}
  if(name==='drill-next'){drillLessonId=DEMO_LESSONS[(DEMO_LESSONS.findIndex(l=>l.id===drillLessonId)+1)%DEMO_LESSONS.length].id;resetDrill();return render();}
@@ -2318,11 +2358,23 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='reader-answer'){if(readerResult)return;const lesson=readerLesson(),cloze=makeCloze(lesson),answer=readerMode==='cloze'&&cloze?cloze.answer:lesson.sentence.english;readerResult={answer:button.dataset.option,correct:button.dataset.option===answer};return render();}
  if(name==='reader-reveal'){showLessonTranslation=!showLessonTranslation;return render();}
  if(name==='start-next'){const next=summary(state).next;if(next){displayLessonId=next.id;c9LearnDetail=true;go('learn')}else go('review');return}
- if(name==='open-lesson'){if(!findLesson(id))return alertUser('Lesson unavailable.','error');displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;go('learn');return}
- if(name==='next-lesson'){const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);const next=DEMO_LESSONS[idx+1];if(!next)return alertUser('Last original lesson reached. Continue with Review or contextual study.');displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';showLessonTranslation=state.settings.showPinyin;render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return}
+ if(name==='open-lesson')return act({dataset:{action:'c9-lesson-open',id}});
+ if(name==='next-lesson'){
+  const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);
+  const next=DEMO_LESSONS[idx+1];
+  if(!next){alertUser('Last original lesson reached. Continue with Review or contextual study.');return false;}
+  if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
+  displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';
+  showLessonTranslation=state.settings.showPinyin;render();
+  root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
+ }
  if(name==='mark-studied'){if(!findLesson(id))return;const ok=await mutate(s=>addLesson(s,id));if(ok){alertUser(`Lesson introduced. ${cardsForLesson(id).length} distinct recall targets were added.`);const idx=DEMO_LESSONS.findIndex(l=>l.id===id);if(idx<DEMO_LESSONS.length-1){displayLessonId=DEMO_LESSONS[idx+1].id;render();}}return}
  if(name==='toggle-translation'){showLessonTranslation=!showLessonTranslation;render();return}
- if(name==='start-review'){revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;sessionQueue=null;go('review');return}
+ if(name==='start-review'){
+  if(!go('review'))return false;
+  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
+  activeReviewId=null;sessionQueue=null;render();return true;
+ }
  if(name==='review-pick'){if(reviewPaused||revealed||!sessionQueue?.length)return;chosenOption=button.dataset.option||'';render();root.querySelector('[data-action="review-pick"][aria-pressed="true"]')?.focus();return;}
  if(name==='submit-review'){if(reviewPaused||revealed||!activeReviewId)return;const info=cardInfo(activeReviewId);const answer=info.kind==='choice'?chosenOption:typedAnswer;if(!answer.trim())return alertUser('Enter or select an answer before checking.','error');checkResult=info.kind==='pinyin'?toneExplanation(answer,info.answer):evaluateAnswer(answer,info.answer,info.kind);revealed=true;render();announceC9Interaction(checkResult?.correct?'Answer checked: correct. Review feedback and grading actions are available.':'Answer checked. Compare your response with the reference and choose a grade.');return;}
  if(name==='reveal-review'){if(reviewPaused||revealed||!activeReviewId)return;checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();announceC9Interaction('Reference revealed; this response is assisted, not independent.');return}
@@ -2451,17 +2503,55 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
  if(!revealed&&e.code==='KeyS'){const btn=root.querySelector('[data-action="review-skip"]');if(btn){e.preventDefault();void act(btn)}return;}
  if(!reviewPaused&&revealed&&['Digit1','Digit2','Digit3','Digit4'].includes(e.code)){e.preventDefault();const btn=root.querySelector(`[data-action="grade"][data-grade="${Number(e.code.slice(-1))-1}"]`);if(btn)void act(btn)}
 });
+// Browser history can switch the historical lesson ID without switching routes.
+// Resolve only genuine original IDs; malformed hashes never install a new source.
+function c9HashLearningSource(screen,hash){
+ const patterns={
+  grammar:/^#\/grammar\/(g\d{2})$/,
+  sentences:/^#\/sentences\/(sent-\d{3})$/,
+  pathway:/^#\/pathway\/(path-\d{2})$/
+ };
+ const id=hash?.match(patterns[screen])?.[1];
+ if(!id)return null;
+ return screen==='grammar'?(findGrammarLesson(id)?id:null):
+  screen==='sentences'?(findLibrarySentence(id)?id:null):
+  screen==='pathway'?(findPathwayMission(id)?id:null):null;
+}
 window.addEventListener('hashchange',()=>{
  const destination=route(),previous=c9RenderedRoute;
+ const previousHash=c9RenderedHash||('#/'+previous);
+ const currentHash=location.hash;
  const approved=c9ApprovedDeparture?.from===previous&&
   c9ApprovedDeparture?.to===destination;
  c9ApprovedDeparture=null;
- // Browser Back/Forward and manually edited hashes bypass go() and anchor
- // click interception. Keep unsubmitted native answers until the learner
- // explicitly approves leaving their original screen.
- if(destination!==previous&&!approved&&!c9ConfirmLeaveNativeAnswer(previous)){
-  history.replaceState(null,'','#/'+previous);
+ const previousSource=c9HashLearningSource(previous,previousHash);
+ const targetSource=c9HashLearningSource(destination,currentHash);
+ const sameScreenSourceChanged=destination===previous&&Boolean(targetSource)&&
+  targetSource!==(previousSource||(previous==='grammar'?grammarSelected:
+   previous==='sentences'?librarySelected:pathwaySelected));
+ // Back/Forward and pasted deep links do not go through the original native
+ // controller. Guard both route changes and same-route source changes.
+ if((destination!==previous||sameScreenSourceChanged)&&!approved&&
+  !c9ConfirmLeaveNativeAnswer(previous)){
+  history.replaceState(null,'',previousHash);
   return;
+ }
+ // Following a *real* approved hash transition, synchronize source-specific
+ // local input with the displayed original source, never with an old lesson.
+ if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
+  grammarSelected=targetSource;
+  grammarChapter=String(findGrammarLesson(targetSource).chapterNumber);
+  grammarQuery='';grammarSessionReset();
+ }
+ if(destination==='sentences'&&targetSource&&targetSource!==librarySelected){
+  librarySelected=targetSource;sentenceUiReset();
+ }
+ if(destination==='pathway'&&targetSource&&targetSource!==pathwaySelected){
+  pathwaySelected=targetSource;pathwayReset();
+ }
+ if(destination==='character'){
+  const characterId=currentHash.match(/^#\/character\/(demo-\d{2,3})$/)?.[1];
+  if(characterId&&findLesson(characterId))displayLessonId=characterId;
  }
  if(previous==='writing'&&destination!=='writing')cancelC9WritingFileRead();
  if(sessionQueue?.length&&destination!=='review')reviewPaused=true;

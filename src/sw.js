@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v45-c9-offline-integrity';
+const CACHE='character-study-working-v46-c9-partial-repair';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -346,15 +346,25 @@ self.addEventListener('message',event=>{
   let cached=0,failed=false;
   try{
    const cache=await caches.open(CACHE);
-   const known=()=>new Set((await cache.keys()).map(request=>request.url));
+   const known=async()=>new Set((await cache.keys()).map(request=>request.url));
    if(event.data.type==='c9-offline-repair'){
     try{
      const entries=await known();
      const missing=ASSETS.filter(path=>!entries.has(new URL(path,self.location.href).href));
-     // Explicit learner-requested cache repair. No learner data is changed.
-     // Partial success is reported accurately if a later batch fails.
-     for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE)
-      await cache.addAll(missing.slice(i,i+PRECACHE_BATCH_SIZE));
+     // Repair is explicitly learner-triggered. One failed static asset must
+     // not prevent the remaining originals from being prepared for offline use.
+     for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE){
+      const batch=missing.slice(i,i+PRECACHE_BATCH_SIZE);
+      try{await cache.addAll(batch);}
+      catch{
+       failed=true;
+       // Cache.addAll is atomic per batch. Salvage the valid siblings and
+       // continue to later batches, reporting incomplete if any remain.
+       for(const path of batch){
+        try{await cache.add(path);}catch{failed=true;}
+       }
+      }
+     }
     }catch{failed=true;}
    }
    const keys=await known();
