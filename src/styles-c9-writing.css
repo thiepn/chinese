@@ -126,7 +126,11 @@
  border-top:1px solid var(--c9-line);padding-top:10px;font-size:11px}
 .c9-writing-portability .c9-writing-import-error{grid-column:1/-1;
  color:var(--c9-accent);font-weight:600}
-.c9-writing-backup-controls :focus-visible{outline:3px solid var(--c9-accent);outline-offset:2px}
+.c9-writing-backup-controls :focus-visible,
+#c9-writing-pending:focus-visible,#c9-writing-import-error:focus-visible{
+ outline:3px solid var(--c9-focus,var(--c9-accent));outline-offset:3px}
+.c9-writing-import-error{max-width:100%;overflow-wrap:anywhere}
+.c9-writing-pending{scroll-margin-top:22px}
 @media(max-width:740px){
  .c9-writing-portability{grid-template-columns:minmax(0,1fr);padding:15px 13px;gap:13px}
  .c9-writing-backup-controls{grid-template-columns:minmax(0,1fr)}
