@@ -3,6 +3,7 @@
  */
 import {P54_CASES,P54_SELF_REVIEW} from './p54-course.mjs';
 import {P54_REGISTER_PAIRS} from './p54-register.mjs';
+import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {STORIES} from './stories.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {WORDS,canonicalWordKey} from './lexicon.mjs';
@@ -20,7 +21,8 @@ export function p54Evidence(state,c){
  const story=p54Story(c),dialogue=p54NativeDialogue(c);
  const reading=(state.readingEvents||[]).filter(x=>x.storyId===story?.id);
  const listening=(state.dialogueEvents||[]).filter(x=>x.dialogueId===dialogue?.id);
- const writing=(state.sentenceEvents||[]).filter(x=>x.taskId?.startsWith('p54:source:'+c.id+':'));
+ const writing=(state.sentenceEvents||[]).filter(x=>x.taskId?.startsWith('p54:source:'+c.id+':')||
+ x.taskId?.startsWith('p54:cumulative:'+c.id+':'));
  const vocab=P54_REGISTER_PAIRS.slice((c.sequence-1)*3,c.sequence*3);
  const registerIds=vocab.map(x=>'p54:register:'+x.id+':');
  const registerEvents=(state.sentenceEvents||[]).filter(x=>registerIds.some(prefix=>x.taskId?.startsWith(prefix)));
@@ -72,6 +74,7 @@ export function p54Lesson(c,state,act,esc,{stage='register',readingIndex=0,liste
  readingFeedback=null,listeningFeedback=null}={}){
  if(!c)return '';
  const e=p54Evidence(state,c),rq=c.questions[readingIndex],dq=c.dialogueQuestions[listeningIndex],
+ cumulative=p54CumulativeFor(c.id),
  selectedChecks=new Set(checks),vocab=P54_REGISTER_PAIRS.slice((c.sequence-1)*3,c.sequence*3);
  return '<section class="p54-journey" aria-label="P54 advanced source-based Mandarin">'+
  '<header class="p54-heading"><p class="eyebrow">P54 · CASE '+c.sequence+' / '+P54_CASES.length+'</p>'+
@@ -161,6 +164,22 @@ export function p54Lesson(c,state,act,esc,{stage='register',readingIndex=0,liste
  '<article><h4>Unseen transfer in the current case</h4><p>'+esc(c.goal)+'</p>'+
  '<p><strong>Incorrect shortcut to avoid:</strong> '+esc(c.pitfall)+'</p>'+
  '<p><strong>Formal register:</strong> '+esc(c.formalTask)+'</p><p><strong>Independent speaking:</strong> '+esc(c.informalTask)+'</p></article></div>'+
+ '<section class="p54-cumulative"><h4>Exact-source cumulative transfer · P50 → P54</h4>'+
+ '<p>'+esc(cumulative?.bridge||'')+'</p>'+
+ '<p><strong>Fair objection:</strong> '+esc(cumulative?.counter||'')+'</p>'+
+ '<p><strong>Independent written reconstruction:</strong> '+esc(cumulative?.independent||'')+'</p>'+
+ '<p><strong>Spoken without a model:</strong> '+esc(cumulative?.oral||'')+'</p>'+
+ '<div class="p54-source-links">'+(cumulative?.links||[]).map(link=>
+ act('p'+link.phase.slice(1)+'-open',esc(link.phase.toUpperCase())+' · '+esc(link.label)+' →',
+ 'button outline small','data-id="'+esc(link.id)+'"')).join('')+'</div>'+
+ '<div class="p54-actions">'+act('p54-models',models?'Hide cross-case models':
+ 'Compare original bilingual sentences after writing','button outline')+'</div>'+
+ (models?'<div class="p54-models">'+(cumulative?.models||[]).map((m,i)=>'<article>'+
+ '<p lang="zh-Hans">'+esc(m.hanzi)+'</p><small>'+esc(m.pinyin)+'</small>'+
+ '<p>'+esc(m.english)+'</p><p>'+esc(m.purpose)+'</p>'+
+ act('p54-cumulative-write','Native cross-context exact reconstruction '+(i+1)+' →',
+ 'button outline small','data-index="'+i+'"')+'</article>').join('')+'</div>':'')+
+ '</section>'+
  '<h4>Self-review, not stored progress</h4>'+
  P54_SELF_REVIEW.map(x=>act('p54-check',(selectedChecks.has(x.id)?'✓ ':'○ ')+esc(x.label),
  'p54-check '+(selectedChecks.has(x.id)?'selected':''),
