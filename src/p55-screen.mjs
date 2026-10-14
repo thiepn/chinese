@@ -128,7 +128,8 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  ['Draft two · correction','Identify a plausible overclaim, make the strongest fair objection, and edit only the unsupported inference.'],
  ['Draft three · transfer','Rewrite for a different audience without changing any figure, source authority, date, or scope.']
  ].map(([name,copy])=>'<article><h4>'+esc(name)+'</h4><p>'+esc(copy)+'</p></article>').join('')+'</div>'+
- '<p><strong>Explicit misconception correction:</strong> '+esc(b.pitfall)+'</p>'+
+ '<p><strong>Specific unsupported claim to remove:</strong> '+esc(repair?.wrong||b.pitfall)+'</p>'+
+ '<p><strong>Source-bound revision principle:</strong> '+esc(repair?.principle||b.pitfall)+'</p>'+
  '<p><strong>Fair counterargument:</strong> '+esc(b.objection)+'</p>'+
  '<div class="p55-actions">'+act('p55-copy-brief','Copy source-grounded writing task','button outline')+
  act('p55-p43','Open existing P43 independent writing →','button primary')+
@@ -161,11 +162,14 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
 }
 export function p55WritingContext(b,act,esc){
  if(!b)return '';
+ const repair=p56RepairFor(b.id);
  const left=p55Reference(b.from,'reading',0),right=p55Reference(b.to,'reading',0);
  return '<aside class="p55-return-strip" aria-label="Original source-based writing handoff">'+
  '<div><strong>P55 source-grounded writing context</strong><p>'+esc(b.title)+
  ' · '+esc(b.from)+' / '+esc(b.to)+'</p>'+
- '<p>'+esc(b.writing)+'</p><p><strong>Correction:</strong> '+esc(b.pitfall)+'</p>'+
+ '<p>'+esc(b.writing)+'</p><p><strong>Incorrect interpretation to repair:</strong> '+
+ esc(repair?.wrong||b.pitfall)+'</p><p><strong>Correction boundary:</strong> '+
+ esc(repair?.principle||b.pitfall)+'</p>'+
  '<div class="p55-handoff-evidence">'+[left,right].map((item,i)=>item?
  '<p><strong>Original '+(i?'second':'first')+' evidence anchor:</strong> '+
  '<span lang="zh-Hans">'+esc(item.hanzi)+'</span> · '+esc(item.english)+'</p>':'').join('')+'</div>'+

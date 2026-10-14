@@ -61,6 +61,7 @@ import {P54_REGISTER_PAIRS} from './p54-register.mjs';
 import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {p54Overview,p54Lesson,p54Next,p54Story,p54NativeDialogue,P54_STAGES} from './p54-screen.mjs';
 import {P55_BRIEFS,findP55Brief} from './p55-briefs.mjs';
+import {p56RepairFor} from './p56-repairs.mjs';
 import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
 import {p55Overview,p55Lesson,p55WritingContext,P55_STEPS} from './p55-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
@@ -1208,14 +1209,16 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p55-copy-brief'){
   const b=findP55Brief(p55FocusId);if(!b)return;
   const first=p55Source(b.from),second=p55Source(b.to);
+  const corrected=p56RepairFor(b.id);
   const text=['P55 original source-based Mandarin writing',b.title,
    'Source A: '+(first?.title||b.from)+' ('+b.from+')',
    'Source B: '+(second?.title||b.to)+' ('+b.to+')',
    'Different-question retrieval: '+b.retrieval,
    'Independent writing: '+b.writing,
    'Fair objection: '+b.objection,
-   'Mistaken inference to repair: '+b.pitfall,
-   'Independent spoken transfer: '+b.speaking,
+   'Mistaken inference to repair: '+(corrected?.wrong||b.pitfall),
+   'Evidence-limited revision: '+(corrected?.principle||b.pitfall),
+   'Independent spoken transfer: '+(corrected?.speaking||b.speaking),
    'Preserve original facts, record scope and native source IDs.'].join('\n\n');
   if(!navigator.clipboard?.writeText)return alertUser('Clipboard unavailable. The writing task is visible above for manual copying.','error');
   try{await navigator.clipboard.writeText(text);alertUser('Source-grounded writing brief copied.');}
