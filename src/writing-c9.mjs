@@ -164,10 +164,13 @@ const resetWriting=({unitId=P43_UNITS[0].id,phase=0,sourceId=null}={})=>{
   compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
   showEvidence:false,transferModels:false,transferReview:[],importCandidate:null,importError:''});
 };
-export function openC9WritingSource(phase,sourceId,{go,alertUser}){
+export function openC9WritingSource(phase,sourceId,api){
  const unit=c9WritingLinkedUnit(phase,sourceId);
- if(!unit){alertUser('No historical P43 writing source is linked to this material.','error');return false;}
- return requestC9Writing({unitId:unit.id,phase:Number(phase),sourceId},{go});
+ if(!unit){api.alertUser('No historical P43 writing source is linked to this material.','error');return false;}
+ // Retain the native controller's route and render callbacks. Dropping them
+ // previously caused a same-screen P43 source switch to redraw BEFORE the
+ // protected pending-switch was assigned, hiding the confirmation.
+ return requestC9Writing({unitId:unit.id,phase:Number(phase),sourceId},api);
 }
 function requestC9Writing(target,{go,currentRoute,render}){
  const w=c9WritingState;
