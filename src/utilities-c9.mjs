@@ -93,7 +93,7 @@ export function renderC9SearchIntro(state,ui,act,esc){
  '<div class="c9-search-category-grid">'+families.map(row=>
   act('p30-filter','<strong>'+esc(row.label)+'</strong><span>'+row.count+' source entries</span>',
   'c9-search-category'+(ui.kind===row.id?' is-active':''),'data-kind="'+row.id+'" aria-pressed="'+(ui.kind===row.id)+'"')).join('')+
- '</div></section>'+renderC9SearchAssist(state,ui,act,esc)+'<p class="c9-utility-truth c9-unified-source-note">Saved-only search applies only to source types with native saved or introduction records. Other categories may correctly show no results under this filter.</p></div>';
+ '</div></section>'+renderC9SearchAssist(state,ui,act,esc)+'<p class="c9-utility-truth c9-unified-source-note">Saved-only applies only to native bookmarked or introduced materials. Advanced authored source records have no bookmark authority, so use the Advanced sources filter with saved-only turned off.</p></div>';
 }
 const settingsDestinations=Object.freeze([
  ['study','Study preferences','Pinyin, appearance and daily lesson target'],
