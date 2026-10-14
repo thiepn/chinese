@@ -62,7 +62,7 @@ import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {p54Overview,p54Lesson,p54Next,p54Story,p54NativeDialogue,P54_STAGES} from './p54-screen.mjs';
 import {P55_BRIEFS,findP55Brief} from './p55-briefs.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
-import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
+import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
 import {p55Overview,p55Lesson,p55WritingContext,P55_STEPS} from './p55-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
@@ -242,8 +242,15 @@ function onboardingPanel(){const p=state.placement, suggestion=placementSuggesti
 }
 function studyPathPanel(){const items=lessonPath(state,{limit:4}),units=unitOverview(state);return `<section class="simple-panel pathway-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR NEXT STEPS</p><h2>Personal learning path</h2></div><span class="muted">Transparent suggestions · not a proficiency level</span></div><div class="pathway-steps">${items.map((item,i)=>`<button type="button" class="pathway-step" data-action="open-lesson" data-id="${esc(item.id)}"><span class="pathway-rank">${i+1}</span><span lang="zh-Hans" class="pathway-hanzi">${esc(item.lesson.hanzi)}</span><span><strong>${esc(item.lesson.meaning)}</strong><small>${esc(item.kind==='new'?'Introduce next':'Revisit')} · ${esc(item.reason)}</small></span><span aria-hidden="true">→</span></button>`).join('')}</div><p class="muted">${units.filter(u=>u.status==='Introduced').length} of ${units.length} demo units fully introduced. Review errors are not counted as completed lessons.</p></section>`;}
 function renderDialogues(){const routeAdvanced=(location.hash.match(/^#\/dialogues\/(dialogue-\d+)/)||[])[1];
- if(routeAdvanced&&DIALOGUES.some(d=>d.id===routeAdvanced&&['p50','p51','p52','p53','p54'].some(k=>d[k]))&&routeAdvanced!==dialogueId){
-  dialogueId=routeAdvanced;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
+ if(routeAdvanced&&DIALOGUES.some(d=>d.id===routeAdvanced&&['p50','p51','p52','p53','p54'].some(k=>d[k]))){
+  if(routeAdvanced!==dialogueId){
+   dialogueId=routeAdvanced;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
+  }
+  const question=new URLSearchParams(location.hash.split('?')[1]||'').get('question');
+  const chosen=Number(question);
+  const original=findDialogue(routeAdvanced);
+  if(question!==null&&['0','1','2'].includes(question)&&chosen<original.questions.length&&
+    dialogueStep!==chosen){dialogueStep=chosen;dialogueFeedback=null;}
  }
  const routeP42=(location.hash.match(/^#\/dialogues\/(p42-\d{2})/)||[])[1];
  if(routeP42){const target=DIALOGUES.find(x=>x.p42?.id===routeP42);if(target){
@@ -631,8 +638,13 @@ function resetReadingNavigation(){
 }
 function resetStoryExercise(){storyResult=null;storyAssist=Boolean(findStory(storyId)?.beginner?.p41&&(p41Pinyin||p41English));storyShowTranslation=false;storyHelpIndex=-1;storyGlossary=null;storySequence=[];storyTyped='';}
 function renderStories(){const routeAdvanced=(location.hash.match(/^#\/stories\/(story-\d+)/)||[])[1];
- if(routeAdvanced&&STORIES.some(x=>x.id===routeAdvanced&&/^original-p5[0-4]$/.test(x.beginner?.source||''))&&routeAdvanced!==storyId){
-  storyId=routeAdvanced;storyMode='beginner-detail';resetReadingNavigation();
+ if(routeAdvanced&&STORIES.some(x=>x.id===routeAdvanced&&/^original-p5[0-4]$/.test(x.beginner?.source||''))){
+  if(routeAdvanced!==storyId){
+   storyId=routeAdvanced;storyMode='beginner-detail';resetReadingNavigation();
+  }
+  const chosenMode=new URLSearchParams(location.hash.split('?')[1]||'').get('mode');
+  if(['beginner-detail','beginner-reason','beginner-sequence'].includes(chosenMode)&&
+    storyMode!==chosenMode){storyMode=chosenMode;resetStoryExercise();}
  }
  const routeP41=(location.hash.match(/^#\/stories\/(p41-\d{2})/)||[])[1];
  if(routeP41){const selected=STORIES.find(x=>x.beginner?.p41?.id===routeP41);
@@ -1207,16 +1219,28 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='p55-native-read'||name==='p55-native-listen'){
   const b=findP55Brief(p55FocusId),sourceId=button.dataset.source;
   if(!b||![b.from,b.to].includes(sourceId))return;
-  const native=p55Native(sourceId);
-  if(name==='p55-native-read'&&native?.story){
-   storyId=native.story.id;storyMode='beginner-detail';resetReadingNavigation();
-   location.hash='#/stories/'+native.story.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
+  const native=p55Native(sourceId),index=Number(button.dataset.question);
+  if(!Number.isInteger(index)||index<0||index>2)return;
+  const isRead=name==='p55-native-read';
+  if(index>=p58SourceQuestionCount(sourceId,isRead?'reading':'dialogue'))
+   return alertUser('Original source has no question at that position.','error');
+  const params=new URLSearchParams({
+   p55:b.id,p55step:p55Step,p55q:String(index)
+  });
+  if(isRead&&native?.story){
+   const modes=['beginner-detail','beginner-reason','beginner-sequence'];
+   storyId=native.story.id;storyMode=modes[index];resetReadingNavigation();
+   params.set('mode',modes[index]);
+   location.hash='#/stories/'+native.story.id+'?'+params.toString();
+   return render();
   }
-  if(name==='p55-native-listen'&&native?.dialogue){
-   dialogueId=native.dialogue.id;dialogueStep=0;dialogueFeedback=null;dialogueSupport=false;
-   location.hash='#/dialogues/'+native.dialogue.id+'?p55='+b.id+'&p55step='+p55Step+'&p55q='+p55Question;return render();
+  if(!isRead&&native?.dialogue){
+   dialogueId=native.dialogue.id;dialogueStep=index;dialogueFeedback=null;dialogueSupport=false;
+   params.set('question',String(index));
+   location.hash='#/dialogues/'+native.dialogue.id+'?'+params.toString();
+   return render();
   }
-  return alertUser('Original reading or conversation not available.','error');
+  return alertUser('Original question is not accessible in the native learning module.','error');
  }
  if(name==='p55-p43'){
   const b=findP55Brief(p55FocusId),target=b&&findP43Unit(b.writingId);

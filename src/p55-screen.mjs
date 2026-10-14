@@ -32,9 +32,9 @@ function sourceCard(id,e,act,esc,{reveal=false,qIndex=0}={}){
  '<p class="p55-source-status">'+sourceState(e,id)+'</p>'+
  '<div class="p55-source-actions">'+
  act('p55-open-original','Open original lesson →','button outline small','data-source="'+esc(id)+'"')+
- (e.native?.story?act('p55-native-read','Practise Reader question '+(qIndex+1)+' →',
+ (e.native?.story&&qIndex<p58SourceQuestionCount(id,'reading')?act('p55-native-read','Practise Reader question '+(qIndex+1)+' →',
  'button outline small','data-source="'+esc(id)+'" data-question="'+qIndex+'"'):'')+
- (e.native?.dialogue?act('p55-native-listen','Practise Dialogue question '+(qIndex+1)+' →',
+ (e.native?.dialogue&&qIndex<p58SourceQuestionCount(id,'dialogue')?act('p55-native-listen','Practise Dialogue question '+(qIndex+1)+' →',
  'button outline small','data-source="'+esc(id)+'" data-question="'+qIndex+'"'):'')+'</div>'+
  (first?'<div class="p55-source-quote"><strong>Canonical Reader question '+(qIndex+1)+'</strong>'+
  '<p>'+esc(first.question.prompt)+'</p>'+
