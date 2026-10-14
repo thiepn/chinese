@@ -3,7 +3,7 @@
  * Sentence Workshop and Review remain untouched academic authorities.
  */
 import {P55_BRIEFS} from './p55-briefs.mjs';
-import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords,p58CanonicalQuestionResult,p58SourceQuestionCount} from './p55-study.mjs';
+import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords,p58CanonicalQuestionResult,p58SourceQuestionCount,p59NativePending} from './p55-study.mjs';
 import {dueCards} from './study.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
 import {p57TransferFor} from './p57-transfer-contexts.mjs';
@@ -98,11 +98,17 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  transfer=p57TransferFor(b.id),transferModel=p58ModelFor(b.id),
  sourceCount=Math.min(3,
   Math.max(p58SourceQuestionCount(b.from,'reading'),p58SourceQuestionCount(b.to,'reading'),
-   p58SourceQuestionCount(b.from,'dialogue'),p58SourceQuestionCount(b.to,'dialogue')));
+   p58SourceQuestionCount(b.from,'dialogue'),p58SourceQuestionCount(b.to,'dialogue'))),
+ pending=p59NativePending(state,b);
  return '<section class="p55-study" aria-label="Original advanced Mandarin learning consolidation">'+
  '<header class="p55-heading"><p class="eyebrow">P55 · PAIRED LEARNING CONTEXT '+b.sequence+' / '+P55_BRIEFS.length+'</p>'+
  '<h2>'+esc(b.title)+'</h2><p>'+esc(b.retrieval)+'</p>'+
- '<div class="p55-actions">'+act('p55-next','Find next source evidence to practise →','button outline')+
+ '<div class="p55-actions">'+
+ (pending.next?act('p59-practise-source','Practise '+esc(pending.next.sourceId)+' · '+
+ (pending.next.kind==='reading'?'Reader':'Dialogue')+' question '+(pending.next.question+1)+' →',
+ 'button primary','data-source="'+esc(pending.next.sourceId)+'" data-question="'+pending.next.question+'"'):
+ '<span class="muted">No unresolved or untried original questions in the currently linked native modules. This is not a proficiency grade.</span>')+
+ act('p55-next','Choose another original source pair →','button outline')+
  act('p55-review','Review genuinely due cards →','button outline')+'</div></header>'+
  '<nav class="p55-steps" aria-label="Source to independent argument pathway">'+
  P55_STEPS.map(s=>act('p55-step',esc(s.label),

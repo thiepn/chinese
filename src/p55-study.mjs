@@ -145,9 +145,12 @@ export function p59NativePending(state,brief){
      event:e.listening.filter(x=>x.question===i).at(-1)||null});
   }
  }
+ const next=tasks.find(x=>x.event&&(!x.event.correct||x.event.assisted))||
+  tasks.find(x=>!x.event)||null;
  return Object.freeze({available:tasks.length,
   needsRepair:tasks.filter(x=>x.event&&(!x.event.correct||x.event.assisted)).length,
-  untried:tasks.filter(x=>!x.event).length});
+  untried:tasks.filter(x=>!x.event).length,
+  next:next?Object.freeze({sourceId:next.sourceId,kind:next.kind,question:next.question}):null});
 }
 export function p55Next(state,current=null){
  const start=P55_BRIEFS.findIndex(x=>x.id===current);

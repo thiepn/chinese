@@ -62,7 +62,7 @@ import {p54CumulativeFor} from './p54-cumulative.mjs';
 import {p54Overview,p54Lesson,p54Next,p54Story,p54NativeDialogue,P54_STAGES} from './p54-screen.mjs';
 import {P55_BRIEFS,findP55Brief} from './p55-briefs.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
-import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
+import {p55Native,p55Source,p55Next,p55BriefEvidence,p55NativeWords,p58SourceQuestionCount,p59NativePending,P55_ROUTE_BY_PHASE} from './p55-study.mjs';
 import {p55Overview,p55Lesson,p55WritingContext,P55_STEPS} from './p55-screen.mjs';
 import {P34_SCENES,P34_LISTENING} from './p34-course.mjs';
 import {p34Overview,p34ListeningPanel,p34DialogueFor,p34StoryFor} from './p34-screen.mjs';
@@ -1248,6 +1248,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   params.set('p55q',String(p55Question));
   location.hash=path+'?'+params.toString();
   return;
+ }
+ if(name==='p59-practise-source'){
+  const b=findP55Brief(p55FocusId);if(!b)return;
+  const next=p59NativePending(state,b).next;
+  if(!next||next.sourceId!==button.dataset.source||
+   String(next.question)!==button.dataset.question)return;
+  return act({dataset:{action:next.kind==='reading'?'p55-native-read':'p55-native-listen',
+   source:next.sourceId,question:String(next.question)}});
  }
  if(name==='p55-native-read'||name==='p55-native-listen'){
   const b=findP55Brief(p55FocusId),sourceId=button.dataset.source;
