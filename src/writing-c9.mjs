@@ -4,7 +4,7 @@
  * adapter around its original studio, not a second essay engine or state store.
  * The app owns one ephemeral tab-local draft, original libraries own evidence.
  */
-import {P43_UNITS,findP43Unit} from './p43-course.mjs';
+import {P43_UNITS,findP43Unit,P43_REVIEW_CRITERIA} from './p43-course.mjs';
 import {p43Overview,p43ProductionStudio} from './p43-screen.mjs';
 import {P48_ARGUMENTS,findP48Argument,P48_REVISION_CHECKS} from './p48-arguments.mjs';
 import {P50_ARGUMENTS,findP50Argument,P50_REVISION} from './p50-arguments.mjs';
@@ -113,7 +113,7 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  '<p>The P43 authored writing studio is the only open-ended composition workspace. P48, P50 and P51 add source-grounded prompts and review criteria around the same editor, not a second essay store or semantic grading system.</p>'+
  '<p class="c9-writing-privacy">Your unsent draft and explicit snapshots exist only in this open tab. Copy them outside the app to retain them after closing or refreshing; none is saved to learner progress.</p>'+
  '<div class="c9-writing-intro-links"><a href="#/advanced">Original Advanced Course</a><a href="#/stories">Original Readings</a><a href="#/workshop">Native Sentence Workshop</a></div></section>';
- const links='<details class="c9-writing-catalog"><summary>Choose a P43 original composition topic · '+P43_UNITS.length+' units</summary>'+
+ const links='<details class="c9-writing-catalog" '+(session.catalogOpen?'open':'')+'><summary>Choose a P43 original composition topic · '+P43_UNITS.length+' units</summary>'+
  p43Overview(act,esc,{selected:unit.id,filter:session.filter||'all',query:session.query||''})+'</details>';
  const pending=session.pending?'<section class="c9-writing-pending" role="alert"><h2>Confirm what happens to the unsent draft</h2>'+
  '<p>'+(session.pending==='discard'?'Discard this tab’s draft and snapshot history?':
@@ -129,4 +129,199 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  const active=validTransfer?transferPanel(state,session,act,esc):'';
  return '<div class="c9-writing-workspace">'+info+links+pending+active+studio+
  '<p class="c9-writing-footer">No HSK-certified proficiency, essay score, speech recording, AI evaluation or fabricated source is claimed. In this tab, source hints and model reveals are assistance, not grade evidence.</p></div>';
+}
+
+
+/**
+ * Ephemeral P43 composition controller — no new persistence/learner state.
+ * Reading, dialogue, fixed-sentence events remain delegated to app.mjs.
+ */
+export const c9WritingState={
+ unitId:P43_UNITS[0].id,transferPhase:0,sourceId:null,draft:'',revisions:[],
+ compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
+ showEvidence:false,transferModels:false,transferReview:[],
+ filter:'all',query:'',catalogOpen:false
+};
+const writingHasWork=()=>Boolean(c9WritingState.draft.trim()||c9WritingState.revisions.length);
+const resetWriting=({unitId=P43_UNITS[0].id,phase=0,sourceId=null}={})=>{
+ const w=c9WritingState;
+ Object.assign(w,{unitId,transferPhase:Number(phase),sourceId,draft:'',revisions:[],
+  compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
+  showEvidence:false,transferModels:false,transferReview:[]});
+};
+export function openC9WritingSource(phase,sourceId,{go,alertUser}){
+ const unit=c9WritingLinkedUnit(phase,sourceId);
+ if(!unit){alertUser('No historical P43 writing source is linked to this material.','error');return false;}
+ return requestC9Writing({unitId:unit.id,phase:Number(phase),sourceId},{go});
+}
+function requestC9Writing(target,{go}){
+ const w=c9WritingState;
+ if(!findP43Unit(target.unitId))return false;
+ const changed=w.unitId!==target.unitId||w.transferPhase!==Number(target.phase||0)||
+  w.sourceId!==(target.sourceId||null);
+ if(changed&&writingHasWork()){w.pending='switch';w.pendingTarget=target;}
+ else if(changed)resetWriting(target);
+ else{w.pending='';w.pendingTarget=null;}
+ go('writing');return true;
+}
+export function hasC9UncopiedWriting(){
+ const w=c9WritingState;
+ return Boolean(w.draft.trim()&&w.draft!==w.revisions.at(-1));
+}
+export function handleC9WritingInput(e,root){
+ const w=c9WritingState;
+ if(e.target.id==='p43-draft'){
+  w.draft=e.target.value;
+  const status=root.querySelector('.p43-draft-status');
+  if(status){
+   const count=Array.from(w.draft).filter(ch=>/\p{Script=Han}/u.test(ch)).length;
+   const label=status.querySelector('span');
+   if(label)label.textContent=count+' Hanzi characters · in-tab draft only';
+  }
+  for(const a of ['p43-save','p43-copy']){
+   const button=root.querySelector('[data-action="'+a+'"]');
+   if(button)button.disabled=!w.draft.trim();
+  }
+  return true;
+ }
+ if(e.target.id==='p43-search'){
+  w.query=e.target.value;const q=w.query.toLocaleLowerCase().trim();
+  for(const button of root.querySelectorAll('.p43-catalog .p43-unit')){
+   const u=findP43Unit(button.dataset.id);
+   const match=!u||!q||[u.title,u.theme,u.goal,u.sourceClaim,u.misconception]
+    .join(' ').toLocaleLowerCase().includes(q);
+   button.hidden=!match||(w.filter!=='all'&&u.stage!==Number(w.filter));
+  }
+  return true;
+ }
+ return false;
+}
+/**
+ * Returns true only for handled writing actions. No automatic grading.
+ * api exposes the existing native app handlers, not a duplicate engine.
+ */
+export async function handleC9WritingAction(button,api){
+ const name=button.dataset.action,id=button.dataset.id,w=c9WritingState;
+ const {go,render,alertUser,speak,act,setWorkshopTask,openAdvanced}=api;
+ if(name==='c9-writing-source')return openC9WritingSource(Number(button.dataset.phase),id,api);
+ if(name==='c9-writing-models'){
+  if(c9WritingTransfer(w.transferPhase,w.sourceId)){w.transferModels=!w.transferModels;render();}
+  return true;
+ }
+ if(name==='c9-writing-criterion'){
+  const phase=Number(button.dataset.phase),source=c9WritingTransfer(phase,w.sourceId);
+  const values=transferSets[phase]?.criteria||[];
+  if(phase!==w.transferPhase||!source||!values.some(x=>x.id===id))return true;
+  const key=phase+':'+id;
+  w.transferReview=w.transferReview.includes(key)?
+   w.transferReview.filter(x=>x!==key):[...w.transferReview,key];
+  render();return true;
+ }
+ if(name==='c9-writing-native'){
+  const native=c9WritingNativeReference(w.transferPhase,w.sourceId);
+  const kind=button.dataset.kind;
+  if(!native||native[kind]?.id!==id){
+   alertUser('The original linked activity is unavailable.','error');return true;
+  }
+  if(kind==='story')await act({dataset:{action:'c9-media-open-story',id}});
+  if(kind==='dialogue')await act({dataset:{action:'c9-media-open-dialogue',id}});
+  if(kind==='task')setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));
+  return true;
+ }
+ if(name==='p43-enter'){go('writing');return true;}
+ if(name==='p43-filter'){
+  if(['all','1','2','3'].includes(button.dataset.filter)){
+   w.filter=button.dataset.filter;w.catalogOpen=true;render();
+  }
+  return true;
+ }
+ if(name==='p43-open'||name==='p43-next'){
+  const u=name==='p43-open'?findP43Unit(id):
+   P43_UNITS[(P43_UNITS.findIndex(x=>x.id===w.unitId)+1)%P43_UNITS.length];
+  if(u)requestC9Writing({unitId:u.id,phase:0,sourceId:null},api);
+  return true;
+ }
+ if(name==='p43-stay'){w.pending='';w.pendingTarget=null;render();return true;}
+ if(name==='p43-switch-confirm'){
+  if(w.pending==='discard'){
+   resetWriting({unitId:w.unitId,phase:w.transferPhase,sourceId:w.sourceId});
+  }else if(w.pending.startsWith('restore:')){
+   const index=Number(w.pending.slice(8));
+   if(Number.isInteger(index)&&w.revisions[index]!==undefined){
+    w.draft=w.revisions[index];w.step='revise';
+   }
+   w.pending='';w.pendingTarget=null;
+  }else if(w.pending==='switch'&&w.pendingTarget){
+   resetWriting(w.pendingTarget);
+  }else{w.pending='';w.pendingTarget=null;}
+  render();return true;
+ }
+ if(name==='p43-step'){
+  if(['plan','compose','revise','speak'].includes(button.dataset.step)){
+   w.step=button.dataset.step;render();
+  }
+  return true;
+ }
+ if(name==='p43-evidence'){w.showEvidence=!w.showEvidence;render();return true;}
+ if(name==='p43-reveal'){w.reveal=!w.reveal;render();return true;}
+ if(name==='p43-save'){
+  if(!w.draft.trim())return true;
+  if(w.revisions.at(-1)===w.draft){alertUser('Current text matches the latest in-tab snapshot.');return true;}
+  if(w.revisions.length>=12){alertUser('Snapshot limit reached. Copy your text before replacing versions.','error');return true;}
+  w.revisions.push(w.draft);w.compare=w.revisions.length-1;w.step='revise';render();return true;
+ }
+ if(name==='p43-copy'){
+  if(!w.draft.trim())return true;
+  try{await navigator.clipboard.writeText(w.draft);
+   alertUser('Your writing was copied; no proficiency score was created.');
+  }catch{alertUser('Clipboard unavailable. Select the text in the editor and copy manually.','error');}
+  return true;
+ }
+ if(name==='p43-discard'){
+  if(writingHasWork()){w.pending='discard';w.pendingTarget=null;render();}
+  return true;
+ }
+ if(name==='p43-version'){
+  const i=Number(button.dataset.version);
+  if(Number.isInteger(i)&&i>=0&&i<w.revisions.length){w.compare=i;render();}
+  return true;
+ }
+ if(name==='p43-restore'){
+  const i=Number(button.dataset.version);
+  if(Number.isInteger(i)&&i>=0&&i<w.revisions.length&&w.draft!==w.revisions[i]){
+   w.pending='restore:'+i;w.pendingTarget=null;render();
+  }
+  return true;
+ }
+ if(name==='p43-criterion'){
+  if(P43_REVIEW_CRITERIA.some(x=>x.id===id)){
+   w.rubric=w.rubric.includes(id)?w.rubric.filter(x=>x!==id):[...w.rubric,id];render();
+  }
+  return true;
+ }
+ if(name==='p43-model-audio'){
+  const u=findP43Unit(w.unitId);
+  if(u)speak(u.lines.map(x=>x.hanzi).join(' '));
+  return true;
+ }
+ if(name==='p43-workshop'){
+  const u=findP43Unit(w.unitId),i=Number(button.dataset.line);
+  if(!u||![4,9].includes(i))return true;
+  setWorkshopTask('p43:'+u.id+':line'+i,Boolean(w.reveal||w.showEvidence||w.transferModels));
+  return true;
+ }
+ if(name==='p41-open'||name==='p42-open'){
+  if(name==='p41-open'){
+   const story=STORIES.find(x=>x.beginner?.p41?.id===id);
+   if(story){await act({dataset:{action:'c9-media-open-story',id:story.id}});return true;}
+  }else{
+   const dialogue=DIALOGUES.find(x=>x.p42?.id===id);
+   if(dialogue){await act({dataset:{action:'c9-media-open-dialogue',id:dialogue.id}});return true;}
+  }
+  alertUser('Referenced original reading or conversation unavailable.','error');return true;
+ }
+ if(name==='p44-open'||name==='p45-open'){
+  openAdvanced(name==='p44-open'?44:45,id);return true;
+ }
+ return false;
 }
