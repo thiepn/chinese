@@ -26,16 +26,25 @@ export function p55Native(id){
  const dialogue=caseDialogue(phase,c);
  return {case:c,phase,story,dialogue};
 }
-const referenceIndex=(question)=>question?.evidenceIndex??question?.evidence??0;
+/** A native dialogue may have original comprehension questions but no
+ * line-level source index. Never invent a turn citation in that case.
+ */
 export function p55Reference(id,kind='reading',index=0){
- const original=p55Source(id);if(!original)return null;
- const pool=kind==='dialogue'?original.dialogueQuestions||[]:original.questions||[];
+ const original=p55Source(id),native=p55Native(id);
+ if(!original)return null;
+ const pool=kind==='dialogue'?
+  (original.dialogueQuestions?.length?original.dialogueQuestions:native?.dialogue?.questions||[]):
+  original.questions||[];
  const q=pool[Math.max(0,Math.min(index,pool.length-1))];
- const sourceIndex=referenceIndex(q);
- const item=kind==='dialogue'?original.turns?.[sourceIndex]:original.lines?.[sourceIndex];
- return item?Object.freeze({question:q,kind,index:sourceIndex,
-  hanzi:item.hanzi,pinyin:item.pinyin,english:item.english,
-  sourceIndex:item.sourceIndex??null,speaker:item.speaker??null}):null;
+ if(!q)return null;
+ const explicit=q.evidenceIndex??q.evidence;
+ const sourceIndex=kind==='reading'?(explicit??null):explicit??null;
+ const item=sourceIndex===null?null:kind==='dialogue'?
+  original.turns?.[sourceIndex]:original.lines?.[sourceIndex];
+ return Object.freeze({question:q,kind,index:item?sourceIndex:null,
+  hanzi:item?.hanzi||null,pinyin:item?.pinyin||null,english:item?.english||null,
+  sourceIndex:item?.sourceIndex??null,speaker:item?.speaker??null,
+  evidenceIndexed:Boolean(item)});
 }
 export function p55Evidence(state,id){
  const native=p55Native(id);

@@ -38,9 +38,11 @@ function sourceCard(id,e,act,esc,{reveal=false,qIndex=0}={}){
  '</div>':'')+
  (heard?'<div class="p55-source-quote"><strong>Canonical Dialogue question '+(qIndex+1)+'</strong>'+
  '<p>'+esc(heard.question.prompt)+'</p>'+
- (reveal?'<div class="p55-revealed"><span>Original speaker '+esc(heard.speaker||'')+
- ' · turn '+(heard.index+1)+'</span><p lang="zh-Hans">'+esc(heard.hanzi)+'</p>'+
- '<small>'+esc(heard.pinyin)+'</small><p>'+esc(heard.english)+'</p>'+
+ (reveal?'<div class="p55-revealed">'+(heard.evidenceIndexed?
+ '<span>Original speaker '+esc(heard.speaker||'')+' · turn '+(heard.index+1)+'</span>'+
+ '<p lang="zh-Hans">'+esc(heard.hanzi)+'</p>'+
+ '<small>'+esc(heard.pinyin)+'</small><p>'+esc(heard.english)+'</p>':
+ '<p>The original Dialogue question does not identify a specific supporting turn. No line reference is invented; listen in the canonical Dialogue to evaluate this answer.</p>')+
  '<p><strong>Canonical answer:</strong> '+esc(heard.question.answer)+'</p>'+
  '<p>'+esc(heard.question.explanation||'')+'</p></div>':'<p class="muted">Return to the native hearing before revealing evidence.</p>')+
  '</div>':'')+'</article>';
@@ -145,10 +147,14 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
 }
 export function p55WritingContext(b,act,esc){
  if(!b)return '';
+ const left=p55Reference(b.from,'reading',0),right=p55Reference(b.to,'reading',0);
  return '<aside class="p55-return-strip" aria-label="Original source-based writing handoff">'+
  '<div><strong>P55 source-grounded writing context</strong><p>'+esc(b.title)+
  ' · '+esc(b.from)+' / '+esc(b.to)+'</p>'+
  '<p>'+esc(b.writing)+'</p><p><strong>Correction:</strong> '+esc(b.pitfall)+'</p>'+
+ '<div class="p55-handoff-evidence">'+[left,right].map((item,i)=>item?
+ '<p><strong>Original '+(i?'second':'first')+' evidence anchor:</strong> '+
+ '<span lang="zh-Hans">'+esc(item.hanzi)+'</span> · '+esc(item.english)+'</p>':'').join('')+'</div>'+
  '<small>The P43 editor still owns tab-local drafts; no text was inserted automatically.</small></div>'+
  '<div class="p55-actions">'+act('p55-copy-brief','Copy writing brief','button outline small')+
  act('p55-return','Return to the source pair →','button outline small')+'</div></aside>';
