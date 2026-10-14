@@ -194,6 +194,7 @@ const p54AssistedCases=new Set(); // temporary disclosure only
 const p54Checks=new Set(); // temporary self-review only
 let p55FocusId=null,p55Step='sources',p55Question=0,p55Reveal=false,p55Model=false,p55Support=false,p55RepairShown=false,p55Query='';
 let p58ReaderRouteApplied='',p58DialogueRouteApplied=''; // Ephemeral once-per-URL native question selection.
+let p59FocusedWordHash=''; // Navigation-only; never learner data.
 // P55 UI state only; native academic writers and P43 own attempts and drafts.
 const p42ViewedTranscripts=new Set();
 const p37ViewedTranscripts=new Set();
@@ -1171,7 +1172,19 @@ function render(){
  ((p53CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','synthesis52'].includes(route()))?p53ReturnStrip():'')+
  ((p54CaseId&&['learn','stories','dialogues','workshop','production','grammar','wordbook','argument53'].includes(route()))?p54ReturnStrip():'')+
  ((p55Context==='return')?p55ReturnStrip():'')+
- ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+page;if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
+ ((p55Context==='writing')?p55WritingContext(findP55Brief(p55FocusId),action,esc):'')+page;
+ const wordKey=route()==='explore'?
+  new URLSearchParams(location.hash.split('?')[1]||'').get('word'):null;
+ if(wordKey&&findWord(wordKey)&&p59FocusedWordHash!==location.hash){
+  const targetHash=location.hash;p59FocusedWordHash=targetHash;
+  requestAnimationFrame(()=>{
+   if(location.hash!==targetHash)return;
+   const detail=root.querySelector('#explore-detail');
+   if(detail){detail.tabIndex=-1;detail.focus({preventScroll:true});
+    detail.scrollIntoView({block:'start'});}
+  });
+ }else if(!wordKey)p59FocusedWordHash='';
+ if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})} }
 function go(page){location.hash=`#/${page}`;if(route()===page)render();}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
@@ -3696,7 +3709,22 @@ if(name==='p36-sentences'){
  if(name==='reveal-review'){checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();return}
  if(name==='grade'){if(!revealed||!activeReviewId)return;const c=activeReviewId,g=Number(button.dataset.grade);const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;const ok=await mutate(s=>gradeCard(s,c,g,Date.now(),eventId,{correct:Boolean(checkResult?.correct),assisted:checkResult?.reason==='assisted',errorType:checkResult?.reason}));if(ok){sessionDone++;if(checkResult?.correct)sessionCorrect++;if(sessionQueue?.[0]===c)sessionQueue.shift();revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();}return}
  if(name==='speak')return speak(button.dataset.text||'');
- if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
+ if(name==='select-explore'){
+  const typ=button.dataset.type;
+  const selected=typ==='word'&&findWord(id)?{type:'word',id}:
+   typ==='character'&&findLesson(id)?{type:'character',id}:null;
+  if(!selected)return;
+  searchSelection=selected;
+  // An exact-key entry URL must stop overriding voluntary subsequent browsing.
+  // Selecting another entry also leaves source-specific P55 return context.
+  if(route()==='explore'&&location.hash.includes('?')){
+   history.replaceState(null,'',location.pathname+location.search+'#/explore');
+  }
+  render();
+  const detail=root.querySelector('#explore-detail');
+  if(detail){detail.tabIndex=-1;detail.focus({preventScroll:true});detail.scrollIntoView({block:'nearest'});}
+  return;
+ }
  if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
  if(name==='import-open')return $('import-file')?.click();
  if(name==='reset'){if(!confirm('Delete all demo learning progress in this browser? Export a backup first if you want to keep it.'))return;const cleared=await mutate(_=>freshState());if(cleared){pendingRestore=null;restoreAcknowledgement='';}return}
