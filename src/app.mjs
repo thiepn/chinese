@@ -958,8 +958,15 @@ function renderRegister51(){
 }
 function renderProduction(){
  const id=(location.hash.match(/^#\/production\/(p43-\d{2})/)||[])[1];
- if(id&&id!==p43UnitId&&!p43Draft.trim()&&!p43Revisions.length){
-  if(findP43Unit(id))p43UnitId=id;
+ // An external or interrupted deep link must obey the original P43 draft guard.
+ if(id&&id!==p43UnitId&&findP43Unit(id)){
+  if(p43Draft.trim()||p43Revisions.length){
+   if(p43Pending!==id)p43Pending=id;
+  }else{
+   p43UnitId=id;p43Step='plan';p43Version=-1;p43Reviewed=[];
+   p43ModelRevealed=false;p43SourceRevealed=false;p43Assisted=false;
+   p43Pending='';p43Revisions=[];p43Draft='';
+  }
  }
  const u=findP43Unit(p43UnitId)||P43_UNITS[0];
  return title('INTERMEDIATE PRODUCTION','Write, revise, then speak.','Original P43 writing and oral prompts. Drafts, revisions and self-review stay in browser-tab memory, not persistent learner evidence.')+
