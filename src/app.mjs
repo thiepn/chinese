@@ -1062,15 +1062,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }
  if(name==='c9-skills-word'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
-  if(!source||!WORDS.some(w=>w.key===id))return;
+  if(!source||!WORDS.some(w=>w.key===id))return false;
+  const opened=await act({dataset:{action:'lookup-word',id}});
+  if(opened===false)return false;
   rememberC9NativeHandoff('skills','explore',id,source.title||source.hanzi||source.id);
-  return act({dataset:{action:'lookup-word',id}});
+  render();
+  return true;
  }
  if(name==='c9-skills-grammar'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
-  if(!source||!source.grammarIds?.includes(id)||!findGrammarLesson(id))return;
+  if(!source||!source.grammarIds?.includes(id)||!findGrammarLesson(id))return false;
+  const opened=await act({dataset:{action:'grammar-select',id}});
+  if(opened===false)return false;
   rememberC9NativeHandoff('skills','grammar',id,source.title||source.hanzi||source.id);
-  return act({dataset:{action:'grammar-select',id}});
+  render();
+  return true;
  }
  if(name==='c9-skills-writing'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
