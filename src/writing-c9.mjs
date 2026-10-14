@@ -123,9 +123,9 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
  '<label for="c9-writing-backup-file">Import a previous backup file</label>'+
  '<input id="c9-writing-backup-file" type="file" accept=".json,application/json" aria-describedby="c9-writing-backup-title"></div>'+
- '<details class="c9-writing-backup-paste"><summary>Restore from pasted private JSON</summary>'+
+ '<details class="c9-writing-backup-paste" '+(session.importPaste||session.importError?'open':'')+'><summary>Restore from pasted private JSON</summary>'+
  '<label for="c9-writing-backup-paste">Paste the complete private P43 JSON backup</label>'+
- '<textarea id="c9-writing-backup-paste" rows="4" spellcheck="false" autocomplete="off" aria-describedby="c9-writing-backup-title"></textarea>'+
+ '<textarea id="c9-writing-backup-paste" rows="4" spellcheck="false" autocomplete="off" aria-describedby="c9-writing-backup-title">'+esc(session.importPaste||'')+'</textarea>'+
  act('c9-writing-backup-import-paste','Check pasted backup and preview replacement','c9-button c9-button--secondary c9-button--small')+
  '</details>'+
  (session.importError?'<p id="c9-writing-import-error" tabindex="-1" class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
@@ -162,14 +162,14 @@ export const c9WritingState={
  unitId:P43_UNITS[0].id,transferPhase:0,sourceId:null,draft:'',revisions:[],
  compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
  showEvidence:false,transferModels:false,transferReview:[],
- filter:'all',query:'',catalogOpen:false,importCandidate:null,importError:''
+ filter:'all',query:'',catalogOpen:false,importCandidate:null,importError:'',importPaste:''
 };
 const writingHasWork=()=>Boolean(c9WritingState.draft.trim()||c9WritingState.revisions.length);
 const resetWriting=({unitId=P43_UNITS[0].id,phase=0,sourceId=null}={})=>{
  const w=c9WritingState;
  Object.assign(w,{unitId,transferPhase:Number(phase),sourceId,draft:'',revisions:[],
   compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
-  showEvidence:false,transferModels:false,transferReview:[],importCandidate:null,importError:''});
+  showEvidence:false,transferModels:false,transferReview:[],importCandidate:null,importError:'',importPaste:''});
 };
 export function openC9WritingSource(phase,sourceId,api){
  const unit=c9WritingLinkedUnit(phase,sourceId);
@@ -285,6 +285,11 @@ export function hasC9UncopiedWriting(){
 }
 export function handleC9WritingInput(e,root){
  const w=c9WritingState;
+ if(e.target.id==='c9-writing-backup-paste'){
+  // Purely in-tab text, not IndexedDB or a second draft store. Keep the user's
+  // pasted private JSON editable if validation raises an error and re-renders.
+  w.importPaste=e.target.value;return true;
+ }
  if(e.target.id==='p43-draft'){
   w.draft=e.target.value;
   const status=root.querySelector('.p43-draft-status');
@@ -341,6 +346,7 @@ export async function handleC9WritingAction(button,api){
  }
  if(name==='c9-writing-backup-import-paste'){
   const data=document.getElementById('c9-writing-backup-paste')?.value||'';
+  w.importPaste=data;
   try{
    const candidate=parseC9WritingBackup(data);
    w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
