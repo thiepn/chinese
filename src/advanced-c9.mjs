@@ -89,27 +89,43 @@ function detail(source){
   source?.pitfall,source?.misconception,source?.revision,source?.oral,source?.sourceClaim]
   .filter(s=>typeof s==='string'&&s.trim()).slice(0,5);
 }
-/** Strictly native source matching: source IDs never invented for grades. */
+/** Only explicit original identifiers are permitted to connect a source to
+ * the native owners. A missing story must never compare equal to an absent
+ * task.storyId, and coincidentally equal titles are NOT a source identity.
+ */
+const C9_DIRECT_TASK_SOURCE_FIELDS=Object.freeze([
+ 'p35LessonId','p39LessonId','p37SceneId','p42SceneId','p43UnitId',
+ 'p44ScenarioId','p45TransferId','p46PassageId','p46DialogueId',
+ 'p47PassageId','p47DialogueId','p48ArgumentId','p49CaseId',
+ 'p50ArgumentId','p51ArgumentId'
+]);
+function matchingC9NativeTasks(phase,source,story){
+ const prefix='p'+phase.phase+':';
+ const direct=t=>C9_DIRECT_TASK_SOURCE_FIELDS.some(field=>t[field]===source.id)||
+  typeof t.id==='string'&&t.id.startsWith(prefix+source.id+':')||
+  typeof t.id==='string'&&t.id.startsWith(prefix+'argument:'+source.id+':');
+ const explicit=SENTENCE_TASKS.filter(direct);
+ // Native story identity is safe only when an actual source-linked story exists.
+ if(explicit.length)return explicit;
+ return story?SENTENCE_TASKS.filter(t=>t.storyId===story.id):[];
+}
 export function c9AdvancedNativeLinks(phase,source){
  if(!phase||!source)return [];
  const links=[];
- const lesson=DEMO_LESSONS.find(l=>l.id===source.id)||(source.hanzi&&
-  DEMO_LESSONS.find(l=>l.hanzi===source.hanzi));
+ const lesson=DEMO_LESSONS.find(l=>l.id===source.id);
  if(lesson)links.push({kind:'lesson',id:lesson.id,label:'Original character lesson'});
  const grammar=GRAMMAR_LESSONS.find(g=>g.id===source.id);
  if(grammar)links.push({kind:'grammar',id:grammar.id,label:'Original grammar exercise'});
- const story=STORIES.find(s=>
-  (s.beginner?.['p'+phase.phase]?.id===source.id)||
-  (s.title===source.title&&['reading','transfer','writing'].includes(phase.kind)));
+ const story=STORIES.find(s=>s.beginner?.['p'+phase.phase]?.id===source.id);
  if(story)links.push({kind:'story',id:story.id,label:'Original passage & comprehension'});
  const dialogue=DIALOGUES.find(d=>
-   d['p'+phase.phase]?.id===source.id||d['p'+phase.phase]?.readingId===source.id||
-   (d.title===source.title&&['dialogue','transfer'].includes(phase.kind)));
+  d['p'+phase.phase]?.id===source.id||
+  d['p'+phase.phase]?.readingId===source.id);
  if(dialogue)links.push({kind:'dialogue',id:dialogue.id,label:'Original conversation & listening'});
- const tasks=SENTENCE_TASKS.filter(t=>t.p35LessonId===source.id||t.p39LessonId===source.id||
-  t.id?.startsWith('p'+phase.phase+':'+source.id+':')||
-  t.storyId===story?.id && Number.isInteger(phase.phase)&&phase.phase>=35);
- if(tasks.length)links.push({kind:'workshop',id:tasks[0].id,label:'Original written-answer exercise'});
+ const tasks=matchingC9NativeTasks(phase,source,story);
+ for(const task of tasks.slice(0,3)){
+  links.push({kind:'workshop',id:task.id,label:'Original exact-form task'+(tasks.length>1?' · '+(links.filter(l=>l.kind==='workshop').length+1):'')});
+ }
  return links;
 }
 const observed=(rows,id,key)=>rows.some(e=>e[key]===id&&e.correct===true&&!e.assisted);
