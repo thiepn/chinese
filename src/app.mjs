@@ -921,9 +921,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    'writing',targetRoute,targetId,c9WritingState.unitId),
   setWorkshopTask:(taskId,assisted)=>{
    const index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
-   if(index<0){alertUser('Original writing exercise unavailable.','error');return;}
-   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=Boolean(assisted);
-   go('workshop');
+   if(index<0){alertUser('Original writing exercise unavailable.','error');return false;}
+   if(route()!=='workshop'&&!go('workshop'))return false;
+   if(route()==='workshop'&&sentenceIndex!==index&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(assisted);
+   render();
+   return true;
   },
   openAdvanced:(phase,sourceId)=>{
    if(!findC9AdvancedPhase(phase)?.records.some(x=>x.id===sourceId)){
