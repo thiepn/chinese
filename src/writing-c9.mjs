@@ -202,7 +202,7 @@ export function handleC9WritingInput(e,root){
  */
 export async function handleC9WritingAction(button,api){
  const name=button.dataset.action,id=button.dataset.id,w=c9WritingState;
- const {go,render,alertUser,speak,act,setWorkshopTask,openAdvanced}=api;
+ const {go,render,alertUser,speak,act,setWorkshopTask,openAdvanced,rememberHandoff}=api;
  if(name==='c9-writing-source')return openC9WritingSource(Number(button.dataset.phase),id,api);
  if(name==='c9-writing-models'){
   if(c9WritingTransfer(w.transferPhase,w.sourceId)){w.transferModels=!w.transferModels;render();}
@@ -223,9 +223,9 @@ export async function handleC9WritingAction(button,api){
   if(!native||native[kind]?.id!==id){
    alertUser('The original linked activity is unavailable.','error');return true;
   }
-  if(kind==='story')await act({dataset:{action:'c9-media-open-story',id}});
-  if(kind==='dialogue')await act({dataset:{action:'c9-media-open-dialogue',id}});
-  if(kind==='task')setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));
+  if(kind==='story'){rememberHandoff('stories',id);await act({dataset:{action:'c9-media-open-story',id}});}
+  if(kind==='dialogue'){rememberHandoff('dialogues',id);await act({dataset:{action:'c9-media-open-dialogue',id}});}
+  if(kind==='task'){rememberHandoff('workshop',id);setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));}
   return true;
  }
  if(name==='p43-enter'){go('writing');return true;}
@@ -307,21 +307,23 @@ export async function handleC9WritingAction(button,api){
  if(name==='p43-workshop'){
   const u=findP43Unit(w.unitId),i=Number(button.dataset.line);
   if(!u||![4,9].includes(i))return true;
-  setWorkshopTask('p43:'+u.id+':line'+i,Boolean(w.reveal||w.showEvidence||w.transferModels));
+  const taskId='p43:'+u.id+':line'+i;
+  rememberHandoff('workshop',taskId);
+  setWorkshopTask(taskId,Boolean(w.reveal||w.showEvidence||w.transferModels));
   return true;
  }
  if(name==='p41-open'||name==='p42-open'){
   if(name==='p41-open'){
    const story=STORIES.find(x=>x.beginner?.p41?.id===id);
-   if(story){await act({dataset:{action:'c9-media-open-story',id:story.id}});return true;}
+   if(story){rememberHandoff('stories',story.id);await act({dataset:{action:'c9-media-open-story',id:story.id}});return true;}
   }else{
    const dialogue=DIALOGUES.find(x=>x.p42?.id===id);
-   if(dialogue){await act({dataset:{action:'c9-media-open-dialogue',id:dialogue.id}});return true;}
+   if(dialogue){rememberHandoff('dialogues',dialogue.id);await act({dataset:{action:'c9-media-open-dialogue',id:dialogue.id}});return true;}
   }
   alertUser('Referenced original reading or conversation unavailable.','error');return true;
  }
  if(name==='p44-open'||name==='p45-open'){
-  openAdvanced(name==='p44-open'?44:45,id);return true;
+  rememberHandoff('advanced',id);openAdvanced(name==='p44-open'?44:45,id);return true;
  }
  return false;
 }
