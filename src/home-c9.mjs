@@ -51,8 +51,9 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const primaryLabel=primary.kind==='journey'&&!hasActivity?'Start learning':primary.kind==='resume'?'Resume saved study':'Continue learning';
  const storageNotice=!storageReady?'<div class="c9-home-notice c9-home-notice--warning" role="status"><strong>Local saving is unavailable</strong><span>You can browse the available material, but progress cannot be saved until browser storage works. Existing learning records have not been changed.</span></div>':'';
  const offlineNotice='<div id="c9-home-offline-notice" class="c9-home-notice" role="status"'+(offline?'':' hidden')+'><strong>Offline</strong><span>'+
- (offlineShell==='ready'?'The offline shell is active. Cached material may be available; original progress still depends on local browser storage.':
- 'The offline shell is not confirmed ready on this device. Previously available content may be limited; reconnect to prepare it.')+
+ (offlineShell==='ready'?'The original static source cache is complete according to the controlling service worker. Original progress still depends on local browser storage.':
+ offlineShell==='incomplete'?'Some original offline assets are missing from the current cache. Reconnect before starting an offline lesson.':
+ 'The offline source cache is not confirmed complete on this device. Reconnect to prepare it.')+
  '</span></div>';
  const scenery='<svg class="c9-home-mountains" viewBox="0 0 430 175" aria-hidden="true" focusable="false"><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130V175H0Z" fill="currentColor" opacity=".08"/><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130" fill="none" stroke="currentColor" opacity=".17"/><path d="M181 133h91m-76 0 17-18h38l17 18m-60-19 5-10h37l7 10m-12 19v-16m-22 16v-16m-21-15h69" fill="none" stroke="currentColor" opacity=".19"/><path d="M20 157h150m132 0h128" stroke="currentColor" opacity=".13"/></svg>';
  const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">YOUR NEXT STEP · ORIGINAL COURSE</span><h2 id="c9-home-next">'+esc(primary.label)+'</h2><p>'+esc(primary.detail)+'</p><div class="c9-home-hero-actions">'+act('hub-primary',primaryLabel+' '+icon('arrow'),'c9-button c9-button--primary')+'<a class="c9-button c9-button--secondary" href="#/plan">View study plan</a></div></div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">学</span></div></section>';
@@ -106,7 +107,8 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
    ].map(([route,label,detail,symbol])=>'<a class="c9-home-source-card" href="#/'+route+'">'+icon(symbol)+'<span><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small></span>'+icon('chevron')+'</a>').join('')+'</div></section>';
  const readiness='<div class="c9-home-status-row"><span id="c9-home-connectivity" role="status">'+
  (offline?'Offline':'Online')+' · '+
- (offlineShell==='ready'?'Offline shell active':offlineShell==='checking'?'Checking offline setup':
+ (offlineShell==='ready'?'Static source cache verified':offlineShell==='checking'?'Checking offline cache':
+ offlineShell==='incomplete'?'Offline cache incomplete':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
  return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+hero+metrics+
