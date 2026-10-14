@@ -174,3 +174,29 @@
 @media(prefers-reduced-motion:reduce){
  .c9-advanced-workspace *{transition:none;animation:none;scroll-behavior:auto}
 }
+
+
+/* C9-28 · Compact learner-facing phase switching; original phase IDs intact. */
+.c9-advanced-phase-picker{display:grid;gap:12px;min-width:0}
+.c9-advanced-mobile-phase{display:none}
+.c9-advanced-neighbor-phases{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.c9-advanced-neighbor-phases strong{font:650 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-advanced-neighbor-phases :where(a,button){min-height:44px;white-space:normal;max-width:100%}
+.c9-advanced-neighbor-phases>span{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+@media(max-width:740px){
+ .c9-advanced-mobile-phase{display:grid;gap:7px;border:1px solid var(--c9-line);
+  border-radius:var(--c9-r-sm);background:var(--c9-surface);padding:13px}
+ .c9-advanced-mobile-phase label{font:600 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+ #c9-advanced-phase-select{width:100%;max-width:100%;background:var(--c9-surface);color:var(--c9-ink);
+  border:1px solid var(--c9-line-strong);border-radius:var(--c9-r-xs);padding:10px;
+  font:500 14px/1.6 var(--c9-ui);min-height:48px}
+ #c9-advanced-phase-select:focus-visible{outline:3px solid var(--c9-accent);outline-offset:2px}
+ .c9-advanced-stages{display:none!important}
+ .c9-advanced-neighbor-phases{display:grid;grid-template-columns:1fr auto 1fr;gap:7px}
+ .c9-advanced-neighbor-phases button{padding:10px;font-size:11px}
+ .c9-advanced-neighbor-phases button:last-child{justify-self:end}
+}
+@media(max-width:420px){
+ .c9-advanced-neighbor-phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-advanced-neighbor-phases strong{grid-column:1/-1;grid-row:1;text-align:center}
+}
