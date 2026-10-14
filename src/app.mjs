@@ -1094,6 +1094,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    dialogue:'dialogues',workshop:'workshop'}[linked.kind];
   if(!target)return;
   if(linked.kind==='workshop'&&!SENTENCE_TASKS.some(x=>x.id===id))return;
+  if(route()!==target&&!go(target))return false;
+  if(target==='workshop'&&sentenceTask(sentenceIndex)?.id!==id&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
   rememberC9NativeHandoff('skills',target,id,source.title||source.hanzi||source.id);
   if(linked.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id}});
   if(linked.kind==='grammar')return act({dataset:{action:'grammar-select',id}});
@@ -1161,6 +1164,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(!destination)return;
   if(link.kind==='workshop'&&!SENTENCE_TASKS.some(t=>t.id===link.id))
    return alertUser('Original writing task is unavailable.','error');
+  if(route()!==destination&&!go(destination))return false;
+  if(destination==='workshop'&&sentenceTask(sentenceIndex)?.id!==link.id&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
   rememberC9NativeHandoff('advanced',destination,link.id,
    source.title||source.hanzi||source.id);
   if(link.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id:link.id}});
@@ -1301,6 +1307,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
   if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
+  if(route()==='stories'&&storyId!==target.id&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
   if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
@@ -1453,6 +1460,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
    if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+   if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
    if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
