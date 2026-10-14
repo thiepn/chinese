@@ -1010,6 +1010,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   if(index<lines.length&&lines[index]?.hanzi)return speak(lines[index].hanzi);
   return;
  }
+ if(name==='c9-skills-related-source'){
+  const current=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
+  const originalPhase=findC9AdvancedPhase(button.dataset.phase);
+  const original=originalPhase?.records.find(x=>x.id===id);
+  if(!current||!original||current.sourceType!=='p'+originalPhase.phase||
+   current.sourceId!==id)return alertUser('Original source link is unavailable.','error');
+  // Preserve the selected Skill Path while visiting the exact prior P44–P48
+  // evidence. Returning does not fabricate learning evidence or a new result.
+  if(!go('advanced'))return;
+  c9AdvancedPhase=originalPhase.phase;c9AdvancedSelected=id;
+  c9AdvancedQuery='';c9AdvancedPage=0;c9AdvancedTranslation=false;
+  rememberC9NativeHandoff('skills','advanced',id,
+   current.title||current.hanzi||current.id);
+  return;
+ }
  if(name==='c9-skills-word'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
   if(!source||!WORDS.some(w=>w.key===id))return;
