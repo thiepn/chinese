@@ -247,6 +247,9 @@ function parseC9WritingBackup(raw){
   reveal:!!b.reveal,transferModels:!!b.transferModels,transferReview:reviews};
 }
 let c9WritingFileReadToken=0; // In-tab async read cancellation, not persisted.
+export function cancelC9WritingFileRead(){
+ ++c9WritingFileReadToken; // Leaving this editor cancels a pending read.
+}
 export async function handleC9WritingBackupFile(e,{render,alertUser,currentRoute}){
  if(e.target.id!=='c9-writing-backup-file')return false;
  const file=e.target.files?.[0];e.target.value='';
@@ -364,7 +367,10 @@ export async function handleC9WritingAction(button,api){
    anchor.style.display='none';document.body.appendChild(anchor);anchor.click();anchor.remove();
    alertUser('Backup download requested. Keep the private JSON file somewhere safe.');
   }catch{alertUser('File export is not available in this browser. Copy your writing manually.','error');}
-  finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),1200);}
+  finally{
+   // Mobile browser download managers can be slow to acquire a blob URL.
+   if(url)setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
   return true;
  }
  if(name==='c9-writing-source')return openC9WritingSource(Number(button.dataset.phase),id,api);
