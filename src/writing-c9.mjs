@@ -59,7 +59,7 @@ function transferPanel(state,session,act,esc){
   source.dialogue?act('c9-writing-native','Listen to the authored conversation →','c9-button c9-button--secondary c9-button--small',
    'data-kind="dialogue" data-id="'+esc(source.dialogue.id)+'"'):'',
   source.task?act('c9-writing-native','Reconstruct an original model sentence →','c9-button c9-button--secondary c9-button--small',
-   'data-kind="workshop" data-id="'+esc(source.task.id)+'"'):''
+   'data-kind="task" data-id="'+esc(source.task.id)+'"'):''
  ].filter(Boolean).join('');
  const steps=Object.freeze([
   ['A','Identify whose evidence is being described, and whether it supports the claim.'],
