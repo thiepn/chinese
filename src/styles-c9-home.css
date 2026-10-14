@@ -364,3 +364,18 @@
 @media(prefers-reduced-motion:reduce){
  .c9-home-source-card{transition:none;}
 }
+
+/* C9-35: Explicit user-controlled source cache repair, not a learner-state sync. */
+.c9-home-offline-repair{align-items:center;gap:12px;
+ border-left-color:var(--c9-accent);min-width:0}
+.c9-home-offline-repair strong{font:650 12px/1.5 var(--c9-ui)}
+.c9-home-offline-repair span{flex:1 1 260px;min-width:0;
+ font:400 12px/1.65 var(--c9-ui)}
+.c9-home-offline-repair button{min-height:44px;
+ white-space:normal;text-align:left}
+.c9-home-offline-repair :focus-visible{
+ outline:3px solid var(--c9-focus,var(--c9-accent));outline-offset:2px}
+@media(max-width:620px){
+ .c9-home-offline-repair{display:grid;grid-template-columns:minmax(0,1fr)}
+ .c9-home-offline-repair button{width:100%}
+}

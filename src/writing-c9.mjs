@@ -393,9 +393,18 @@ export async function handleC9WritingAction(button,api){
   if(!native||native[kind]?.id!==id){
    alertUser('The original linked activity is unavailable.','error');return true;
   }
-  if(kind==='story'){rememberHandoff('stories',id);await act({dataset:{action:'c9-media-open-story',id}});}
-  if(kind==='dialogue'){rememberHandoff('dialogues',id);await act({dataset:{action:'c9-media-open-dialogue',id}});}
-  if(kind==='task'){rememberHandoff('workshop',id);setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));}
+  if(kind==='story'){
+   const opened=await act({dataset:{action:'c9-media-open-story',id}});
+   if(opened!==false){rememberHandoff('stories',id);render();}
+  }
+  if(kind==='dialogue'){
+   const opened=await act({dataset:{action:'c9-media-open-dialogue',id}});
+   if(opened!==false){rememberHandoff('dialogues',id);render();}
+  }
+  if(kind==='task'){
+   const opened=setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));
+   if(opened!==false){rememberHandoff('workshop',id);render();}
+  }
   return true;
  }
  if(name==='p43-enter'){go('writing');return true;}
@@ -495,17 +504,26 @@ export async function handleC9WritingAction(button,api){
   const u=findP43Unit(w.unitId),i=Number(button.dataset.line);
   if(!u||![4,9].includes(i))return true;
   const taskId='p43:'+u.id+':line'+i;
-  rememberHandoff('workshop',taskId);
-  setWorkshopTask(taskId,Boolean(w.reveal||w.showEvidence||w.transferModels));
+  if(setWorkshopTask(taskId,Boolean(w.reveal||w.showEvidence||w.transferModels))!==false){
+   rememberHandoff('workshop',taskId);render();
+  }
   return true;
  }
  if(name==='p41-open'||name==='p42-open'){
   if(name==='p41-open'){
    const story=STORIES.find(x=>x.beginner?.p41?.id===id);
-   if(story){rememberHandoff('stories',story.id);await act({dataset:{action:'c9-media-open-story',id:story.id}});return true;}
+   if(story){
+    const opened=await act({dataset:{action:'c9-media-open-story',id:story.id}});
+    if(opened!==false){rememberHandoff('stories',story.id);render();}
+    return true;
+   }
   }else{
    const dialogue=DIALOGUES.find(x=>x.p42?.id===id);
-   if(dialogue){rememberHandoff('dialogues',dialogue.id);await act({dataset:{action:'c9-media-open-dialogue',id:dialogue.id}});return true;}
+   if(dialogue){
+    const opened=await act({dataset:{action:'c9-media-open-dialogue',id:dialogue.id}});
+    if(opened!==false){rememberHandoff('dialogues',dialogue.id);render();}
+    return true;
+   }
   }
   alertUser('Referenced original reading or conversation unavailable.','error');return true;
  }

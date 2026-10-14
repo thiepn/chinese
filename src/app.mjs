@@ -447,11 +447,17 @@ function renderGrammar(){
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
- const selected=findGrammarLesson(id);if(!selected)return;
+ const selected=findGrammarLesson(id);if(!selected)return false;
+ // Original grammar handlers also open from source-linked activities. Route
+ // approval and native unsent input protection must precede any reset.
+ if(route()==='grammar'&&selectedGrammarId()!==id&&
+  !c9ConfirmLeaveNativeAnswer('grammar'))return false;
+ if(route()!=='grammar'&&!go('grammar'))return false;
  grammarSelected=id;grammarChapter=String(selected.chapterNumber);
  grammarQuery='';grammarSessionReset();
  location.hash='#/grammar/'+id;
  render();
+ return true;
 }
 function grammarUnitSelector(character){
  const related=GRAMMAR_LESSONS.filter(g=>g.anchor===character).slice(0,3);
@@ -915,9 +921,14 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    'writing',targetRoute,targetId,c9WritingState.unitId),
   setWorkshopTask:(taskId,assisted)=>{
    const index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
-   if(index<0){alertUser('Original writing exercise unavailable.','error');return;}
-   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=Boolean(assisted);
-   go('workshop');
+   if(index<0){alertUser('Original writing exercise unavailable.','error');return false;}
+   if(route()!=='workshop'&&!go('workshop'))return false;
+   if(route()==='workshop'&&sentenceIndex!==index&&
+    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(assisted);
+   render();
+   return true;
   },
   openAdvanced:(phase,sourceId)=>{
    if(!findC9AdvancedPhase(phase)?.records.some(x=>x.id===sourceId)){
@@ -941,6 +952,19 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return;
  }
 
+ if(name==='c9-offline-repair'){
+  if(!navigator.onLine){alertUser('Reconnect to prepare original offline assets.','error');return false;}
+  if(!navigator.serviceWorker?.controller){
+   alertUser('Offline installation is not active. Reload this page online, then try again.','error');
+   return false;
+  }
+  await verifyC9OfflineShell('c9-offline-repair');
+  alertUser(c9OfflineShell==='ready'?
+   'The controlling service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
+   c9OfflineShell==='ready'?'info':'error');
+  return c9OfflineShell==='ready';
+ }
  if(name==='c9-native-handoff-return'){
   if(!c9NativeTrail||!c9ConfirmLeaveNativeAnswer()||route()!==c9NativeTrail.targetRoute||
    currentC9NativeTarget(route())!==c9NativeTrail.targetId)return;
@@ -1056,15 +1080,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }
  if(name==='c9-skills-word'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
-  if(!source||!WORDS.some(w=>w.key===id))return;
+  if(!source||!WORDS.some(w=>w.key===id))return false;
+  const opened=await act({dataset:{action:'lookup-word',id}});
+  if(opened===false)return false;
   rememberC9NativeHandoff('skills','explore',id,source.title||source.hanzi||source.id);
-  return act({dataset:{action:'lookup-word',id}});
+  render();
+  return true;
  }
  if(name==='c9-skills-grammar'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
-  if(!source||!source.grammarIds?.includes(id)||!findGrammarLesson(id))return;
+  if(!source||!source.grammarIds?.includes(id)||!findGrammarLesson(id))return false;
+  const opened=await act({dataset:{action:'grammar-select',id}});
+  if(opened===false)return false;
   rememberC9NativeHandoff('skills','grammar',id,source.title||source.hanzi||source.id);
-  return act({dataset:{action:'grammar-select',id}});
+  render();
+  return true;
  }
  if(name==='c9-skills-writing'){
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
@@ -1089,34 +1119,32 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   const source=c9SkillSource(c9SkillsUi.phase,c9SkillsUi.sourceId);
   const linked=source&&c9SkillLinks(c9SkillsUi.phase,source).find(l=>
    l.id===id&&l.kind===button.dataset.kind);
-  if(!linked)return alertUser('Original native source not available for this case.','error');
-  const target={lesson:'learn',grammar:'grammar',story:'stories',
+  if(!linked){alertUser('Original native source not available for this case.','error');return false;}
+  const destination={lesson:'learn',grammar:'grammar',story:'stories',
    dialogue:'dialogues',workshop:'workshop'}[linked.kind];
-  if(!target)return;
-  if(linked.kind==='workshop'&&!SENTENCE_TASKS.some(x=>x.id===id))return;
-  if(route()!==target&&!go(target))return false;
-  if(target==='workshop'&&sentenceTask(sentenceIndex)?.id!==id&&
-    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
-  rememberC9NativeHandoff('skills',target,id,source.title||source.hanzi||source.id);
-  if(linked.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id}});
-  if(linked.kind==='grammar')return act({dataset:{action:'grammar-select',id}});
-  if(linked.kind==='story'){
-   await act({dataset:{action:'c9-media-open-story',id}});
-   if(c9SkillsUi.support){storyAssist=true;storyShowTranslation=true;c9StoryEnglish=true;render();}
-   return;
-  }
-  if(linked.kind==='dialogue'){
-   await act({dataset:{action:'c9-media-open-dialogue',id}});
-   if(c9SkillsUi.support){dialogueSupport=true;render();}
-   return;
-  }
+  if(!destination)return false;
+  // Only create the return trail when the actual original native source
+  // changed successfully. An unsubmitted answer can refuse that change.
+  if(route()!==destination&&!go(destination))return false;
   if(linked.kind==='workshop'){
    const index=SENTENCE_TASKS.findIndex(x=>x.id===id);
-   if(index<0)return;
-   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=c9SkillsUi.support;
-   return go('workshop');
+   if(index<0)return false;
+   if(sentenceIndex!==index&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(c9SkillsUi.support);
+  }else{
+   const actionName={lesson:'c9-lesson-open',grammar:'grammar-select',
+    story:'c9-media-open-story',dialogue:'c9-media-open-dialogue'}[linked.kind];
+   if(!actionName||await act({dataset:{action:actionName,id}})===false)return false;
+   if(linked.kind==='story'&&c9SkillsUi.support){
+    storyAssist=true;storyShowTranslation=true;c9StoryEnglish=true;
+   }
+   if(linked.kind==='dialogue'&&c9SkillsUi.support)dialogueSupport=true;
   }
-  return;
+  rememberC9NativeHandoff('skills',destination,id,
+   source.title||source.hanzi||source.id);
+  render();
+  return true;
  }
  if(name==='c9-advanced-phase'){
   const phase=findC9AdvancedPhase(button.dataset.phase);if(!phase)return;
@@ -1155,32 +1183,31 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return speak(lines[i].hanzi);
  }
  if(name==='c9-advanced-native'){
-  const phase=findC9AdvancedPhase(c9AdvancedPhase),source=phase?.records.find(x=>x.id===c9AdvancedSelected);
-  const link=source&&c9AdvancedNativeLinks(phase,source).find(l=>l.kind===button.dataset.kind&&l.id===id);
-  if(!link)return alertUser('This original source activity is unavailable.','error');
-  const routeByKind={lesson:'learn',grammar:'grammar',story:'stories',
-   dialogue:'dialogues',workshop:'workshop'};
-  const destination=routeByKind[link.kind];
-  if(!destination)return;
-  if(link.kind==='workshop'&&!SENTENCE_TASKS.some(t=>t.id===link.id))
-   return alertUser('Original writing task is unavailable.','error');
+  const phase=findC9AdvancedPhase(c9AdvancedPhase);
+  const source=phase?.records.find(x=>x.id===c9AdvancedSelected);
+  const link=source&&c9AdvancedNativeLinks(phase,source).find(l=>
+   l.kind===button.dataset.kind&&l.id===id);
+  if(!link){alertUser('This original source activity is unavailable.','error');return false;}
+  const destination={lesson:'learn',grammar:'grammar',story:'stories',
+   dialogue:'dialogues',workshop:'workshop'}[link.kind];
+  if(!destination)return false;
   if(route()!==destination&&!go(destination))return false;
-  if(destination==='workshop'&&sentenceTask(sentenceIndex)?.id!==link.id&&
-    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
+  if(link.kind==='workshop'){
+   const index=SENTENCE_TASKS.findIndex(t=>t.id===link.id);
+   if(index<0)return false;
+   if(sentenceIndex!==index&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
+   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+   sentenceSupport=Boolean(c9AdvancedTranslation);
+  }else{
+   const actionName={lesson:'c9-lesson-open',grammar:'grammar-select',
+    story:'c9-media-open-story',dialogue:'c9-media-open-dialogue'}[link.kind];
+   if(!actionName||await act({dataset:{action:actionName,id:link.id}})===false)return false;
+  }
   rememberC9NativeHandoff('advanced',destination,link.id,
    source.title||source.hanzi||source.id);
-  if(link.kind==='lesson')return act({dataset:{action:'c9-lesson-open',id:link.id}});
-  if(link.kind==='grammar')return act({dataset:{action:'grammar-select',id:link.id}});
-  if(link.kind==='story')return act({dataset:{action:'c9-media-open-story',id:link.id}});
-  if(link.kind==='dialogue')return act({dataset:{action:'c9-media-open-dialogue',id:link.id}});
-  if(link.kind==='workshop'){
-   sentenceIndex=SENTENCE_TASKS.findIndex(t=>t.id===link.id);
-   sentenceTyped='';sentenceFeedback=null;sentenceSupport=Boolean(c9AdvancedTranslation);
-   return go('workshop');
-  }
-  return;
+  render();
+  return true;
  }
-
  if(name==='c9-integrate-return'){
   if(!c9DiscoveryTrail)return;
   const from=c9DiscoveryTrail.origin;
@@ -1306,7 +1333,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
  }
   if(name==='c9-media-open-story'){
-  const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
+  const target=findStory(id);if(!target){alertUser('Original reading unavailable.','error');return false;}
   if(route()==='stories'&&storyId!==target.id&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
   if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
@@ -1314,10 +1341,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   resetReadingNavigation();
   if(route()==='stories'){render();root.querySelector('.story-paper')?.scrollIntoView({block:'start'});}
   else go('stories');
-  return;
+  return true;
  }
  if(name==='c9-media-open-dialogue'){
-  const target=findDialogue(id);if(!target)return alertUser('Original conversation unavailable.','error');
+  const target=findDialogue(id);if(!target){alertUser('Original conversation unavailable.','error');return false;}
+  if(route()==='dialogues'&&dialogueId!==target.id&&
+   !c9ConfirmLeaveNativeAnswer('dialogues'))return false;
   if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
@@ -1325,7 +1354,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   c9DialogueSourceId=null;c9DialogueTurn=0;
   if(route()==='dialogues'){render();root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});}
   else go('dialogues');
-  return;
+  return true;
  }
  if(name==='c9-media-turn'){
   const dialogue=findDialogue(dialogueId);
@@ -1459,13 +1488,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
-   if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+   if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
    if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
    if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
    else go('learn');
-   return;
+   return true;
  }
  if(name==='c9-unit-open'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
@@ -1832,7 +1861,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return;
  }
  if(name==='grammar-open'){return go('grammar');}
- if(name==='grammar-select'){if(findGrammarLesson(id))openGrammarLesson(id);return;}
+ if(name==='grammar-select')return findGrammarLesson(id)?openGrammarLesson(id):false;
  if(name==='grammar-next'||name==='grammar-previous'){
   if(!grammarFeedback&&grammarTyped.trim()&&!c9ConfirmLeaveNativeAnswer())return;
   const next=nextGrammarLesson(selectedGrammarId(),name==='grammar-next'?1:-1);if(next)openGrammarLesson(next.id);return;
@@ -2409,7 +2438,8 @@ function networkLabel(){
  const online=navigator.onLine;
  const status=c9OfflineShell==='ready'?'Offline shell active':
   c9OfflineShell==='installing'?'Preparing offline content':
-  c9OfflineShell==='checking'?'Checking offline setup':'Offline shell not ready';
+  c9OfflineShell==='checking'?'Checking offline setup':
+  c9OfflineShell==='incomplete'?'Offline cache incomplete':'Offline shell not ready';
  $('network-state').textContent='Local data · '+(online?'Online':'Offline')+' · '+status;
  const homeStatus=$('c9-home-connectivity');
  if(homeStatus)homeStatus.textContent=(online?'Online':'Offline')+' · '+status;
@@ -2419,40 +2449,63 @@ function networkLabel(){
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
    'The offline shell is active. Cached material may be available; original progress still depends on local browser storage.':
-   'The offline shell is not confirmed ready. Reconnect to prepare original source material for offline use.';
+   'The offline source cache is incomplete or unverified. Reconnect while this page is open to prepare original material.';
  }
+}
+// Read-only SW cache integrity check. No network, learner state, local
+// storage or background authority is involved.
+let c9OfflineCheck=0;
+async function verifyC9OfflineShell(requestType='c9-offline-status'){
+ const controller=navigator.serviceWorker?.controller;
+ const generation=++c9OfflineCheck;
+ if(!controller){c9OfflineShell='installing';networkLabel();return;}
+ c9OfflineShell=requestType==='c9-offline-repair'?'installing':'checking';networkLabel();
+ const report=await new Promise(resolve=>{
+  const channel=new MessageChannel();let finished=false;
+  const finish=value=>{
+   if(finished)return;finished=true;clearTimeout(timeout);
+   channel.port1.close();resolve(value);
+  };
+  const timeout=setTimeout(()=>finish(null),
+   requestType==='c9-offline-repair'?30000:2500);
+  channel.port1.onmessage=event=>finish(event.data);
+  try{controller.postMessage({type:requestType},[channel.port2]);}
+  catch{finish(null);}
+ });
+ if(generation!==c9OfflineCheck||navigator.serviceWorker.controller!==controller)return;
+ // Older controlling service workers might not recognize this request.
+ // That is a reason to disclose uncertainty, not claim all assets are cached.
+ c9OfflineShell=report?.type==='c9-offline-status'?
+  (report.complete===true&&report.cached===report.total?'ready':'incomplete'):'checking';
+ networkLabel();
 }
 async function setupSW(){
  if(!('serviceWorker' in navigator)||location.protocol==='file:'){
   c9OfflineShell='unsupported';networkLabel();return;
  }
- // Registration only requests a worker: a controlled page is evidence that
- // installation completed, not certification of every offline learning flow.
- c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
+ c9OfflineShell=navigator.serviceWorker.controller?'checking':'installing';
  networkLabel();
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
-  networkLabel();
+  void verifyC9OfflineShell();
  });
  try{
   const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
   const installing=registration.installing;
   if(installing){
    installing.addEventListener('statechange',()=>{
-    if(installing.state==='redundant'&&!navigator.serviceWorker.controller)
-     c9OfflineShell='failed';
-    if(installing.state==='activated'&&navigator.serviceWorker.controller)
-     c9OfflineShell='ready';
-    networkLabel();
+    if(installing.state==='redundant'&&!navigator.serviceWorker.controller){
+     ++c9OfflineCheck;c9OfflineShell='failed';networkLabel();
+    }else if(installing.state==='activated'){
+     void verifyC9OfflineShell();
+    }
    });
   }
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':
-   registration.installing?'installing':'checking';
-  networkLabel();
- }catch(e){
-  c9OfflineShell=navigator.serviceWorker.controller?'ready':'failed';
-  networkLabel();
-  console.warn('Offline shell unavailable',e);
+  if(navigator.serviceWorker.controller)await verifyC9OfflineShell();
+  else{c9OfflineShell=registration.installing?'installing':'checking';networkLabel();}
+ }catch(error){
+  if(navigator.serviceWorker.controller)await verifyC9OfflineShell();
+  else{++c9OfflineCheck;c9OfflineShell='failed';networkLabel();}
+  console.warn('Offline shell unavailable',error);
  }
 }
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
