@@ -121,12 +121,12 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
  '<label for="c9-writing-backup-file">Import a previous backup</label>'+
  '<input id="c9-writing-backup-file" type="file" accept=".json,application/json" aria-describedby="c9-writing-backup-title"></div>'+
- (session.importError?'<p class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
+ (session.importError?'<p id="c9-writing-import-error" tabindex="-1" class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
  '<p class="c9-writing-portability-note">Your file contains private writing. Keep it in a trusted location; importing never automatically overwrites current work.</p>'+
  '</section>';
  const links='<details class="c9-writing-catalog" '+(session.catalogOpen?'open':'')+'><summary>Choose a P43 original composition topic · '+P43_UNITS.length+' units</summary>'+
  p43Overview(act,esc,{selected:unit.id,filter:session.filter||'all',query:session.query||''})+'</details>';
- const pending=session.pending?'<section class="c9-writing-pending" role="alert"><h2>Confirm what happens to the unsent draft</h2>'+
+ const pending=session.pending?'<section id="c9-writing-pending" class="c9-writing-pending" role="alert" tabindex="-1"><h2>Confirm what happens to the unsent draft</h2>'+
  '<p>'+(session.pending==='discard'?'Discard this tab’s draft and snapshot history?':
  session.pending.startsWith('restore:')?'Replace the active editor text with the selected snapshot?':
  session.pending==='import'?'Import the selected private backup for '+
@@ -239,10 +239,13 @@ export async function handleC9WritingBackupFile(e,{render,alertUser}){
   const candidate=parseC9WritingBackup(await file.text());
   w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
   render();
+  document.getElementById('c9-writing-pending')?.focus({preventScroll:false});
  }catch(err){
   w.importCandidate=null;w.pending='';w.importError=err instanceof Error?
    err.message:'The writing file could not be read.';
-  render();alertUser(w.importError,'error');
+  render();
+  document.getElementById('c9-writing-import-error')?.focus({preventScroll:false});
+  alertUser(w.importError,'error');
  }
  return true;
 }
@@ -348,7 +351,13 @@ export async function handleC9WritingAction(button,api){
   if(u)requestC9Writing({unitId:u.id,phase:0,sourceId:null},api);
   return true;
  }
- if(name==='p43-stay'){w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';render();return true;}
+ if(name==='p43-stay'){
+  w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';
+  render();
+  (document.getElementById('p43-draft')||document.querySelector('.c9-writing-catalog summary'))
+   ?.focus({preventScroll:true});
+  return true;
+ }
  if(name==='p43-switch-confirm'){
   if(w.pending==='import'&&w.importCandidate){
    const b=w.importCandidate;
@@ -367,7 +376,10 @@ export async function handleC9WritingAction(button,api){
   }else if(w.pending==='switch'&&w.pendingTarget){
    resetWriting(w.pendingTarget);
   }else{w.pending='';w.pendingTarget=null;}
-  render();return true;
+  render();
+  (document.getElementById('p43-draft')||document.querySelector('.c9-writing-catalog summary'))
+   ?.focus({preventScroll:true});
+  return true;
  }
  if(name==='p43-step'){
   if(['plan','compose','revise','speak'].includes(button.dataset.step)){
