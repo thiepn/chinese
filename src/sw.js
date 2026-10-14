@@ -348,12 +348,14 @@ self.addEventListener('message',event=>{
    const cache=await caches.open(CACHE);
    const known=()=>new Set((await cache.keys()).map(request=>request.url));
    if(event.data.type==='c9-offline-repair'){
-    const entries=await known();
-    const missing=ASSETS.filter(path=>!entries.has(new URL(path,self.location.href).href));
-    // Explicit owner-requested cache repair; no user data or history writes.
-    // A failed source remains missing and is never counted as available.
-    for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE)
-     await cache.addAll(missing.slice(i,i+PRECACHE_BATCH_SIZE));
+    try{
+     const entries=await known();
+     const missing=ASSETS.filter(path=>!entries.has(new URL(path,self.location.href).href));
+     // Explicit learner-requested cache repair. No learner data is changed.
+     // Partial success is reported accurately if a later batch fails.
+     for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE)
+      await cache.addAll(missing.slice(i,i+PRECACHE_BATCH_SIZE));
+    }catch{failed=true;}
    }
    const keys=await known();
    cached=ASSETS.filter(path=>keys.has(new URL(path,self.location.href).href)).length;
