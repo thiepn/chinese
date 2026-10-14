@@ -157,6 +157,28 @@ function stagePanel(phase,source,stage,ui,links,act,esc){
  const type=stageType(stage),lines=c9AdvancedSourceLines(source),
   models=modelsOf(phase,source.id),dialogue=sourceAudio(phase,source.id),
   support=Boolean(ui.support);
+ const originalPhase=source.sourceType&&/^p(4[4-9])$/.test(source.sourceType)?
+  c9SkillPhase(Number(source.sourceType.slice(1))):null;
+ const originalRecord=originalPhase?.records.find(x=>x.id===source.sourceId);
+ const preferredKind=type==='listening'?'dialogue':
+  type==='reading'||type==='review'?'story':
+  type==='production'?'workshop':null;
+ const primary=links.find(x=>x.kind===preferredKind);
+ const primaryAction=primary?'<div class="c9-skills-primary-handoff">'+
+   act('c9-skills-native',
+    type==='listening'?'Open the original assessed conversation →':
+    type==='production'?'Reconstruct the original exact-form response →':
+    'Open the original assessed reading →',
+    'c9-button c9-button--primary c9-button--small',
+    'data-kind="'+primary.kind+'" data-id="'+esc(primary.id)+'"')+
+   '<small>Only the native assessment can write learning evidence.</small></div>':'';
+ const historicalAccess=originalRecord?
+  '<aside class="c9-skills-related-evidence"><strong>Original source connection · P'+
+   originalPhase.phase+'</strong><p>'+esc(originalRecord.title||originalRecord.hanzi||originalRecord.goal||originalRecord.id)+
+   '</p>'+act('c9-skills-related-source','Read the original referenced source →',
+    'c9-button c9-button--secondary c9-button--small',
+    'data-phase="'+originalPhase.phase+'" data-id="'+esc(originalRecord.id)+'"')+
+   '</aside>':'';
  const intro={
   orientation:'Start with what the source actually says. Distinguish the original situation, participants, vocabulary and stated limitation.',
   reading:'Read the Chinese first. Follow each paragraph or authored line and avoid treating an inference as a quoted fact.',
@@ -165,7 +187,8 @@ function stagePanel(phase,source,stage,ui,links,act,esc){
   production:'Give a reasoned response independently, then review source scope, register and sentence structure.'
  }[type];
  const header='<div class="c9-skills-stage-intro"><p>'+esc(intro)+'</p>'+
- (source.goal?'<blockquote>'+esc(source.goal)+'</blockquote>':'')+'</div>';
+ (source.goal?'<blockquote>'+esc(source.goal)+'</blockquote>':'')+
+ historicalAccess+primaryAction+'</div>';
  let content='';
  if(type==='orientation'){
   const focus=source.focusWord;
