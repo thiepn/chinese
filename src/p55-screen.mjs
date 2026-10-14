@@ -5,6 +5,7 @@
 import {P55_BRIEFS} from './p55-briefs.mjs';
 import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords} from './p55-study.mjs';
 import {dueCards} from './study.mjs';
+import {p56RepairFor} from './p56-repairs.mjs';
 export const P55_STEPS=Object.freeze([
  {id:'sources',label:'Source comparison'},
  {id:'language',label:'Register and repair'},
@@ -74,9 +75,9 @@ export function p55Overview(state,act,esc,{selected='',query=''}={}){
  (!cards.length?'<p role="status">No original paired context matches this search.</p>':'')+
  '</section>';
 }
-export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,showModel=false,showSupport=false}={}){
+export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,showModel=false,showSupport=false,showRepair=false}={}){
  if(!b)return '';
- const e=p55BriefEvidence(state,b),words=p55NativeWords(b),from=p55Source(b.from),to=p55Source(b.to);
+ const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id);
  return '<section class="p55-study" aria-label="Original advanced Mandarin learning consolidation">'+
  '<header class="p55-heading"><p class="eyebrow">P55 · PAIRED LEARNING CONTEXT '+b.sequence+' / '+P55_BRIEFS.length+'</p>'+
  '<h2>'+esc(b.title)+'</h2><p>'+esc(b.retrieval)+'</p>'+
@@ -103,7 +104,20 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  '<p>Translate the claim for an institutional audience and then explain it conversationally. Check that the source, quantifier, date, measurement and certainty do not change.</p>'+
  '<div class="p55-register-grid">'+words.map(w=>'<article class="p55-register"><h4 lang="zh-Hans">'+esc(w.hanzi)+'</h4>'+
  (showSupport?'<p>'+esc(w.pinyin)+' · '+esc(w.meaning)+'</p>':'<p class="muted">Recall the reading and scope first.</p>')+
- (w.key?act('lookup-word','Open canonical Wordbook entry →','button outline small','data-id="'+esc(w.key)+'"'):'<p>Canonical entry unavailable.</p>')+'</article>').join('')+'</div>'+
+ (w.key?act('p55-native-word','Open original Wordbook entry →','button outline small','data-id="'+esc(w.key)+'"'):'<p>Canonical entry unavailable.</p>')+'</article>').join('')+'</div>'+
+ '<section class="p55-repair" aria-label="Original Mandarin register-specific correction">'+
+ '<h4>Original P56 language repair in this source context</h4>'+
+ '<p><strong>Unsupported shortcut to correct:</strong> '+esc(repair?.wrong||b.pitfall)+'</p>'+
+ '<p><strong>Evidence boundary:</strong> '+esc(repair?.principle||b.pitfall)+'</p>'+
+ '<p>Write an institutional conclusion and then explain the same qualified claim to a friend before revealing the authored alternatives.</p>'+
+ act('p55-repair',showRepair?'Hide bilingual source-qualified alternatives':
+ 'Compare formal and conversational Mandarin after your attempt','button outline')+
+ (showRepair?'<div class="p55-repair-models">'+[
+ ['Formal statement',repair?.formal],['Conversational explanation',repair?.conversational]
+ ].map(([title,m])=>m?'<article><h5>'+esc(title)+'</h5><p lang="zh-Hans">'+esc(m.hanzi)+'</p>'+
+ '<small>'+esc(m.pinyin)+'</small><p>'+esc(m.english)+'</p>'+
+ act('speak','Hear synthetic Mandarin','button outline small','data-text="'+esc(m.hanzi)+'"')+'</article>':'').join('')+'</div>':'')+
+ '</section>'+
  '<div class="p55-actions">'+act('p55-support',showSupport?'Hide pronunciation and meaning':'Show original Pinyin and meaning','button outline')+
  act('p55-step','Prepare independent writing →','button primary','data-step="write"')+'</div>'+
  '<p class="muted">Wordbook holds lexical notes; existing native sentence events hold exact-form practice. There is no separate P55 vocabulary review or invented learning record.</p></div>':'')+
@@ -121,7 +135,7 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  act('p55-step','Prepare an independent oral defense →','button outline','data-step="speak"')+'</div>'+
  '<p class="muted">P43 is the original tab-local writing and revision workspace. This bridge does not insert hidden text, overwrite drafts, persist essays, or grant a grade.</p></div>':'')+
  (step==='speak'?'<div class="p55-pane"><h3>Defend the same evidence independently in spoken Mandarin</h3>'+
- '<p>'+esc(b.speaking)+'</p>'+
+ '<p>'+esc(b.speaking)+'</p><p><strong>New contextual oral challenge:</strong> '+esc(repair?.speaking||b.speaking)+'</p>'+
  '<div class="p55-speaking-plan">'+[
  ['Opening · source attribution','Name the two distinct original records and the question each was able to address.'],
  ['Challenge · fair objection',b.objection],
