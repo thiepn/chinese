@@ -1,0 +1,37 @@
+/* P54: original flat editorial learner-facing design */
+.p54-overview,.p54-journey{max-width:100%;min-width:0}
+.p54-overview header,.p54-heading{border-bottom:1px solid var(--line,#cbd4d1);padding-bottom:1rem;margin-bottom:1rem}
+.p54-heading h2,.p54-overview h2{font-size:clamp(1.4rem,2.1vw,2rem);line-height:1.3}
+.p54-case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:.75rem;margin:1rem 0}
+.p54-case{display:flex;flex-direction:column;text-align:left;align-items:stretch;gap:.5rem;padding:1rem;min-height:170px;border:1px solid var(--line,#cbd4d1);background:transparent;color:inherit;white-space:normal}
+.p54-case small,.p54-case em{font-size:.8rem;color:var(--muted,#697670);font-style:normal}.p54-case strong{font-size:1rem}
+.p54-case.active,.p54-stage.active{border-color:var(--accent,#ac5544);box-shadow:inset 0 -2px var(--accent,#ac5544)}
+.p54-stages{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+.p54-stage{flex:1 1 160px;padding:.7rem;text-align:left;border:1px solid var(--line,#cbd4d1);background:transparent;color:inherit;white-space:normal}
+.p54-pane{display:grid;gap:.9rem}.p54-pane h3{margin:.4rem 0}
+.p54-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0}.p54-actions .button{white-space:normal}
+.p54-vocab-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.p54-vocab,.p54-source,.p54-argument article,.p54-models article,.p54-transfer article{border:1px solid var(--line,#cbd4d1);padding:.9rem;min-width:0}
+.p54-vocab h4{font-size:1.1rem}.p54-vocab h5{font-size:1.12rem;margin:.25rem 0}
+.p54-word{border-top:1px solid var(--line,#cbd4d1);padding:.75rem 0}.p54-word p,.p54-word small{line-height:1.6;overflow-wrap:anywhere}
+.p54-source header small{color:var(--muted,#697670)}.p54-source header h4{margin:.25rem 0 .7rem}
+.p54-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;align-items:start}
+.p54-line{display:grid;grid-template-columns:1.25rem minmax(0,1fr) auto;align-items:start;gap:.5rem;padding:.7rem 0;border-top:1px solid var(--line,#cbd4d1)}
+.p54-line>span,.p54-line small{color:var(--muted,#697670)}.p54-line p{line-height:1.65;margin:.15rem 0;overflow-wrap:anywhere}.p54-line p[lang]{font-size:1.12rem}
+.p54-question{border-top:2px solid var(--line,#cbd4d1);padding:1rem 0}
+.p54-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.p54-options .choice{min-width:0;white-space:normal;text-align:left}
+.p54-feedback{padding:.9rem;border-left:3px solid var(--accent,#ac5544);background:var(--surface-soft,transparent)}.p54-feedback p{line-height:1.65}
+.p54-turn{display:grid;grid-template-columns:minmax(80px,120px) minmax(0,1fr) auto;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--line,#cbd4d1)}
+.p54-turn p{margin:.15rem 0;line-height:1.65;overflow-wrap:anywhere}.p54-turn small{color:var(--muted,#697670)}
+.p54-argument{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.p54-models,.p54-transfer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.p54-models p[lang]{font-size:1.14rem;line-height:1.65}.p54-models small{color:var(--muted,#697670)}
+.p54-check{width:100%;text-align:left;padding:.65rem .9rem;border:1px solid var(--line,#cbd4d1);background:transparent;color:inherit;white-space:normal;cursor:pointer}
+.p54-check.selected{border-color:var(--accent,#ac5544)}
+.p54-history{border-top:1px solid var(--line,#cbd4d1);margin-top:1rem;padding-top:1rem;color:var(--muted,#697670)}
+.p54-return-strip{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem;border:1px solid var(--line,#cbd4d1);padding:.75rem;margin-bottom:1rem}
+.p54-overview :focus-visible,.p54-journey :focus-visible{outline:3px solid var(--accent,#ac5544);outline-offset:2px}
+@media(max-width:950px){.p54-vocab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:780px){.p54-sources,.p54-transfer,.p54-argument{grid-template-columns:1fr}}
+@media(max-width:590px){.p54-vocab-grid,.p54-models,.p54-options{grid-template-columns:1fr}.p54-stage{flex-basis:100%}.p54-line{grid-template-columns:1.25rem minmax(0,1fr)}.p54-line .button{grid-column:2;justify-self:start}.p54-turn{grid-template-columns:minmax(0,1fr) auto}.p54-turn>strong{grid-column:1/-1}}
+@media(forced-colors:active){.p54-case.active,.p54-stage.active,.p54-check.selected{outline:2px solid Highlight}}
