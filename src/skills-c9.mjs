@@ -236,7 +236,8 @@ export function renderC9SkillsWorkspace(state,ui,act,esc){
  const track=c9SkillTrack(ui.track)||C9_SKILL_TRACKS[0];
  const phase=c9SkillPhaseInTrack(track.id,ui.phase)?c9SkillPhase(ui.phase):c9SkillPhase(track.phases[0]);
  const filter=String(ui.query||'').trim().toLocaleLowerCase();
- const candidates=track.phases.flatMap(n=>c9SkillPhase(n)?.records.map(source=>({phase:n,source}))||[])
+ const candidates=track.phases.filter(n=>!ui.phaseOnly||n===phase.phase)
+  .flatMap(n=>c9SkillPhase(n)?.records.map(source=>({phase:n,source}))||[])
   .filter(({source})=>!filter||match(source,filter));
  const source=c9SkillSource(phase.phase,ui.sourceId);
  const selected=source&&track.phases.includes(phase.phase)?source:null;
@@ -261,11 +262,13 @@ export function renderC9SkillsWorkspace(state,ui,act,esc){
  '<input id="c9-skills-query" type="search" autocomplete="off" spellcheck="false" value="'+esc(ui.query||'')+
  '" placeholder="Find Chinese, Pinyin, topics, original source notes"></div>'+
  '<nav class="c9-skills-phase-strip" aria-label="Sources by historical phase">'+
+ act('c9-skills-all','All sources','c9-skills-phase'+(!ui.phaseOnly?' is-active':''),
+  'aria-pressed="'+!ui.phaseOnly+'"')+
  track.phases.map(n=>{
   const p=c9SkillPhase(n);
   return act('c9-skills-phase',esc(p?.title||'')+' <small>P'+n+'</small>',
-  'c9-skills-phase'+(phase.phase===n?' is-active':''),
-  'data-phase="'+n+'" aria-pressed="'+(phase.phase===n)+'"');
+  'c9-skills-phase'+(ui.phaseOnly&&phase.phase===n?' is-active':''),
+  'data-phase="'+n+'" aria-pressed="'+(ui.phaseOnly&&phase.phase===n)+'"');
  }).join('')+'</nav>'+
  '<div id="c9-skills-results" class="c9-skills-results" aria-live="polite">'+
  '<p>'+candidates.length+' matching original source'+(candidates.length===1?'':'s')+
