@@ -321,7 +321,8 @@ export async function handleC9WritingAction(button,api){
  // P43 authorial teaching crosslinks use the original native handlers, but
  // retain a source-scoped path back to this exact in-tab composition.
  if(api.currentRoute?.()==='writing'&&(name==='grammar-select'||name==='lookup-word')){
-  rememberHandoff(name==='grammar-select'?'grammar':'explore',id);
+  // Native app action validates the source and departure first; only then
+  // may it install a writing return trail. A declined action changes nothing.
   return false;
  }
  if(name==='c9-writing-backup-copy'){
@@ -395,15 +396,15 @@ export async function handleC9WritingAction(button,api){
   }
   if(kind==='story'){
    const opened=await act({dataset:{action:'c9-media-open-story',id}});
-   if(opened!==false){rememberHandoff('stories',id);render();}
+   if(opened===true){rememberHandoff('stories',id);render();}
   }
   if(kind==='dialogue'){
    const opened=await act({dataset:{action:'c9-media-open-dialogue',id}});
-   if(opened!==false){rememberHandoff('dialogues',id);render();}
+   if(opened===true){rememberHandoff('dialogues',id);render();}
   }
   if(kind==='task'){
    const opened=setWorkshopTask(id,Boolean(w.transferModels||w.reveal||w.showEvidence));
-   if(opened!==false){rememberHandoff('workshop',id);render();}
+   if(opened===true){rememberHandoff('workshop',id);render();}
   }
   return true;
  }
