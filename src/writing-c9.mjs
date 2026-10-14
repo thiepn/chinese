@@ -169,15 +169,22 @@ export function openC9WritingSource(phase,sourceId,{go,alertUser}){
  if(!unit){alertUser('No historical P43 writing source is linked to this material.','error');return false;}
  return requestC9Writing({unitId:unit.id,phase:Number(phase),sourceId},{go});
 }
-function requestC9Writing(target,{go}){
+function requestC9Writing(target,{go,currentRoute,render}){
  const w=c9WritingState;
  if(!findP43Unit(target.unitId))return false;
+ // Navigate FIRST: go() can reject a departure while an independent native
+ // answer is still typed. Never change the P43 editor before that succeeds.
+ const alreadyHere=currentRoute?.()==='writing';
+ if(!alreadyHere&&go('writing')===false)return false;
  const changed=w.unitId!==target.unitId||w.transferPhase!==Number(target.phase||0)||
   w.sourceId!==(target.sourceId||null);
- if(changed&&writingHasWork()){w.pending='switch';w.pendingTarget=target;}
- else if(changed)resetWriting(target);
+ if(changed&&writingHasWork()){
+  w.pending='switch';w.pendingTarget=target;
+ }else if(changed)resetWriting(target);
  else{w.pending='';w.pendingTarget=null;}
- go('writing');return true;
+ // Same-route go() renders immediately; update the controller first instead.
+ if(alreadyHere)render();
+ return true;
 }
 
 /** C9-30: portable P43 editorial export only. NO browser storage, network,
