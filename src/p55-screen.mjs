@@ -3,7 +3,7 @@
  * Sentence Workshop and Review remain untouched academic authorities.
  */
 import {P55_BRIEFS} from './p55-briefs.mjs';
-import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords} from './p55-study.mjs';
+import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords,p58CanonicalQuestionResult,p58SourceQuestionCount} from './p55-study.mjs';
 import {dueCards} from './study.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
 import {p57TransferFor} from './p57-transfer-contexts.mjs';
@@ -19,7 +19,12 @@ const sourceState=(e,c)=>'<span>'+c+': '+shortStatus(e.reading)+
  ' Reader · '+shortStatus(e.listening)+' Dialogue</span>';
 function sourceCard(id,e,act,esc,{reveal=false,qIndex=0}={}){
  const source=p55Source(id),first=p55Reference(id,'reading',qIndex),heard=p55Reference(id,'dialogue',qIndex),
- sourceType=id.split('-')[0].toUpperCase();
+ sourceType=id.split('-')[0].toUpperCase(),
+ latestRead=p58CanonicalQuestionResult(e,'reading',qIndex),
+ latestListen=p58CanonicalQuestionResult(e,'dialogue',qIndex);
+ const historyLabel=event=>!event?'No native submission for this question':
+  (event.correct?event.assisted?'Latest correct with support':'Latest independently correct':
+  event.assisted?'Latest assisted incorrect':'Latest incorrect');
  if(!source)return '<p>Original source unavailable. No synthetic evidence supplied.</p>';
  return '<article class="p55-source-card"><header><small>'+sourceType+' · '+esc(id)+'</small>'+
  '<h4>'+esc(source.title)+'</h4></header>'+
@@ -27,26 +32,36 @@ function sourceCard(id,e,act,esc,{reveal=false,qIndex=0}={}){
  '<p class="p55-source-status">'+sourceState(e,id)+'</p>'+
  '<div class="p55-source-actions">'+
  act('p55-open-original','Open original lesson →','button outline small','data-source="'+esc(id)+'"')+
- (e.native?.story?act('p55-native-read','Native Reader →','button outline small','data-source="'+esc(id)+'"'):'')+
- (e.native?.dialogue?act('p55-native-listen','Native Dialogue →','button outline small','data-source="'+esc(id)+'"'):'')+'</div>'+
+ (e.native?.story?act('p55-native-read','Practise Reader question '+(qIndex+1)+' →',
+ 'button outline small','data-source="'+esc(id)+'" data-question="'+qIndex+'"'):'')+
+ (e.native?.dialogue?act('p55-native-listen','Practise Dialogue question '+(qIndex+1)+' →',
+ 'button outline small','data-source="'+esc(id)+'" data-question="'+qIndex+'"'):'')+'</div>'+
  (first?'<div class="p55-source-quote"><strong>Canonical Reader question '+(qIndex+1)+'</strong>'+
  '<p>'+esc(first.question.prompt)+'</p>'+
- (reveal?'<div class="p55-revealed"><span>Recorded source sentence '+(first.index+1)+
- (first.sourceIndex===null?'':' · document '+(first.sourceIndex+1))+'</span>'+
+ '<p class="p55-question-history">'+esc(historyLabel(latestRead))+'</p>'+
+ (reveal?'<div class="p55-revealed">'+(first.evidenceIndexed?
+ '<span>Original sentence '+(first.index+1)+
+ (first.sourceLabel?' · '+esc(first.sourceLabel):first.sourceIndex===null?'':' · record '+(first.sourceIndex+1))+'</span>'+
  '<p lang="zh-Hans">'+esc(first.hanzi)+'</p>'+
- '<small>'+esc(first.pinyin)+'</small><p>'+esc(first.english)+'</p>'+
- '<p><strong>Canonical answer:</strong> '+esc(first.question.answer)+'</p>'+
- '<p>'+esc(first.question.explanation||'')+'</p></div>':'<p class="muted">Source quotation hidden until you compare independently.</p>')+
+ '<small>'+esc(first.pinyin)+'</small><p>'+esc(first.english)+'</p>':
+ '<p>The original question provides no verifiable sentence index. Return to the native Reader to inspect the passage; no citation is inferred.</p>')+
+ '<p><strong>Original answer:</strong> '+esc(first.question.answer)+'</p>'+
+ '<p>'+esc(first.question.explanation||'')+'</p></div>':
+ latestRead&&!latestRead.correct?'<p class="p55-question-repair">The original recorded answer was incorrect. Review the source before revealing its correction. The selected wrong option was not retained.</p>':
+ '<p class="muted">Source quotation hidden until you compare independently.</p>')+
  '</div>':'')+
  (heard?'<div class="p55-source-quote"><strong>Canonical Dialogue question '+(qIndex+1)+'</strong>'+
  '<p>'+esc(heard.question.prompt)+'</p>'+
+ '<p class="p55-question-history">'+esc(historyLabel(latestListen))+'</p>'+
  (reveal?'<div class="p55-revealed">'+(heard.evidenceIndexed?
  '<span>Original speaker '+esc(heard.speaker||'')+' · turn '+(heard.index+1)+'</span>'+
  '<p lang="zh-Hans">'+esc(heard.hanzi)+'</p>'+
  '<small>'+esc(heard.pinyin)+'</small><p>'+esc(heard.english)+'</p>':
  '<p>The original Dialogue question does not identify a specific supporting turn. No line reference is invented; listen in the canonical Dialogue to evaluate this answer.</p>')+
  '<p><strong>Canonical answer:</strong> '+esc(heard.question.answer)+'</p>'+
- '<p>'+esc(heard.question.explanation||'')+'</p></div>':'<p class="muted">Return to the native hearing before revealing evidence.</p>')+
+ '<p>'+esc(heard.question.explanation||'')+'</p></div>':
+ latestListen&&!latestListen.correct?'<p class="p55-question-repair">A native Dialogue answer was incorrect. Listen again before revealing the authored correction. The selected distractor is not retained.</p>':
+ '<p class="muted">Return to the native hearing before revealing evidence.</p>')+
  '</div>':'')+'</article>';
 }
 export function p55Overview(state,act,esc,{selected='',query=''}={}){
@@ -78,7 +93,10 @@ export function p55Overview(state,act,esc,{selected='',query=''}={}){
 }
 export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,showModel=false,showSupport=false,showRepair=false}={}){
  if(!b)return '';
- const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id),transfer=p57TransferFor(b.id);
+ const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id),transfer=p57TransferFor(b.id),
+ sourceCount=Math.min(3,
+  Math.max(p58SourceQuestionCount(b.from,'reading'),p58SourceQuestionCount(b.to,'reading'),
+   p58SourceQuestionCount(b.from,'dialogue'),p58SourceQuestionCount(b.to,'dialogue')));
  return '<section class="p55-study" aria-label="Original advanced Mandarin learning consolidation">'+
  '<header class="p55-heading"><p class="eyebrow">P55 · PAIRED LEARNING CONTEXT '+b.sequence+' / '+P55_BRIEFS.length+'</p>'+
  '<h2>'+esc(b.title)+'</h2><p>'+esc(b.retrieval)+'</p>'+
@@ -91,7 +109,8 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  '<p><strong>Different-question retrieval:</strong> '+esc(b.retrieval)+'</p>'+
  '<p>First retrieve the original passages and spoken evidence, then answer in Mandarin in your own words. The question below is an ungraded self-recall instruction; actual questions and saved submissions remain in their original Reader and Dialogue.</p>'+
  '<div class="p55-actions">'+act('p55-question-prev','Earlier canonical evidence question','button outline')+
- '<span class="p55-question-count">Original question '+(qIndex+1)+' of 3 from each source</span>'+
+ '<span class="p55-question-count">Original question '+(qIndex+1)+' of '+sourceCount+
+ ' · questions may differ between sources and modalities</span>'+
  act('p55-question-next','Next canonical evidence question','button outline')+'</div>'+
  '<div class="p55-pair">'+sourceCard(b.from,e.left,act,esc,{qIndex,reveal})+
  sourceCard(b.to,e.right,act,esc,{qIndex,reveal})+'</div>'+

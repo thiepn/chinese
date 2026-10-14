@@ -35,15 +35,16 @@ export function p55Reference(id,kind='reading',index=0){
  const pool=kind==='dialogue'?
   (original.dialogueQuestions?.length?original.dialogueQuestions:native?.dialogue?.questions||[]):
   original.questions||[];
- const q=pool[Math.max(0,Math.min(index,pool.length-1))];
- if(!q)return null;
+ if(!Number.isInteger(index)||index<0||index>=pool.length)return null;
+ const q=pool[index];
  const explicit=q.evidenceIndex??q.evidence;
  const sourceIndex=kind==='reading'?(explicit??null):explicit??null;
  const item=sourceIndex===null?null:kind==='dialogue'?
   original.turns?.[sourceIndex]:original.lines?.[sourceIndex];
- return Object.freeze({question:q,kind,index:item?sourceIndex:null,
+ return Object.freeze({question:q,kind,questionIndex:index,index:item?sourceIndex:null,
   hanzi:item?.hanzi||null,pinyin:item?.pinyin||null,english:item?.english||null,
   sourceIndex:item?.sourceIndex??null,speaker:item?.speaker??null,
+  sourceLabel:item&&Number.isInteger(item.sourceIndex)?original.sources?.[item.sourceIndex]?.name||null:null,
   evidenceIndexed:Boolean(item)});
 }
 export function p55Evidence(state,id){
@@ -52,6 +53,23 @@ export function p55Evidence(state,id){
  return {native,
   reading:(state.readingEvents||[]).filter(e=>e.storyId===native.story?.id),
   listening:(state.dialogueEvents||[]).filter(e=>e.dialogueId===native.dialogue?.id)};
+}
+/** Only native events can establish a real submitted answer. Reading records
+ * retain a mode but not the selected option; never infer a distractor.
+ */
+const ORIGINAL_READER_MODES=Object.freeze(['beginner-detail','beginner-reason','beginner-sequence']);
+export function p58CanonicalQuestionResult(evidence,kind,index){
+ if(!Number.isInteger(index)||index<0||index>=3)return null;
+ const events=kind==='reading'?evidence.reading:evidence.listening;
+ const relevant=kind==='reading'?
+  events.filter(x=>x.mode===ORIGINAL_READER_MODES[index]):
+  events.filter(x=>x.question===index);
+ return relevant.at(-1)||null;
+}
+export function p58SourceQuestionCount(id,kind){
+ const c=p55Source(id);if(!c)return 0;
+ if(kind==='reading')return c.questions?.length||0;
+ return c.dialogueQuestions?.length||p55Native(id)?.dialogue?.questions?.length||0;
 }
 export const P55_PAIR_VOCAB_IDS=Object.freeze([
  'p54-register-02','p54-register-10','p54-register-04','p54-register-07',
