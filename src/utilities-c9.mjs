@@ -84,7 +84,7 @@ export function renderC9SearchIntro(state,ui,act,esc){
  }));
  return '<div class="c9-utility-page c9-search-intro">'+
  intro('FIND ORIGINAL MATERIAL','Search your Chinese library',
- 'Search original characters, words, grammar, complete sentences, readings, dialogues and pathway missions. Results open the existing source workspace.')+
+ 'Search characters, words, grammar, sentences, readings, dialogues, pathway missions and every P35–P51 original advanced source. A result opens its original teaching and native learning workspace.')+
  '<div class="c9-search-summary"><div><strong>'+COURSE_INDEX.length+'</strong><span>Indexed source entries</span></div>'+
  '<div><strong>'+families.length+'</strong><span>Source categories</span></div>'+
  '<div><strong>'+saved(state,'bookmarkedWords')+saved(state,'bookmarkedStories')+saved(state,'bookmarkedSentences')+'</strong><span>Saved items across word, reading and sentence libraries</span></div></div>'+
