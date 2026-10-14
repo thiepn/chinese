@@ -136,3 +136,20 @@
  .c9-writing-backup-controls{grid-template-columns:minmax(0,1fr)}
  .c9-writing-backup-controls button{width:100%}
 }
+
+/* C9-33 · Explicit clipboard / pasted backup fallback on restricted devices. */
+.c9-writing-backup-paste{grid-column:1/-1;min-width:0;
+ border-top:1px solid var(--c9-line);padding-top:10px;color:var(--c9-ink)}
+.c9-writing-backup-paste summary{cursor:pointer;min-height:44px;
+ display:flex;align-items:center;font:600 12px/1.5 var(--c9-ui)}
+.c9-writing-backup-paste label{display:block;font:600 12px/1.6 var(--c9-ui);
+ margin:8px 0 6px}
+.c9-writing-backup-paste textarea{display:block;width:100%;max-width:100%;
+ min-height:104px;padding:10px 12px;resize:vertical;overflow-wrap:anywhere;
+ border:1px solid var(--c9-line-strong);border-radius:var(--c9-r-sm);
+ color:var(--c9-ink);background:var(--c9-surface);font:400 12px/1.6 monospace}
+.c9-writing-backup-paste button{min-height:44px;margin-top:10px;
+ white-space:normal;text-align:left}
+.c9-writing-backup-paste :focus-visible{outline:3px solid var(--c9-focus,var(--c9-accent));
+ outline-offset:3px}
+@media(max-width:700px){.c9-writing-backup-paste button{width:100%}}
