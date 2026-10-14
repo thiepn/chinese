@@ -357,9 +357,9 @@ self.addEventListener('message',event=>{
       const batch=missing.slice(i,i+PRECACHE_BATCH_SIZE);
       try{await cache.addAll(batch);}
       catch{
-       failed=true;
-       // Cache.addAll is atomic per batch. Salvage the valid siblings and
-       // continue to later batches, reporting incomplete if any remain.
+       // Cache.addAll failed as a group. Retry the original static URLs
+       // individually; only an actual unsalvageable URL is a repair failure.
+       // Batch-level rejection alone is not evidence of a missing URL.
        for(const path of batch){
         try{await cache.add(path);}catch{failed=true;}
        }

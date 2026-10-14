@@ -923,13 +923,26 @@ function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Fo
  disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting,skills:renderSkills};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page,answerConfirmed=false){
  const target='#/'+page;
+ // Keep the existing same-route refresh behavior for legacy native
+ // actions; source-switch adapters decide separately when to preserve input.
  if(location.hash===target){render();return true;}
  const from=c9RenderedRoute;
  if(from!==page&&!answerConfirmed&&!c9ConfirmLeaveNativeAnswer(from))return false;
  c9ApprovedDeparture={from,to:page};
  location.hash=target;return true;
 }
-async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
+/** Open an ORIGINAL sentence task; this is a navigation adapter, never a
+ * duplicate sentence evaluator or a learner-state writer. */
+function c9OpenNativeWorkshopTask(index,assisted=false){
+ if(!Number.isInteger(index)||index<0||index>=SENTENCE_TASKS.length)return false;
+ if(route()==='workshop'&&sentenceIndex===index)return true;
+ if(route()==='workshop'&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
+ if(route()!=='workshop'&&!go('workshop'))return false;
+ sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
+ sentenceSupport=Boolean(assisted);
+ render();return true;
+}
+async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
  if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
  const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
@@ -942,13 +955,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   setWorkshopTask:(taskId,assisted)=>{
    const index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
    if(index<0){alertUser('Original writing exercise unavailable.','error');return false;}
-   if(route()!=='workshop'&&!go('workshop'))return false;
-   if(route()==='workshop'&&sentenceIndex!==index&&
-    !c9ConfirmLeaveNativeAnswer('workshop'))return false;
-   sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
-   sentenceSupport=Boolean(assisted);
-   render();
-   return true;
+   return c9OpenNativeWorkshopTask(index,assisted);
   },
   openAdvanced:(phase,sourceId)=>{
    if(!findC9AdvancedPhase(phase)?.records.some(x=>x.id===sourceId)){
@@ -1580,14 +1587,18 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='p34-open-reading'){
   const scene=P34_SCENES.find(x=>x.id===id),story=scene&&p34StoryFor(scene.id);
   if(!story){alertUser('Original P34 reading unavailable.','error');return false;}
-  if(!go('stories'))return false;
+  if(route()==='stories'&&storyId===story.id)return true;
+  if(route()==='stories'&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  if(route()!=='stories'&&!go('stories'))return false;
   storyId=story.id;storyMode='beginner-detail';storiesBeginnerOnly=true;storiesLongOnly=false;
   beginnerLevel='all';resetReadingNavigation();render();return true;
  }
  if(name==='p34-open-listening'){
   const audio=P34_LISTENING.find(x=>x.id===id),dialogue=audio&&p34DialogueFor(audio.id);
   if(!dialogue){alertUser('Original P34 listening unavailable.','error');return false;}
-  if(!go('dialogues'))return false;
+  if(route()==='dialogues'&&dialogueId===dialogue.id)return true;
+  if(route()==='dialogues'&&!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=dialogue.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
   p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;render();return true;
@@ -1600,21 +1611,21 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='p34-slow'||name==='p34-shadow-replay')return speak(button.dataset.text||'',0.68);
  if(name==='p34-write-listening'){
   const item=P34_LISTENING.find(x=>x.id===id);
-  if(!item)return;
+  if(!item)return false;
   const index=SENTENCE_TASKS.findIndex(t=>t.id==='p34:'+item.id+':writing');
-  if(index<0)return alertUser('Original audio writing prompt unavailable.','error');
-  sentenceIndex=index;sentenceTyped='';sentenceSupport=false;sentenceFeedback=null;
-  return go('workshop');
+  if(index<0){alertUser('Original audio writing prompt unavailable.','error');return false;}
+  return c9OpenNativeWorkshopTask(index);
  }
  if(name==='p33-open-scenario'){
   const scene=findP33Scenario(id),target=scene&&DIALOGUES.find(d=>d.p33?.id===id);
-  if(!target)return alertUser('This authored conversation is unavailable.','error');
-  dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
-  missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;p33Branch=null;
-  if(route()==='dialogues'){render();root.querySelector('.dialogue-paper')?.scrollIntoView({block:'start'});return;}
-  go('dialogues');return;
+  if(!target){alertUser('This authored conversation is unavailable.','error');return false;}
+  return act({dataset:{action:'c9-media-open-dialogue',id:target.id}});
  }
- if(name==='p33-browse'){p33Theme='all';p33Query='';return act({dataset:{action:'p33-open-scenario',id:P33_SCENARIOS[0].id}});}
+ if(name==='p33-browse'){
+  const opened=await act({dataset:{action:'p33-open-scenario',id:P33_SCENARIOS[0].id}});
+  if(opened!==true)return false;
+  p33Theme='all';p33Query='';render();return true;
+ }
  if(name==='p33-theme'){const theme=button.dataset.theme;
   if(theme!=='all'&&![...new Set(P33_SCENARIOS.map(s=>s.theme))].includes(theme))return;
   p33Theme=theme;return render();
@@ -1624,37 +1635,39 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   p33Branch=index;return render();
  }
  if(name==='p33-clear-branch'){p33Branch=null;return render();}
- if(name==='p33-write'){const scene=findP33Scenario(id),turn=Number(button.dataset.turn);
-  if(!scene||![1,4,7].includes(turn))return;
+ if(name==='p33-write'){
+  const scene=findP33Scenario(id),turn=Number(button.dataset.turn);
+  if(!scene||![1,4,7].includes(turn))return false;
   const index=SENTENCE_TASKS.findIndex(t=>t.id==='p33:'+scene.id+':turn'+turn);
-  if(index<0)return alertUser('The dialogue writing task is unavailable.','error');
-  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;return go('workshop');
+  if(index<0){alertUser('The dialogue writing task is unavailable.','error');return false;}
+  return c9OpenNativeWorkshopTask(index);
  }
  if(name==='p32-repair'){
   const repair=p32RepairFor(id?.split(':').at(-1));
-  if(!repair||repair.taskId!==id)return;
+  if(!repair||repair.taskId!==id)return false;
   const index=SENTENCE_TASKS.findIndex(t=>t.id===id);
-  if(index<0)return;
-  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
-  return go('workshop');
+  if(index<0)return false;
+  return c9OpenNativeWorkshopTask(index);
  }
  if(name==='p32-open-sentences'){
+  const first=SENTENCE_LIBRARY.find(entry=>entry.source==='original-p32');
+  if(!first)return false;
+  if(!openLibrarySentence(first.id))return false;
   librarySource='original-p32';libraryQuery='';libraryTopic='all';libraryArea='all';
   libraryDifficulty='all';libraryGrammar='all';libraryPurpose='all';libraryTone='all';
   librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
-  librarySelected=SENTENCE_LIBRARY.find(s=>s.source==='original-p32')?.id||librarySelected;
-  sentenceUiReset();return go('sentences');
+  render();return true;
  }
  if(name==='p31-open-lesson'){
-  if(!findP31Guide(id)||!findLesson(id))return;
-  displayLessonId=id;
-  if(route()==='learn'){render();root.querySelector('.lesson-paper')?.scrollIntoView({block:'start'});return;}
-  go('learn');return;
+  if(!findP31Guide(id)||!findLesson(id))return false;
+  return act({dataset:{action:'c9-lesson-open',id}});
  }
  if(name==='p31-open-library'){
-  p31Theme='all';p31Page=0;
-  if(route()==='learn'){render();root.querySelector('#p31-course-library')?.scrollIntoView({block:'start'});return;}
-  go('learn');root.querySelector('#p31-course-library')?.scrollIntoView({block:'start'});return;
+  if(route()==='learn'&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+  if(route()!=='learn'&&!go('learn'))return false;
+  p31Theme='all';p31Page=0;c9LearnDetail=false;
+  render();root.querySelector('#p31-course-library')?.scrollIntoView({block:'start'});
+  return true;
  }
  if(name==='p31-theme'){
   const value=button.dataset.theme;
@@ -2343,8 +2356,14 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   sessionDone=0;sessionCorrect=0;sessionSkipped=0;reviewInvalidated=0;reviewPaused=false;
   revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();
   announceC9Interaction(sessionQueue.length?'Scheduled review started. First question ready.':'No due cards matched this focus.');return;}
- if(name==='review-pause'){if(!sessionQueue?.length)return;reviewPaused=true;revealed=false;typedAnswer='';chosenOption='';checkResult=null;
-  render();announceC9Interaction('The remaining queue is paused in this tab. Your unsaved answer was cleared.');return;}
+ if(name==='review-pause'){
+  if(!sessionQueue?.length)return false;
+  // Pause is a view change, not a discard or a grade. Keep the exact native
+  // answer, feedback and selected option ready for resume in this tab.
+  reviewPaused=true;render();
+  announceC9Interaction('Review paused in this tab. Your current response and ungraded queue are retained.');
+  return true;
+ }
  if(name==='review-resume'){if(!sessionQueue?.length)return;reviewPaused=false;render();
   root.querySelector('#review-entry')?.focus({preventScroll:true});announceC9Interaction('Review resumed. Original due cards remain in the queue.');return;}
  if(name==='review-stop'){if(!sessionQueue)return;if(sessionQueue.length&&!confirm('Discard the remaining ungraded queue? Saved review grades will be preserved.'))return;
@@ -2378,7 +2397,32 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='review-pick'){if(reviewPaused||revealed||!sessionQueue?.length)return;chosenOption=button.dataset.option||'';render();root.querySelector('[data-action="review-pick"][aria-pressed="true"]')?.focus();return;}
  if(name==='submit-review'){if(reviewPaused||revealed||!activeReviewId)return;const info=cardInfo(activeReviewId);const answer=info.kind==='choice'?chosenOption:typedAnswer;if(!answer.trim())return alertUser('Enter or select an answer before checking.','error');checkResult=info.kind==='pinyin'?toneExplanation(answer,info.answer):evaluateAnswer(answer,info.answer,info.kind);revealed=true;render();announceC9Interaction(checkResult?.correct?'Answer checked: correct. Review feedback and grading actions are available.':'Answer checked. Compare your response with the reference and choose a grade.');return;}
  if(name==='reveal-review'){if(reviewPaused||revealed||!activeReviewId)return;checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();announceC9Interaction('Reference revealed; this response is assisted, not independent.');return}
- if(name==='grade'){if(reviewPaused||!revealed||!activeReviewId)return;const c=activeReviewId,g=Number(button.dataset.grade);const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;const ok=await mutate(s=>{if(!dueCards(s).includes(c))throw Error('Review target was already updated in another tab. No duplicate grade written.');return gradeCard(s,c,g,Date.now(),eventId,{correct:Boolean(checkResult?.correct),assisted:checkResult?.reason==='assisted',errorType:checkResult?.reason});});if(ok){sessionDone++;if(checkResult?.correct)sessionCorrect++;if(sessionQueue?.[0]===c)sessionQueue.shift();revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();announceC9Interaction('Native review grade saved. '+sessionQueue.length+' prompts remain.');}return}
+ if(name==='grade'){
+  if(reviewPaused||!revealed||!activeReviewId)return false;
+  const c=activeReviewId,g=Number(button.dataset.grade);
+  const assessment=checkResult;
+  const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+  // A normal mutate() renders immediately. renderReview() can remove this now
+  // non-due card before the grade handler shifts its queue, causing a second
+  // shift that silently skips the next original prompt. Commit exactly once,
+  // update this tab's queue exactly once, THEN render the native Review UI.
+  const ok=await mutate(s=>{
+   if(!dueCards(s).includes(c))throw Error('Review target was already updated in another tab. No duplicate grade written.');
+   return gradeCard(s,c,g,Date.now(),eventId,{
+    correct:Boolean(assessment?.correct),assisted:assessment?.reason==='assisted',
+    errorType:assessment?.reason
+   });
+  },{renderAfter:false});
+  if(!ok)return false;
+  sessionDone++;
+  if(assessment?.correct)sessionCorrect++;
+  if(sessionQueue?.[0]===c)sessionQueue.shift();
+  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
+  activeReviewId=null;
+  render();
+  announceC9Interaction('Native review grade saved. '+(sessionQueue?.length||0)+' prompts remain.');
+  return true;
+ }
  if(name==='speak')return speak(button.dataset.text||'');
  if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
  if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
