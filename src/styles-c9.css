@@ -21,6 +21,8 @@
   --c9-s1:4px; --c9-s2:8px; --c9-s3:12px; --c9-s4:16px;
   --c9-s5:20px; --c9-s6:24px; --c9-s8:32px; --c9-s10:40px;
   --c9-max-width:1360px;
+  --c9-tap:44px;
+  --c9-reading-width:72ch;
   /* Existing P30–P34 screens consume these legacy semantic names. */
   --background:var(--c9-canvas); --surface:var(--c9-surface);
   --soft:var(--c9-surface-2); --ink:var(--c9-ink); --sub:var(--c9-sub);

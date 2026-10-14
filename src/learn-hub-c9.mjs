@@ -4,6 +4,7 @@
  * No new route, store, progress engine, assessment or official HSK claims.
  */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
+import {renderC9EmptyState} from './ui-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {plain} from './lexicon.mjs';
 import {WORKSPACE_DESTINATIONS,courseSearch,FIND_CATEGORIES} from './workspace-p30.mjs';
@@ -21,7 +22,7 @@ const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(done/total*100)
 const summaryText=(count,noun)=>count+' '+noun+(count===1?'':'s');
 const title=(name,subtitle)=>'<header class="c9-discovery-head"><p class="c9-eyebrow">THIEPN CHINESE · ORIGINAL STUDY MATERIAL</p><h1>'+name+'</h1><p>'+subtitle+'</p></header>';
 const progress=(done,total,label)=>'<div class="c9-discovery-progress"><div class="c9-discovery-progress-meta"><span>'+label+'</span><strong class="c9-tabular">'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
-const empty=(heading,description)=>'<div class="c9-empty c9-discovery-empty"><strong>'+heading+'</strong><p>'+description+'</p></div>';
+const empty=renderC9EmptyState;
 const lessonCount=(group,learned)=>group.lessons.filter(l=>learned.has(l.id)).length;
 const nextLesson=(group,learned)=>group.lessons.find(l=>!learned.has(l.id))||group.lessons[0];
 const isKnownKind=kind=>FIND_CATEGORIES.some(([id])=>id===kind);
@@ -65,14 +66,41 @@ export function renderC9LessonBrowser(state,ui,act,esc){
 export function renderC9SearchResults(state,ui,act,esc){
  const kind=isKnownKind(ui.kind)?ui.kind:'all';
  const items=courseSearch({query:ui.query,kind,saved:Boolean(ui.saved),state});
- const preview=items.slice(0,8);
- return '<div class="c9-discovery-browser-heading"><div><strong>'+summaryText(items.length,'matching source entry')+'</strong><span>Across original course materials</span></div><a href="#/find">Full search →</a></div>'+
- (items.length?'<div class="c9-discovery-results">'+preview.map(row=>{
-  return act('c9-discovery-open','<span class="c9-discovery-result-type">'+esc(row.kind)+'</span>'+sourceHitText(row,esc)+
-   '<small>'+esc(row.description)+'</small><span class="c9-discovery-result-arrow" aria-hidden="true">↗</span>',
-   'c9-discovery-result','data-kind="'+esc(row.kind)+'" data-id="'+esc(row.id)+'"');
- }).join('')+'</div>':empty('No source entries found','Try a broader word, Pinyin spelling or another content category.'))+
- (items.length>8?'<p class="c9-discovery-more">Showing the first eight relevant entries. <a href="#/find">Use complete course search for all results</a>.</p>':'');
+ // The source engine owns matches. Group only their presentation, and expose
+ // more than one content type before filling the remaining visible slots.
+ const types=[...new Set(items.map(item=>item.kind))];
+ const counts=new Map(types.map(type=>[type,items.filter(item=>item.kind===type).length]));
+ const selected=[],seen=new Set();
+ for(const type of types){
+  for(const row of items.filter(item=>item.kind===type).slice(0,2)){
+   const key=row.kind+':'+row.id;
+   if(!seen.has(key)){selected.push(row);seen.add(key);}
+  }
+ }
+ for(const row of items){
+  if(selected.length>=12)break;
+  const key=row.kind+':'+row.id;
+  if(!seen.has(key)){selected.push(row);seen.add(key);}
+ }
+ const visibleGroups=types.map(type=>({type,rows:selected.filter(row=>row.kind===type)})).filter(g=>g.rows.length);
+ const nameFor=type=>FIND_CATEGORIES.find(([id])=>id===type)?.[1]||type;
+ const toolbar='<div class="c9-discovery-browser-heading c9-source-browser-heading"><div><strong>'+summaryText(items.length,'matching source entry')+'</strong>'+
+  '<span>'+(types.length?types.length+' original source '+(types.length===1?'category':'categories'):'No matching source categories')+'</span></div>'+
+  '<div class="c9-source-result-actions">'+act('c9-discovery-reset','Reset filters','c9-button c9-button--quiet c9-button--small')+
+  act('c9-discovery-full-search','Open full search ↗','c9-button c9-button--secondary c9-button--small')+'</div></div>';
+ const chips=types.length?'<div class="c9-discovery-source-counts" aria-label="Source match counts">'+
+  types.map(type=>'<span class="c9-badge">'+esc(nameFor(type))+' · '+counts.get(type)+'</span>').join('')+'</div>':'';
+ const results=visibleGroups.length?'<div class="c9-discovery-result-groups">'+
+  visibleGroups.map(({type,rows})=>'<section class="c9-discovery-result-group" aria-label="'+esc(nameFor(type))+' sources">'+
+   '<header><strong>'+esc(nameFor(type))+'</strong><span>'+counts.get(type)+' matching source entries</span></header>'+
+   '<div class="c9-discovery-results">'+rows.map(row=>act('c9-discovery-open',
+    '<span class="c9-discovery-result-type">'+esc(row.kind)+'</span>'+sourceHitText(row,esc)+
+    '<small>'+esc(row.description)+'</small><span class="c9-discovery-result-arrow" aria-hidden="true">↗</span>',
+    'c9-discovery-result','data-kind="'+esc(row.kind)+'" data-id="'+esc(row.id)+'"')).join('')+'</div></section>').join('')+'</div>':
+   empty('No source entries found','Try a broader word, Pinyin spelling or another content category.');
+ return toolbar+chips+results+
+  (items.length>selected.length?'<p class="c9-discovery-more">Showing '+selected.length+' of '+items.length+' matched entries from the original source index. '+
+    act('c9-discovery-full-search','Continue in complete search →','c9-button c9-button--quiet c9-button--small')+'</p>':'');
 }
 function skillCards(esc){
  return '<div class="c9-skill-grid">'+WORKSPACE_DESTINATIONS.map(([route,label,desc,count])=>
@@ -109,12 +137,18 @@ export function renderC9LearnHub(state,ui,act,esc){
   '<div class="c9-discovery-lead-stats">'+progress(o.introduced,o.total,'Demo lessons introduced')+
   '<p><strong>'+o.due+'</strong> scheduled recall prompts due</p><p>'+o.sessions.length+' recoverable sessions</p>'+
   '<small>Study progress is source evidence, not official HSK certification.</small></div></section>'+
+  '<section class="c9-discovery-waypoints" aria-label="Continue course pathways">'+
+   '<button type="button" class="c9-discovery-waypoint" data-action="c9-learn-jump" data-target="c9-units-title"><span class="c9-eyebrow">01 / FOUNDATIONS</span><strong>Choose your unit</strong><small>Original authored lesson groups</small></button>'+
+   '<button type="button" class="c9-discovery-waypoint" data-action="c9-learn-jump" data-target="c9-browse-title"><span class="c9-eyebrow">02 / CHARACTER LESSONS</span><strong>Find the next lesson</strong><small>'+(o.nextLesson?esc(o.nextLesson.hanzi)+' · '+esc(o.nextLesson.meaning):'All original lessons introduced')+'</small></button>'+
+   '<button type="button" class="c9-discovery-waypoint" data-action="c9-learn-jump" data-target="c9-content-title"><span class="c9-eyebrow">03 / CONNECTED SOURCES</span><strong>Explore Chinese in context</strong><small>Words, grammar, reading and conversations</small></button>'+
+   '<button type="button" class="c9-discovery-waypoint" data-action="c9-learn-jump" data-target="c9-original-curriculum-title"><span class="c9-eyebrow">04 / DEEPER COURSE</span><strong>Original P31–P34 teaching</strong><small>Visible, independently authored learning modules</small></button></section>'+
   '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-skills-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LEARNING AREAS</p><h2 id="c9-skills-title">Choose what to study</h2></div><a href="#/find">Search all content →</a></div>'+skillCards(esc)+'</section>'+
   '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-units-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">ORIGINAL LESSON UNITS</p><h2 id="c9-units-title">Build your foundations</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
   '<p class="c9-discovery-note">All units are browseable. Introduction counts reflect actual saved learner history; units do not represent official HSK assignment or a locked syllabus.</p>'+
   unitCards(state,act,esc)+'</section>'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
-  '<label class="c9-discovery-search-label" for="c9-learn-query">Search characters, Pinyin, meanings and source material</label>'+
+  '<div class="c9-discovery-search-heading"><label class="c9-discovery-search-label" for="c9-learn-query">Search Chinese characters, Pinyin, meanings or unit names</label>'+
+ '<span class="c9-meta">Filters affect original lessons; they do not change your progress.</span></div>'+
   '<input id="c9-learn-query" class="c9-input" type="search" autocomplete="off" spellcheck="false" placeholder="Try 学, xué, family, food…" value="'+esc(ui.query)+'">'+
   '<div class="c9-discovery-filters"><label for="c9-learn-unit">Lesson unit<select id="c9-learn-unit" class="c9-select"><option value="all">All units</option>'+lessonGroups().map(g=>
    '<option value="'+g.index+'"'+(String(ui.unit)===String(g.index)?' selected':'')+'>'+String(g.index).padStart(2,'0')+' · '+esc(g.name)+'</option>').join('')+'</select></label>'+
@@ -122,6 +156,7 @@ export function renderC9LearnHub(state,ui,act,esc){
     '<option value="'+v+'"'+(status===v?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
   '<div id="c9-lesson-browser" aria-live="polite">'+renderC9LessonBrowser(state,ui,act,esc)+'</div></section>'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-content-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">CONNECTED CONTENT</p><h2 id="c9-content-title">Discover words and explanations</h2></div></div>'+
+  '<p class="c9-discovery-note">Source categories preserve where the teaching comes from. Selecting a result opens its original character, word, grammar, sentence, reading or dialogue activity.</p>'+
   '<div class="c9-discovery-category-list" role="group" aria-label="Filter original course content">'+FIND_CATEGORIES.map(([id,label])=>
    act('c9-content-kind',esc(label),'c9-discovery-chip'+(kind===id?' is-selected':''),'data-kind="'+id+'" aria-pressed="'+(kind===id)+'"')).join('')+'</div>'+
   '<label class="c9-discovery-saved"><input type="checkbox" id="c9-learn-saved"'+(ui.saved?' checked':'')+'> Saved or introduced entries (where supported)</label>'+

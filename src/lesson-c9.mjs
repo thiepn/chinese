@@ -6,6 +6,7 @@
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
+import {renderC9NativeStatus} from './ui-c9.mjs';
 
 export const C9_LESSON_SECTIONS=Object.freeze([
  {id:'overview',name:'Character & sounds',description:'Meaning, Mandarin pronunciation and tone contrasts'},
@@ -15,7 +16,27 @@ export const C9_LESSON_SECTIONS=Object.freeze([
  {id:'practice',name:'Recall & practice',description:'Formative questions with their native feedback'},
  {id:'finish',name:'Next actions',description:'Introduce the lesson or continue practising'}
 ]);
-const safeNum=(value)=>Number.isFinite(value)?Math.max(0,value):0;
+/* C9-20 visual-only lesson staging over the original six native sections. */
+function stageHeading(section,index,act,esc){
+ const prev=C9_LESSON_SECTIONS[index-1],next=C9_LESSON_SECTIONS[index+1];
+ return '<header class="c9-lesson-stage-heading"><div>'+
+  '<span class="c9-lesson-stage-index">SECTION '+String(index+1).padStart(2,'0')+' / 06 · TEACHING, NOT CREDIT</span>'+
+  '<h2>'+esc(section.name)+'</h2><p>'+esc(section.description)+'</p></div>'+
+  '<div class="c9-lesson-stage-links">'+
+  (prev?act('c9-lesson-jump','← '+esc(prev.name),'c9-button c9-button--quiet c9-button--small','data-section="'+prev.id+'"'):'')+
+  (next?act('c9-lesson-jump',esc(next.name)+' →','c9-button c9-button--secondary c9-button--small','data-section="'+next.id+'"'):
+  '<a href="#/review" class="c9-button c9-button--secondary c9-button--small">Scheduled review →</a>')+'</div></header>';
+}
+function composeNativeSections(markup,act,esc){
+ // Inserts within the original source-owned section openers, never duplicates
+ // grading controls, source records or the single learner-state writer.
+ return markup.replace(/(<section id="c9-lesson-(overview|grammar|vocabulary|context|practice|finish)" class="c9-native-section" tabindex="-1" aria-label="[^"]*">)/g,
+  (opener,_full,id)=>{
+   const index=C9_LESSON_SECTIONS.findIndex(s=>s.id===id);
+   return index<0?opener:opener+stageHeading(C9_LESSON_SECTIONS[index],index,act,esc);
+  });
+}
+
 function jumpButton(section,selected,act,esc){
  const chosen=section.id===selected;
  return act('c9-lesson-jump',
@@ -34,8 +55,9 @@ function evidencePanel(l,state,act,esc){
  const ids=new Set(cardsForLesson(l.id));
  const active=ids.size;
  const registered=[...ids].filter(id=>Boolean(state.cards?.[id]));
- const due=new Set(dueCards(state)).size;
- const thisDue=[...ids].filter(id=>state.cards?.[id]&&state.cards[id].due<=Date.now()).length;
+ const scheduledDue=new Set(dueCards(state));
+ const due=scheduledDue.size;
+ const thisDue=[...ids].filter(id=>scheduledDue.has(id)).length;
  const history=(state.events||[]).filter(e=>ids.has(e.cardId));
  const independent=history.filter(e=>e.correct===true&&e.assisted!==true).length;
  const introduced=(state.learned||[]).includes(l.id);
@@ -71,23 +93,36 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const group=groups.find(g=>g.lessons.some(l=>l.id===lesson.id));
  const selected=C9_LESSON_SECTIONS.some(s=>s.id===section)?section:'overview';
  const introduced=(state.learned||[]).includes(lesson.id);
+ const lessonDue=cardsForLesson(lesson.id).filter(id=>new Set(dueCards(state)).has(id)).length;
+ const position=index+1;
+ const positionPercent=Math.round(position/DEMO_LESSONS.length*100);
  const heading='<header class="c9-lesson-header"><div class="c9-lesson-heading-main">'+
   act('c9-learn-back','← All lessons','c9-button c9-button--quiet c9-button--small')+
   '<p class="c9-eyebrow">UNIT '+String(group?.index??1).padStart(2,'0')+
   ' · LESSON '+String(index+1).padStart(3,'0')+' / '+DEMO_LESSONS.length+' · ORIGINAL DEMONSTRATION</p>'+
   '<div class="c9-lesson-title-row"><div><h1 id="c9-lesson-title" tabindex="-1"><span lang="zh-Hans">'+esc(lesson.hanzi)+'</span><span>'+esc(lesson.meaning)+'</span></h1>'+
   '<p class="c9-lesson-pronunciation">'+(showPinyin?esc(lesson.pinyin):'Pinyin hidden by your learning preference')+'</p></div>'+
-  '<span class="c9-badge '+(introduced?'c9-badge--success':'')+'">'+(introduced?'Introduced':'Not introduced')+'</span></div>'+
-  '<p>Study the character, its useful words, grammar and real sentences. Introduction and independent scheduled recall are distinct actions.</p></div>'+
+  '<div class="c9-lesson-record-badges"><span class="c9-badge '+(introduced?'c9-badge--success':'')+'">'+(introduced?'Introduced':'Not introduced')+'</span>'+
+  (lessonDue?'<span class="c9-badge c9-lesson-due">'+lessonDue+' due</span>':'')+'</div></div>'+
+  '<p>Study the character, useful complete words, original grammar and contextual sentences. Only the explicit introduction and graded assessment record progress.</p>'+
+  '<div class="c9-lesson-course-position" role="group" aria-label="Lesson order in the original course"><div><span>Course position</span><strong>'+position+' / '+DEMO_LESSONS.length+' lessons</strong></div>'+
+  '<div class="c9-progress" role="progressbar" aria-label="Lesson order, not mastery" aria-valuemin="0" aria-valuemax="'+DEMO_LESSONS.length+'" aria-valuenow="'+position+'"><span style="width:'+positionPercent+'%"></span></div>'+
+  '<small>Curriculum position · not mastery or completion</small></div></div>'+
   '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
   act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';
+ const teaching=composeNativeSections(nativeMarkup,act,esc);
+ const status=renderC9NativeStatus(introduced?'success':'info',
+  introduced?'Introduced · keep practising':'Learning is ready',
+  introduced?'Scheduled independent recall is tracked separately from this lesson.':
+   'Review prompts are registered only when you explicitly introduce the lesson in the final section.');
  return '<div class="c9-lesson-workspace">'+heading+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
-  '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+nativeMarkup+
+  '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
+  '<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
   '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
 }

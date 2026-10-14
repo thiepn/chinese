@@ -204,3 +204,198 @@
  .c9-lesson-entry-actions{grid-column:3;justify-content:flex-start;flex-wrap:wrap;}
  .c9-lesson-entry-actions .c9-button{font-size:11px;}
 }
+
+
+/* C9-19: self-guided learner journey and native P31–P34 curriculum in the page. */
+.c9-discovery-waypoints{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:11px;min-width:0;
+}
+.c9-discovery-waypoint{
+ display:flex;flex-direction:column;align-items:flex-start;gap:7px;
+ min-width:0;min-height:105px;padding:17px 15px;
+ text-align:left;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);background:var(--c9-surface);
+ color:var(--c9-ink);font-family:var(--c9-ui);cursor:pointer;
+ transition:background-color .15s ease,border-color .15s ease;
+}
+.c9-discovery-waypoint:hover,.c9-discovery-waypoint:focus-visible{
+ background:var(--c9-green-soft);border-color:var(--c9-green);
+}
+.c9-discovery-waypoint .c9-eyebrow{color:var(--c9-green);font-size:10px;}
+.c9-discovery-waypoint>strong{
+ font:600 15px/1.35 var(--c9-display);text-wrap:balance;
+}
+.c9-discovery-waypoint>small{
+ color:var(--c9-sub);font-size:11px;line-height:1.5;overflow-wrap:anywhere;
+}
+.c9-discovery-section,
+.c9-original-curriculum {scroll-margin-top:24px;}
+.c9-discovery :where(h2[tabindex="-1"],h3[tabindex="-1"]),
+.c9-original-curriculum h2[tabindex="-1"]{outline-offset:5px;}
+.c9-discovery-search-heading{
+ display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;
+ gap:9px;margin-bottom:8px;
+}
+.c9-discovery-search-heading .c9-meta{font-size:11px;}
+.c9-discovery-finder .c9-discovery-search-label{font-weight:650;}
+.c9-discovery-filters{
+ display:flex;flex-wrap:wrap;gap:13px;
+ align-items:end;
+}
+.c9-discovery-filters>label{min-width:min(100%,195px);flex:1 1 195px;}
+.c9-discovery-browser-heading.c9-source-browser-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:13px;
+ flex-wrap:wrap;
+}
+.c9-source-result-actions{
+ display:flex;align-items:center;justify-content:flex-end;
+ flex-wrap:wrap;gap:6px;
+}
+.c9-discovery-source-counts{
+ display:flex;flex-wrap:wrap;gap:7px;
+ padding:11px 0 17px;
+}
+.c9-discovery-result-groups{display:grid;gap:19px;min-width:0;}
+.c9-discovery-result-group{
+ display:grid;gap:10px;min-width:0;
+}
+.c9-discovery-result-group>header{
+ display:flex;flex-wrap:wrap;gap:8px;
+ align-items:baseline;justify-content:space-between;
+ padding:0 0 8px;border-bottom:1px solid var(--c9-line);
+}
+.c9-discovery-result-group>header strong{
+ font:600 16px/1.4 var(--c9-display);
+ color:var(--c9-ink);
+}
+.c9-discovery-result-group>header span{
+ font-size:11px;color:var(--c9-sub);
+}
+.c9-discovery-result-group .c9-discovery-results{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+ min-width:0;
+}
+.c9-discovery-result{
+ min-width:0;
+ text-align:left;
+ overflow-wrap:anywhere;
+}
+.c9-discovery-result:focus-visible{outline-offset:2px;}
+.c9-discovery-more{
+ margin:14px 0 0;
+ display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+}
+.c9-discovery-more .c9-button{min-height:38px;}
+/* Earlier original teaching modules are now visible, functional course
+   material; their source actions remain routed to the original writers. */
+.c9-original-curriculum{
+ display:grid;gap:20px;
+ margin:24px 0 0;padding:clamp(18px,2vw,27px);
+ border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);
+ background:var(--c9-surface);
+}
+.c9-original-curriculum-head{
+ display:flex;align-items:end;justify-content:space-between;
+ gap:20px;flex-wrap:wrap;
+ padding-bottom:20px;border-bottom:1px solid var(--c9-line);
+}
+.c9-original-curriculum-head>div{flex:1 1 380px;min-width:0;}
+.c9-original-curriculum-head h2{
+ font:600 clamp(22px,2.2vw,29px)/1.23 var(--c9-display);
+ margin:5px 0 10px;color:var(--c9-ink);
+}
+.c9-original-curriculum-head p:last-child{
+ color:var(--c9-sub);font:400 13px/1.7 var(--c9-ui);
+ max-width:75ch;margin:0;
+}
+.c9-original-curriculum-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:14px;min-width:0;
+}
+.c9-original-curriculum-module{
+ display:flex;flex-direction:column;gap:15px;
+ min-width:0;padding:19px 18px;
+ border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);
+ background:var(--c9-surface);
+}
+.c9-original-curriculum-label{
+ padding-bottom:13px;
+ border-bottom:1px solid var(--c9-line);
+}
+.c9-original-curriculum-label>span{
+ color:var(--c9-accent);
+ font:750 10px/1.5 var(--c9-ui);
+ letter-spacing:.075em;
+}
+.c9-original-curriculum-label h3{
+ margin:5px 0;
+ font:600 20px/1.3 var(--c9-display);
+ color:var(--c9-ink);
+}
+.c9-original-curriculum-label p{
+ margin:0;color:var(--c9-sub);
+ font:400 12px/1.65 var(--c9-ui);
+}
+.c9-original-curriculum-module>section,
+.c9-original-curriculum-module>div{
+ min-width:0;max-width:100%;
+}
+.c9-original-curriculum-module :where(.simple-panel,.p31-lesson-panel,.p34-overview){
+ min-width:0;max-width:100%;
+ border-color:var(--c9-line);
+ background:var(--c9-surface);
+}
+.c9-original-curriculum-module :where(.button-row,.c9-inline){flex-wrap:wrap;row-gap:8px;}
+.c9-original-curriculum-module :where(button,a){
+ max-width:100%;overflow-wrap:anywhere;
+}
+.c9-original-curriculum-module :where(
+  .p32-learning-grid,.p33-scene-grid,.p34-course-grid,.p31-lesson-grid,
+  .p34-overview-grid
+ ){
+ min-width:0;max-width:100%;
+}
+.c9-learn-existing{
+ margin:24px 0 0;
+ border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);
+ background:var(--c9-surface);
+}
+.c9-learn-existing>summary{
+ padding:16px 19px;
+ color:var(--c9-ink);
+ font-size:13px;font-weight:650;line-height:1.5;cursor:pointer;
+}
+.c9-learn-existing-content{
+ min-width:0;
+ display:grid;gap:21px;
+ border-top:1px solid var(--c9-line);
+ padding:20px;
+}
+.c9-learn-existing-content :where(.simple-panel,.learn-layout){min-width:0;}
+@media(max-width:1250px){
+ .c9-discovery-waypoints{grid-template-columns:repeat(2,minmax(0,1fr));}
+ .c9-original-curriculum-grid{grid-template-columns:minmax(0,1fr);}
+ .c9-original-curriculum-module{padding:16px;}
+}
+@media(max-width:760px){
+ .c9-discovery-waypoints{gap:8px;}
+ .c9-discovery-waypoint{min-height:90px;padding:13px;}
+ .c9-original-curriculum{padding:15px;gap:16px;}
+ .c9-original-curriculum-head{align-items:start;}
+ .c9-original-curriculum-module{padding:14px;gap:12px;}
+ .c9-discovery-result-group .c9-discovery-results{grid-template-columns:minmax(0,1fr);}
+ .c9-source-result-actions{width:100%;justify-content:flex-start;}
+}
+@media(max-width:440px){
+ .c9-discovery-waypoints{grid-template-columns:minmax(0,1fr);}
+ .c9-discovery-waypoint{min-height:0;}
+ .c9-original-curriculum-head .c9-button{width:100%;}
+ .c9-learn-existing-content{padding:13px;}
+}
+@media(prefers-reduced-motion:reduce){
+ .c9-discovery-waypoint{transition:none;}
+}

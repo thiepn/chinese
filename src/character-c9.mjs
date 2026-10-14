@@ -81,7 +81,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   (after?act('c9-character-open','Next →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(after.id,esc)+'"'):'<span>Final lesson</span>')+
   '</div></header>';
  const identity='<section class="c9-character-identity" aria-labelledby="c9-character-name">'+
-  '<div class="c9-character-glyph-wrap"><div class="c9-character-glyph" lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</div><span class="c9-character-seal">学 · ORIGINAL STUDY</span></div>'+
+  '<div class="c9-character-glyph-wrap"><div class="c9-character-glyph" lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</div><span class="c9-character-seal">'+txt(lesson.hanzi,esc)+' · ORIGINAL STUDY</span></div>'+
   '<div class="c9-character-identity-content"><span class="c9-eyebrow">LESSON '+String(index+1).padStart(3,'0')+' / '+DEMO_LESSONS.length+
   (group?' · UNIT '+group.index:'')+'</span>'+
   '<h2 id="c9-character-name">'+txt(lesson.meaning,esc)+'</h2>'+
@@ -107,13 +107,17 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<p>Introduction, due status and correct attempts are separate facts, not a mastery percentage.</p>'+
   (introduced?'<a href="#/review" class="c9-button c9-button--secondary c9-button--block">Go to scheduled review</a>':
     '<p>To create scheduled review targets, introduce this character explicitly in its original lesson.</p>')+'</section></aside>';
- const navigation='<nav class="c9-character-tabs" aria-label="Character study sections">'+tabs.map(([id,label])=>
-  '<button type="button" class="c9-character-tab" data-action="c9-character-jump" data-section="'+id+'">'+txt(label,esc)+'</button>').join('')+'</nav>';
+ const navigation='<nav class="c9-character-tabs" aria-label="Character study sections">'+tabs.map(([id,label],index)=>
+  '<button type="button" class="c9-character-tab'+(index===0?' is-current':'')+'" data-action="c9-character-jump" data-section="'+id+'"'+(index===0?' aria-current="location"':'')+'>'+String(index+1).padStart(2,'0')+' · '+txt(label,esc)+'</button>').join('')+'</nav>';
+ const sequence='<div class="c9-character-learning-sequence" role="group" aria-label="Original study sections">'+
+  '<span class="c9-character-sequence-kicker">STUDY ROUTE</span>'+
+  '<div><span>Understand</span><span>Write freely</span><span>Study words</span><span>Read in context</span></div>'+
+  '<small>Teaching and ungraded writing are not mastery checkpoints.</small></div>';
  const writing='<section class="c9-character-section" id="c9-writing" aria-labelledby="c9-writing-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">MANUAL CHARACTER PRACTICE</p><h2 id="c9-writing-title">Write by hand</h2></div><span class="c9-badge">Ungraded</span></header>'+
-  '<p>Trace your own strokes on the blank guide or use the reference character. Your drawing stays on this screen and is not saved or evaluated.</p>'+
+  '<p>Compare your marks with the original glyph. Draw freely with touch, mouse or keyboard; practice stays on this screen and receives no grade.</p>'+
   '<div class="c9-writing-workspace"><div class="c9-writing-guide" aria-label="Reference glyph in square guide"><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><small>Reference only</small></div>'+
-  '<div class="c9-writing-pad"><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Keyboard option: focus the writing pad, move with arrow keys, press Space or Enter to start or stop a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. No practice is graded or saved.</p><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas>'+
+  '<div class="c9-writing-pad"><details class="c9-writing-instructions" open><summary>Touch, mouse and keyboard controls</summary><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Drag to write. With a keyboard: focus the pad, move with arrow keys (Shift for larger steps), press Space or Enter to start/end a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. Nothing is graded or saved.</p></details><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas>'+
   '<div class="c9-writing-controls"><span id="c9-writing-feedback" role="status">Free practice · no saved strokes</span>'+
   '<div class="c9-inline"><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button>'+
   '<button type="button" id="c9-writing-clear" class="c9-button c9-button--secondary c9-button--small" disabled>Clear</button></div></div></div></div>'+
@@ -131,7 +135,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<p>Shared writing is a discovery link, not proof that every compound has the same meaning. Study the complete word.</p>'+
   (words.length?'<div class="c9-character-word-list">'+words.map(word=>{
    const current=lesson.words.some(w=>w.hanzi===word.hanzi);
-   return '<article class="c9-character-word"><div><strong lang="zh-Hans">'+txt(word.hanzi,esc)+'</strong><span>'+
+   return '<article class="c9-character-word"><div><div class="c9-character-word-head"><strong lang="zh-Hans">'+txt(word.hanzi,esc)+'</strong><span class="c9-character-word-origin">'+(current?'LESSON WORD':'INDEXED WORD')+'</span></div><span>'+
     (showPinyin?txt(word.pinyin,esc):'Pinyin hidden')+'</span>'+
     '<p>'+txt(word.senses.join(' / '),esc)+'</p>'+
     (current?'<small>Included in the original character lesson</small>':'<small>Existing vocabulary index</small>')+'</div>'+
@@ -144,7 +148,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div><p class="c9-eyebrow">LANGUAGE IN CONTEXT</p><h2 id="c9-sentences-title">Example sentences</h2></div>'+
   act('c9-character-support',showTranslations?'Hide translations':'Show translations','c9-button c9-button--secondary c9-button--small','aria-pressed="'+showTranslations+'"')+'</header>'+
   '<p>These are existing authored source sentences, not generated or newly certified examples.</p>'+
-  '<div class="c9-character-example-list">'+sentences.map(({s,source},i)=>
+  '<p class="c9-character-example-summary">'+sentences.length+' distinct original sentence'+(sentences.length===1?'':'s')+' available</p><div class="c9-character-example-list">'+sentences.map(({s,source},i)=>
     '<article class="c9-character-example"><span class="c9-character-example-index">'+String(i+1).padStart(2,'0')+'</span>'+
     '<div><p lang="zh-Hans">'+txt(s.hanzi,esc)+'</p>'+
     (showTranslations?'<div class="c9-character-example-translation">'+(showPinyin?'<span>'+txt(s.pinyin,esc)+'</span>':'')+
@@ -169,7 +173,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
    '<div class="c9-character-inline-actions c9-unified-actions">'+act('c9-character-lesson','Open original lesson →','c9-button c9-button--primary','data-id="'+txt(lesson.id,esc)+'"')+
     act('practice-lesson','Independent practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
     '<a href="#/review" class="c9-button c9-button--secondary">Scheduled review</a></div></footer>';
- return '<div class="c9-character-page">'+heading+'<div class="c9-character-top">'+identity+evidence+'</div>'+navigation+
+ return '<div class="c9-character-page">'+heading+'<div class="c9-character-top">'+identity+evidence+'</div>'+sequence+navigation+
  '<div class="c9-character-body">'+grammar+writing+vocabulary+examples+connections+'</div>'+footer+'</div>';
 }
 

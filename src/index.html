@@ -39,7 +39,7 @@
   <nav class="desktop-nav" aria-label="Study">
     <a href="#/today" data-route="today" data-c9-context="today"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-home"></use></svg><span>Home</span></a>
 <a href="#/learn" data-route="learn" data-c9-context="learn"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-learn"></use></svg><span>Learn</span></a>
-<a href="#/review" data-route="review" data-c9-context="review"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-review"></use></svg><span>Review</span></a>
+<a href="#/review" data-route="review" data-c9-context="review"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-review"></use></svg><span>Review</span><span id="c9-review-count" class="c9-nav-count" hidden></span></a>
 <a href="#/explore" data-route="explore" data-c9-context="explore"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-explore"></use></svg><span>Explore</span></a>
     <a href="#/pathway" data-route="pathway"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-pathway"></use></svg><span>Learning Pathway</span></a>
 <a href="#/plan" data-route="plan"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-plan"></use></svg><span>Study Plan</span></a>
@@ -67,14 +67,15 @@
   <div class="nav-heading secondary-heading">Your workspace</div>
   <nav class="desktop-nav secondary-nav" aria-label="Your workspace"><a href="#/progress" data-route="progress"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-progress"></use></svg><span>Progress</span></a>
 <a href="#/settings" data-route="settings"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-settings"></use></svg><span>Settings</span></a></nav>
-  <div class="side-bottom"><span class="side-dot" aria-hidden="true"></span><div><strong>Original learning material</strong><small>Local-first demo · not an official HSK corpus</small></div></div>
+  <div class="side-bottom"><span class="side-dot" aria-hidden="true"></span><div><strong id="c9-storage-state">Local learning record</strong><small>Original demonstration · no official HSK certification</small></div></div>
 </aside>
 <div class="workspace">
 <header class="topbar c9-topbar">
-  <nav class="c9-breadcrumb" aria-label="Breadcrumb"><a href="#/today">Workspace</a><span class="c9-breadcrumb-sep" aria-hidden="true">/</span><span id="c9-current-section" aria-current="page">Home</span></nav>
+  <nav class="c9-breadcrumb" aria-label="Breadcrumb"><a href="#/today">Workspace</a><span class="c9-breadcrumb-sep" aria-hidden="true">/</span><span id="c9-current-category">Study</span><span class="c9-breadcrumb-sep" aria-hidden="true">/</span><span id="c9-current-section" aria-current="page">Home</span></nav>
   <a class="c9-mobile-brand" href="#/today" aria-label="THIEPN Chinese, Home"><span class="brand-glyph" aria-hidden="true" lang="zh-Hans">学</span><strong>THIEPN</strong></a>
   <div class="top-actions">
     <a class="p30-top-search" href="#/find" data-route="find" aria-label="Search all Chinese learning content"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-search"></use></svg><span class="c9-search-label">Search everything</span><kbd>/</kbd></a>
+    <a href="#/review" class="c9-top-review" aria-label="Go to scheduled review">Review <svg class="c9-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><use href="#c9-icon-review"></use></svg></a>
     <span id="network-state" class="status-chip" role="status">Checking connection</span>
     <button id="c9-shortcuts-open" type="button" class="top-link c9-keyboard-help-trigger" aria-haspopup="dialog" aria-controls="c9-shortcuts-dialog" aria-label="Keyboard help and shortcuts">Keyboard <kbd>?</kbd></button>
     <button type="button" class="top-link" data-action="go-settings" aria-label="Open settings"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-settings"></use></svg><span class="c9-top-settings-label">Settings</span></button>
@@ -92,7 +93,7 @@
 <nav class="mobile-nav c9-mobile-nav" aria-label="Primary mobile navigation">
   <a href="#/today" data-route="today" data-c9-primary="today"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-home"></use></svg><span>Home</span></a>
 <a href="#/learn" data-route="learn" data-c9-primary="learn"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-learn"></use></svg><span>Learn</span></a>
-<a href="#/review" data-route="review" data-c9-primary="review"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-review"></use></svg><span>Review</span></a>
+<a href="#/review" data-route="review" data-c9-primary="review"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-review"></use></svg><span>Review</span><span id="c9-mobile-review-count" class="c9-mobile-count" hidden></span></a>
 <a href="#/explore" data-route="explore" data-c9-primary="explore"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-explore"></use></svg><span>Explore</span></a>
   <button id="c9-more-toggle" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="c9-mobile-drawer"><svg class="c9-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><use href="#c9-icon-more"></use></svg><span>More</span></button>
 </nav>

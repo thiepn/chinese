@@ -4,11 +4,12 @@ import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9Pat
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
 import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
-import {renderC9Review,renderC9PracticeHeader} from './review-practice-c9.mjs';
+import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9TurnNavigator,renderC9ReaderIntro} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
+import {renderC9NativeAction,renderC9PageHeading,renderC9ContextNav} from './ui-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
 import { evaluateAnswer, makeOptions, makeCloze } from './exercises.mjs';
 import { openDatabase, readState, updateState, resetState, backupDocument, importBackup, replaceState } from './study-storage.mjs';
@@ -105,6 +106,7 @@ let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='a
 let missionStep=0,missionActive=false,missionSupport=false,missionTyped='',missionFeedback=null;
 let lessonCheckpoint={lessonId:null,step:0,response:'',feedback:null};
 let exploreKind='all',reviewFocus='all',reviewSize=10,sessionQueue=null,sessionDone=0,sessionCorrect=0,sessionSkipped=0;
+let reviewPaused=false,reviewInvalidated=0;
 let channel;
 let courseTyped='', repairTyped='',ladderTyped='';
 let blockFocus='balanced',blockCount=2,blockTyped='',trailTyped='';
@@ -112,18 +114,19 @@ let fluencyFocus='balanced',fluencySize=8,fluencyTyped='';
 let planMistakeFilter='unresolved';
 let pendingRestore=null,restoreAcknowledgement='';
 let c9RenderedHash=null;
+let c9SearchFocusPending=false;
 function alertUser(message,type='info'){const target=$('alert-banner');target.textContent=message;target.className=`alert ${type}`;if(type==='error')target.setAttribute('role','alert');else target.setAttribute('role','status');}
 function clearAlert(){const a=$('alert-banner');a.textContent='';a.className='';a.setAttribute('role','status');}
 function stat(n,desc){return `<div class="stat"><strong>${n}</strong><span>${desc}</span></div>`}
-const action=(name,label,classes='button primary',props='')=>`<button class="${classes}" type="button" data-action="${name}" ${props}>${label}</button>`;
-function title(eyebrow,heading,description){return `<div class="section-intro"><p class="eyebrow">${eyebrow}</p><h1>${heading}</h1><p>${description}</p></div>`}
+const action=renderC9NativeAction;
+const title=renderC9PageHeading;
 document.addEventListener('keydown',e=>{
  if(e.key!=='/'||e.defaultPrevented||e.ctrlKey||e.altKey||e.metaKey||e.isComposing)return;
  const target=e.target;
  if(target&&(target.closest('input,textarea,select,[contenteditable=true]')))return;
- e.preventDefault();go('find');root.querySelector('#p30-query')?.focus();
+ e.preventDefault();c9SearchFocusPending=true;go('find');if(location.hash==='#/find'){const input=root.querySelector('#p30-query');if(input){input.focus({preventScroll:true});c9SearchFocusPending=false;}}
 });
-function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}syncC9Shell(current);document.title=`${C9_ROUTE_LABELS[current]||'Home'} | THIEPN Chinese`;}
+function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}syncC9Shell(current,{due:dueCards(state).length,storageReady:Boolean(db)});document.title=`${C9_ROUTE_LABELS[current]||'Home'} | THIEPN Chinese`;}
 function gated(){return `<div class="permission-note" role="note"><strong>Demo curriculum, not official HSK</strong><p>These ${DEMO_LESSONS.length} original Mandarin examples show how the app will work. They have not undergone independent linguistic review. The official 2025 HSK lists are not included or claimed as mastered.</p></div>`}
 
 function onboardingPanel(){const p=state.placement, suggestion=placementSuggestion(state);
@@ -223,11 +226,12 @@ function refreshC9Words(){
 }
 function renderWordbook(){
  const browse=renderC9VocabularyLibrary(state,c9WordUi(),action,esc);
- const study='<section class="c9-language-native" aria-label="Original vocabulary practice">'+
+ const study='<section class="c9-language-native c9-language-study" id="c9-native-vocabulary" aria-label="Original vocabulary practice">'+
   '<div class="c9-language-native-head"><div><p class="c9-eyebrow">ORIGINAL VOCABULARY ENGINE</p><h2>Practise word knowledge</h2>'+
   '<p>Existing meaning, pronunciation, listening and contextual tasks; independent attempts stay separate from scheduled review.</p></div></div>'+
   renderWordbookNative()+'</section>';
- return '<div class="c9-language-workspace">'+
+ return '<div class="c9-language-workspace c9-language-workspace--vocabulary">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook" aria-current="page">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
   (state.vocabularyJourney?study+browse:browse+study)+'</div>';
 }
 function renderDiagnosticPanel(){const d=progressDiagnostics(state);const connections=contextualProgress(state);const nextWeak=contextualWeaknesses(state).slice(0,3);return `<section class="simple-panel diagnostic-panel"><div class="panel-heading"><h2>Activity by learning mode</h2><span class="muted">Past 7 days · no mastery predictions</span></div><div class="diagnostic-list">${d.sources.map(s=>`<div><strong>${esc(s.name)}</strong><span>${s.recent} checked · ${s.independent} independent correct · ${s.assisted} assisted</span></div>`).join('')}</div><p class="muted">${d.totalRecent} recorded attempts across all modes this week. Scheduled-review events remain separate from supplementary exercises.</p><div class="button-row">${action('open-dialogues','Conversation Lab →','button outline')}${action('open-wordbook-practice','Practice saved words →','button outline')}${action('open-senses','Word sense lab →','button outline')}${action('open-workshop','Sentence workshop →','button outline')}</div><div class="connected-analytics"><h3>Connecting knowledge</h3><p class="muted">These attempts are supplemental, not scheduled mastery.</p><div class="connected-analytics-grid">${connections.map(c=>`<div class="connected-analytics-item"><strong>${esc(c.name)}</strong><span>${c.attempts} attempts · ${c.independent} independent · ${c.misses} misses</span></div>`).join('')}</div><p class="muted">Recommended context to practice: ${nextWeak.map(w=>w.type==='sense'?'word meanings':w.type==='sentence'?'sentence writing':'dialogue understanding').join(' · ')}.</p><div class="button-row">${action('connected-session','Practice these connections →','button primary')}</div></div>${d.extras.map(s=>`<div class="extra-diagnostic"><strong>${esc(s.name)}</strong><span>${s.all} total · ${s.independent} independent this week · ${s.assisted} assisted</span></div>`).join('')}</section>`;}
@@ -350,10 +354,7 @@ function hubResumeStrip(){
  const sessions=activeLearningSessions(state).filter(s=>s.route!==route());if(!sessions.length)return '';
  return `<aside class="hub-resume-strip" aria-label="Saved study sessions"><div><strong>Continue your saved work</strong><span>${sessions.length} unfinished activity${sessions.length===1?'':'ies'} · answers are saved separately from recall mastery</span></div><div class="hub-resume-buttons">${sessions.slice(0,3).map(x=>action('hub-resume',`${esc(x.label)} →`,'button outline small',`data-kind="${x.kind}"`)).join('')}${sessions.length>3?`<span class="muted">+${sessions.length-3} more on Today</span>`:''}</div></aside>`;
 }
-function hubPathNav(){
- if(['today','settings','learn','character','pathway'].includes(route()))return '';
- return `<nav class="hub-path-nav" aria-label="Learning workspace shortcuts"><span class="hub-path-label">LEARNING PATH</span>${LEARNING_DESTINATIONS.map(d=>`<a href="#/${d.route}" ${d.route===route()?'aria-current="page"':''}>${esc(d.label)}</a>`).join('')}</nav>`;
-}
+/* Per-route related navigation now comes from ui-c9.mjs. */
 function compactHubPanel(){const hub=learningHub(state);return `<section class="simple-panel hub-compact"><div class="panel-heading"><div><p class="eyebrow">ONE CONNECTED LEARNING PATH</p><h2>Continue with a clear next step</h2></div><span class="muted">${hub.due} due · ${hub.unresolved} unresolved</span></div><div class="hub-primary-row"><div><strong>${esc(hub.primary.label)}</strong><p>${esc(hub.primary.detail)}</p></div>${action('hub-primary','Continue →','button primary')}</div><div class="button-row">${action('hub-go','Study Plan','button outline small','data-route="plan"')}${action('hub-go','Scheduled Review','button outline small','data-route="review"')}${action('hub-go','Context Practice','button outline small','data-route="fluency"')}</div></section>`;}
 function hubLearningCard(task){const verbs={review:'Review',journey:'Learn',fluency:'Practice',reading:'Read',dialogue:'Understand'};return `<article class="hub-task ${task.done?'recorded':''}"><span class="hub-task-mark" aria-hidden="true">${task.done?'✓':String(task.index+1).padStart(2,'0')}</span><div><span class="eyebrow">${esc(verbs[task.kind]||'Study')} · ${task.minutes} min suggestion</span><h3>${esc(task.label)}</h3><p>${esc(task.reason)}</p><small>${task.done?'Activity recorded today':'No activity yet today'} · does not imply mastery</small></div>${action('hub-task',task.done?'Repeat →':'Begin →','button outline small',`data-kind="${task.kind}"`)}</article>`;}
 function hubHomePanel(){const hub=learningHub(state),path=hub.nextLesson;return `<section class="hub-start simple-panel" aria-label="Connected learning home"><div class="hub-home-heading"><div><p class="eyebrow">TODAY · YOUR NEXT STEP</p><h2>${esc(hub.primary.label)}</h2><p>${esc(hub.primary.detail)}</p></div><div class="hub-home-buttons">${action('hub-primary','Continue learning →','button primary')}${action('hub-go','See full study plan','button outline', 'data-route="plan"')}</div></div><div class="hub-home-metrics"><span><b>${hub.due}</b> due recall</span><span><b>${hub.unresolved}</b> unresolved observations</span><span><b>${hub.introduced}/${hub.total}</b> demo lessons introduced</span></div></section>
@@ -375,8 +376,10 @@ function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2}
 function renderGrammar(){
  const selected=selectedGrammarId();
  const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
- return '<div class="c9-language-workspace">'+renderC9GrammarDirectory(state,action,esc)+
-  '<section class="c9-language-native" aria-label="Native original grammar lessons">'+native+'</section></div>';
+ return '<div class="c9-language-workspace c9-language-workspace--grammar">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar" aria-current="page">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
+  renderC9GrammarDirectory(state,action,esc)+
+  '<section class="c9-language-native c9-language-study" id="c9-native-grammar" aria-label="Original grammar lessons">'+native+'</section></div>';
 }
 function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
 function openGrammarLesson(id){
@@ -416,8 +419,10 @@ function renderSentences(){
  mode:libraryMode,typed:libraryTyped,order:libraryOrder,feedback:libraryFeedback,
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
- return '<div class="c9-language-workspace">'+renderC9SentenceDirectory(state,action,esc)+
- '<section class="c9-language-native" aria-label="Native original sentence learning">'+native+'</section></div>';
+ return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
+  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences" aria-current="page">Sentences</a></nav>'+
+  renderC9SentenceDirectory(state,action,esc)+
+  '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
 function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;}
@@ -462,19 +467,17 @@ function pinyinTodayPanel(){
  <p>Explore tongue positions, vowels, lexical tones, tone sandhi and the spelling rules behind Mandarin words.</p><div class="button-row">${action('pinyin-open','Open sound foundations →','button primary')}${action('pinyin-tab','Practice tones →','button outline small',`data-section="practice" data-filter="tones"`)}</div></section>`;
 }
 function renderToday(){
-  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
-    onboardingPanel()+
-    '<details class="c9-home-extra"><summary><strong>More course material and teaching recommendations</strong><span>Beginner expansion, grammar, reading, listening and extended learning tools</span></summary><div class="c9-home-extra-inner">'+
-      gated()+
-      p31Overview(state,action,esc,true)+
-      p32LearningHub(state,action,esc)+
-      p33SceneShelf(state,null,action,esc,{compact:true})+
-      p34Overview(state,action,esc,{compact:true})+
-      '<details class="p30-other-panels"><summary><strong>Additional course panels and detailed recommendations</strong><span>Learning Hub · reading · grammar · Pinyin · saved vocabulary · activity</span></summary>'+
-        hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
-        connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
-        pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
-      '</details></div></details>';
+ // The actual learning next steps, unit progress and contextual source entries
+ // are now visible in Home. Legacy supplementary teaching remains accessible
+ // without duplicating the primary P31–P34 course catalogs shown on Learn.
+ return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
+  onboardingPanel()+
+  '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
+  '<div class="c9-home-extra-inner">'+gated()+
+  hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
+  connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
+  pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
+  '</div></details>';
 }
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
@@ -511,7 +514,7 @@ function foundationalExpansionPanel(){
  <div class="p22-unit-grid">${units.map(unit=>{const introduced=unit.lessons.filter(lesson=>state.learned.includes(lesson.id)).length;const next=unit.lessons.find(lesson=>!state.learned.includes(lesson.id))||unit.lessons[0];return `<button type="button" class="p22-unit" data-action="foundation-unit" data-id="${esc(next.id)}"><span class="p22-unit-number">${String(unit.index).padStart(2,'0')}</span><strong>${esc(unit.name)}</strong><small>${introduced}/${unit.lessons.length} introduced · Continue with ${esc(next.hanzi)} (${esc(next.pinyin)})</small><span class="p22-unit-go">Explore →</span></button>`}).join('')}</div>
  </section>`;
 }
-function renderLearnLegacy(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p32LearningHub(state,action,esc)}${p33SceneShelf(state,null,action,esc,{compact:true})}${p34Overview(state,action,esc,{compact:true})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
+function renderLearnLegacy(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
 function c9LearnUi(){return {query:c9LearnQuery,unit:c9LearnUnit,status:c9LearnStatus,kind:c9LearnKind,saved:c9LearnSaved,page:c9LearnPage,view:c9LearnDetail?'lesson':'catalog',selectedId:displayLessonId};}
 function refreshC9DiscoveryResults(){
  const ui=c9LearnUi(),browser=$('c9-lesson-browser'),search=$('c9-learn-search-results');
@@ -520,8 +523,17 @@ function refreshC9DiscoveryResults(){
 }
 function renderLearn(){
  if(!c9LearnDetail){
-  const extra='<details class="c9-learn-existing"><summary>Additional original curriculum and native learning tools</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
-  return renderC9LearnHub(state,c9LearnUi(),action,esc)+extra;
+  const curriculum='<section class="c9-original-curriculum" aria-labelledby="c9-original-curriculum-title">'+
+   '<header class="c9-original-curriculum-head"><div><p class="c9-eyebrow">ORIGINAL AUTHOR-SUPPLIED TEACHING</p><h2 id="c9-original-curriculum-title">Build skills beyond the character list</h2>'+
+   '<p>Characters lead into real vocabulary, grammar, sentence production, listening and connected reading. These are independent original teaching modules, not official HSK certification.</p></div>'+
+   '<a href="#/pathway" class="c9-button c9-button--secondary">Explore nine-band pathway</a></header>'+
+   '<div class="c9-original-curriculum-grid">'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p31-title"><div class="c9-original-curriculum-label"><span>01 / CHARACTERS & WORDS</span><h3 id="c9-p31-title">Character foundations</h3><p>Original P31 character families, contextual teaching and practical words.</p></div>'+p31Overview(state,action,esc,true)+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p32-title"><div class="c9-original-curriculum-label"><span>02 / GRAMMAR & SENTENCES</span><h3 id="c9-p32-title">Use Chinese in sentences</h3><p>Source-based grammar patterns, sentence applications and controlled practice.</p></div>'+p32LearningHub(state,action,esc)+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section>';
+  const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+curriculum+extra;
  }
  const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
  if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
@@ -533,13 +545,13 @@ function renderReview(){
  // A card can become unavailable after another tab updates the IndexedDB CAS.
  if(sessionQueue?.length){
    while(sessionQueue.length && (!state.cards[sessionQueue[0]] || !dueCards(state).includes(sessionQueue[0]))){
-     sessionQueue.shift();activeReviewId=null;typedAnswer='';chosenOption='';checkResult=null;revealed=false;
+     sessionQueue.shift();reviewInvalidated++;activeReviewId=null;typedAnswer='';chosenOption='';checkResult=null;revealed=false;
    }
  }
  activeReviewId=sessionQueue?.length?sessionQueue[0]:null;
  return renderC9Review({
   state,queue:sessionQueue,focus:reviewFocus,size:reviewSize,
-  done:sessionDone,correct:sessionCorrect,skipped:sessionSkipped,
+  done:sessionDone,correct:sessionCorrect,skipped:sessionSkipped,paused:reviewPaused,invalidated:reviewInvalidated,
   revealed,response:typedAnswer,selected:chosenOption,result:checkResult,
   action,esc,toneTeachingPanel,reviewWorkspace
  });
@@ -609,12 +621,12 @@ function contextBridgePanel(){
 }
 function renderGuidedPractice(){const session=state.practiceSession;
  if(!session)return '';
- if(session.cursor>=session.limit)return `${title('GUIDED PRACTICE','Session complete.','These answers were saved as supplementary practice, not scheduled-review mastery.')}${gated()}<article class="simple-panel guided-session"><div class="stats-grid">${stat(session.cursor,'Questions completed')}${stat(session.correct,'Correct independently')}${stat(session.assisted,'Assisted/revealed')}</div><p>Your past practice is retained if you start a new session.</p><div class="button-row">${action('guided-end','Back to Practice Lab','button primary')}${action('go-progress','See activity','button outline')}</div></article>`;
+ if(session.cursor>=session.limit)return `${gated()}${renderC9GuidedStep(state,esc)}<article class="simple-panel guided-session c9-guided-complete"><div class="stats-grid">${stat(session.cursor,'Questions completed')}${stat(session.correct,'Correct independently')}${stat(session.assisted,'Assisted/revealed')}</div><p>Your past practice is retained if you start a new session.</p><div class="button-row">${action('guided-end','Back to Practice Lab','button primary')}${action('go-progress','See activity','button outline')}</div></article>`;
  const q=guidedQuestion(session),chosen=new Set(guidedOrder),orders=q.kind==='ordering'?q.chunks.map((_,i)=>i).sort((a,b)=>(a*13+session.cursor*3)%19-(b*13+session.cursor*3)%19):[];
  const source=q.sourceType==='story'?`Reading · ${esc(findStory(q.sourceId).title)}`:q.sourceType==='drill'?`Lesson · ${esc(findLesson(q.sourceId).hanzi)}`:q.sourceType==='sense'?'Word Sense Lab':q.sourceType==='sentence'?'Sentence Workshop':q.sourceType==='mission'?`Dialogue · ${esc(q.dialogue.title)}`:'Connected practice';
  const usedHint=guidedAssisted||Boolean(session.assistanceUsed);
- return `${title('GUIDED PRACTICE','One question at a time.','A checkpoint is saved after each graded answer. The session survives an ordinary app restart.')}${gated()}
- <section class="simple-panel guided-session"><div class="guided-meta"><span>${session.cursor+1} of ${session.limit} · ${source}</span><span>${session.correct} independent correct · ${session.assisted} assisted</span></div><div class="progress-rail"><span style="width:${session.cursor/session.limit*100}%"></span></div>
+ return `${gated()}${renderC9GuidedStep(state,esc)}
+ <section class="simple-panel guided-session c9-guided-live"><div class="guided-meta"><span>${session.cursor+1} of ${session.limit} · ${source}</span><span>${session.correct} independent correct · ${session.assisted} assisted</span></div><div class="progress-rail"><span style="width:${session.cursor/session.limit*100}%"></span></div>
  ${guidedReadingContext(q,usedHint)}
  ${q.sourceType==='mission'?`<div class="guided-reading-context"><p class="eyebrow">CONVERSATION CONTEXT</p>${q.dialogue.lines.map(line=>`<p lang="zh-Hans">${esc(line.speaker)}: ${esc(line.hanzi)}</p>${usedHint?`<p class="muted">${esc(line.pinyin)} · ${esc(line.english)}</p>`:''}`).join('')}</div>`:''}
  <p class="eyebrow">${q.sourceType==='story'?'CONNECTED READING':q.sourceType==='sense'?'WORD MEANING IN CONTEXT':q.sourceType==='sentence'?'SENTENCE RECONSTRUCTION':q.sourceType==='mission'?'DIALOGUE REASONING':'CHARACTER / WORD PRACTICE'} · ${esc(q.mode.toUpperCase().replaceAll('-',' '))}</p><h2>${esc(q.prompt)}</h2>${q.hanzi?`<p class="practice-hanzi" lang="zh-Hans">${esc(q.hanzi)}</p>`:''}
@@ -627,10 +639,10 @@ function renderGuidedPractice(){const session=state.practiceSession;
 }
 function renderPracticeNative(){if(state.practiceSession)return renderGuidedPractice();const l=findLesson(drillLessonId)||DEMO_LESSONS[0],d=buildDrill(l.id,drillMode),record=practiceSummary(state),available=state.learned.length;
  const selected=new Set(drillOrder),choices=d.kind==='ordering'?d.chunks.map((_,i)=>i).sort((a,b)=>(a*13+l.order*7)%17-(b*13+l.order*7)%17):[];
- return `${title('PRACTICE LAB','Think, retrieve, connect.','Six optional formats practice forms, readings, words and sentence contexts. Results are tracked separately from scheduled-review mastery.')}${gated()}<details class="c9-assessment-extra"><summary>Fluency recommendations and additional study context</summary><div>${fluencyHomePanel()}</div></details>
+ return `${gated()}<details class="c9-assessment-extra"><summary>Fluency recommendations and additional study context</summary><div>${fluencyHomePanel()}</div></details>
  <section class="simple-panel practice-shortcuts"><h2>Practice beyond flashcards</h2><p>Review your saved words or follow a conversation without affecting scheduled-review mastery.</p><div class="button-row">${action('open-wordbook-practice','Saved word drills →','button outline')}${action('open-dialogues','Conversation Lab →','button outline')}${action('connected-session','Connect words, sentences and dialogues →','button outline')}</div></section>
- <section class="simple-panel guided-start"><div><p class="eyebrow">NEW · CONTINUOUS STUDY</p><h2>Guided practice session</h2><p>Mix characters, words, pinyin, and short readings across your learning history. Answers save after each question and can be resumed after reopening the app. Supplemental practice never raises scheduled-review mastery.</p></div><div class="guided-start-actions"><label>Session focus<select id="guided-focus"><option value="balanced" ${guidedFocus==='balanced'?'selected':''}>Balanced mix</option><option value="weak" ${guidedFocus==='weak'?'selected':''}>Focus recent mistakes</option><option value="reading" ${guidedFocus==='reading'?'selected':''}>Reading & context</option><option value="sentences" ${guidedFocus==='sentences'?'selected':''}>Sentence reasoning</option><option value="pronunciation" ${guidedFocus==='pronunciation'?'selected':''}>Pinyin & tones</option><option value="connected" ${guidedFocus==='connected'?'selected':''}>Connect senses, sentences & dialogues</option></select></label><label>Questions<select id="guided-size">${[5,10,20].map(n=>`<option value="${n}" ${n===guidedLimit?'selected':''}>${n} questions</option>`).join('')}</select></label>${action('guided-start','Start session →','button primary')}</div></section>
- <div class="practice-header"><label>Choose a demo lesson<select id="drill-lesson">${DEMO_LESSONS.map(item=>`<option value="${item.id}" ${l.id===item.id?'selected':''}>${item.order}. ${esc(item.hanzi)} — ${esc(item.meaning)}</option>`).join('')}</select></label><p>${record.attempts} supplemental attempts · ${record.independentCorrect} correct without hints · ${available} lessons introduced</p></div>
+ <section class="simple-panel guided-start" id="c9-native-guided" tabindex="-1"><div><p class="eyebrow">NEW · CONTINUOUS STUDY</p><h2>Guided practice session</h2><p>Mix characters, words, pinyin, and short readings across your learning history. Answers save after each question and can be resumed after reopening the app. Supplemental practice never raises scheduled-review mastery.</p></div><div class="guided-start-actions"><label>Session focus<select id="guided-focus"><option value="balanced" ${guidedFocus==='balanced'?'selected':''}>Balanced mix</option><option value="weak" ${guidedFocus==='weak'?'selected':''}>Focus recent mistakes</option><option value="reading" ${guidedFocus==='reading'?'selected':''}>Reading & context</option><option value="sentences" ${guidedFocus==='sentences'?'selected':''}>Sentence reasoning</option><option value="pronunciation" ${guidedFocus==='pronunciation'?'selected':''}>Pinyin & tones</option><option value="connected" ${guidedFocus==='connected'?'selected':''}>Connect senses, sentences & dialogues</option></select></label><label>Questions<select id="guided-size">${[5,10,20].map(n=>`<option value="${n}" ${n===guidedLimit?'selected':''}>${n} questions</option>`).join('')}</select></label>${action('guided-start','Start session →','button primary')}</div></section>
+ <div class="practice-header" id="c9-native-drills" tabindex="-1"><label>Choose a demo lesson<select id="drill-lesson">${DEMO_LESSONS.map(item=>`<option value="${item.id}" ${l.id===item.id?'selected':''}>${item.order}. ${esc(item.hanzi)} — ${esc(item.meaning)}</option>`).join('')}</select></label><p>${record.attempts} supplemental attempts · ${record.independentCorrect} correct without hints · ${available} lessons introduced</p></div>
  <div class="practice-tabs" role="group" aria-label="Exercise format">${[['recognition','Find character'],['word-meaning','Word meaning'],['word-pinyin','Word pinyin'],['word-build','Build a word'],['sentence-cloze','Complete sentence'],['reading-choice','Character pinyin']].map(([mode,label])=>action('drill-mode',label,mode===drillMode?'button dark small':'button outline small',`data-mode="${mode}" aria-pressed="${mode===drillMode}"`)).join('')}</div>
  <article class="simple-panel practice-card"><p class="eyebrow">${esc(drillMode.replaceAll('-',' ').toUpperCase())} · NON-HSK DEMO</p><h2>${esc(d.prompt)}</h2>${d.hanzi?`<p lang="zh-Hans" class="practice-hanzi">${esc(d.hanzi)}</p>`:''}
  ${!drillResult?(d.kind==='choice'?`<div class="choice-list">${d.options.map((option,i)=>action('drill-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(option)}`,'choice',`data-option="${esc(option)}"`)).join('')}</div>`:d.kind==='ordering'?`<p class="muted">Tap the characters in order. Tap an assembled character to remove it.</p><div class="story-assembled">${drillOrder.length?drillOrder.map((idx,i)=>action('drill-order-remove',esc(d.chunks[idx]),'chunk chosen',`data-index="${i}"`)).join(''):'<span class="muted">Your word will appear here.</span>'}</div><div class="story-chunks">${choices.filter(x=>!selected.has(x)).map(i=>action('drill-order-add',esc(d.chunks[i]),'chunk',`data-index="${i}"`)).join('')}</div>`:`<div class="answer-entry"><label for="drill-entry">Pinyin with tones</label><input id="drill-entry" type="text" autocomplete="off" spellcheck="false" autocapitalize="off" value="${esc(drillTyped)}" placeholder="Tone marks or tone numbers"></div>`):`<div class="reader-feedback ${drillResult.correct?'correct':'incorrect'}" role="status"><strong>${drillResult.correct?'Correct.':'Review the example.'}</strong><p>${esc(drillResult.message)}</p><p><strong>Reference:</strong> ${esc(d.answer)}</p><p>${esc(d.explanation)}</p><p class="muted">${drillResult.assisted?'Hint or reveal used. This attempt is assisted.':'Result saved as supplemental practice only.'}</p></div>`}
@@ -638,8 +650,9 @@ function renderPracticeNative(){if(state.practiceSession)return renderGuidedPrac
  <div class="button-row">${!drillResult?`${d.kind!=='choice'?action('drill-check','Check answer','button primary',(d.kind==='pinyin'?!drillTyped.trim():!drillOrder.length)?'disabled':''):''}${action('drill-hint','Hint','button outline')}${action('drill-reveal','Reveal reference','button outline')}`:`${action('drill-retry','Try again','button outline')}${action('drill-next','Next lesson →','button primary')}`}</div></article>`;
 }
 function renderPractice(){
- return '<div class="c9-practice-page">'+renderC9PracticeHeader(state)+
-   '<div class="c9-practice-native-section">'+renderPracticeNative()+'</div>'+
+ return '<div class="c9-practice-page">'+renderC9PracticeHeader(state,action,esc)+
+   renderC9PracticePaths(state,action)+
+   '<div class="c9-practice-native-section"'+(state.practiceSession?' id="c9-native-guided" tabindex="-1"':'')+'>'+renderPracticeNative()+'</div>'+
    '<p class="c9-assessment-disclaimer">Only existing review and practice actions write learner history. Independent answers, assisted checks, and scheduled review remain separate authorities.</p>'+
  '</div>';
 }
@@ -731,7 +744,7 @@ function applySettings(){
  if(chromeTheme)chromeTheme.setAttribute('content',dark?'#10191C':'#F8F7F3');
 }
 function renderFind(){const ui={query:p30Query,kind:p30Kind,saved:p30Saved,page:p30Page,state};return '<div class="c9-search-page">'+renderC9SearchIntro(state,ui,action,esc)+'<div class="c9-search-native">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
-function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=hubPathNav()+((route()==='today')?'':hubResumeStrip())+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
+function render(){const focusSnapshot=c9RenderedHash===location.hash?captureC9Focus(root):null;disconnectC9Writing();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+renderC9Secondary(route(),state,pages[route()](),action,esc);if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page){const target=`#/${page}`;if(location.hash===target){render();return;}location.hash=target;}
 async function mutate(fn){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
@@ -835,8 +848,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
    const section=button.dataset.section;
    if(!['overview','writing','vocabulary','sentences','connections'].includes(section))return;
    const target=root.querySelector('#c9-'+section);
-   target?.scrollIntoView({block:'start',behavior:'auto'});
-   if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+   if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+   for(const nav of root.querySelectorAll('[data-action="c9-character-jump"]')){
+     const current=nav.dataset.section===section;
+     nav.classList.toggle('is-current',current);
+     if(current)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');
+   }
+   return;
+ }
+ if(name==='c9-word-reset'){
+   c9WordQuery='';c9WordFilter='all';c9WordPage=0;
+   if(route()==='wordbook'){
+     refreshC9Words();
+     const input=root.querySelector('#c9-word-query');
+     if(input){input.value='';input.focus({preventScroll:true});}
+   }else render();
    return;
  }
  if(name==='c9-word-open'){
@@ -916,6 +942,24 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
      chip.classList.toggle('is-selected',selected);chip.setAttribute('aria-pressed',String(selected));
    }
    refreshC9DiscoveryResults();return;
+ }
+ if(name==='c9-learn-jump'){
+   const target=button.dataset.target;
+   if(!['c9-units-title','c9-browse-title','c9-content-title','c9-original-curriculum-title'].includes(target))return;
+   const node=document.getElementById(target);
+   if(node){node.scrollIntoView({block:'start',behavior:'auto'});node.setAttribute('tabindex','-1');node.focus({preventScroll:true});}
+   return;
+ }
+ if(name==='c9-discovery-reset'){
+   c9LearnQuery='';c9LearnUnit='all';c9LearnStatus='all';c9LearnKind='all';
+   c9LearnSaved=false;c9LearnPage=0;render();
+   root.querySelector('#c9-learn-query')?.focus({preventScroll:true});return;
+ }
+ if(name==='c9-discovery-full-search'){
+   // Preserve the user's current source query and category when handing off
+   // to the existing full search, without a second search index.
+   p30Query=c9LearnQuery;p30Kind=c9LearnKind;p30Saved=c9LearnSaved;p30Page=0;
+   return go('find');
  }
  if(name==='c9-discovery-open'){
    const row=courseSearch({query:c9LearnQuery,kind:c9LearnKind,saved:c9LearnSaved,state})
@@ -1626,9 +1670,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  }
  if(name==='search-kind'){exploreKind=button.dataset.kind||'all';searchSelection=null;explorePage=0;return render();}
  if(name==='lookup-word'){const w=id?findWord(id):WORDS.find(w=>w.hanzi===button.dataset.word);if(w){searchSelection={type:'word',id:w.key};return go('explore');}return alertUser('Word not available in the indexed demo lessons.','error');}
- if(name==='review-begin'){sessionQueue=reviewPlan(state,{now:Date.now(),focus:reviewFocus,limit:reviewSize}).map(item=>item.id);sessionDone=0;sessionCorrect=0;sessionSkipped=0;revealed=false;activeReviewId=null;render();announceC9Interaction(sessionQueue.length?'Scheduled review started. First question ready.':'No due cards matched this focus.');return;}
- if(name==='review-restart'){sessionQueue=null;activeReviewId=null;return render();}
- if(name==='review-skip'){if(revealed||!sessionQueue?.length)return;sessionQueue.shift();sessionSkipped++;activeReviewId=null;typedAnswer='';chosenOption='';checkResult=null;render();announceC9Interaction('Question skipped without grading. '+sessionQueue.length+' prompts remain in this session.');return;}
+ if(name==='c9-practice-jump'){const target=button.dataset.target;if(!['c9-native-guided','c9-native-drills'].includes(target))return;
+   const section=root.querySelector('#'+target);if(section){section.scrollIntoView({block:'start',behavior:'smooth'});section.focus({preventScroll:true});}return;}
+ if(name==='review-begin'){sessionQueue=reviewPlan(state,{now:Date.now(),focus:reviewFocus,limit:reviewSize}).map(item=>item.id);
+  sessionDone=0;sessionCorrect=0;sessionSkipped=0;reviewInvalidated=0;reviewPaused=false;
+  revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();
+  announceC9Interaction(sessionQueue.length?'Scheduled review started. First question ready.':'No due cards matched this focus.');return;}
+ if(name==='review-pause'){if(!sessionQueue?.length)return;reviewPaused=true;revealed=false;typedAnswer='';chosenOption='';checkResult=null;
+  render();announceC9Interaction('The remaining queue is paused in this tab. Your unsaved answer was cleared.');return;}
+ if(name==='review-resume'){if(!sessionQueue?.length)return;reviewPaused=false;render();
+  root.querySelector('#review-entry')?.focus({preventScroll:true});announceC9Interaction('Review resumed. Original due cards remain in the queue.');return;}
+ if(name==='review-stop'){if(!sessionQueue)return;if(sessionQueue.length&&!confirm('Discard the remaining ungraded queue? Saved review grades will be preserved.'))return;
+  sessionQueue=null;reviewPaused=false;reviewInvalidated=0;activeReviewId=null;revealed=false;typedAnswer='';chosenOption='';checkResult=null;
+  render();announceC9Interaction('Ungraded queue discarded. Saved review history remains.');return;}
+ if(name==='review-restart'){sessionQueue=null;reviewPaused=false;reviewInvalidated=0;activeReviewId=null;revealed=false;typedAnswer='';chosenOption='';checkResult=null;return render();}
+ if(name==='review-skip'){if(reviewPaused||revealed||!sessionQueue?.length)return;sessionQueue.shift();sessionSkipped++;activeReviewId=null;typedAnswer='';chosenOption='';checkResult=null;render();announceC9Interaction('Question skipped without grading. '+sessionQueue.length+' prompts remain in this session.');return;}
  if(name==='open-reader'){readerLessonId=findLesson(displayLessonId)?.id||DEMO_LESSONS[0].id;readerResult=null;showLessonTranslation=false;return go('reader');}
  if(name==='reader-next'){const idx=DEMO_LESSONS.findIndex(l=>l.id===readerLessonId);readerLessonId=DEMO_LESSONS[(idx+1)%DEMO_LESSONS.length].id;readerResult=null;showLessonTranslation=false;return render();}
  if(name==='reader-mode'){readerMode=button.dataset.mode==='cloze'?'cloze':'meaning';readerResult=null;showLessonTranslation=false;return render();}
@@ -1640,10 +1696,10 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
  if(name==='mark-studied'){if(!findLesson(id))return;const ok=await mutate(s=>addLesson(s,id));if(ok){alertUser(`Lesson introduced. ${cardsForLesson(id).length} distinct recall targets were added.`);const idx=DEMO_LESSONS.findIndex(l=>l.id===id);if(idx<DEMO_LESSONS.length-1){displayLessonId=DEMO_LESSONS[idx+1].id;render();}}return}
  if(name==='toggle-translation'){showLessonTranslation=!showLessonTranslation;render();return}
  if(name==='start-review'){revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;sessionQueue=null;go('review');return}
- if(name==='review-pick'){chosenOption=button.dataset.option||'';render();root.querySelector('[data-action="review-pick"][aria-pressed="true"]')?.focus();return;}
- if(name==='submit-review'){if(revealed||!activeReviewId)return;const info=cardInfo(activeReviewId);const answer=info.kind==='choice'?chosenOption:typedAnswer;if(!answer.trim())return alertUser('Enter or select an answer before checking.','error');checkResult=info.kind==='pinyin'?toneExplanation(answer,info.answer):evaluateAnswer(answer,info.answer,info.kind);revealed=true;render();announceC9Interaction(checkResult?.correct?'Answer checked: correct. Review feedback and grading actions are available.':'Answer checked. Compare your response with the reference and choose a grade.');return;}
- if(name==='reveal-review'){checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();announceC9Interaction('Reference revealed; this response is assisted, not independent.');return}
- if(name==='grade'){if(!revealed||!activeReviewId)return;const c=activeReviewId,g=Number(button.dataset.grade);const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;const ok=await mutate(s=>gradeCard(s,c,g,Date.now(),eventId,{correct:Boolean(checkResult?.correct),assisted:checkResult?.reason==='assisted',errorType:checkResult?.reason}));if(ok){sessionDone++;if(checkResult?.correct)sessionCorrect++;if(sessionQueue?.[0]===c)sessionQueue.shift();revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();announceC9Interaction('Native review grade saved. '+sessionQueue.length+' prompts remain.');}return}
+ if(name==='review-pick'){if(reviewPaused||revealed||!sessionQueue?.length)return;chosenOption=button.dataset.option||'';render();root.querySelector('[data-action="review-pick"][aria-pressed="true"]')?.focus();return;}
+ if(name==='submit-review'){if(reviewPaused||revealed||!activeReviewId)return;const info=cardInfo(activeReviewId);const answer=info.kind==='choice'?chosenOption:typedAnswer;if(!answer.trim())return alertUser('Enter or select an answer before checking.','error');checkResult=info.kind==='pinyin'?toneExplanation(answer,info.answer):evaluateAnswer(answer,info.answer,info.kind);revealed=true;render();announceC9Interaction(checkResult?.correct?'Answer checked: correct. Review feedback and grading actions are available.':'Answer checked. Compare your response with the reference and choose a grade.');return;}
+ if(name==='reveal-review'){if(reviewPaused||revealed||!activeReviewId)return;checkResult={correct:false,reason:'assisted',message:'Answer revealed without independent recall.'};revealed=true;render();announceC9Interaction('Reference revealed; this response is assisted, not independent.');return}
+ if(name==='grade'){if(reviewPaused||!revealed||!activeReviewId)return;const c=activeReviewId,g=Number(button.dataset.grade);const eventId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;const ok=await mutate(s=>{if(!dueCards(s).includes(c))throw Error('Review target was already updated in another tab. No duplicate grade written.');return gradeCard(s,c,g,Date.now(),eventId,{correct:Boolean(checkResult?.correct),assisted:checkResult?.reason==='assisted',errorType:checkResult?.reason});});if(ok){sessionDone++;if(checkResult?.correct)sessionCorrect++;if(sessionQueue?.[0]===c)sessionQueue.shift();revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;render();announceC9Interaction('Native review grade saved. '+sessionQueue.length+' prompts remain.');}return}
  if(name==='speak')return speak(button.dataset.text||'');
  if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
  if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
@@ -1722,7 +1778,11 @@ if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c
 });
 document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Enter'&&e.ctrlKey&&e.target.id==='sentence-library-entry'){
  e.preventDefault();const button=root.querySelector('[data-action="sentence-answer"]');if(button&&!button.disabled)void act(button);return;
-}if(route()==='grammar'&&e.code==='Enter'&&e.target.id==='grammar-entry'&&e.ctrlKey){e.preventDefault();const button=root.querySelector('[data-action="grammar-answer"]');if(button&&!button.disabled)void act(button);return;}if(route()==='pinyin'&&e.code==='Enter'&&e.target.id==='pinyin-answer-entry'){e.preventDefault();const button=root.querySelector('[data-action="pinyin-answer"]');if(button&&!button.disabled)void act(button);return;}if(route()==='fluency'&&e.code==='Enter'&&e.target.id==='fluency-entry'){e.preventDefault();const b=root.querySelector('[data-action="fluency-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='block'&&e.code==='Enter'&&e.target.id==='trail-entry'){e.preventDefault();const b=root.querySelector('[data-action="trail-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='block'&&e.code==='Enter'&&e.target.id==='block-entry'){e.preventDefault();const b=root.querySelector('[data-action="block-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='ladder'&&e.code==='Enter'&&e.target.id==='ladder-entry'){e.preventDefault();const b=root.querySelector('[data-action="ladder-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='journey'&&e.code==='Enter'&&e.target.id==='repair-entry'){e.preventDefault();const btn=root.querySelector('[data-action="repair-answer"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()==='journey'&&e.code==='Enter'&&e.target.id==='course-entry'){e.preventDefault();const btn=root.querySelector('[data-action="course-answer"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()==='learn'&&e.code==='Enter'&&e.target.id==='lesson-check-entry'){e.preventDefault();const btn=root.querySelector('[data-action="lesson-check-submit"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()!=='review'||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
+}if(route()==='grammar'&&e.code==='Enter'&&e.target.id==='grammar-entry'&&e.ctrlKey){e.preventDefault();const button=root.querySelector('[data-action="grammar-answer"]');if(button&&!button.disabled)void act(button);return;}if(route()==='pinyin'&&e.code==='Enter'&&e.target.id==='pinyin-answer-entry'){e.preventDefault();const button=root.querySelector('[data-action="pinyin-answer"]');if(button&&!button.disabled)void act(button);return;}if(route()==='fluency'&&e.code==='Enter'&&e.target.id==='fluency-entry'){e.preventDefault();const b=root.querySelector('[data-action="fluency-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='block'&&e.code==='Enter'&&e.target.id==='trail-entry'){e.preventDefault();const b=root.querySelector('[data-action="trail-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='block'&&e.code==='Enter'&&e.target.id==='block-entry'){e.preventDefault();const b=root.querySelector('[data-action="block-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='ladder'&&e.code==='Enter'&&e.target.id==='ladder-entry'){e.preventDefault();const b=root.querySelector('[data-action="ladder-answer"]');if(b&&!b.disabled)void act(b);return;}if(route()==='journey'&&e.code==='Enter'&&e.target.id==='repair-entry'){e.preventDefault();const btn=root.querySelector('[data-action="repair-answer"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()==='journey'&&e.code==='Enter'&&e.target.id==='course-entry'){e.preventDefault();const btn=root.querySelector('[data-action="course-answer"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()==='learn'&&e.code==='Enter'&&e.target.id==='lesson-check-entry'){e.preventDefault();const btn=root.querySelector('[data-action="lesson-check-submit"]');if(btn&&!btn.disabled)void act(btn);return;}if(route()==='practice'&&e.code==='Enter'&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.isComposing){
+  const target=e.target.id,actionName=target==='guided-entry'?'guided-check':target==='drill-entry'?'drill-check':null;
+  if(actionName){const button=root.querySelector('[data-action="'+actionName+'"]');if(button&&!button.disabled){e.preventDefault();void act(button);}return;}
+ }
+ if(route()!=='review'||reviewPaused||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
  const editing=e.target.closest('input,textarea,select,[contenteditable]');
  if(!revealed&&e.code==='Enter'&&e.target.id==='review-entry'){e.preventDefault();const btn=root.querySelector('[data-action="submit-review"]');if(btn&&!btn.disabled)void act(btn);return;}
  if(editing)return;
@@ -1730,9 +1790,9 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
   const btn=[...root.querySelectorAll('[data-action="review-pick"]')][Number(e.code.slice(-1))-1];if(btn){e.preventDefault();void act(btn)}return;}
  if(!revealed&&e.code==='Enter'){const btn=root.querySelector('[data-action="submit-review"]');if(btn&&!btn.disabled){e.preventDefault();void act(btn)}return;}
  if(!revealed&&e.code==='KeyS'){const btn=root.querySelector('[data-action="review-skip"]');if(btn){e.preventDefault();void act(btn)}return;}
- if(revealed&&['Digit1','Digit2','Digit3','Digit4'].includes(e.code)){e.preventDefault();const btn=root.querySelector(`[data-action="grade"][data-grade="${Number(e.code.slice(-1))-1}"]`);if(btn)void act(btn)}
+ if(!reviewPaused&&revealed&&['Digit1','Digit2','Digit3','Digit4'].includes(e.code)){e.preventDefault();const btn=root.querySelector(`[data-action="grade"][data-grade="${Number(e.code.slice(-1))-1}"]`);if(btn)void act(btn)}
 });
-window.addEventListener('hashchange',()=>{revealed=false;typedAnswer='';chosenOption='';checkResult=null;render();window.scrollTo(0,0);announceC9Route(C9_ROUTE_LABELS[route()]||'Home',$('main'));});
+window.addEventListener('hashchange',()=>{if(sessionQueue?.length&&route()!=='review')reviewPaused=true;revealed=false;typedAnswer='';chosenOption='';checkResult=null;render();window.scrollTo(0,0);announceC9Route(C9_ROUTE_LABELS[route()]||'Home',$('main'));if(c9SearchFocusPending&&route()==='find'){root.querySelector('#p30-query')?.focus({preventScroll:true});c9SearchFocusPending=false;}});
 window.addEventListener('online',networkLabel);window.addEventListener('offline',networkLabel);
 function networkLabel(){const online=navigator.onLine;$('network-state').textContent=online?'Local data · Online':'Local data · Offline';const homeStatus=$('c9-home-connectivity');if(homeStatus)homeStatus.textContent=online?'Online · local learner data':'Offline · cache-dependent availability';const homeNotice=$('c9-home-offline-notice');if(homeNotice)homeNotice.hidden=online;}
 async function setupSW(){if(!('serviceWorker'in navigator)||location.protocol==='file:')return;try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(e){console.warn('Offline shell unavailable',e)}}
