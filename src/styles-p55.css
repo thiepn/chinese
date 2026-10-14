@@ -74,3 +74,13 @@
 .p55-question-history{font-size:.85rem;font-weight:600}
 .p55-question-repair{border-left:2px solid currentColor;padding-left:.7rem;line-height:1.6}
 @media(max-width:750px){.p58-reference-pair{grid-template-columns:1fr}}
+
+/* P59: reaching a canonical Wordbook result from the source pair is visible
+ * after keyboard focus, and respects narrow screens and sticky navigation. */
+#explore-detail{scroll-margin-top:5rem;min-width:0;overflow-wrap:anywhere}
+#explore-detail:focus{outline:2px solid currentColor;outline-offset:3px}
+.p55-question-repair,.p55-question-history{overflow-wrap:anywhere}
+@media(max-width:600px){
+ #explore-detail{scroll-margin-top:2.5rem}
+ .p55-actions .button,.p55-source-actions .button{min-height:44px;white-space:normal}
+}
