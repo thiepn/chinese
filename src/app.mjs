@@ -1301,6 +1301,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
   if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target)return alertUser('Original reading unavailable.','error');
+  if(route()!=='stories'&&!go('stories'))return false;
   storyId=target.id;storyMode=target.beginner?'beginner-detail':'comprehension';
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
   resetReadingNavigation();
@@ -1310,6 +1311,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-media-open-dialogue'){
   const target=findDialogue(id);if(!target)return alertUser('Original conversation unavailable.','error');
+  if(route()!=='dialogues'&&!go('dialogues'))return false;
   dialogueId=target.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
   p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
   missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
@@ -1451,6 +1453,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-learn-back'){c9LearnDetail=false;render();root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return;}
  if(name==='c9-lesson-open'){
    if(!findLesson(id))return alertUser('Original character lesson unavailable.','error');
+   if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
    if(route()==='learn'){render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});}
    else go('learn');
@@ -2215,7 +2218,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!ok)alertUser('Answer checked but not saved. Export existing progress if storage is unreliable.','error');return;
  }
  if(name==='search-kind'){exploreKind=button.dataset.kind||'all';searchSelection=null;explorePage=0;return render();}
- if(name==='lookup-word'){const w=id?findWord(id):WORDS.find(w=>w.hanzi===button.dataset.word);if(w){searchSelection={type:'word',id:w.key};return go('explore');}return alertUser('Word not available in the indexed demo lessons.','error');}
+ if(name==='lookup-word'){const w=id?findWord(id):WORDS.find(w=>w.hanzi===button.dataset.word);if(w){if(route()!=='explore'&&!go('explore'))return false;searchSelection={type:'word',id:w.key};return go('explore');}return alertUser('Word not available in the indexed demo lessons.','error');}
  if(name==='c9-practice-jump'){const target=button.dataset.target;if(!['c9-native-guided','c9-native-drills'].includes(target))return;
    const section=root.querySelector('#'+target);if(section){section.scrollIntoView({block:'start',behavior:'smooth'});section.focus({preventScroll:true});}return;}
  if(name==='review-begin'){sessionQueue=reviewPlan(state,{now:Date.now(),focus:reviewFocus,limit:reviewSize}).map(item=>item.id);
