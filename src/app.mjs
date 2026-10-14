@@ -815,7 +815,14 @@ function c9CurrentSourceIdForTrail(trail){
 function c9SourceReturnMarkup(){
  if(!c9DiscoveryTrail)return '';
  const current=route(),trail=c9DiscoveryTrail;
- if(current!==trail.route&&current!==trail.origin){c9DiscoveryTrail=null;return '';}
+ if(current!==trail.route&&current!==trail.origin){
+  // Preserve Find → original Advanced source → canonical native exercise
+  // while the verified C9-28 handoff remains active. Never show a stale
+  // Find return on an unrelated destination.
+  if(trail.kind==='advanced'&&c9NativeTrail?.origin==='advanced'&&
+   c9NativeTrail.targetRoute===current)return '';
+  c9DiscoveryTrail=null;return '';
+ }
  if(current===trail.route){
   const activeId=c9CurrentSourceIdForTrail(trail);
   if(activeId&&activeId!==trail.id){c9DiscoveryTrail=null;return '';}
@@ -826,7 +833,8 @@ function rememberC9NativeHandoff(origin,targetRoute,targetId,title){
  if(!['writing','advanced','skills'].includes(origin)||!targetRoute||!targetId)return;
  c9NativeTrail={origin,targetRoute,targetId,title:String(title||'Original source'),
   sourceId:origin==='writing'?c9WritingState.unitId:origin==='skills'?c9SkillsUi.sourceId:c9AdvancedSelected};
- c9DiscoveryTrail=null;
+ if(origin!=='advanced'||c9DiscoveryTrail?.kind!=='advanced')
+  c9DiscoveryTrail=null;
 }
 function currentC9NativeTarget(routeName){
  if(routeName==='learn')return c9LearnDetail?displayLessonId:null;
