@@ -9,6 +9,7 @@ import {PATHWAY_MISSIONS,pathwayResume} from './pathway-course.mjs';
 import {WORKSPACE_COACHING,WORKSPACE_COACHING_CATEGORIES} from './workspace-coaching-p30.mjs';
 import {courseOverview,courseShortcuts} from './course-overview.mjs';
 import {learningHub} from './learning-hub.mjs';
+import {C9_ADVANCED_PHASES,c9AdvancedSourceLines} from './advanced-c9.mjs';
 
 export const WORKSPACE_DESTINATIONS=Object.freeze([
  ['learn','Characters','Study writing, meanings and example words',DEMO_LESSONS.length],
@@ -18,7 +19,9 @@ export const WORKSPACE_DESTINATIONS=Object.freeze([
  ['stories','Reading','From beginner stories to extended texts',STORIES.length],
  ['dialogues','Conversations','Follow everyday dialogue and responses',DIALOGUES.length],
  ['pinyin','Sounds & tones','Initials, finals and Pinyin contrasts',null],
- ['pathway','Learning pathway','Integrated original course missions',PATHWAY_MISSIONS.length]
+ ['pathway','Learning pathway','Integrated original course missions',PATHWAY_MISSIONS.length],
+ ['skills','Skill Paths','Study original contexts by practical learning skill',null],
+ ['advanced','Advanced sources','P35–P51 original context and specialist evidence',C9_ADVANCED_PHASES.reduce((n,p)=>n+p.records.length,0)]
 ]);
 const norm=x=>plain(String(x??''));
 const make=(kind,id,title,description,words)=>{
@@ -32,10 +35,18 @@ export const COURSE_INDEX=Object.freeze([
  ...SENTENCE_LIBRARY.map(x=>make('sentences',x.id,x.hanzi,x.pinyin+' · '+x.english,x.topic+' '+x.purpose)),
  ...STORIES.map(x=>make('reading',x.id,x.title,x.theme,x.lines.map(l=>l.hanzi+' '+l.english).join(' '))),
  ...DIALOGUES.map(x=>make('dialogues',x.id,x.title,'Connected conversation',x.lines.map(l=>l.hanzi+' '+l.english).join(' '))),
- ...PATHWAY_MISSIONS.map(x=>make('pathway',x.id,x.title,'Band '+x.band+' · '+x.purpose,x.lines.map(l=>l.hanzi+' '+l.english).join(' ')))
+ ...PATHWAY_MISSIONS.map(x=>make('pathway',x.id,x.title,'Band '+x.band+' · '+x.purpose,x.lines.map(l=>l.hanzi+' '+l.english).join(' '))),
+ // Search-only composite refs never replace the original source or learner IDs.
+ ...C9_ADVANCED_PHASES.flatMap(phase=>phase.records.map(source=>make('advanced',
+  'p'+phase.phase+':'+source.id,source.title||source.hanzi||source.grammarTitle||source.goal||source.id,
+  'Original P'+phase.phase+' · '+phase.title+' · '+(source.theme||source.category||phase.focus),
+  [source.id,source.pinyin,source.goal,source.contrast,source.explanation,
+   source.teaching,source.misconception,source.pitfall,source.sourceClaim,
+   ...c9AdvancedSourceLines(source).slice(0,32).flatMap(row=>[row.hanzi,row.pinyin,row.english])].filter(Boolean).join(' '))))
 ]);
 export const FIND_CATEGORIES=Object.freeze([['all','All'],['characters','Characters'],['words','Words'],
- ['grammar','Grammar'],['sentences','Sentences'],['reading','Reading'],['dialogues','Dialogues'],['pathway','Pathway']]);
+ ['grammar','Grammar'],['sentences','Sentences'],['reading','Reading'],['dialogues','Dialogues'],['pathway','Pathway'],
+ ['advanced','Advanced sources']]);
 function savedResult(x,s){
  if(x.kind==='words')return (s.bookmarkedWords||[]).includes(x.id);
  if(x.kind==='sentences')return (s.bookmarkedSentences||[]).includes(x.id);
@@ -57,18 +68,18 @@ export function courseSearchResults(ui,act,esc){
  const page=Math.min(last,Math.max(0,ui.page||0));
  const list=matches.slice(page*18,(page+1)*18);
  return {total:matches.length,page,pages:last+1,html:`<div class="p30-find-head"><strong>${matches.length} source entries</strong><span>${list.length?`${page*18+1}–${page*18+list.length}`:'0'} shown</span></div>
- <div class="p30-find-list">${list.length?list.map(x=>act('p30-open-result',`<span class="p30-result-type">${esc(x.kind)}</span><strong>${esc(x.title)}</strong><small>${esc(x.description)}</small><span aria-hidden="true">↗</span>`,'p30-result',`data-kind="${x.kind}" data-id="${esc(x.id)}"`)).join(''):'<p class="p30-no-results">No entries match these filters. Try a Chinese word, Pinyin, English meaning, or a broader category.</p>'}</div>
+ <div class="p30-find-list">${list.length?list.map(x=>act('p30-open-result',`<span class="p30-result-type">${esc(x.kind)}</span><strong>${esc(x.title)}</strong><small>${esc(x.description)}</small><span aria-hidden="true">↗</span>`,'p30-result',`data-kind="${x.kind}" data-id="${esc(x.id)}"`)).join(''):'<p class="p30-no-results">No entries match these filters. Try a source term, Chinese text, Pinyin, or clear saved-only filtering.</p>'}</div>
  <div class="p30-pagination"><span>Page ${page+1} / ${last+1}</span>${act('p30-page-prev','← Previous','button outline small',page?'':'disabled')}${act('p30-page-next','Next →','button outline small',page<last?'':'disabled')}</div>`};
 }
 export function unifiedSearchPage(ui,act,esc,title,gated){
  const result=courseSearchResults(ui,act,esc);
- return `${title('COURSE LIBRARY','Find a lesson, word or expression.','One search across the original character, vocabulary, grammar, sentence, reading, conversation and pathway collections.')}
+ return `${title('COURSE LIBRARY','Find a lesson, word or expression.','One search across original character, vocabulary, grammar, sentence, reading, dialogue, pathway and P35–P51 advanced sources.')}
  ${gated()}<section class="p30-search-page"><label for="p30-query">Search across all course material</label>
  <input id="p30-query" type="search" spellcheck="false" autocomplete="off" placeholder="Search 学校, xué, location, travel…" value="${esc(ui.query)}">
  <div class="p30-search-filters" role="group" aria-label="Content type">${FIND_CATEGORIES.map(([kind,label])=>act('p30-filter',esc(label),'p30-filter '+(ui.kind===kind?'active':''),`data-kind="${kind}" aria-pressed="${ui.kind===kind}"`)).join('')}</div>
- <label class="p30-saved-filter"><input id="p30-saved" type="checkbox" ${ui.saved?'checked':''}> Only saved or introduced material (where supported)</label>
+ <label class="p30-saved-filter"><input id="p30-saved" type="checkbox" ${ui.saved?'checked':''}> Only saved or introduced native material (advanced sources have no saved flag)</label>
  <div id="p30-results">${result.html}</div></section>
- <p class="p30-source-note">Search opens the authoritative existing lesson screen, never creates a parallel learning record. The library does not claim official HSK 3.0 inventory or certification.</p>`;
+ <p class="p30-source-note">Search opens original teaching and canonical learning routes, never creates a parallel record. Advanced sources carry original P35–P51 IDs but no HSK certification.</p>`;
 }
 export function courseMap(act,esc){
  return `<section class="p30-courses"><div class="p30-section-title"><div><p class="eyebrow">ONE CONNECTED COURSE</p><h2>Explore a learning skill</h2></div>${act('p30-search','Search the course →','button outline small')}</div>
