@@ -60,11 +60,43 @@ export const P55_PAIR_VOCAB_IDS=Object.freeze([
 ]);
 export const p55PairVocab=brief=>P54_REGISTER_PAIRS.find(p=>
  p.id===P55_PAIR_VOCAB_IDS[brief.sequence-1])||null;
+/** Prefer words demonstrably present in the *chosen original readings*.
+ * Context examples retain exact historical source sentences; no inferred
+ * dictionary etymologies, fabricated source references, or new word IDs.
+ */
+function sourceAttestedWords(id){
+ const original=p55Source(id);if(!original)return [];
+ const sentences=original.lines||[];
+ return WORDS.filter(w=>[...w.hanzi].length>=2&&[...w.hanzi].length<=5&&
+  sentences.some(line=>line.hanzi.includes(w.hanzi)))
+  .map(w=>{
+   const i=sentences.findIndex(line=>line.hanzi.includes(w.hanzi));
+   const line=sentences[i];
+   return {hanzi:w.hanzi,pinyin:w.pinyin,meaning:w.senses[0]||'Canonical Wordbook entry',
+    key:w.key,sourceId:id,lineIndex:i,context:line,attested:true};
+  })
+  .sort((a,b)=>b.hanzi.length-a.hanzi.length||a.lineIndex-b.lineIndex);
+}
 export const p55NativeWords=brief=>{
- const pair=p55PairVocab(brief);
- return pair?[pair.left,pair.right].map(w=>({
-  ...w,key:WORDS.find(x=>x.key===canonicalWordKey(w.hanzi,w.pinyin))?.key||null
- })): [];
+ if(!brief)return [];
+ const first=sourceAttestedWords(brief.from),second=sourceAttestedWords(brief.to);
+ const primary=[];
+ if(first.length)primary.push(first[0]);
+ if(second.length&&!primary.some(w=>w.key===second[0].key))
+  primary.push(second[0]);
+ for(const candidate of [...first.slice(1),...second.slice(1)])
+  if(primary.length<4&&!primary.some(w=>w.key===candidate.key))primary.push(candidate);
+ // The earlier P54 register contrast is an optional teaching reference only,
+ // never falsely presented as attested in the two historical readings.
+ if(primary.length>=2)return primary.slice(0,4);
+ const contrast=p55PairVocab(brief);
+ const fallback=contrast?[contrast.left,contrast.right].map(w=>{
+  const key=canonicalWordKey(w.hanzi,w.pinyin);
+  return {...w,key:WORDS.find(x=>x.key===key)?.key||null,
+   sourceId:null,lineIndex:null,context:null,attested:false};
+ }):[];
+ return [...primary,...fallback.filter(w=>w.key&&!primary.some(x=>x.key===w.key))]
+  .slice(0,4);
 };
 export function p55BriefEvidence(state,brief){
  const left=p55Evidence(state,brief.from),right=p55Evidence(state,brief.to);
@@ -74,7 +106,8 @@ export function p55BriefEvidence(state,brief){
    right.reading.length+right.listening.length+sentences.length};
 }
 function needsAttention(events){
- return events.length>0&&events.at(-1).correct===false;
+ // Assisted correctness is not independent evidence; suggest a fresh native attempt.
+ return events.length>0&&(events.at(-1).correct===false||events.at(-1).assisted===true);
 }
 export function p55Next(state,current=null){
  const start=Math.max(0,P55_BRIEFS.findIndex(x=>x.id===current));
