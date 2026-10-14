@@ -117,10 +117,17 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  '<div><h2 id="c9-writing-backup-title">Keep a copy of your writing</h2>'+
  '<p>Download your draft and up to 12 revision snapshots as a private JSON file, or select a previous backup. Export and import are manual; no cloud sync or automatic recovery is implied.</p></div>'+
  '<div class="c9-writing-backup-controls">'+
- act('c9-writing-backup-export','Export private draft backup','c9-button c9-button--primary c9-button--small',
+ act('c9-writing-backup-export','Download private draft backup','c9-button c9-button--primary c9-button--small',
  (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
- '<label for="c9-writing-backup-file">Import a previous backup</label>'+
+ act('c9-writing-backup-copy','Copy private backup JSON','c9-button c9-button--secondary c9-button--small',
+ (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
+ '<label for="c9-writing-backup-file">Import a previous backup file</label>'+
  '<input id="c9-writing-backup-file" type="file" accept=".json,application/json" aria-describedby="c9-writing-backup-title"></div>'+
+ '<details class="c9-writing-backup-paste"><summary>Restore from pasted private JSON</summary>'+
+ '<label for="c9-writing-backup-paste">Paste the complete private P43 JSON backup</label>'+
+ '<textarea id="c9-writing-backup-paste" rows="4" spellcheck="false" autocomplete="off" aria-describedby="c9-writing-backup-title"></textarea>'+
+ act('c9-writing-backup-import-paste','Check pasted backup and preview replacement','c9-button c9-button--secondary c9-button--small')+
+ '</details>'+
  (session.importError?'<p id="c9-writing-import-error" tabindex="-1" class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
  '<p class="c9-writing-portability-note">Your file contains private writing. Keep it in a trusted location; importing never automatically overwrites current work.</p>'+
  '</section>';
@@ -304,6 +311,34 @@ export async function handleC9WritingAction(button,api){
  if(api.currentRoute?.()==='writing'&&(name==='grammar-select'||name==='lookup-word')){
   rememberHandoff(name==='grammar-select'?'grammar':'explore',id);
   return false;
+ }
+ if(name==='c9-writing-backup-copy'){
+  if(!writingHasWork())return true;
+  const data=JSON.stringify(createC9WritingBackup(w),null,2);
+  if(new Blob([data]).size>C9_WRITING_BACKUP_MAX_BYTES){
+   alertUser('Backup exceeds the 420 KB limit. Copy the draft itself instead.','error');return true;
+  }
+  try{
+   await navigator.clipboard.writeText(data);
+   alertUser('Private backup JSON copied. Paste it into a trusted personal note and retain it before closing the tab.');
+  }catch{
+   alertUser('Clipboard unavailable. Use the private backup file or copy your draft manually.','error');
+  }
+  return true;
+ }
+ if(name==='c9-writing-backup-import-paste'){
+  const data=document.getElementById('c9-writing-backup-paste')?.value||'';
+  try{
+   const candidate=parseC9WritingBackup(data);
+   w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
+   render();document.getElementById('c9-writing-pending')?.focus({preventScroll:false});
+  }catch(error){
+   w.importCandidate=null;w.importError=error instanceof Error?error.message:
+    'The pasted P43 backup is invalid.';
+   render();document.getElementById('c9-writing-import-error')?.focus({preventScroll:false});
+   alertUser(w.importError,'error');
+  }
+  return true;
  }
  if(name==='c9-writing-backup-export'){
   if(!writingHasWork())return true;
