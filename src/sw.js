@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v44-c9-ui-recovery';
+const CACHE='character-study-working-v45-c9-offline-integrity';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -335,6 +335,25 @@ const ADVANCED_SOURCE_ASSETS=[
 const ASSETS=[...new Set([...SHELL_ASSETS,...CONCEPT9_ASSETS,
  ...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS])];
 const PRECACHE_BATCH_SIZE=24;
+/** A controlling SW is not proof that Cache Storage still contains all assets.
+ * Only user-visible shell status is returned. Never send learner data.
+ */
+self.addEventListener('message',event=>{
+ if(event.data?.type!=='c9-offline-status'||!event.ports?.[0])return;
+ const reply=event.ports[0];
+ event.waitUntil((async()=>{
+  try{
+   const cache=await caches.open(CACHE);
+   const keys=new Set((await cache.keys()).map(request=>request.url));
+   const cached=ASSETS.filter(path=>keys.has(new URL(path,self.location.href).href)).length;
+   reply.postMessage({type:'c9-offline-status',version:CACHE,
+    cached,total:ASSETS.length,complete:cached===ASSETS.length});
+  }catch{
+   reply.postMessage({type:'c9-offline-status',version:CACHE,
+    cached:0,total:ASSETS.length,complete:false});
+  }
+ })());
+});
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(CACHE);
