@@ -158,7 +158,8 @@ export function renderC9AdvancedWorkspace(state,ui,act,esc){
  const intro='<header class="c9-advanced-intro"><div><p class="c9-eyebrow">C9 UI + ORIGINAL P35–P51 CURRICULUM</p>'+
  '<h1>Chinese across real contexts</h1>'+
  '<p>Seventeen original course expansions, using the same native character, vocabulary, grammar, reading, dialogue, writing and scheduled-review authorities. Phases describe editorial development, not achieved or official HSK levels.</p></div>'+
- '<a href="#/learn" class="c9-button c9-button--secondary">Return to Learn</a></header>';
+ '<div class="c9-advanced-primary-links"><a href="#/skills" class="c9-button c9-button--primary">Study by skill →</a>'+
+ '<a href="#/learn" class="c9-button c9-button--secondary">Return to Learn</a></div></header>';
  const index=C9_ADVANCED_PHASES.indexOf(phase),previous=C9_ADVANCED_PHASES[index-1],next=C9_ADVANCED_PHASES[index+1];
  const stages='<div class="c9-advanced-phase-picker">'+
  '<div class="c9-advanced-mobile-phase"><label for="c9-advanced-phase-select">Course section</label>'+
