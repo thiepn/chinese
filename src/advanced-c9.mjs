@@ -159,11 +159,25 @@ export function renderC9AdvancedWorkspace(state,ui,act,esc){
  '<h1>Chinese across real contexts</h1>'+
  '<p>Seventeen original course expansions, using the same native character, vocabulary, grammar, reading, dialogue, writing and scheduled-review authorities. Phases describe editorial development, not achieved or official HSK levels.</p></div>'+
  '<a href="#/learn" class="c9-button c9-button--secondary">Return to Learn</a></header>';
- const stages='<nav class="c9-advanced-stages" aria-label="Advanced course phases">'+
+ const index=C9_ADVANCED_PHASES.indexOf(phase),previous=C9_ADVANCED_PHASES[index-1],next=C9_ADVANCED_PHASES[index+1];
+ const stages='<div class="c9-advanced-phase-picker">'+
+ '<div class="c9-advanced-mobile-phase"><label for="c9-advanced-phase-select">Course section</label>'+
+ '<select id="c9-advanced-phase-select" aria-label="Select original learning phase">'+
+ C9_ADVANCED_PHASES.map(p=>'<option value="'+p.phase+'"'+(p===phase?' selected':'')+'>'+
+  'P'+p.phase+' · '+esc(p.title)+'</option>').join('')+'</select></div>'+
+ '<nav class="c9-advanced-stages" aria-label="Advanced course phases">'+
  C9_ADVANCED_PHASES.map(p=>act('c9-advanced-phase',
  '<span>P'+p.phase+'</span><strong>'+esc(p.title)+'</strong><small>'+p.records.length+' sources</small>',
  'c9-advanced-stage'+(p.phase===phase.phase?' is-active':''),
- 'data-phase="'+p.phase+'" aria-pressed="'+(p.phase===phase.phase)+'"')).join('')+'</nav>';
+ 'data-phase="'+p.phase+'" aria-pressed="'+(p.phase===phase.phase)+'"')).join('')+'</nav>'+
+ '<nav class="c9-advanced-neighbor-phases" aria-label="Next or previous course phase">'+
+ (previous?act('c9-advanced-phase','← P'+previous.phase+' · '+esc(previous.title),
+  'c9-button c9-button--secondary c9-button--small','data-phase="'+previous.phase+'"'):
+  '<span>First section</span>')+
+ '<strong>P'+phase.phase+' / P'+C9_ADVANCED_PHASES.at(-1).phase+'</strong>'+
+ (next?act('c9-advanced-phase','P'+next.phase+' · '+esc(next.title)+' →',
+  'c9-button c9-button--secondary c9-button--small','data-phase="'+next.phase+'"'):
+  '<span>Final section</span>')+'</nav></div>';
  const catalog='<section class="c9-advanced-catalog" aria-labelledby="c9-advanced-catalog-title">'+
  '<div class="c9-advanced-catalog-head"><div><p class="c9-eyebrow">PHASE '+phase.phase+' · '+esc(phase.focus)+'</p>'+
  '<h2 id="c9-advanced-catalog-title">'+esc(phase.title)+'</h2><p>'+esc(phase.goal)+'</p></div>'+
