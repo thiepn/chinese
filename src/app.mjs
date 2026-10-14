@@ -519,6 +519,10 @@ function renderToday(){
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
+  '<section class="c9-skills-home-cta" aria-label="Continue language skills"><div>'+
+  '<strong>Connect characters, reading, dialogue and writing</strong>'+
+  '<p>Choose one learning skill, continue with source-backed material, and return to the original native practice.</p></div>'+
+  '<a href="#/skills">Open Skill Paths →</a></section>'+
   renderC9LearningContinuity(state,action,esc)+onboardingPanel()+
   '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
   '<div class="c9-home-extra-inner">'+gated()+
@@ -574,6 +578,7 @@ function renderLearn(){
   const curriculum='<section class="c9-original-curriculum" aria-labelledby="c9-original-curriculum-title">'+
    '<header class="c9-original-curriculum-head"><div><p class="c9-eyebrow">ORIGINAL AUTHOR-SUPPLIED TEACHING</p><h2 id="c9-original-curriculum-title">Build skills beyond the character list</h2>'+
    '<p>Characters lead into real vocabulary, grammar, sentence production, listening and connected reading. These are independent original teaching modules, not official HSK certification.</p></div>'+
+   '<a href="#/skills" class="c9-button c9-button--primary">Continue by learning skill →</a>'+
    '<a href="#/pathway" class="c9-button c9-button--secondary">Explore nine-band pathway</a></header>'+
    '<div class="c9-original-curriculum-grid">'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p31-title"><div class="c9-original-curriculum-label"><span>01 / CHARACTERS & WORDS</span><h3 id="c9-p31-title">Character foundations</h3><p>Original P31 character families, contextual teaching and practical words.</p></div>'+p31Overview(state,action,esc,true)+'</section>'+
@@ -852,7 +857,8 @@ function refreshC9AdvancedResults(){
 }
 function renderAdvanced(){return renderC9AdvancedWorkspace(state,c9AdvancedUi(),action,esc);}
 function renderSkills(){return renderC9SkillsWorkspace(state,c9SkillsUi,action,esc);}
-function renderWriting(){return (c9SkillWritingHandoff?
+function renderWriting(){return (c9SkillWritingHandoff&&
+ c9WritingLinkedUnit(c9SkillWritingHandoff.phase,c9SkillWritingHandoff.sourceId)?.id===c9WritingState.unitId?
  renderC9SkillWritingReturn(c9SkillWritingHandoff,action,esc):'')+
  renderC9WritingWorkspace(state,c9WritingState,action,esc);}
 function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
