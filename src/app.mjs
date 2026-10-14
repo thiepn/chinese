@@ -932,8 +932,10 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   // actually changed. Declining a source replacement retains the old link.
   if(name==='p43-stay')c9PendingSkillWritingHandoff=null;
   if(name==='p43-switch-confirm'){
-   if(c9WriterMatchesSkillBridge(c9PendingSkillWritingHandoff))
+   if(c9WriterMatchesSkillBridge(c9PendingSkillWritingHandoff)){
     c9SkillWritingHandoff=c9PendingSkillWritingHandoff;
+    render(); // The existing P43 controller rendered before confirming the bridge.
+   }
    c9PendingSkillWritingHandoff=null;
   }
   return;
@@ -1076,6 +1078,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   await act({dataset:{action:'c9-writing-source',id:source.id,phase:String(c9SkillsUi.phase)}});
   if(c9WriterMatchesSkillBridge(proposed)){
    c9SkillWritingHandoff=proposed;c9PendingSkillWritingHandoff=null;
+   render();
   }else if(c9WritingState.pending==='switch'){
    c9PendingSkillWritingHandoff=proposed;
   }
