@@ -111,15 +111,29 @@ export function renderC9WritingWorkspace(state,session,act,esc){
  const info='<section class="c9-writing-intro"><p class="c9-eyebrow">C9 · ORIGINAL ADVANCED PRODUCTION</p>'+
  '<h1>Write, revise and defend your reasoning.</h1>'+
  '<p>The P43 authored writing studio is the only open-ended composition workspace. P48, P50 and P51 add source-grounded prompts and review criteria around the same editor, not a second essay store or semantic grading system.</p>'+
- '<p class="c9-writing-privacy">Your unsent draft and explicit snapshots exist only in this open tab. Copy them outside the app to retain them after closing or refreshing; none is saved to learner progress.</p>'+
+ '<p class="c9-writing-privacy">Writing remains in this tab until you deliberately export a private draft backup. No open-ended draft is sent to learner progress or a server.</p>'+
  '<div class="c9-writing-intro-links"><a href="#/advanced">Original Advanced Course</a><a href="#/stories">Original Readings</a><a href="#/workshop">Native Sentence Workshop</a></div></section>';
+ const backup='<section class="c9-writing-portability" aria-labelledby="c9-writing-backup-title">'+
+ '<div><h2 id="c9-writing-backup-title">Keep a copy of your writing</h2>'+
+ '<p>Download your draft and up to 12 revision snapshots as a private JSON file, or select a previous backup. Export and import are manual; no cloud sync or automatic recovery is implied.</p></div>'+
+ '<div class="c9-writing-backup-controls">'+
+ act('c9-writing-backup-export','Export private draft backup','c9-button c9-button--primary c9-button--small',
+ (session.draft?.trim()||session.revisions?.length?'':'disabled'))+
+ '<label for="c9-writing-backup-file">Import a previous backup</label>'+
+ '<input id="c9-writing-backup-file" type="file" accept=".json,application/json" aria-describedby="c9-writing-backup-title"></div>'+
+ (session.importError?'<p class="c9-writing-import-error" role="alert">'+esc(session.importError)+'</p>':'')+
+ '<p class="c9-writing-portability-note">Your file contains private writing. Keep it in a trusted location; importing never automatically overwrites current work.</p>'+
+ '</section>';
  const links='<details class="c9-writing-catalog" '+(session.catalogOpen?'open':'')+'><summary>Choose a P43 original composition topic · '+P43_UNITS.length+' units</summary>'+
  p43Overview(act,esc,{selected:unit.id,filter:session.filter||'all',query:session.query||''})+'</details>';
  const pending=session.pending?'<section class="c9-writing-pending" role="alert"><h2>Confirm what happens to the unsent draft</h2>'+
  '<p>'+(session.pending==='discard'?'Discard this tab’s draft and snapshot history?':
  session.pending.startsWith('restore:')?'Replace the active editor text with the selected snapshot?':
+ session.pending==='import'?'Replace the current in-tab writing with the selected private backup ('+
+ esc(session.importCandidate?.unitId||'unknown unit')+', '+
+ (session.importCandidate?.revisions?.length||0)+' snapshots)? The current draft and revisions will be lost unless exported first.':
  'Switching source contexts would replace the current tab-local composition. Copy your writing first if you want to keep it.')+'</p>'+
- '<div>'+act('p43-stay','Keep current writing','c9-button c9-button--secondary')+
+ '<div>'+act('p43-stay',session.pending==='import'?'Cancel import':'Keep current writing','c9-button c9-button--secondary')+
  act('p43-switch-confirm','Confirm change','c9-button c9-button--primary')+'</div></section>':'';
  const studio=p43ProductionStudio(unit,act,esc,{
   draft:session.draft||'',revisions:session.revisions||[],compare:session.compare??-1,
@@ -127,7 +141,7 @@ export function renderC9WritingWorkspace(state,session,act,esc){
   rubric:session.rubric||[],pending:'',showEvidence:session.showEvidence||false
  });
  const active=validTransfer?transferPanel(state,session,act,esc):'';
- return '<div class="c9-writing-workspace">'+info+links+pending+active+studio+
+ return '<div class="c9-writing-workspace">'+info+backup+links+pending+active+studio+
  '<p class="c9-writing-footer">No HSK-certified proficiency, essay score, speech recording, AI evaluation or fabricated source is claimed. In this tab, source hints and model reveals are assistance, not grade evidence.</p></div>';
 }
 
@@ -140,14 +154,14 @@ export const c9WritingState={
  unitId:P43_UNITS[0].id,transferPhase:0,sourceId:null,draft:'',revisions:[],
  compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
  showEvidence:false,transferModels:false,transferReview:[],
- filter:'all',query:'',catalogOpen:false
+ filter:'all',query:'',catalogOpen:false,importCandidate:null,importError:''
 };
 const writingHasWork=()=>Boolean(c9WritingState.draft.trim()||c9WritingState.revisions.length);
 const resetWriting=({unitId=P43_UNITS[0].id,phase=0,sourceId=null}={})=>{
  const w=c9WritingState;
  Object.assign(w,{unitId,transferPhase:Number(phase),sourceId,draft:'',revisions:[],
   compare:-1,reveal:false,step:'plan',rubric:[],pending:'',pendingTarget:null,
-  showEvidence:false,transferModels:false,transferReview:[]});
+  showEvidence:false,transferModels:false,transferReview:[],importCandidate:null,importError:''});
 };
 export function openC9WritingSource(phase,sourceId,{go,alertUser}){
  const unit=c9WritingLinkedUnit(phase,sourceId);
@@ -164,6 +178,69 @@ function requestC9Writing(target,{go}){
  else{w.pending='';w.pendingTarget=null;}
  go('writing');return true;
 }
+
+/** C9-30: portable P43 editorial export only. NO browser storage, network,
+ * learner database, autosave, background writes, or grading authority.
+ * Reading imported data never mutates an existing session until confirmation.
+ */
+const C9_WRITING_BACKUP_FORMAT='thiepn-chinese-p43-writing';
+const C9_WRITING_BACKUP_MAX_BYTES=420000;
+const C9_WRITING_TEXT_MAX=42000;
+function createC9WritingBackup(w){
+ return {
+  format:C9_WRITING_BACKUP_FORMAT,version:1,exportedAt:new Date().toISOString(),
+  unitId:w.unitId,transferPhase:w.transferPhase,sourceId:w.sourceId,
+  draft:w.draft,revisions:[...w.revisions],compare:w.compare,
+  step:w.step,rubric:[...w.rubric],showEvidence:!!w.showEvidence,
+  reveal:!!w.reveal,transferModels:!!w.transferModels,
+  transferReview:[...w.transferReview]
+ };
+}
+function parseC9WritingBackup(raw){
+ if(typeof raw!=='string'||new Blob([raw]).size>C9_WRITING_BACKUP_MAX_BYTES)
+  throw Error('Backup exceeds the 420 KB local import limit.');
+ const b=JSON.parse(raw);
+ if(!b||b.format!==C9_WRITING_BACKUP_FORMAT||b.version!==1)
+  throw Error('Not a supported C9 P43 writing backup.');
+ if(!findP43Unit(b.unitId))throw Error('The original P43 writing unit does not exist.');
+ const phase=Number(b.transferPhase||0),sourceId=b.sourceId||null;
+ if(![0,43,48,50,51].includes(phase)||phase!==0&&
+   c9WritingLinkedUnit(phase,sourceId)?.id!==b.unitId)
+  throw Error('The backup source does not match the original P43 unit.');
+ if(typeof b.draft!=='string'||b.draft.length>C9_WRITING_TEXT_MAX||
+   !Array.isArray(b.revisions)||b.revisions.length>12||
+   b.revisions.some(t=>typeof t!=='string'||t.length>C9_WRITING_TEXT_MAX))
+  throw Error('Backup draft or revision content is invalid.');
+ const compare=Number(b.compare);
+ const step=['plan','compose','revise','speak'].includes(b.step)?b.step:'compose';
+ const rubric=Array.isArray(b.rubric)?b.rubric.filter(id=>
+  P43_REVIEW_CRITERIA.some(c=>c.id===id)).slice(0,12):[];
+ const allowed=transferSets[phase]?.criteria||[];
+ const reviews=Array.isArray(b.transferReview)?b.transferReview.filter(key=>
+  typeof key==='string'&&allowed.some(c=>phase+':'+c.id===key)).slice(0,18):[];
+ return {unitId:b.unitId,phase,sourceId,draft:b.draft,
+  revisions:b.revisions.slice(),compare:Number.isInteger(compare)&&compare>=0&&
+   compare<b.revisions.length?compare:-1,step,rubric,showEvidence:!!b.showEvidence,
+  reveal:!!b.reveal,transferModels:!!b.transferModels,transferReview:reviews};
+}
+export async function handleC9WritingBackupFile(e,{render,alertUser}){
+ if(e.target.id!=='c9-writing-backup-file')return false;
+ const file=e.target.files?.[0];e.target.value='';
+ if(!file)return true;
+ const w=c9WritingState;
+ try{
+  if(file.size>C9_WRITING_BACKUP_MAX_BYTES)throw Error('File exceeds the 420 KB writing backup limit.');
+  const candidate=parseC9WritingBackup(await file.text());
+  w.importCandidate=candidate;w.importError='';w.pending='import';w.pendingTarget=null;
+  render();
+ }catch(err){
+  w.importCandidate=null;w.pending='';w.importError=err instanceof Error?
+   err.message:'The writing file could not be read.';
+  render();alertUser(w.importError,'error');
+ }
+ return true;
+}
+
 export function hasC9UncopiedWriting(){
  const w=c9WritingState;
  return Boolean(w.draft.trim()||w.revisions.length);
@@ -209,6 +286,24 @@ export async function handleC9WritingAction(button,api){
   rememberHandoff(name==='grammar-select'?'grammar':'explore',id);
   return false;
  }
+ if(name==='c9-writing-backup-export'){
+  if(!writingHasWork())return true;
+  const text=JSON.stringify(createC9WritingBackup(w),null,2);
+  if(new Blob([text]).size>C9_WRITING_BACKUP_MAX_BYTES){
+   alertUser('Backup exceeds the local export limit. Copy the text instead.','error');return true;
+  }
+  let url=null;
+  try{
+   url=URL.createObjectURL(new Blob([text],{type:'application/json;charset=utf-8'}));
+   const anchor=document.createElement('a');
+   anchor.href=url;anchor.download='chinese-writing-'+w.unitId+'-'+
+    new Date().toISOString().slice(0,10)+'.json';
+   anchor.style.display='none';document.body.appendChild(anchor);anchor.click();anchor.remove();
+   alertUser('Backup download requested. Keep the private JSON file somewhere safe.');
+  }catch{alertUser('File export is not available in this browser. Copy your writing manually.','error');}
+  finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),1200);}
+  return true;
+ }
  if(name==='c9-writing-source')return openC9WritingSource(Number(button.dataset.phase),id,api);
  if(name==='c9-writing-models'){
   if(c9WritingTransfer(w.transferPhase,w.sourceId)){w.transferModels=!w.transferModels;render();}
@@ -247,9 +342,15 @@ export async function handleC9WritingAction(button,api){
   if(u)requestC9Writing({unitId:u.id,phase:0,sourceId:null},api);
   return true;
  }
- if(name==='p43-stay'){w.pending='';w.pendingTarget=null;render();return true;}
+ if(name==='p43-stay'){w.pending='';w.pendingTarget=null;w.importCandidate=null;w.importError='';render();return true;}
  if(name==='p43-switch-confirm'){
-  if(w.pending==='discard'){
+  if(w.pending==='import'&&w.importCandidate){
+   const b=w.importCandidate;
+   resetWriting({unitId:b.unitId,phase:b.phase,sourceId:b.sourceId});
+   Object.assign(w,{draft:b.draft,revisions:[...b.revisions],compare:b.compare,
+    step:b.step,rubric:[...b.rubric],showEvidence:b.showEvidence,
+    reveal:b.reveal,transferModels:b.transferModels,transferReview:[...b.transferReview]});
+  }else if(w.pending==='discard'){
    resetWriting({unitId:w.unitId,phase:w.transferPhase,sourceId:w.sourceId});
   }else if(w.pending.startsWith('restore:')){
    const index=Number(w.pending.slice(8));
