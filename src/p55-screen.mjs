@@ -7,6 +7,7 @@ import {p55Source,p55Reference,p55BriefEvidence,p55Next,p55NativeWords,p58Canoni
 import {dueCards} from './study.mjs';
 import {p56RepairFor} from './p56-repairs.mjs';
 import {p57TransferFor} from './p57-transfer-contexts.mjs';
+import {p58ModelFor} from './p58-response-models.mjs';
 export const P55_STEPS=Object.freeze([
  {id:'sources',label:'Source comparison'},
  {id:'language',label:'Register and repair'},
@@ -93,7 +94,8 @@ export function p55Overview(state,act,esc,{selected='',query=''}={}){
 }
 export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,showModel=false,showSupport=false,showRepair=false}={}){
  if(!b)return '';
- const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id),transfer=p57TransferFor(b.id),
+ const e=p55BriefEvidence(state,b),words=p55NativeWords(b),repair=p56RepairFor(b.id),
+ transfer=p57TransferFor(b.id),transferModel=p58ModelFor(b.id),
  sourceCount=Math.min(3,
   Math.max(p58SourceQuestionCount(b.from,'reading'),p58SourceQuestionCount(b.to,'reading'),
    p58SourceQuestionCount(b.from,'dialogue'),p58SourceQuestionCount(b.to,'dialogue')));
@@ -157,7 +159,9 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  '<p><strong>Specific unsupported claim to remove:</strong> '+esc(repair?.wrong||b.pitfall)+'</p>'+
  '<p><strong>Source-bound revision principle:</strong> '+esc(repair?.principle||b.pitfall)+'</p>'+
  (transfer?'<p><strong>Unfamiliar context for draft three:</strong> '+esc(transfer.setting)+'</p>'+
- '<p><strong>New independent revision task:</strong> '+esc(transfer.prompt)+'</p>':'')+
+ '<p><strong>New independent revision task:</strong> '+esc(transfer.prompt)+'</p>'+
+ (transferModel?'<p><strong>Different-audience drafting challenge:</strong> '+
+ esc(transferModel.independentTask)+'</p>':''):'')+
  '<p><strong>Fair counterargument:</strong> '+esc(b.objection)+'</p>'+
  '<div class="p55-actions">'+act('p55-copy-brief','Copy source-grounded writing task','button outline')+
  act('p55-p43','Open existing P43 independent writing →','button primary')+
@@ -183,13 +187,24 @@ export function p55Lesson(b,state,act,esc,{step='sources',qIndex=0,reveal=false,
  '</article>').join('')+'</div>'+
  '<p><strong>Reasonable objection:</strong> '+esc(transfer.objection)+'</p>'+
  '<p><strong>What must not transfer:</strong> '+esc(transfer.limit)+'</p>'+
+ (transferModel?'<p><strong>Independent rephrasing:</strong> '+
+ esc(transferModel.independentTask)+'</p>':'')+
+ (showModel&&transferModel?'<section class="p58-reference" aria-label="Optional original P58 bilingual register examples">'+
+ '<h5>Original bilingual reference examples · not an assessed answer</h5>'+
+ '<p>These refer only to this new fictional context. They do not supply original P50–P54 source evidence or verify your independent writing.</p>'+
+ '<div class="p58-reference-pair">'+[['Formal source-qualified notice',transferModel.formal],
+ ['Natural conversational explanation',transferModel.conversational]].map(([label,example])=>
+ '<article><h6>'+esc(label)+'</h6><p lang="zh-Hans">'+esc(example.hanzi)+'</p>'+
+ '<small>'+esc(example.pinyin)+'</small><p>'+esc(example.english)+'</p>'+
+ act('speak','Hear device Chinese speech','button outline small',
+ 'data-text="'+esc(example.hanzi)+'"')+'</article>').join('')+'</div></section>':'')+
  '<div class="p55-actions">'+act('p55-support',showSupport?
  'Hide bilingual language support':'Reveal original Pinyin and English · assisted','button outline')+'</div>'+
  '<p class="muted">Compose your own formal response and a natural spoken explanation before consulting earlier models. This activity is ungraded and stores no speaking attempt.</p>'+
  '</section>':'')+
  '<p>Speak before revealing any authored sentence. Neither device text-to-speech nor your own response is assessed as independent speaking.</p>'+
  '<div class="p55-actions">'+act('p55-reveal-model',showModel?'Hide original bilingual model':
- 'Compare an original evidence-qualified Mandarin model after speaking','button outline')+
+ 'Compare original Mandarin models after speaking · source and new context','button outline')+
  act('p55-step','Return to source evidence →','button outline','data-step="sources"')+'</div>'+
  (showModel?'<article class="p55-authored-model"><h4>Original teaching model · not a graded answer</h4>'+
  '<p lang="zh-Hans">'+esc(b.model.hanzi)+'</p>'+
