@@ -89,6 +89,11 @@ const stableRoutes=new Set(['today','learn','review','explore','progress','setti
 const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';return stableRoutes.has(v)?v:'today'};
 let c9RenderedRoute=route();
 let c9ApprovedDeparture=null;
+// C9-39 offline-readiness protocol: report version AND full source manifest
+// must match the app revision. An older controller's successful old cache is
+// not evidence that this revision's original lessons will work offline.
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v46-c9-partial-repair';
+const C9_EXPECTED_OFFLINE_ASSETS=315;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
@@ -989,7 +994,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   }
   await verifyC9OfflineShell('c9-offline-repair');
   alertUser(c9OfflineShell==='ready'?
-   'The controlling service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'The current service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   c9OfflineShell==='outdated'?
+   'A previous offline version still controls this tab. Save or export any private P43 writing, then reload online to finish updating. Your browser learning records were not modified.':
    'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
    c9OfflineShell==='ready'?'info':'error');
   return c9OfflineShell==='ready';
@@ -2614,6 +2621,7 @@ function networkLabel(){
  const status=c9OfflineShell==='ready'?'Offline shell active':
   c9OfflineShell==='installing'?'Preparing offline content':
   c9OfflineShell==='checking'?'Checking offline setup':
+  c9OfflineShell==='outdated'?'Previous offline version active · reload online':
   c9OfflineShell==='incomplete'?'Offline cache incomplete':'Offline shell not ready';
  $('network-state').textContent='Local data · '+(online?'Online':'Offline')+' · '+status;
  const homeStatus=$('c9-home-connectivity');
@@ -2624,6 +2632,8 @@ function networkLabel(){
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
    'All original static source URLs are cached according to this service worker. Actual offline lessons and local progress still need device verification.':
+   c9OfflineShell==='outdated'?
+   'The active offline worker belongs to an earlier version. Reconnect and reload online to finish updating the current original static sources.':
    'Offline static source coverage is incomplete or not verified. Reconnect to prepare missing material.';
  }
  // This control must follow asynchronous controller/status changes. Previously
@@ -2637,7 +2647,8 @@ function networkLabel(){
    c9OfflineCoverage.cached+' / '+c9OfflineCoverage.total+' static assets cached on this device.':
    'Cache coverage has not yet been verified by this service worker.';
  }
-
+ const upgrade=$('c9-home-offline-upgrade');
+ if(upgrade)upgrade.hidden=!online||c9OfflineShell!=='outdated';
 }
 // Read-only SW cache integrity check. No network, learner state, local
 // storage or background authority is involved.
@@ -2661,14 +2672,20 @@ async function verifyC9OfflineShell(requestType='c9-offline-status'){
   catch{finish(null);}
  });
  if(generation!==c9OfflineCheck||navigator.serviceWorker.controller!==controller)return;
- // Older controlling service workers might not recognize this request.
- // That is a reason to disclose uncertainty, not claim all assets are cached.
- const valid=report?.type==='c9-offline-status'&&
+ // A complete cache for the PREVIOUS service worker is not sufficient.
+ // Ensure both the cache protocol and original static manifest are from the
+ // current app revision before exposing offline readiness or repair controls.
+ const wellFormed=report?.type==='c9-offline-status'&&
   Number.isInteger(report.cached)&&Number.isInteger(report.total)&&
-  report.total>0&&report.cached>=0&&report.cached<=report.total;
- c9OfflineCoverage=valid?{cached:report.cached,total:report.total}:null;
- c9OfflineShell=valid?
-  (report.complete===true&&report.cached===report.total?'ready':'incomplete'):'checking';
+  report.total>0&&report.cached>=0&&report.cached<=report.total&&
+  typeof report.version==='string'&&typeof report.complete==='boolean'&&
+  typeof report.failed==='boolean';
+ const current=wellFormed&&report.version===C9_EXPECTED_OFFLINE_CACHE&&
+  report.total===C9_EXPECTED_OFFLINE_ASSETS;
+ c9OfflineCoverage=current?{cached:report.cached,total:report.total}:null;
+ c9OfflineShell=!wellFormed?'checking':!current?'outdated':
+  report.complete===true&&report.failed===false&&report.cached===report.total?
+  'ready':'incomplete';
  networkLabel();
 }
 async function setupSW(){
