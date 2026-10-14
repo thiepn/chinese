@@ -88,7 +88,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const stableRoutes=new Set(['today','learn','review','explore','progress','settings','character','reader','stories','practice','dialogues','wordbook','senses','workshop','journey','ladder','block','fluency','plan','pinyin','grammar','sentences','pathway','find','advanced','writing','skills']);
 const route=()=>{const v=(location.hash.match(/^#\/(\w+)/)||[])[1]||'today';return stableRoutes.has(v)?v:'today'};
 let c9RenderedRoute=route();
-let c9ApprovedDeparture=null; // Short-lived, single successful route transition.
+let c9ApprovedDeparture=null;
+let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority. // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
@@ -527,7 +528,8 @@ function renderToday(){
  // The actual learning next steps, unit progress and contextual source entries
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
- return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false})+
+ return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false,
+   offlineShell:c9OfflineShell})+
   '<section class="c9-skills-home-cta" aria-label="Continue language skills"><div>'+
   '<strong>Connect characters, reading, dialogue and writing</strong>'+
   '<p>Choose one learning skill, continue with source-backed material, and return to the original native practice.</p></div>'+
@@ -2364,8 +2366,56 @@ if(c9ReturnFocus){
 }
 if(c9SearchFocusPending&&route()==='find'){root.querySelector('#p30-query')?.focus({preventScroll:true});c9SearchFocusPending=false;}});
 window.addEventListener('online',networkLabel);window.addEventListener('offline',networkLabel);
-function networkLabel(){const online=navigator.onLine;$('network-state').textContent=online?'Local data · Online':'Local data · Offline';const homeStatus=$('c9-home-connectivity');if(homeStatus)homeStatus.textContent=online?'Online · local learner data':'Offline · cache-dependent availability';const homeNotice=$('c9-home-offline-notice');if(homeNotice)homeNotice.hidden=online;}
-async function setupSW(){if(!('serviceWorker'in navigator)||location.protocol==='file:')return;try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(e){console.warn('Offline shell unavailable',e)}}
+function networkLabel(){
+ const online=navigator.onLine;
+ const status=c9OfflineShell==='ready'?'Offline shell active':
+  c9OfflineShell==='installing'?'Preparing offline content':
+  c9OfflineShell==='checking'?'Checking offline setup':'Offline shell not ready';
+ $('network-state').textContent='Local data · '+(online?'Online':'Offline')+' · '+status;
+ const homeStatus=$('c9-home-connectivity');
+ if(homeStatus)homeStatus.textContent=(online?'Online':'Offline')+' · '+status;
+ const homeNotice=$('c9-home-offline-notice');
+ if(homeNotice){
+  homeNotice.hidden=online;
+  const message=homeNotice.querySelector('span');
+  if(message)message.textContent=c9OfflineShell==='ready'?
+   'The offline shell is active. Cached material may be available; original progress still depends on local browser storage.':
+   'The offline shell is not confirmed ready. Reconnect to prepare original source material for offline use.';
+ }
+}
+async function setupSW(){
+ if(!('serviceWorker' in navigator)||location.protocol==='file:'){
+  c9OfflineShell='unsupported';networkLabel();return;
+ }
+ // Registration only requests a worker: a controlled page is evidence that
+ // installation completed, not certification of every offline learning flow.
+ c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
+ networkLabel();
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  c9OfflineShell=navigator.serviceWorker.controller?'ready':'installing';
+  networkLabel();
+ });
+ try{
+  const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+  const installing=registration.installing;
+  if(installing){
+   installing.addEventListener('statechange',()=>{
+    if(installing.state==='redundant'&&!navigator.serviceWorker.controller)
+     c9OfflineShell='failed';
+    if(installing.state==='activated'&&navigator.serviceWorker.controller)
+     c9OfflineShell='ready';
+    networkLabel();
+   });
+  }
+  c9OfflineShell=navigator.serviceWorker.controller?'ready':
+   registration.installing?'installing':'checking';
+  networkLabel();
+ }catch(e){
+  c9OfflineShell=navigator.serviceWorker.controller?'ready':'failed';
+  networkLabel();
+  console.warn('Offline shell unavailable',e);
+ }
+}
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
  void setupSW();}
