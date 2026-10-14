@@ -952,6 +952,19 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return;
  }
 
+ if(name==='c9-offline-repair'){
+  if(!navigator.onLine){alertUser('Reconnect to prepare original offline assets.','error');return false;}
+  if(!navigator.serviceWorker?.controller){
+   alertUser('Offline installation is not active. Reload this page online, then try again.','error');
+   return false;
+  }
+  await verifyC9OfflineShell('c9-offline-repair');
+  alertUser(c9OfflineShell==='ready'?
+   'The controlling service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
+   c9OfflineShell==='ready'?'info':'error');
+  return c9OfflineShell==='ready';
+ }
  if(name==='c9-native-handoff-return'){
   if(!c9NativeTrail||!c9ConfirmLeaveNativeAnswer()||route()!==c9NativeTrail.targetRoute||
    currentC9NativeTarget(route())!==c9NativeTrail.targetId)return;
@@ -2442,20 +2455,21 @@ function networkLabel(){
 // Read-only SW cache integrity check. No network, learner state, local
 // storage or background authority is involved.
 let c9OfflineCheck=0;
-async function verifyC9OfflineShell(){
+async function verifyC9OfflineShell(requestType='c9-offline-status'){
  const controller=navigator.serviceWorker?.controller;
  const generation=++c9OfflineCheck;
  if(!controller){c9OfflineShell='installing';networkLabel();return;}
- c9OfflineShell='checking';networkLabel();
+ c9OfflineShell=requestType==='c9-offline-repair'?'installing':'checking';networkLabel();
  const report=await new Promise(resolve=>{
   const channel=new MessageChannel();let finished=false;
   const finish=value=>{
    if(finished)return;finished=true;clearTimeout(timeout);
    channel.port1.close();resolve(value);
   };
-  const timeout=setTimeout(()=>finish(null),2500);
+  const timeout=setTimeout(()=>finish(null),
+   requestType==='c9-offline-repair'?30000:2500);
   channel.port1.onmessage=event=>finish(event.data);
-  try{controller.postMessage({type:'c9-offline-status'},[channel.port2]);}
+  try{controller.postMessage({type:requestType},[channel.port2]);}
   catch{finish(null);}
  });
  if(generation!==c9OfflineCheck||navigator.serviceWorker.controller!==controller)return;
