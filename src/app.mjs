@@ -7,7 +7,7 @@ import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
-import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting} from './writing-c9.mjs';
+import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting,cancelC9WritingFileRead} from './writing-c9.mjs';
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
@@ -2393,6 +2393,7 @@ window.addEventListener('hashchange',()=>{
   history.replaceState(null,'','#/'+previous);
   return;
  }
+ if(previous==='writing'&&destination!=='writing')cancelC9WritingFileRead();
  if(sessionQueue?.length&&destination!=='review')reviewPaused=true;
  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
  render();window.scrollTo(0,0);
