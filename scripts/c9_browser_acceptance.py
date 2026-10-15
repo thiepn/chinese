@@ -465,6 +465,22 @@ def main():
                 open_route(page,"sentences")
                 pathway=page.locator(".c9-typing-path details")
                 pathway.locator("summary").click()
+                if not pathway.get_attribute("open"):
+                    raise AssertionError("Original typing details did not open")
+                pathway.locator("#c9-typing-status").select_option("unattempted")
+                if not pathway.get_attribute("open"):
+                    raise AssertionError("Typing source filters discarded the active disclosure")
+                if pathway.locator("#c9-typing-status").input_value()!="unattempted":
+                    raise AssertionError("Native typing evidence filter lost selection")
+                pathway.locator("#c9-typing-topic").select_option(index=1)
+                first_page=pathway.locator('[data-action="c9-typing-start"]').first.get_attribute("data-id")
+                next_page=pathway.locator('[data-action="c9-typing-page"][data-delta="1"]')
+                if next_page.is_enabled():
+                    next_page.click()
+                    second_page=pathway.locator('[data-action="c9-typing-start"]').first.get_attribute("data-id")
+                    if first_page==second_page:
+                        raise AssertionError("Native typing page did not advance the original source")
+                    pathway.locator('[data-action="c9-typing-page"][data-delta="-1"]').click()
                 cards=pathway.locator('[data-action="c9-typing-start"]')
                 if cards.count()<3:
                     raise AssertionError("Original typed sentence pathway not available")
@@ -523,6 +539,20 @@ def main():
                 page.locator('[data-personal-mine="0"]').click()
                 if "1" not in page.locator(".c9-personal-mined strong").inner_text():
                     raise AssertionError("Private sentence mining did not update")
+                page.locator("#c9-personal-analyze").click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Re-annotation of the same passage erased mined sentences")
+                entry.fill("我喜欢中文。")
+                if not page.locator("#c9-personal-results").is_hidden():
+                    raise AssertionError("Stale annotations still shown after private text changed")
+                page.once("dialog",lambda dialog: dialog.dismiss())
+                page.locator("#c9-personal-analyze").click()
+                if "Previous selections retained" not in page.locator("#c9-personal-status").inner_text():
+                    raise AssertionError("Declined replacement erased the prior private sentence selections")
+                entry.fill("我在学校学习中文。我喜欢中文。")
+                page.locator("#c9-personal-analyze").click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Returning to the original annotated passage failed to recover local selections")
                 if page.locator(".c9-personal-term").count()<1:
                     raise AssertionError("Canonical source word lookup was not offered")
                 if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
