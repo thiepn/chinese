@@ -188,10 +188,14 @@ body {overflow-x:clip;}
 }
 .c9-lesson-nav-button,.c9-character-tab {
   scroll-margin-inline:12px;
-  min-width:max-content;
   white-space:normal;
   text-align:left;
 }
+/* Desktop lesson sections occupy a narrow, fixed-width grid track. A
+ * max-content minimum leaks into the teaching column and covers its text.
+ * Only horizontally scrollable tabs need max-content sizing. */
+.c9-lesson-nav-button {min-width:0;max-width:100%;}
+.c9-character-tab {min-width:max-content;}
 .c9-character-tabs .c9-character-tab[aria-current="location"],
 .c9-lesson-nav-button[aria-current="location"] {
   border-color:var(--c9-accent);
@@ -225,7 +229,7 @@ body {overflow-x:clip;}
  .c9-lesson-right{position:static;grid-column:1;}
  .c9-lesson-left{position:sticky;top:0;z-index:12;min-width:0;}
  .c9-lesson-sections{display:flex;overflow-x:auto;overscroll-behavior-inline:contain;gap:5px;}
- .c9-lesson-nav-button{flex:0 0 auto;min-height:44px;}
+ .c9-lesson-nav-button{flex:0 0 auto;min-width:max-content;max-width:none;min-height:44px;}
 }
 @media (max-width:800px){
  .c9-app-shell .workspace main{
