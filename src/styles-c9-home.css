@@ -417,51 +417,54 @@
  .c9-home-explore-more>summary{padding:13px 12px}
  .c9-home-hero-actions .c9-button{width:100%}
 }
-/* Concept 9 visual completion: compact source-honest Home dashboard. */
-.c9-home{gap:14px}
-.c9-home-heading{padding:0 0 1px}
-.c9-home-heading h1{font-size:clamp(25px,2.35vw,33px);margin-block:3px 6px}
-.c9-home-lead-grid{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(310px,1fr);align-items:stretch;gap:14px}
-.c9-home-lead-grid>.c9-home-hero{grid-template-columns:minmax(0,1.35fr) minmax(155px,.72fr);min-height:334px}
-.c9-home-lead-grid>.c9-home-plan{padding:19px;align-self:stretch}
-.c9-home-lead-grid .c9-home-tasks{gap:0}
-.c9-home-lead-grid .c9-home-task{padding-block:9px;gap:8px;grid-template-columns:24px minmax(0,1fr) auto}
-.c9-home-lead-grid .c9-home-task-content>span{display:none}
-.c9-home-lead-grid .c9-home-task-content>small{font-size:10px}
-.c9-home-lead-grid .c9-home-task-mark{width:24px;height:24px}
-.c9-home-lead-grid .c9-home-hero-copy{padding:24px 20px}
-.c9-home-lead-grid .c9-home-hero h2{font-size:clamp(22px,2.1vw,30px);margin:9px 0}
-.c9-home-hero-course{max-width:350px;margin:14px 0 18px;display:grid;gap:2px}
-.c9-home-hero-course>span{font:650 11px/1.3 var(--c9-ui);color:var(--c9-sub)}
-.c9-home-hero-course .c9-home-progress{margin:4px 0}
-.c9-home-hero-course .c9-home-progress-head{margin-bottom:4px}
-.c9-home-hero-course .c9-home-progress-head span{font-size:10px}
-.c9-home-hero-ink{position:absolute;bottom:15px;right:9px;color:var(--c9-green);writing-mode:vertical-rl;letter-spacing:.23em;font:500 12px/1.2 var(--c9-hanzi-display);opacity:.6}
-.c9-home-lead-grid .c9-home-art{min-height:0}
-.c9-home-metrics{grid-template-columns:repeat(4,minmax(0,1fr));border-radius:var(--c9-r)}
-.c9-home-metrics .c9-home-stat{padding:12px 16px;gap:3px}
-.c9-home-metrics .c9-home-stat>strong{font-size:clamp(21px,2vw,27px)}
-.c9-home-columns{grid-template-columns:minmax(0,1.28fr) minmax(320px,.8fr);gap:14px}
-.c9-home-main-column,.c9-home-side-column{gap:14px}
-.c9-home-panel{padding:19px}
-.c9-home-shortcut-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.c9-home-shortcut-grid .c9-home-route{display:grid;justify-items:start;min-height:81px;gap:5px;padding:11px}
-.c9-home-shortcut-grid .c9-home-route>.c9-home-icon:last-child{display:none}
-.c9-home-shortcut-grid .c9-home-route>.c9-home-icon:first-child{width:23px;height:23px}
-.c9-home-roadmap-grid{grid-template-columns:minmax(0,1fr);gap:8px}
-.c9-home-side-column .c9-home-roadmap-unit{padding:13px}
-.c9-home-side-column .c9-home-roadmap-unit:nth-child(n+3){display:none}
-.c9-home-explore-more{margin-top:0}
-@media(max-width:1250px){.c9-home-lead-grid{grid-template-columns:minmax(0,1fr)}.c9-home-lead-grid>.c9-home-hero{min-height:250px}.c9-home-columns{grid-template-columns:minmax(0,1fr) minmax(260px,.8fr)}}
-@media(max-width:900px){.c9-home-columns{grid-template-columns:minmax(0,1fr)}.c9-home-shortcut-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:610px){.c9-home{gap:11px}.c9-home-lead-grid{gap:10px}.c9-home-lead-grid>.c9-home-hero{grid-template-columns:minmax(0,1fr) 90px;min-height:0}.c9-home-lead-grid .c9-home-hero-copy{padding:17px 11px 17px 15px}.c9-home-lead-grid .c9-home-hero h2{font-size:22px}.c9-home-hero p{font-size:12px;line-height:1.45;margin-bottom:7px}.c9-home-hero-course{margin:8px 0 12px}.c9-home-hero-course .c9-home-progress-head span{font-size:9px}.c9-home-hero-actions{gap:7px}.c9-home-hero-actions .c9-button{padding-inline:10px;min-width:0;font-size:11px}.c9-home-hero-actions .c9-button--secondary{display:none}.c9-home-hero-seal{font-size:58px}.c9-home-hero-ink{font-size:9px;right:4px}.c9-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-home-metrics .c9-home-stat{padding:10px 12px}.c9-home-metrics .c9-home-stat:nth-child(2){border-right:0}.c9-home-metrics .c9-home-stat:nth-child(-n+2){border-bottom:1px solid var(--c9-line)}.c9-home-shortcut-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.c9-home-shortcut-grid .c9-home-route{font-size:10px;min-height:69px;padding:8px 6px}.c9-home-plan .c9-home-task-content>span{display:none}.c9-home-plan .c9-home-task{padding-block:8px}.c9-home-panel{padding:15px}}
-@media(max-width:365px){.c9-home-lead-grid>.c9-home-hero{grid-template-columns:minmax(0,1fr) 60px}.c9-home-hero-ink{display:none}.c9-home-hero-actions .c9-button{width:auto}.c9-home-shortcut-grid .c9-home-route>.c9-home-icon:first-child{width:18px;height:18px}}
-/* Exact-head Chromium repair: restore mobile grid placement after legacy row ordering. */
-@media(max-width:610px){
- .c9-home-lead-grid>.c9-home-hero>.c9-home-hero-copy{grid-column:1;grid-row:1;min-width:0}
- .c9-home-lead-grid>.c9-home-hero>.c9-home-art{grid-column:2;grid-row:1;border-left:1px solid var(--c9-line);border-bottom:0;min-height:0}
- .c9-home-lead-grid .c9-home-hero-actions{flex-direction:row;align-items:center}
- .c9-home-lead-grid .c9-home-task{grid-template-columns:24px minmax(0,1fr) auto;gap:7px}
- .c9-home-lead-grid .c9-home-task .c9-button{grid-column:3;justify-self:end;min-width:50px;min-height:40px;margin:0;padding-inline:8px}
- .c9-home-lead-grid .c9-home-task-content{gap:2px}
+
+/* C9-47 — P9 first-fold editorial composition, bound to the real learning hub.
+   No mock HSK progress, remote landscape assets or additional UI framework. */
+.c9-home-first-fold{
+ display:grid;grid-template-columns:minmax(0,1.36fr) minmax(310px,.82fr);
+ gap:16px;align-items:stretch;min-width:0;
+}
+.c9-home-first-fold>.c9-home-hero{height:100%;min-height:0;align-content:stretch}
+.c9-home-first-fold>.c9-home-plan{margin:0;align-self:start}
+.c9-home-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.c9-home-source-preview{
+ width:100%;display:grid;gap:4px;margin-top:clamp(22px,3vw,38px);
+ padding:17px 0 0;border-top:1px solid var(--c9-line);min-width:0
+}
+.c9-home-source-preview>span,.c9-home-art-caption{
+ font:700 10px/1.5 var(--c9-ui);letter-spacing:.095em;color:var(--c9-muted)
+}
+.c9-home-source-preview>strong{
+ display:block;font:500 clamp(21px,2.2vw,29px)/1.55 var(--c9-hanzi-display);
+ color:var(--c9-ink);overflow-wrap:anywhere
+}
+.c9-home-source-preview>small{
+ font:500 12px/1.5 var(--c9-ui);color:var(--c9-green)
+}
+.c9-home-source-preview>p{
+ font:400 12px/1.55 var(--c9-ui);color:var(--c9-sub);margin:0
+}
+.c9-home-art{padding-bottom:35px}
+.c9-home-art-caption{
+ position:absolute;bottom:14px;left:10px;right:10px;
+ color:var(--c9-green);text-align:center;z-index:1
+}
+.c9-home-first-fold .c9-home-panel-heading{margin-bottom:11px}
+.c9-home-first-fold .c9-home-panel-desc{margin-bottom:6px}
+.c9-home-first-fold .c9-home-task{padding-block:10px}
+.c9-home-first-fold .c9-home-task-content>small{font-size:10px}
+.c9-home-first-fold .c9-home-hero{box-shadow:none}
+@media(max-width:1230px){
+ .c9-home-first-fold{grid-template-columns:minmax(0,1fr)}
+ .c9-home-first-fold>.c9-home-hero{min-height:270px}
+ .c9-home-first-fold>.c9-home-plan{width:100%}
+}
+@media(max-width:767px){
+ .c9-home-first-fold{gap:12px}
+ .c9-home-first-fold>.c9-home-hero{min-height:0}
+ .c9-home-hero-copy{padding:19px 18px 22px}
+ .c9-home-source-preview{margin-top:18px;padding-top:13px}
+ .c9-home-art{padding:8px 16px 24px;min-height:90px}
+ .c9-home-art-caption{bottom:6px;font-size:9px}
+ .c9-home-source-preview>strong{font-size:23px}
 }

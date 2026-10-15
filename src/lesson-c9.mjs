@@ -96,6 +96,18 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const lessonDue=cardsForLesson(lesson.id).filter(id=>new Set(dueCards(state)).has(id)).length;
  const position=index+1;
  const positionPercent=Math.round(position/DEMO_LESSONS.length*100);
+ const words=(lesson.words||[]).filter(w=>w?.hanzi&&w?.english).slice(0,2);
+ const example=lesson.sentence?.hanzi&&lesson.sentence?.english?lesson.sentence:null;
+ const preview='<section class="c9-lesson-source-preview" aria-labelledby="c9-lesson-source-title">'+
+  '<div class="c9-lesson-preview-title"><div><p class="c9-eyebrow">BEFORE YOU BEGIN · ORIGINAL CONTENT</p><h2 id="c9-lesson-source-title">What you will learn</h2></div><span class="c9-badge">Read-only preview</span></div>'+
+  '<div class="c9-lesson-preview-grid">'+
+   '<article class="c9-lesson-preview-character"><span>01 · CHARACTER</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><small>'+(showPinyin?esc(lesson.pinyin):'Pinyin hidden')+'</small><p>'+esc(lesson.meaning)+'</p>'+
+   act('c9-lesson-jump','Study the character →','c9-button c9-button--secondary c9-button--small','data-section="overview" aria-controls="c9-lesson-overview"')+'</article>'+
+   '<article class="c9-lesson-preview-words"><span>02 · WHOLE WORDS</span><div>'+words.map(w=>'<div class="c9-lesson-preview-word"><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong><span>'+(showPinyin?esc(w.pinyin)+' · ':'')+esc(w.english)+'</span></div>').join('')+'</div>'+
+   act('c9-lesson-jump','Study vocabulary →','c9-button c9-button--secondary c9-button--small','data-section="vocabulary" aria-controls="c9-lesson-vocabulary"')+'</article>'+
+   (example?'<article class="c9-lesson-preview-sentence"><span>03 · CONTEXT SENTENCE</span><strong lang="zh-Hans">'+esc(example.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(example.pinyin)+'</small>':'')+'<p>'+esc(example.english)+'</p>'+
+   act('c9-lesson-jump','Read in context →','c9-button c9-button--secondary c9-button--small','data-section="context" aria-controls="c9-lesson-context"')+'</article>':'')+
+  '</div><p class="c9-lesson-preview-disclaimer">These examples are teaching material. Browsing them never introduces a lesson or records a grade.</p></section>';
  const heading='<header class="c9-lesson-header"><div class="c9-lesson-heading-main">'+
   act('c9-learn-back','← All lessons','c9-button c9-button--quiet c9-button--small')+
   '<p class="c9-eyebrow">UNIT '+String(group?.index??1).padStart(2,'0')+
@@ -112,18 +124,17 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';
- const introduction='<section class="c9-lesson-visual-entry" aria-label="Lesson introduction and learning steps"><div class="c9-lesson-visual-copy"><span class="c9-eyebrow">TODAY’S ORIGINAL LESSON</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><h2>'+esc(lesson.meaning)+'</h2><p>'+esc(lesson.pinyin)+' · Character, useful words, sentence context and recall.</p><div class="c9-lesson-visual-actions">'+act('c9-lesson-jump','Start with character & sounds →','c9-button c9-button--primary','data-section="overview"')+'</div></div><div class="c9-lesson-visual-art" aria-hidden="true"><svg viewBox="0 0 480 180" preserveAspectRatio="xMidYMax slice"><path d="M0 161Q65 118 130 144T256 103T480 144V180H0Z" fill="currentColor" opacity=".13"/><path d="M40 169Q96 72 153 132Q196 90 260 117Q328 18 431 139" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M275 149h120m-104 0 15-18h72l14 18m-75-20 9-9h50l9 9m-29-7v-25m-41 52v-18m67 18v-18" fill="none" stroke="currentColor" opacity=".4"/></svg><span lang="zh-Hans">'+esc(lesson.hanzi)+'</span></div></section>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';
  const teaching=composeNativeSections(nativeMarkup,act,esc);
  const status=renderC9NativeStatus(introduced?'success':'info',
   introduced?'Introduced · keep practising':'Learning is ready',
   introduced?'Scheduled independent recall is tracked separately from this lesson.':
    'Review prompts are registered only when you explicitly introduce the lesson in the final section.');
- return '<div class="c9-lesson-workspace">'+heading+
+ return '<div class="c9-lesson-workspace">'+heading+preview+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
-  introduction+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
+  '<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
   '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
 }
