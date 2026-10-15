@@ -83,7 +83,7 @@ test('Service worker keeps Batch 20 modules in the active v53 offline contract',
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const current=sw.match(/^const CACHE='([^']+)'/m)?.[1];
  const expected=app.match(/^const C9_EXPECTED_OFFLINE_CACHE='([^']+)'/m)?.[1];
- assert.equal(current,expected);assert.match(current,/^character-study-working-v58-/);
+ assert.equal(current,expected);assert.match(current,/^character-study-working-v59-/);
  for(const token of ['course-overview.mjs','backup-preview.mjs','learning-hub.mjs'])assert.ok(sw.includes(token));
  assert.ok(!sw.includes('official-hsk-2025.json'));
 });

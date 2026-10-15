@@ -425,3 +425,34 @@
  .c9-lesson-title-row{gap:8px}
  .c9-lesson-source-preview{gap:10px;margin-bottom:14px}
 }
+
+
+/* C9-50 — move from original P9 source orientation into the actual six
+   teaching stages. All buttons call existing native source/section actions. */
+.c9-lesson-preview-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.c9-lesson-preview-toolbar .c9-button{min-height:44px;white-space:normal}
+.c9-lesson-preview-word{min-width:0;align-items:start}
+.c9-lesson-preview-word>.c9-button{justify-self:start;min-height:44px;margin:0;font-size:11px;
+ white-space:normal;text-align:start}
+.c9-lesson-preview-grid>article{min-width:0}
+.c9-lesson-preview-title{align-items:center}
+.c9-lesson-header-actions{min-width:0}
+.c9-lesson-header-actions>.c9-button{min-height:44px;white-space:normal;text-align:center}
+@media(min-width:1441px){
+ .c9-lesson-layout{grid-template-columns:minmax(155px,185px) minmax(0,1fr) minmax(205px,245px)}
+ .c9-lesson-left{top:18px}
+}
+@media(max-width:1080px){
+ .c9-lesson-preview-toolbar{width:100%;justify-content:space-between}
+ .c9-lesson-preview-toolbar .c9-button{flex:1 1 190px}
+}
+@media(max-width:650px){
+ .c9-lesson-preview-title h2{font-size:22px}
+ .c9-lesson-preview-toolbar>.c9-badge{font-size:10px}
+ .c9-lesson-preview-toolbar .c9-button{width:100%}
+ .c9-lesson-header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .c9-lesson-header-actions>.c9-lesson-pager{grid-column:1/-1}
+ .c9-lesson-header-actions>.c9-button{min-width:0;font-size:12px}
+ .c9-lesson-preview-word{gap:4px}
+}
+@media(max-width:370px){.c9-lesson-header-actions{grid-template-columns:minmax(0,1fr)}}
