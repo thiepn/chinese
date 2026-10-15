@@ -382,6 +382,68 @@ def main():
                     return "Native dark mode and P9 source contrast at "+str(width)+"px"
                 check("C9-47 dark source contrast "+str(width),dark_source_surfaces)
                 ctx.close()
+            # C9-50: verify native Home-to-source handoffs on a real local origin.
+            # Do not infer mastery from visiting any of these presentation routes.
+            for width,height,mobile in [(390,844,True),(1440,900,False)]:
+                ctx,page,errors=session(width,height,mobile)
+                def p9_source_navigation():
+                    open_route(page,"today")
+                    buttons=page.locator(".c9-home-source-actions button")
+                    if buttons.count()!=2:
+                        raise AssertionError("P9 authored character/sentence entry points missing")
+                    page.locator('.c9-home-source-actions [data-action="c9-lesson-open"]').click()
+                    section=page.locator("#c9-lesson-context")
+                    section.wait_for(state="visible")
+                    current=page.locator('.c9-lesson-sections [data-section="context"]')
+                    if current.get_attribute("aria-current")!="location":
+                        raise AssertionError("Home sentence handoff lost selected native lesson section")
+                    preview=page.locator("details.c9-lesson-resources")
+                    if not preview.count() or preview.evaluate("(e)=>e.open"):
+                        raise AssertionError("Source preview obstructs primary teaching or is missing")
+                    if page.locator("#c9-lesson-overview").count()!=1:
+                        raise AssertionError("Original first teaching section missing")
+                    open_route(page,"today")
+                    page.locator('.c9-home-source-actions [data-action="c9-character-open"]').click()
+                    page.locator(".c9-character-page").wait_for(state="visible")
+                    page.locator('.c9-character-first-actions [data-section="writing"]').click()
+                    if not page.locator("#c9-writing").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Character writing CTA did not focus original writing section")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P9 Home/source learning flow horizontally overflows")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-50-character-"+str(width)+".png")),full_page=True)
+                    return "Original next sentence and character handoffs, teaching and writing focus at "+str(width)+"px"
+                check("C9-50 native P9 source handoffs "+str(width),p9_source_navigation)
+                ctx.close()
+            ctx,page,errors=session()
+            def character_toggle_keeps_private_ink():
+                open_route(page,"character/demo-01")
+                canvas=page.locator("#c9-writing-canvas")
+                canvas.scroll_into_view_if_needed()
+                box=canvas.bounding_box()
+                if not box: raise AssertionError("Original writing pad unavailable")
+                page.mouse.move(box["x"]+box["width"]*.35,box["y"]+box["height"]*.35)
+                page.mouse.down()
+                page.mouse.move(box["x"]+box["width"]*.62,box["y"]+box["height"]*.54,steps=6)
+                page.mouse.up()
+                if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Freehand writing did not respond to pointer input")
+                page.evaluate("()=>window.__c9WritingPad=document.querySelector('#c9-writing-canvas')")
+                page.locator('[data-action="c9-character-support"]').click()
+                if not page.evaluate("()=>window.__c9WritingPad===document.querySelector('#c9-writing-canvas')"):
+                    raise AssertionError("Translation toggle destroyed the original freehand writing canvas")
+                if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Translation toggle erased unsaved writing")
+                if not page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
+                    raise AssertionError("Source translation did not hide")
+                page.locator('[data-action="c9-character-support"]').click()
+                if page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
+                    raise AssertionError("Source translation was not restored")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Optional English visibility did not replace or erase original ungraded ink"
+            check("C9-50 character writing continuity across translation toggle",character_toggle_keeps_private_ink)
+            ctx.close()
             # C9-46: screenshot-backed original desktop lesson overlap regression.
             # The desktop vertical lesson rail must never paint across the
             # adjacent native teaching panel; the mobile rail may scroll.
