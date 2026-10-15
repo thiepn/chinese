@@ -370,3 +370,9 @@
 @media(max-width:1440px){.c9-lesson-layout{grid-template-columns:minmax(0,164px) minmax(0,1fr)}.c9-lesson-left{width:100%;min-width:0;overflow:hidden}}
 @media(max-width:1080px){.c9-lesson-layout{grid-template-columns:minmax(0,1fr)}.c9-lesson-left{overflow:visible}.c9-lesson-nav-button{max-width:none;flex:0 0 auto;width:auto;white-space:nowrap}}
 @media(max-width:700px){.c9-lesson-header{padding:14px}.c9-lesson-header>div:first-child>p:last-child{display:none}.c9-lesson-header-actions{gap:6px}.c9-lesson-visual-entry{grid-template-columns:minmax(0,1fr) 75px}.c9-lesson-visual-copy{padding:15px 12px}.c9-lesson-visual-copy>strong{font-size:39px}.c9-lesson-visual-art{min-height:146px}.c9-lesson-visual-art>span{font-size:51px}.c9-lesson-visual-copy p{font-size:11px}.c9-lesson-visual-actions .c9-button{min-height:44px;padding-inline:10px}}
+/* Live Chromium evidence: compact source section labels inside the narrow desktop rail. */
+@media(min-width:1081px){
+ .c9-lesson-left .c9-lesson-nav-button{min-height:46px;align-items:center}
+ .c9-lesson-left .c9-lesson-nav-copy small{display:none}
+ .c9-lesson-left .c9-lesson-nav-mark{margin-top:0}
+}
