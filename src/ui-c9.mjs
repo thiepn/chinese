@@ -83,20 +83,38 @@ export function renderC9NativeStatus(kind,heading,message){
  return '<div class="c9-native-status c9-native-status--'+safe+'" role="'+(safe==='error'?'alert':'status')+'"><strong>'+heading+'</strong>'+
  (message?'<p>'+message+'</p>':'')+'</div>';
 }
-/** Replaces the long non-contextual legacy navigation strip without hiding routes. */
+/** Context-sensitive sibling navigation within the ORIGINAL route system.
+ * Top-level sidebar/mobile nav already exposes the complete app; avoid a
+ * second seven-item navigation strip above every teaching question.
+ * Disclosure is native and keyboard accessible, without another controller. */
+const C9_PINNED_CONTEXT=Object.freeze({
+ course:['learn','writing','skills'],
+ practice:['review','practice','fluency'],
+ media:['stories','dialogues','reader'],
+ library:['wordbook','grammar','sentences'],
+ sounds:['pinyin','stories','dialogues'],
+ discover:['find','explore','wordbook'],
+ personal:['progress','settings','plan']
+});
 export function renderC9ContextNav(route,esc){
  if(route==='today')return '';
  const info=c9RouteInfo(route);
  const links=C9_CONTEXT_LINKS[info.group]||C9_CONTEXT_LINKS.course;
- const relevant=links.includes(route)?links:[route,...links.slice(0,3)];
- return '<nav class="c9-context-bar" aria-label="Related learning destinations">'+
- '<div class="c9-context-ident"><span class="c9-eyebrow">'+esc(info.area)+'</span>'+
- '<strong>'+esc(info.label)+'</strong></div>'+
- '<div class="c9-context-links">'+relevant.map(id=>{
+ const available=[...new Set([route,...links])];
+ const preferred=C9_PINNED_CONTEXT[info.group]||C9_PINNED_CONTEXT.course;
+ const primary=[route,...preferred.filter(id=>id!==route&&available.includes(id))].slice(0,3);
+ const secondary=available.filter(id=>!primary.includes(id));
+ const destination=id=>{
   const item=c9RouteInfo(id);
   return '<a href="#/'+id+'" class="c9-context-link'+(route===id?' is-active':'')+'"'+
    (route===id?' aria-current="page"':'')+'>'+esc(item.label)+'</a>';
- }).join('')+'</div>'+
- '<a href="#/find" class="c9-context-search" aria-label="Find source material">'+icon('search')+
- '<span>Find material</span></a></nav>';
+ };
+ return '<nav class="c9-context-bar" aria-label="Related learning destinations">'+
+ '<div class="c9-context-ident"><span class="c9-eyebrow">'+esc(info.area)+'</span>'+
+ '<strong>'+esc(info.label)+'</strong></div>'+
+ '<div class="c9-context-links">'+primary.map(destination).join('')+'</div>'+
+ (secondary.length?'<details class="c9-context-more"><summary aria-label="Show more '+esc(info.area)+' destinations">More <span aria-hidden="true">⌄</span></summary>'+
+ '<div class="c9-context-more-links">'+secondary.map(destination).join('')+'</div></details>':'')+
+ '<a href="#/find" class="c9-context-search" aria-label="Find original source material">'+icon('search')+
+ '<span>Find</span></a></nav>';
 }

@@ -399,3 +399,74 @@
 @media(prefers-reduced-motion:reduce){
  .c9-discovery-waypoint{transition:none;}
 }
+
+
+/* C9-41: Replace four full-sized course jump cards with a compact and
+ * legible in-page table of contents; original actions/anchors are unchanged. */
+.c9-discovery-contents{
+ display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;
+ padding:11px 14px;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);background:var(--c9-surface);
+ min-width:0
+}
+.c9-discovery-contents>strong{
+ font:650 12px/1.4 var(--c9-ui);color:var(--c9-sub);
+ white-space:nowrap
+}
+.c9-discovery-contents-links{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-width:0}
+.c9-discovery-contents-links button{
+ min-height:44px;padding:8px 13px;border:1px solid var(--c9-line-strong);
+ border-radius:var(--c9-r-xs);background:var(--c9-surface);
+ color:var(--c9-ink);font:650 12px/1.4 var(--c9-ui);
+ cursor:pointer;white-space:normal;text-align:center
+}
+.c9-discovery-contents-links button:hover{
+ background:var(--c9-green-soft);border-color:var(--c9-sage);color:var(--c9-green)
+}
+.c9-discovery-section{scroll-margin-top:20px}
+.c9-discovery .c9-discovery-section :where(.c9-button,.c9-discovery-chip){
+ min-height:44px
+}
+@media(max-width:700px){
+ .c9-discovery-contents{padding:10px 11px;gap:6px}
+ .c9-discovery-contents>strong{flex:1 1 100%}
+ .c9-discovery-contents-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:6px}
+ .c9-discovery-contents-links button{padding:8px 10px}
+}
+@media(max-width:360px){
+ .c9-discovery-contents-links{grid-template-columns:minmax(0,1fr)}
+}
+
+
+/* Optional original P31–P34 course shelves no longer dominate the entire
+ * Learn page. The existing jump action opens this same native disclosure. */
+.c9-original-curriculum-disclosure{
+ min-width:0;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);background:var(--c9-surface)
+}
+.c9-original-curriculum-disclosure>summary{
+ min-height:72px;display:flex;justify-content:space-between;align-items:center;
+ gap:16px;padding:15px clamp(16px,2vw,24px);
+ list-style:none;cursor:pointer
+}
+.c9-original-curriculum-disclosure>summary::-webkit-details-marker{display:none}
+.c9-original-curriculum-disclosure>summary:hover{background:var(--c9-surface-2)}
+.c9-original-curriculum-disclosure>summary>span:first-child{display:grid;gap:4px;min-width:0}
+.c9-original-curriculum-disclosure>summary strong{
+ font:600 clamp(16px,1.5vw,19px)/1.35 var(--c9-display);color:var(--c9-ink)
+}
+.c9-original-curriculum-disclosure>summary small{
+ font:400 12px/1.55 var(--c9-ui);color:var(--c9-sub)
+}
+.c9-original-curriculum-disclosure>summary>span:last-child{
+ flex:none;font-size:23px;color:var(--c9-accent)
+}
+.c9-original-curriculum-disclosure[open]>summary>span:last-child{transform:rotate(180deg)}
+.c9-original-curriculum-disclosure .c9-original-curriculum{
+ margin:0;border:0;border-top:1px solid var(--c9-line);border-radius:0;
+ padding:clamp(15px,2vw,23px)
+}
+@media(max-width:650px){
+ .c9-original-curriculum-disclosure>summary{padding:13px 12px;gap:10px}
+ .c9-original-curriculum-disclosure .c9-original-curriculum{padding:12px}
+}

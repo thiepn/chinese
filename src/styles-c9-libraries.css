@@ -581,3 +581,29 @@
 @media(prefers-reduced-motion:reduce){
  .c9-language-workspace *{scroll-behavior:auto;}
 }
+
+
+/* C9-41: Vocabulary / Grammar / Sentences now use the single contextual
+ * navigation in the shell instead of repeating three equivalent tab links. */
+.c9-language-workspace{min-width:0;}
+.c9-language-workspace :where(.c9-library-word,.p25-lesson,.p26-detail){
+ overflow-wrap:anywhere;
+}
+.c9-language-native :where(.sentence-hanzi,.p25-example-hanzi,.p26-sentence-chinese){
+ line-height:1.75;
+}
+.c9-language-workspace :where(.c9-library-word-actions,.p25-actions,.p26-actions){
+ display:flex;flex-wrap:wrap;gap:8px;min-width:0;
+}
+.c9-language-workspace :where(.c9-library-word-actions,.p25-actions,.p26-actions) :where(button,a){
+ min-height:44px;max-width:100%;white-space:normal;
+}
+@media(max-width:640px){
+ .c9-language-workspace :where(.c9-language-native,.c9-library){padding:14px 12px;}
+ .c9-language-workspace :where(.c9-library-word-actions,.p25-actions,.p26-actions) :where(button,a){
+  flex:1 1 150px;text-align:center;
+ }
+}
+@media(max-width:360px){
+ .c9-language-workspace :where(.c9-library-word-actions,.p25-actions,.p26-actions) :where(button,a){flex-basis:100%;}
+}

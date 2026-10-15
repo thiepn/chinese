@@ -292,3 +292,33 @@
 @media(max-width:390px){
  .c9-media-turn-actions>.c9-button{flex:1 1 100%}
 }
+
+
+/* C9-41: Read/Listen/Speak share the same comfortable source-focused measure.
+ * These are presentation rules only; original transcript and grading remain. */
+.c9-media-native :where(.story-paper,.dialogue-paper,.reader-layout){
+ min-width:0;max-width:100%;
+}
+.c9-media-native :where(.story-chinese,.dialogue-chinese,.sentence-hanzi){
+ line-height:1.8;overflow-wrap:anywhere;
+}
+.c9-media-native :where(.story-pinyin,.dialogue-pinyin,.sentence-pinyin){
+ line-height:1.7;overflow-wrap:anywhere;
+}
+.c9-media-native :where(.answer-entry,.choice-list,.button-row){
+ max-width:100%;min-width:0;
+}
+.c9-media-native :where(.button,.c9-button,.choice){min-height:44px;}
+@media(max-width:750px){
+ .c9-media-turn-actions{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  justify-content:stretch;gap:8px;
+ }
+ .c9-media-turn-actions>.c9-button{
+  flex:none;width:100%;min-width:0;min-height:52px;
+  padding:10px;line-height:1.4;text-align:center;
+ }
+}
+@media(max-width:355px){
+ .c9-media-turn-actions{grid-template-columns:minmax(0,1fr);}
+}

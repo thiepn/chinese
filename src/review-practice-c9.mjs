@@ -41,7 +41,7 @@ const experienceNote=(info,result,esc)=>{
 const progress=(done,total,label)=>{
  const value=total?Math.min(100,Math.round(100*done/total)):0;
  return '<div class="c9-assessment-progress"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div>'+
- '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+saved+'"><span style="width:'+value+'%"></span></div></div>';
+ '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(total,Math.max(0,done))+'"><span style="width:'+value+'%"></span></div></div>';
 };
 const stat=(n,label)=>'<div class="c9-assessment-stat"><strong>'+count(n)+'</strong><span>'+label+'</span></div>';
 const title=(eyebrow,name,desc)=>'<header class="c9-assessment-title"><p class="c9-eyebrow">'+eyebrow+'</p>'+
@@ -105,7 +105,7 @@ export function renderC9Review({
    '<section class="c9-assessment-panel c9-unified-card c9-review-resume"><p class="c9-eyebrow">NEXT ORIGINAL PROMPT</p>'+
     '<h2>'+(next?esc(next.prompt):'Next due prompt')+'</h2>'+
     '<p>Focus: '+esc(focusOptions.find(([key])=>key===focus)?.[1]||'All due skills')+
-    '. Unsaved text, selections and unreconciled feedback are cleared when leaving Review.</p>'+
+    '. Pausing preserves your current answer in this tab. A reload discards only the ungraded session, not saved grades.</p>'+
     (invalidated?'<p class="c9-assessment-note">'+invalidated+' card(s) became unavailable or were already reviewed in another tab. No grade was invented.</p>':'')+
     '<div class="c9-assessment-actions c9-unified-actions">'+
      action('review-resume','Resume original queue →','c9-button c9-button--primary')+
@@ -162,7 +162,7 @@ export function renderC9Review({
   '<div class="c9-assessment-question"><p class="c9-eyebrow">'+family(c)+'</p>'+
   '<p class="c9-assessment-hanzi" lang="zh-Hans">'+esc(c.prompt)+'</p><h2>'+esc(c.question)+'</h2></div>'+
   details+'</div>'+
-  '<div class="c9-assessment-endnote"><span>'+(invalidated?invalidated+' stale card(s) omitted without grading. ':'')+'Leaving Review pauses this tab-local queue and clears unsent input.</span>'+
+  '<div class="c9-assessment-endnote"><span>'+(invalidated?invalidated+' stale card(s) omitted without grading. ':'')+'Leaving this screen retains the in-tab queue. Unsubmitted answers are not saved across a reload.</span>'+
   '<div class="c9-assessment-actions">'+action('review-pause','Pause and keep queue','c9-button c9-button--secondary')+link('learn','Back to lessons')+'</div></div>'+subnote+'</div>';
 }
 
