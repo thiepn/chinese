@@ -120,6 +120,49 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-46: screenshot-backed original desktop lesson overlap regression.
+            # The desktop vertical lesson rail must never paint across the
+            # adjacent native teaching panel; the mobile rail may scroll.
+            for width,height,mobile in [(1280,900,False),(1440,900,False),(1680,960,False),(390,844,True)]:
+                ctx,page,errors=session(width,height,mobile)
+                def lesson_hitboxes():
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    page.locator(".c9-lesson-layout").wait_for(state="visible")
+                    positions=page.evaluate("""() => {
+                      const left=document.querySelector('.c9-lesson-left');
+                      const main=document.querySelector('.c9-lesson-main');
+                      const buttons=[...document.querySelectorAll('.c9-lesson-left .c9-lesson-nav-button')];
+                      if(!left||!main||!buttons.length)return null;
+                      const r=e=>{const b=e.getBoundingClientRect();
+                        return {x:b.left,right:b.right,width:b.width,top:b.top,bottom:b.bottom}};
+                      return {left:r(left),main:r(main),buttons:buttons.map(r),
+                        columnMode:getComputedStyle(document.querySelector('.c9-lesson-layout')).gridTemplateColumns,
+                        overflow:document.documentElement.scrollWidth-innerWidth};
+                    }""")
+                    if not positions or len(positions["buttons"])<4:
+                        raise AssertionError("Native lesson sections missing")
+                    if positions["overflow"]>4:
+                        raise AssertionError("Original lesson page horizontal overflow")
+                    if not mobile:
+                        for b in positions["buttons"]:
+                            if b["x"]<positions["left"]["x"]-2 or b["right"]>positions["left"]["right"]+2:
+                                raise AssertionError("Desktop lesson navigation leaves its left column: "+str(positions))
+                        if positions["left"]["right"]>positions["main"]["x"]+2:
+                            raise AssertionError("Desktop navigation overlaps lesson main panel")
+                    else:
+                        if positions["main"]["top"]<positions["left"]["bottom"]-2:
+                            raise AssertionError("Mobile horizontal rail covers lesson content")
+                    target=page.locator(".c9-lesson-left .c9-lesson-nav-button").first
+                    target.focus()
+                    if not target.evaluate("(node)=>document.activeElement===node"):
+                        raise AssertionError("Lesson section cannot take keyboard focus")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (390,1440):
+                        page.screenshot(path=str(args.artifacts/("c9-46-lesson-"+str(width)+".png")),full_page=True)
+                    return "Native lesson rail clear of content and keyboard-focusable at "+str(width)+"px"
+                check("C9-46 lesson navigation hitboxes "+str(width),lesson_hitboxes)
+                ctx.close()
             ctx,page,errors=session()
             def dark():
                 open_route(page,"settings")
@@ -367,6 +410,47 @@ def main():
                     return str(width)+"x"+str(height)+" original editor visible"
                 check("P43 "+str(width)+"x"+str(height)+" responsive",writing_layout)
                 ctx.close()
+            # Existing offline cache names are discarded during installation
+            # of the new source worker. This tests stale CacheStorage migration,
+            # not a running-v53-service-worker takeover in a real user profile.
+            ctx,page,errors=session()
+            def stale_cache_upgrade():
+                legacy="character-study-working-v53-c9-45-complete-lesson-units"
+                current="character-study-working-v54-c9-46-lesson-layout-repair"
+                response=page.goto(args.base_url.rstrip("/")+
+                    "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
+                if response is None or response.status!=404:
+                    raise AssertionError("Stale-cache seed must not execute the app")
+                page.evaluate("""async name=>{
+                  const store=await caches.open(name);
+                  await store.put(new Request(location.origin+'/__c9_46_legacy_marker__'),
+                                  new Response('old revision only'));
+                }""",legacy)
+                if legacy not in page.evaluate("async ()=>await caches.keys()"):
+                    raise AssertionError("Older cache was not prepared")
+                open_route(page,"today")
+                page.wait_for_function("()=>Boolean(navigator.serviceWorker?.controller)",
+                                       timeout=25000)
+                page.wait_for_function("""async ()=> {
+                  const keys=await caches.keys();
+                  return !keys.includes('character-study-working-v53-c9-45-complete-lesson-units')&&
+                    keys.includes('character-study-working-v54-c9-46-lesson-layout-repair');
+                }""",timeout=15000)
+                kept=page.evaluate("""async name=>{
+                  const store=await caches.open(name);
+                  return (await store.keys()).length;
+                }""",current)
+                if kept!=315:
+                    raise AssertionError("Updated cache lacks original source assets: "+str(kept))
+                ctx.set_offline(True)
+                try:
+                    page.reload(wait_until="domcontentloaded")
+                    page.locator("#app-content").wait_for(state="visible")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                finally: ctx.set_offline(False)
+                return "Old v53 CacheStorage deleted; 315 v54 assets retained and offline reload works (not live SW takeover)"
+            check("C9-46 stale offline cache migration",stale_cache_upgrade)
+            ctx.close()
             ctx,page,errors=session()
             def offline():
                 open_route(page,"today")
