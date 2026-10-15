@@ -1136,8 +1136,15 @@ function p55ContextKind(){
   const taskId=params.get('task'),task=taskId?SENTENCE_TASKS.find(t=>t.id===taskId):sentenceTask(sentenceIndex);
   return linked&&task?.p55BriefId===b.id?'return':null;
  }
- if(locationRoute==='explore')return linked&&p55NativeWords(b).some(w=>
-  w.key&&(w.key===params.get('word')||w.key===searchSelection?.id))?'return':null;
+ if(locationRoute==='explore'){
+  // Only an explicit exact-key Wordbook handoff establishes this source
+  // context. An in-memory selection can outlive an unrelated URL, especially
+  // after browser history / voluntary catalogue browsing, and must not
+  // reattach a previous source pair to another word.
+  const sourceWord=params.get('word');
+  return sourceWord&&findWord(sourceWord)&&p55NativeWords(b).some(w=>
+   w.key===sourceWord)?'return':null;
+ }
  if(locationRoute==='stories'){
   const chosen=(hash.match(/^#\/stories\/(story-\d+)/)||[])[1]||storyId;
   return native.some(n=>n.story?.id===chosen)?'return':null;
