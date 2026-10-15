@@ -411,3 +411,17 @@
  .c9-lesson-preview-sentence{grid-column:auto;border-top:0}
  .c9-lesson-preview-grid .c9-button{min-height:44px}
 }
+
+
+/* P9 desktop outlines: C9-46 already bounds each button within the narrow
+   sidebar; shorten optional hints without hiding the six native stages. */
+@media(min-width:1081px){
+ .c9-lesson-left .c9-lesson-nav-button{min-height:46px;align-items:center}
+ .c9-lesson-left .c9-lesson-nav-copy small{display:none}
+ .c9-lesson-left .c9-lesson-nav-mark{margin-top:0}
+}
+@media(max-width:700px){
+ .c9-lesson-header{margin-bottom:14px;gap:13px}
+ .c9-lesson-title-row{gap:8px}
+ .c9-lesson-source-preview{gap:10px;margin-bottom:14px}
+}
