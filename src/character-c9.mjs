@@ -132,11 +132,11 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">MANUAL CHARACTER PRACTICE</p><h2 id="c9-writing-title">Write by hand</h2></div><span class="c9-badge">Ungraded</span></header>'+
   '<p>Compare your marks with the original glyph. Draw freely with touch, mouse or keyboard; practice stays on this screen and receives no grade.</p>'+
   '<div class="c9-writing-workspace"><div class="c9-writing-guide" aria-label="Reference glyph in square guide"><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><small>Reference only</small></div>'+
-  '<div class="c9-writing-pad"><details class="c9-writing-instructions" open><summary>Touch, mouse and keyboard controls</summary><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Drag to write. With a keyboard: focus the pad, move with arrow keys (Shift for larger steps), press Space or Enter to start/end a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. Nothing is graded or saved.</p></details><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas>'+
+  '<div class="c9-writing-pad"><details class="c9-writing-instructions" open><summary>Touch, mouse and keyboard controls</summary><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Drag to write. With a keyboard: focus the pad, move with arrow keys (Shift for larger steps), press Space or Enter to start/end a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. Nothing is graded or saved.</p></details><div class="c9-writing-canvas-wrap"><span id="c9-writing-trace-glyph" class="c9-writing-trace-glyph" lang="zh-Hans" aria-hidden="true" hidden>'+txt(lesson.hanzi,esc)+'</span><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas></div>'+
   '<div class="c9-writing-controls"><span id="c9-writing-feedback" role="status">Free practice · no saved strokes</span>'+
-  '<div class="c9-inline"><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button>'+
+  '<div class="c9-inline"><button type="button" id="c9-writing-trace-toggle" class="c9-button c9-button--secondary c9-button--small" aria-pressed="false" aria-controls="c9-writing-trace-glyph">Show printed tracing guide</button><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button>'+
   '<button type="button" id="c9-writing-clear" class="c9-button c9-button--secondary c9-button--small" disabled>Clear</button></div></div></div></div>'+
-  '<div class="c9-character-caution"><strong>Stroke-order limitation.</strong> Verified sequence diagrams, canonical stroke counts, automatic recognition and grading are not installed. This canvas is unrestricted handwriting practice, not an authoritative stroke-order demonstration.</div></section>';
+  '<div class="c9-character-caution"><strong>Stroke-order limitation.</strong> Verified sequence diagrams, canonical stroke counts, automatic recognition and grading are not installed. The optional faint printed-glyph overlay is a visual tracing guide only; it provides no stroke sequence or direction. This canvas is unrestricted handwriting practice, not an authoritative stroke-order demonstration.</div></section>';
  const grammar='<section class="c9-character-section" id="c9-overview" aria-labelledby="c9-overview-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">TEACHING NOTES</p><h2 id="c9-overview-title">Meaning and usage</h2></div></header>'+
   '<div class="c9-character-guidance"><div><span class="c9-eyebrow">CHARACTER INSIGHT</span><h3>'+txt(guide.topic,esc)+'</h3><p>'+txt(guide.explanation,esc)+'</p><p>'+txt(guide.comparison,esc)+'</p></div>'+
@@ -201,6 +201,10 @@ export function connectC9Writing(root){
  const canvas=root.querySelector('#c9-writing-canvas');if(!canvas)return;
  const undo=root.querySelector('#c9-writing-undo'),clear=root.querySelector('#c9-writing-clear');
  const feedback=root.querySelector('#c9-writing-feedback');
+ const trace=root.querySelector('#c9-writing-trace-glyph'),traceToggle=root.querySelector('#c9-writing-trace-toggle');
+ let traceVisible=false;
+ const toggleTrace=()=>{traceVisible=!traceVisible;if(trace)trace.hidden=!traceVisible;
+  traceToggle?.setAttribute('aria-pressed',String(traceVisible));signal();};
  const context=canvas.getContext?.('2d');if(!context){
   canvas.hidden=true;if(feedback)feedback.textContent='Drawing is unavailable in this browser.';return;
  }
@@ -209,7 +213,7 @@ export function connectC9Writing(root){
  const signal=()=>{
   if(undo)undo.disabled=!strokes.length;
   if(clear)clear.disabled=!strokes.length;
-  if(feedback)feedback.textContent=(strokes.length?strokes.length+' line'+(strokes.length===1?'':'s'):'No lines')+(keyboardDrawing?' · keyboard pen down':' · pen up')+' · not scored or saved';
+  if(feedback)feedback.textContent=(strokes.length?strokes.length+' line'+(strokes.length===1?'':'s'):'No lines')+(keyboardDrawing?' · keyboard pen down':' · pen up')+(traceVisible?' · printed glyph guide on':' · no printed guide')+' · not scored or saved';
  };
  const paint=()=>{
   const rect=canvas.getBoundingClientRect();
@@ -291,6 +295,7 @@ export function connectC9Writing(root){
  canvas.addEventListener('blur',blurCanvas);
  undo?.addEventListener('click',undoAction);
  clear?.addEventListener('click',clearAction);
+ traceToggle?.addEventListener('click',toggleTrace);
  let observer=null;
  if(typeof ResizeObserver!=='undefined'){observer=new ResizeObserver(paint);observer.observe(canvas);}
  paint();signal();
@@ -305,6 +310,7 @@ export function connectC9Writing(root){
   canvas.removeEventListener('blur',blurCanvas);
   undo?.removeEventListener('click',undoAction);
   clear?.removeEventListener('click',clearAction);
+ traceToggle?.removeEventListener('click',toggleTrace);
   strokes=[];active=null;
  };
 }
