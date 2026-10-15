@@ -41,9 +41,11 @@ export function lessonGroups(){
  const ranges=[...ORIGINAL_GROUPS];
  let first=75+FOUNDATION_ADDITIONS.length;
  for(const [name,rows] of ADVANCED_SECTIONS){
-  for(let i=0;i<rows.length;i+=ADVANCED_UNIT_SIZE){
-   const start=first+i;
-   ranges.push({name:`${name} · Part ${Math.floor(i/ADVANCED_UNIT_SIZE)+1}`,
+  // The established first 20 units already include the earliest P31 rows.
+  // Skip that covered prefix instead of registering duplicate lessons.
+  const uncovered=Math.max(203,first);
+  for(let start=uncovered;start<first+rows.length;start+=ADVANCED_UNIT_SIZE){
+   ranges.push({name:`${name} · Part ${Math.floor((start-first)/ADVANCED_UNIT_SIZE)+1}`,
     range:[start,Math.min(first+rows.length-1,start+ADVANCED_UNIT_SIZE-1)]});
   }
   first+=rows.length;
