@@ -17,7 +17,14 @@ if(!html.includes('No official HSK corpus')&&!html.includes('No official HSK cur
 }
 for(const req of ['href="#main"','aria-label="Primary mobile navigation"','id="app-content"'])if(!html.includes(req))throw new Error(`HTML structure missing ${req}`);
 const sw=await readFile(join(dist,'sw.js'),'utf8');
-for(const req of ['index.html','styles.css','app.mjs','demo-lessons.mjs','study.mjs','study-storage.mjs','manifest.webmanifest'])if(!sw.includes(req))throw new Error(`Offline shell missing ${req}`);
+for(const req of ['index.html','styles.css','app.mjs','demo-lessons.mjs','study.mjs','study-storage.mjs','manifest.webmanifest','startup.mjs','styles-startup.css'])if(!sw.includes(req))throw new Error(`Offline shell missing ${req}`);
+if(!html.includes('src="./startup.mjs"')||!html.includes('href="./styles-startup.css"')||
+ html.includes('src="./app.mjs"')||html.includes('href="./styles.css"'))
+ throw new Error('Production HTML did not use compact JS/CSS entry points');
+if((html.match(/rel="stylesheet"/g)||[]).length!==1)
+ throw new Error('More than one render-blocking stylesheet in production');
+const js=await readFile(join(dist,'startup.mjs'),'utf8');
+if(js.length>=2200000)throw new Error('Production startup bundle exceeds the 2.2MB uncompressed guard');
 if(DEMO_LESSONS.some(x=>x.officialHskLevel!==null))throw new Error('Demo content incorrectly claims HSK status');
 if((await readdir(dist)).includes('node_modules'))throw new Error('External dependencies bundled');
 console.log(`PASS: ${Object.keys(manifest).length} built assets verified, shell/offline guard present, ${DEMO_LESSONS.length} non-HSK demo lessons`);

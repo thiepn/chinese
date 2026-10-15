@@ -49,15 +49,23 @@ def main():
     try:
         source_files={p.relative_to(src_root) for p in src_root.rglob("*") if p.is_file()}
         dist_files={p.relative_to(dist_root) for p in dist_root.rglob("*") if p.is_file()}
-        if not source_files or source_files!=dist_files:
-            raise AssertionError("src/dist inventory differs; build the current checkout")
+        compiled={Path("startup.mjs"),Path("styles-startup.css")}
+        if not source_files or source_files|compiled!=dist_files:
+            raise AssertionError("src/dist source inventory plus compiled assets differs")
         mismatched=[str(p) for p in source_files
-                    if hashlib.sha256((src_root/p).read_bytes()).digest()!=
+                    if p!=Path("index.html") and hashlib.sha256((src_root/p).read_bytes()).digest()!=
                        hashlib.sha256((dist_root/p).read_bytes()).digest()]
         if mismatched:
             raise AssertionError("Stale dist files: "+", ".join(mismatched[:6]))
+        html=(dist_root/"index.html").read_text()
+        if 'src="./startup.mjs"' not in html or 'href="./styles-startup.css"' not in html:
+            raise AssertionError("Production startup does not use compiled bundles")
+        if len(list(__import__("re").finditer('rel="stylesheet"',html)))!=1:
+            raise AssertionError("Production HTML is still blocking on many stylesheets")
+        if 'startup.mjs' not in (dist_root/"sw.js").read_text():
+            raise AssertionError("Offline cache omitted compiled app")
         record("Exact source versus local build","PASS",
-               str(len(source_files))+" source/dist assets identical")
+               str(len(source_files))+" untouched originals plus two compiled startup assets")
     except Exception as exc:
         record("Exact source versus local build","FAIL",exc)
         return finish()
@@ -924,13 +932,13 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v60-p61-p63-p69-original-learning');
+                    keys.includes('character-study-working-v61-startup-bundle-original-learning');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=315:
+                if kept!=317:
                     raise AssertionError("Updated cache lacks original source assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
@@ -938,7 +946,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 315 v60 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 317 v61 assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()

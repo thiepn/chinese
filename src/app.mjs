@@ -92,8 +92,8 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v60-p61-p63-p69-original-learning';
-const C9_EXPECTED_OFFLINE_ASSETS=315;
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v61-startup-bundle-original-learning';
+const C9_EXPECTED_OFFLINE_ASSETS=317;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
@@ -2820,7 +2820,12 @@ async function setupSW(){
 }
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
- void setupSW();}
+ // Offline installation is never a prerequisite for drawing the current
+ // learner's dashboard. Let the first paint and interaction take priority;
+ // the existing 317-file offline contract and repair flow are unchanged.
+ if(typeof window.requestIdleCallback==='function')
+  window.requestIdleCallback(()=>void setupSW(),{timeout:3000});
+ else setTimeout(()=>void setupSW(),1000);}
 connectC9Shell();
 installC9KeyboardHelp();
 init();

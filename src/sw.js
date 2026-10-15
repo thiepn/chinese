@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v60-p61-p63-p69-original-learning';
+const CACHE='character-study-working-v61-startup-bundle-original-learning';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -332,8 +332,11 @@ const ADVANCED_SOURCE_ASSETS=[
 ];
 // C9-31: The C9-29 stage modules also occur in ADVANCED_SOURCE_ASSETS.
 // Duplicate Request URLs make Cache.addAll() reject, preventing installation.
+// Bundled artifacts are generated at build time. Original modules remain
+// cached for source availability, with production startup assets added.
+const PRODUCTION_ASSETS=['./startup.mjs','./styles-startup.css'];
 const ASSETS=[...new Set([...SHELL_ASSETS,...CONCEPT9_ASSETS,
- ...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS])];
+ ...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS,...PRODUCTION_ASSETS])];
 const PRECACHE_BATCH_SIZE=24;
 /** A controlling SW is not proof that Cache Storage still contains all assets.
  * Only user-visible shell status is returned. Never send learner data.
