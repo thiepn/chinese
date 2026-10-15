@@ -725,11 +725,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v57-service-worker takeover in a real user profile.
+            # not a running-v58-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v57-c9-48-native-listening"
-                current="character-study-working-v58-c9-49-context-transfer"
+                legacy="character-study-working-v58-c9-49-context-transfer"
+                current="character-study-working-v59-c9-50-source-journey"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -746,8 +746,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v57-c9-48-native-listening')&&
-                    keys.includes('character-study-working-v58-c9-49-context-transfer');
+                  return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
+                    keys.includes('character-study-working-v59-c9-50-source-journey');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -761,8 +761,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v57 CacheStorage deleted; 315 v58 assets retained and offline reload works (not live SW takeover)"
-            check("C9-49 stale offline cache migration",stale_cache_upgrade)
+                return "Old v58 CacheStorage deleted; 315 v59 assets retained and offline reload works (not live SW takeover)"
+            check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():
