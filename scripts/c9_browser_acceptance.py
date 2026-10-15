@@ -156,6 +156,9 @@ def main():
                     course=page.locator(".c9-home>.c9-home-roadmap")
                     if course.locator(".c9-home-roadmap-unit").count()<1:
                         raise AssertionError("Source course unit suggestions absent")
+                    # Home deliberately omits the redundant contextual rail.
+                    # Study routes retain the compact native related-destinations row.
+                    open_route(page,"learn")
                     context=page.locator(".c9-context-bar").first
                     if context.count()!=1: raise AssertionError("Native contextual toolbar missing")
                     bounds=context.bounding_box()
