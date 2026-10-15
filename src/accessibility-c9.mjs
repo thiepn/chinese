@@ -9,6 +9,11 @@ const isEditable=el=>Boolean(el?.closest?.('input,textarea,select,[contenteditab
 export function captureC9Focus(root){
  const target=document.activeElement;
  if(!target||!root.contains(target)||target===root)return null;
+ // Native details summaries have no action ID. The C9-41 Home, Course and
+ // contextual menus must keep keyboard focus after same-route repaint.
+ const disclosure=target.tagName==='SUMMARY'?
+  ['c9-home-explore-more','c9-original-curriculum-disclosure','c9-context-more']
+   .find(name=>target.parentElement?.classList.contains(name))||null:null;
  return {
   route:location.hash,
   id:target.id||null,
@@ -16,6 +21,7 @@ export function captureC9Focus(root){
   entry:target.dataset?.id||null,
   section:target.dataset?.section||null,
   grade:target.dataset?.grade||null,
+  disclosure,
   tag:target.tagName,
   selection:isEditable(target)&&typeof target.selectionStart==='number'?
    {start:target.selectionStart,end:target.selectionEnd}:null
@@ -24,6 +30,10 @@ export function captureC9Focus(root){
 export function restoreC9Focus(root,snapshot){
  if(!snapshot||snapshot.route!==location.hash)return;
  let target=snapshot.id?root.querySelector('#'+CSS.escape(snapshot.id)):null;
+ if(!target&&snapshot.disclosure&&
+  ['c9-home-explore-more','c9-original-curriculum-disclosure','c9-context-more']
+   .includes(snapshot.disclosure))
+  target=root.querySelector('details.'+snapshot.disclosure+' > summary');
  if(!target&&snapshot.action){
   target=[...root.querySelectorAll('[data-action]')].find(el=>
    el.dataset.action===snapshot.action&&

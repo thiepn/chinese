@@ -115,6 +115,6 @@ export function renderC9ContextNav(route,esc){
  '<div class="c9-context-links">'+primary.map(destination).join('')+'</div>'+
  (secondary.length?'<details class="c9-context-more"><summary aria-label="Show more '+esc(info.area)+' destinations">More <span aria-hidden="true">⌄</span></summary>'+
  '<div class="c9-context-more-links">'+secondary.map(destination).join('')+'</div></details>':'')+
- '<a href="#/find" class="c9-context-search" aria-label="Find original source material">'+icon('search')+
- '<span>Find</span></a></nav>';
+ (route==='find'?'':'<a href="#/find" class="c9-context-search" aria-label="Find original source material">'+icon('search')+
+ '<span>Find</span></a>')+'</nav>';
 }
