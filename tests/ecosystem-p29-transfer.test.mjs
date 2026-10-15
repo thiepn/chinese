@@ -36,7 +36,7 @@ test('C9-49 all 36 canonical P29 missions expose source-linked private Mandarin 
   const html=renderPathwayScreen({id:m.id,band:m.band,minutes:20,mode:'meaning',focus:true,
    feedback:{correct:true,assisted:false,message:'Original check complete'},
    assisted:false,typed:'',transferDraft:'我的回答',showPinyin:false,showEnglish:false,
-   learner},act,esc,()=>'','');
+   learner},act,esc,()=>' ',()=>'');
   for(const required of ['class="p29-transfer"','id="p29-transfer-draft"',
    'private response','pathway-transfer-clear','p29-transfer-selfcheck',
    'p29-transfer-witness','aria-label="'])assert.ok(html.includes(required),m.id+': '+required);
