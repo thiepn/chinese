@@ -1,8 +1,8 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
-import {WORDS,plain} from './lexicon.mjs';
+import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
-import {SENTENCE_LIBRARY,SENTENCE_TOPICS} from './sentence-library.mjs';
+import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from './sentence-library.mjs';
 
 export const C9_WORD_FILTERS=Object.freeze(['all','saved','introduced','new']);
 const count=(n,label)=>n+' '+label+(n===1?'':'s');
@@ -28,6 +28,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
   act('c9-word-reset','Reset filters','c9-button c9-button--quiet c9-button--small')+'</div></div>';
  const cards=results.length?'<div class="c9-library-words">'+results.map(w=>{
   const intro=introduced.has(w.key),savedHere=saved.has(w.key);
+  const comparisons=sourceWordComparisons(w.key,{limit:3});
   return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
@@ -42,6 +43,15 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
    w.notes.slice(0,2).map(n=>'<p>'+esc(n)+'</p>').join('')+
    w.examples.slice(1,3).map(ex=>'<p><strong lang="zh-Hans">'+esc(ex.hanzi)+'</strong><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small></p>').join('')+
    '<small>Source: '+esc(w.source.replaceAll('-',' '))+' · '+w.lessonIds.length+' lesson references</small></div></details>'+
+   (comparisons.length?'<details class="c9-word-contrast"><summary>Compare original written words and readings · '+comparisons.length+'</summary>'+
+    '<p>These are index-supported spelling, pronunciation or component links, not evidence that characters look confusable or share meaning.</p>'+
+    '<div class="c9-word-contrast-list">'+comparisons.map(({word:other,relation,comparisonEvidence})=>
+     '<article><span class="c9-eyebrow">'+esc(relation)+'</span><strong lang="zh-Hans">'+esc(other.hanzi)+'</strong>'+
+     '<span class="c9-library-pinyin">'+esc(other.pinyin)+'</span><p>'+esc(other.senses.slice(0,2).join(' / '))+'</p>'+
+     (comparisonEvidence?'<small lang="zh-Hans">'+esc(comparisonEvidence.hanzi)+'</small>'+
+       '<small>'+esc(comparisonEvidence.english)+'</small>':'<small>No authored example indexed for this word.</small>')+
+     act('c9-word-open','Compare full source →','c9-button c9-button--secondary c9-button--small',
+      'data-id="'+esc(other.key)+'"')+'</article>').join('')+'</div></details>':'')+
    '<div class="c9-library-word-actions">'+
    act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
    act('c9-word-open','Full details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+
@@ -108,6 +118,41 @@ export function renderC9GrammarDirectory(state,act,esc){
  }).join('')+'</div>'+
  paragraph('An attempted lesson is not a completed lesson; independent answers are original sentence-event evidence, not a calculated mastery score.')+'</section>';
 }
+
+/** P70: no duplicate typing grader or exercise store. These original
+ * production task IDs already belong to Sentence Library's assessment engine.
+ * Status is evidence from its existing sentenceEvents only. */
+export function c9TypingRecommendations(state,{limit=6,topic='all'}={}){
+ const events=state.sentenceEvents||[];
+ const recent=new Map();
+ for(const e of events)if(typeof e.taskId==='string'&&e.taskId.endsWith(':production'))recent.set(e.taskId,e);
+ const choices=SENTENCE_LIBRARY.filter(s=>topic==='all'||s.topicId===topic)
+ .map(s=>{
+  const last=recent.get(sentencePracticeId(s.id,'production'))||null;
+  const priority=!last?1:last.correct&&!last.assisted?2:0;
+  return {sentence:s,last,priority};
+ }).sort((a,b)=>a.priority-b.priority||a.sentence.id.localeCompare(b.sentence.id));
+ return choices.slice(0,Math.max(0,Math.min(24,Number.isInteger(limit)?limit:6)));
+}
+export function renderC9TypingPath(state,act,esc){
+ const tasks=c9TypingRecommendations(state);
+ const events=(state.sentenceEvents||[]).filter(e=>e.taskId?.endsWith(':production'));
+ const correct=new Set(events.filter(e=>e.correct&&!e.assisted).map(e=>e.taskId));
+ return '<section class="c9-typing-path" aria-labelledby="c9-typing-path-title">'+
+  '<header><p class="c9-eyebrow">P70 · ORIGINAL SENTENCE PRODUCTION</p><h2 id="c9-typing-path-title">Type Mandarin from meaning</h2>'+
+  '<p>Work through complete authored sentences, using the one existing Sentence Library production check. Independent focus hides the Chinese model until your answer. Successful answers are recorded by that native engine—not by this pathway.</p></header>'+
+  '<div class="c9-typing-evidence"><strong>'+correct.size+' original sentences with an independently correct production answer</strong>'+
+  '<span>'+events.length+' existing typed production checks, including assisted attempts and retries · not a certified writing level</span></div>'+
+  '<div class="c9-typing-cards">'+tasks.map(({sentence:s,last},i)=>
+   '<article><span class="c9-eyebrow">SOURCE '+String(i+1).padStart(2,'0')+' · '+esc(s.source.replaceAll('-',' '))+'</span>'+
+   '<h3>'+esc(s.topic)+'</h3><p>'+esc(s.english)+'</p>'+
+   '<small>'+(last?(last.correct&&!last.assisted?'Independent correct recorded':'Needs independent retry'):'Not yet attempted')+
+   ' · '+esc(s.id)+'</small>'+
+   act('c9-typing-start',last&&last.correct&&!last.assisted?'Type again →':'Start typing →',
+    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+'</article>').join('')+'</div>'+
+  '<p class="c9-library-disclaimer">Only the original taught model can be automatically matched. Other valid Chinese sentences may need human review. This is not a handwriting, HSK or free-composition grade.</p></section>';
+}
+
 export function renderC9SentenceDirectory(state,act,esc){
  const saved=new Set(state.bookmarkedSentences||[]);
  const events=(state.sentenceEvents||[]).filter(e=>typeof e.taskId==='string'&&e.taskId.startsWith('context:'));
