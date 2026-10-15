@@ -373,3 +373,18 @@
 .c9-personal-index-grid article .c9-button{min-height:44px}
 .c9-personal-line>small{font:400 11px/1.6 var(--c9-ui);color:var(--c9-sub)}
 @media(max-width:650px){.c9-personal-index-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+/* P67–P68: original reading recommendations, not derived proficiency grades. */
+.c9-reading-queue{margin:17px 0 20px;min-width:0}
+.c9-reading-queue-head{margin-bottom:12px}
+.c9-reading-queue-head h2{font:600 clamp(19px,2vw,24px)/1.35 var(--c9-display);margin:5px 0}
+.c9-reading-queue-head p{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub);margin:0;max-width:770px}
+.c9-reading-queue-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.c9-reading-queue-items article{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:1px solid var(--c9-line);background:var(--c9-surface);border-radius:var(--c9-r-sm);padding:13px;min-width:0}
+.c9-reading-queue-items article.is-current{border-color:var(--c9-accent)}
+.c9-reading-queue-items h3{font:600 15px/1.4 var(--c9-display);margin:0;overflow-wrap:anywhere}
+.c9-reading-queue-items p{font:400 12px/1.6 var(--c9-ui);margin:0;color:var(--c9-sub);flex:1}
+.c9-reading-queue-items small{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-reading-queue-items .c9-button{min-height:44px;white-space:normal;margin-top:5px}
+@media(max-width:650px){.c9-reading-queue-items{grid-template-columns:minmax(0,1fr)}}
