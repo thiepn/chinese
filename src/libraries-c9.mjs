@@ -122,35 +122,84 @@ export function renderC9GrammarDirectory(state,act,esc){
 /** P70: no duplicate typing grader or exercise store. These original
  * production task IDs already belong to Sentence Library's assessment engine.
  * Status is evidence from its existing sentenceEvents only. */
-export function c9TypingRecommendations(state,{limit=6,topic='all'}={}){
- const events=state.sentenceEvents||[];
- const recent=new Map();
- for(const e of events)if(typeof e.taskId==='string'&&e.taskId.endsWith(':production'))recent.set(e.taskId,e);
- const choices=SENTENCE_LIBRARY.filter(s=>topic==='all'||s.topicId===topic)
- .map(s=>{
-  const last=recent.get(sentencePracticeId(s.id,'production'))||null;
-  const priority=!last?1:last.correct&&!last.assisted?2:0;
-  return {sentence:s,last,priority};
- }).sort((a,b)=>a.priority-b.priority||a.sentence.id.localeCompare(b.sentence.id));
- return choices.slice(0,Math.max(0,Math.min(24,Number.isInteger(limit)?limit:6)));
+
+export const C9_TYPING_FILTERS=Object.freeze(['all','retry','unattempted','independent']);
+export const C9_TYPING_PAGE_SIZE=6;
+/** Lightweight read-only derivation of original production evidence. */
+export function c9TypingCatalog(state,{topic='all',status='all',page=0}={}){
+ const current=new Map();
+ const independent=new Set();
+ let totalAttempts=0;
+ for(const event of state.sentenceEvents||[]){
+  if(typeof event.taskId!=='string'||!event.taskId.startsWith('context:')||!event.taskId.endsWith(':production'))continue;
+  totalAttempts++;
+  current.set(event.taskId,event);
+  if(event.correct&&!event.assisted)independent.add(event.taskId);
+ }
+ const selectedTopic=topic==='all'||SENTENCE_TOPICS.some(t=>t.id===topic)?topic:'all';
+ const selectedStatus=C9_TYPING_FILTERS.includes(status)?status:'all';
+ const all=SENTENCE_LIBRARY.filter(s=>selectedTopic==='all'||s.topicId===selectedTopic).map(sentence=>{
+  const taskId=sentencePracticeId(sentence.id,'production');
+  const last=current.get(taskId)||null;
+  const stage=!last?'unattempted':last.correct&&!last.assisted?'independent':'retry';
+  const priority=stage==='retry'?0:stage==='unattempted'?1:2;
+  return {sentence,last,stage,priority,everIndependent:independent.has(taskId)};
+ });
+ const counts=Object.freeze({
+  all:all.length,retry:all.filter(x=>x.stage==='retry').length,
+  unattempted:all.filter(x=>x.stage==='unattempted').length,
+  independent:all.filter(x=>x.stage==='independent').length
+ });
+ const filtered=all.filter(x=>selectedStatus==='all'||x.stage===selectedStatus)
+  .sort((a,b)=>a.priority-b.priority||a.sentence.id.localeCompare(b.sentence.id));
+ const pages=Math.max(1,Math.ceil(filtered.length/C9_TYPING_PAGE_SIZE));
+ const currentPage=Math.min(pages-1,Math.max(0,Number.isInteger(page)?page:0));
+ return {items:filtered.slice(currentPage*C9_TYPING_PAGE_SIZE,(currentPage+1)*C9_TYPING_PAGE_SIZE),
+  all:filtered,counts,topic:selectedTopic,status:selectedStatus,page:currentPage,pages,
+  totalAttempts,everIndependent:independent.size};
 }
-export function renderC9TypingPath(state,act,esc){
- const tasks=c9TypingRecommendations(state);
- const events=(state.sentenceEvents||[]).filter(e=>e.taskId?.endsWith(':production'));
- const correct=new Set(events.filter(e=>e.correct&&!e.assisted).map(e=>e.taskId));
- return '<section class="c9-typing-path" aria-labelledby="c9-typing-path-title"><details><summary><span class="c9-eyebrow">P70 · ORIGINAL SENTENCE PRODUCTION</span><strong id="c9-typing-path-title">Type Mandarin from meaning</strong><span>Open independent typing pathway →</span></summary><div class="c9-typing-body">'+
-  '<header>'+
-  '<p>Work through complete authored sentences, using the one existing Sentence Library production check. Independent focus hides the Chinese model until your answer. Successful answers are recorded by that native engine—not by this pathway.</p></header>'+
-  '<div class="c9-typing-evidence"><strong>'+correct.size+' original sentences with an independently correct production answer</strong>'+
-  '<span>'+events.length+' existing typed production checks, including assisted attempts and retries · not a certified writing level</span></div>'+
-  '<div class="c9-typing-cards">'+tasks.map(({sentence:s,last},i)=>
-   '<article><span class="c9-eyebrow">SOURCE '+String(i+1).padStart(2,'0')+' · '+esc(s.source.replaceAll('-',' '))+'</span>'+
+/** Backward-compatible source-only recommendations used by existing P70 tests. */
+export function c9TypingRecommendations(state,{limit=6,topic='all'}={}){
+ const entries=c9TypingCatalog(state,{topic}).all;
+ return entries.slice(0,Math.max(0,Math.min(24,Number.isInteger(limit)?limit:6)));
+}
+export function renderC9TypingPath(state,act,esc,ui={}){
+ const data=c9TypingCatalog(state,ui);
+ const statuses=[
+  ['all','All source sentences'],['retry','Retry latest unsuccessful'],
+  ['unattempted','Not yet attempted'],['independent','Latest independent correct']
+ ];
+ return '<section class="c9-typing-path" aria-labelledby="c9-typing-path-title"><details class="c9-typing-disclosure">'+
+  '<summary><span class="c9-eyebrow">P70 · ORIGINAL SENTENCE PRODUCTION</span><strong id="c9-typing-path-title">Type Mandarin from meaning</strong><span>Explore all original source-based typing tasks →</span></summary>'+
+  '<div class="c9-typing-body"><header><p>Choose a topic or recorded practice status, then reconstruct its original Chinese model from the English meaning. The native Sentence Library checks answers and stores its own supplemental events; no parallel grading, official HSK label or fabricated feedback is introduced.</p></header>'+
+  '<div class="c9-typing-evidence"><strong>'+data.everIndependent+' original production tasks have at least one independently correct recorded response</strong>'+
+  '<span>'+data.totalAttempts+' native typed production attempts including assisted checks and retries; current status is based on the latest recorded attempt only.</span></div>'+
+  '<div class="c9-typing-filters">'+
+   '<label for="c9-typing-topic">Original topic<select id="c9-typing-topic" class="c9-select">'+
+    '<option value="all">All original topics</option>'+
+    SENTENCE_TOPICS.map(t=>'<option value="'+esc(t.id)+'"'+(data.topic===t.id?' selected':'')+'>'+esc(t.title)+'</option>').join('')+
+   '</select></label>'+
+   '<label for="c9-typing-status">Practice evidence<select id="c9-typing-status" class="c9-select">'+
+    statuses.map(([key,label])=>'<option value="'+key+'"'+(data.status===key?' selected':'')+'>'+esc(label)+' · '+data.counts[key]+'</option>').join('')+
+   '</select></label></div>'+
+  '<div class="c9-typing-list-status" role="status">'+data.all.length+' matching original sentence'+(data.all.length===1?'':'s')+
+   ' · page '+(data.page+1)+' of '+data.pages+'</div>'+
+  (data.items.length?'<div class="c9-typing-cards">'+data.items.map(({sentence:s,last,stage})=>
+   '<article><span class="c9-eyebrow">'+esc(s.source.replaceAll('-',' '))+' · '+esc(s.id)+'</span>'+
    '<h3>'+esc(s.topic)+'</h3><p>'+esc(s.english)+'</p>'+
-   '<small>'+(last?(last.correct&&!last.assisted?'Independent correct recorded':'Needs independent retry'):'Not yet attempted')+
-   ' · '+esc(s.id)+'</small>'+
-   act('c9-typing-start',last&&last.correct&&!last.assisted?'Type again →':'Start typing →',
-    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+'</article>').join('')+'</div>'+
-  '<p class="c9-library-disclaimer">Only the original taught model can be automatically matched. Other valid Chinese sentences may need human review. This is not a handwriting, HSK or free-composition grade.</p></div></details></section>';
+   '<small>'+(stage==='retry'?'Latest attempt needs an independent retry':stage==='independent'?
+     'Latest attempt independently correct':'Not yet attempted')+
+    (last?.assisted?' · assisted attempt recorded':'')+'</small>'+
+   act('c9-typing-start',stage==='independent'?'Revisit independently →':'Type original model →',
+    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+'</article>').join('')+
+   '</div>':'<p class="c9-library-disclaimer" role="status">No original sentence matches this filter. Change topic or status to continue.</p>')+
+  '<nav class="c9-typing-pages" aria-label="Typing source pages">'+
+   act('c9-typing-page','← Previous','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(data.page===0?'disabled':''))+
+   '<span>Page '+(data.page+1)+' / '+data.pages+'</span>'+
+   act('c9-typing-page','Next →','c9-button c9-button--secondary c9-button--small','data-delta="1" '+(data.page===data.pages-1?'disabled':''))+
+  '</nav>'+
+  '<p class="c9-library-disclaimer">Only the original taught Chinese model is automatically checked. Other valid expressions require human interpretation; native production events never confer scheduled mastery.</p>'+
+  '</div></details></section>';
 }
 
 export function renderC9SentenceDirectory(state,act,esc){
