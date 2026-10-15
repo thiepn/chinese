@@ -448,3 +448,30 @@
 :root[data-theme="dark"] .c9-writing-trace-glyph{opacity:.20}
 @media(max-width:700px){.c9-writing-trace-glyph{font-size:clamp(120px,51vw,250px)}}
 @media(forced-colors:active){.c9-writing-trace-glyph{opacity:.25;color:CanvasText}}
+
+
+/* C9-50 — complete the source-character → whole-word → contextual-reader
+   navigation in the original P9 composition. Do not imply stroke animation. */
+.c9-character-sample-words>span{align-content:start;min-width:0}
+.c9-character-sample-words>span .c9-button{justify-self:start;min-height:44px;
+ padding-inline:0;white-space:normal;text-align:left}
+.c9-character-sample-links{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;width:100%}
+.c9-character-sample-links .c9-button{flex:1 1 135px;min-width:0;min-height:44px;
+ text-align:center;justify-content:center;white-space:normal}
+.c9-character-identity-content .c9-listening-deck{margin-top:12px}
+.c9-character-top>.c9-character-tabs{scroll-margin-top:15px}
+@media(min-width:1281px){
+ .c9-character-top{grid-template-columns:minmax(0,1.7fr) minmax(235px,.8fr)}
+ .c9-character-identity-content{padding:clamp(20px,2vw,27px)}
+}
+@media(max-width:700px){
+ .c9-character-sample-words{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-character-sample-words>span{padding:8px 9px}
+ .c9-character-sample-words>span .c9-button{font-size:11px}
+ .c9-character-sample-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-character-sample-links .c9-button{font-size:12px;padding:8px}
+ .c9-character-identity-content .c9-listening-deck{margin-top:9px}
+}
+@media(max-width:355px){
+ .c9-character-sample-words,.c9-character-sample-links{grid-template-columns:minmax(0,1fr)}
+}
