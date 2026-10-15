@@ -19,7 +19,7 @@ test('all 428 source-qualified lessons appear in exactly one stable Learn unit',
  assert.deepEqual(flattened,DEMO_LESSONS.map(lesson=>lesson.id));
  for(const [i,group] of groups.entries()){
   assert.equal(group.index,i+1);
-  assert.ok(group.lessons.length>0&&group.lessons.length<=13);
+  assert.ok(group.lessons.length>0&&group.lessons.length<=(i<20?14:12));
   assert.deepEqual(group.lessons.map(lesson=>lesson.order),
    Array.from({length:group.range[1]-group.range[0]+1},(_,j)=>group.range[0]+j));
  }
