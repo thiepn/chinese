@@ -92,8 +92,8 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v60-p61-p63-p69-original-learning';
-const C9_EXPECTED_OFFLINE_ASSETS=315;
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v61-startup-bundle-original-learning';
+const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
@@ -575,11 +575,7 @@ function renderToday(){
   '<a href="#/skills">Open Skill Paths →</a></section>'+
   renderC9LearningContinuity(state,action,esc)+onboardingPanel()+
   '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
-  '<div class="c9-home-extra-inner">'+gated()+
-  hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
-  connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
-  pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
-  '</div></details>';
+  '<div class="c9-home-extra-inner" data-c9-lazy-home="pending"></div></details>';
 }
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
@@ -1055,7 +1051,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   }
   await verifyC9OfflineShell('c9-offline-repair');
   alertUser(c9OfflineShell==='ready'?
-   'The current service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'The current service worker reports all required compiled learning and shell assets cached. Offline exercise behavior remains device-dependent.':
    c9OfflineShell==='outdated'?
    'A previous offline version still controls this tab. Save or export any private P43 writing, then reload online to finish updating. Your browser learning records were not modified.':
    'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
@@ -2542,6 +2538,23 @@ document.addEventListener('click',ev=>{
   else c9ApprovedDeparture={from:c9RenderedRoute,to:target};
  }
 },true);
+function renderC9OptionalHomePanels(){
+ return gated()+hubHomePanel()+pathwayHomePanel(state,action,esc)+
+  beginnerReadingTodayPanel()+connectedReadingTodayPanel()+
+  sentenceTodayPanel()+grammarTodayPanel()+pinyinTodayPanel()+
+  vocabularyTodayPanel()+finishOverviewPanel();
+}
+// The optional source-rich diagnostics are not part of first meaningful Home
+// content. Generate them only upon the learner opening their native disclosure.
+// No additional DB, state engine, navigation destination or grade is created.
+root.addEventListener('toggle',event=>{
+ const disclosure=event.target;
+ if(!disclosure.matches?.('details.c9-home-extra')||!disclosure.open)return;
+ const destination=disclosure.querySelector('[data-c9-lazy-home="pending"]');
+ if(!destination)return;
+ destination.innerHTML=renderC9OptionalHomePanels();
+ destination.removeAttribute('data-c9-lazy-home');
+},true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
  if(handleC9WritingInput(e,root))return;
@@ -2732,7 +2745,7 @@ function networkLabel(){
   homeNotice.hidden=online;
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
-   'All original static source URLs are cached according to this service worker. Actual offline lessons and local progress still need device verification.':
+   'All compiled learning content and required offline shell files are cached. Local learner progress still depends on browser storage.':
    c9OfflineShell==='outdated'?
    'The active offline worker belongs to an earlier version. Reconnect and reload online to finish updating the current original static sources.':
    'Offline static source coverage is incomplete or not verified. Reconnect to prepare missing material.';
@@ -2820,7 +2833,12 @@ async function setupSW(){
 }
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
- void setupSW();}
+ // Offline installation is never a prerequisite for drawing the current
+ // learner's dashboard. Let the first paint and interaction take priority;
+ // the existing 317-file offline contract and repair flow are unchanged.
+ if(typeof window.requestIdleCallback==='function')
+  window.requestIdleCallback(()=>void setupSW(),{timeout:3000});
+ else setTimeout(()=>void setupSW(),1000);}
 connectC9Shell();
 installC9KeyboardHelp();
 init();

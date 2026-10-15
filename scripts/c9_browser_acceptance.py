@@ -49,15 +49,23 @@ def main():
     try:
         source_files={p.relative_to(src_root) for p in src_root.rglob("*") if p.is_file()}
         dist_files={p.relative_to(dist_root) for p in dist_root.rglob("*") if p.is_file()}
-        if not source_files or source_files!=dist_files:
-            raise AssertionError("src/dist inventory differs; build the current checkout")
+        compiled={Path("startup.mjs"),Path("styles-startup.css")}
+        if not source_files or source_files|compiled!=dist_files:
+            raise AssertionError("src/dist source inventory plus compiled assets differs")
         mismatched=[str(p) for p in source_files
-                    if hashlib.sha256((src_root/p).read_bytes()).digest()!=
+                    if p!=Path("index.html") and hashlib.sha256((src_root/p).read_bytes()).digest()!=
                        hashlib.sha256((dist_root/p).read_bytes()).digest()]
         if mismatched:
             raise AssertionError("Stale dist files: "+", ".join(mismatched[:6]))
+        html=(dist_root/"index.html").read_text()
+        if 'src="./startup.mjs"' not in html or 'href="./styles-startup.css"' not in html:
+            raise AssertionError("Production startup does not use compiled bundles")
+        if len(list(__import__("re").finditer('rel="stylesheet"',html)))!=1:
+            raise AssertionError("Production HTML is still blocking on many stylesheets")
+        if 'startup.mjs' not in (dist_root/"sw.js").read_text():
+            raise AssertionError("Offline cache omitted compiled app")
         record("Exact source versus local build","PASS",
-               str(len(source_files))+" source/dist assets identical")
+               str(len(source_files))+" untouched originals plus two compiled startup assets")
     except Exception as exc:
         record("Exact source versus local build","FAIL",exc)
         return finish()
@@ -109,6 +117,33 @@ def main():
                 except Exception as exc:
                     record(name,"FAIL",type(exc).__name__+": "+str(exc))
                     return False
+
+            # Measure real compiled startup requests, not expected source names.
+            # CI local timing is diagnostic, not a device-wide time guarantee.
+            for width,height,mobile in ((390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def compiled_first_home():
+                    page.goto(args.base_url.rstrip("/")+"/#/today",wait_until="domcontentloaded")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    info=page.evaluate("""()=>{
+                      const paths=performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname);
+                      return {ms:Math.round(performance.now()),
+                        js:paths.filter(s=>s.endsWith('.mjs')),
+                        css:paths.filter(s=>s.endsWith('.css')),
+                        links:document.querySelectorAll('link[rel="stylesheet"]').length};
+                    }""")
+                    if info["js"]!=["/startup.mjs"] or info["css"]!=["/styles-startup.css"] or info["links"]!=1:
+                        raise AssertionError("Startup fetched legacy modules or styles: "+str(info))
+                    details=page.locator("details.c9-home-extra")
+                    inner=details.locator(".c9-home-extra-inner")
+                    if inner.inner_text().strip():
+                        raise AssertionError("Closed supplementary Home panels were rendered eagerly")
+                    details.locator("summary").click()
+                    page.wait_for_function("()=>document.querySelector('.c9-home-extra-inner')?.textContent?.trim().length>80")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return str(info["ms"])+"ms first Home at "+str(width)+"px; one script/stylesheet and lazy original teaching"
+                check("Compiled minimal Home boot "+str(width),compiled_first_home)
+                ctx.close()
             for route in ["today","learn","character/demo-01","review","practice",
                           "wordbook","grammar","sentences","stories","dialogues","writing",
                           "progress","settings","pinyin","find"]:
@@ -906,7 +941,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v60-p61-p63-p69-original-learning"
+                current="character-study-working-v61-startup-bundle-original-learning"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -924,21 +959,21 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v60-p61-p63-p69-original-learning');
+                    keys.includes('character-study-working-v61-startup-bundle-original-learning');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=315:
-                    raise AssertionError("Updated cache lacks original source assets: "+str(kept))
+                if kept!=8:
+                    raise AssertionError("Updated cache lacks complete compiled runtime assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 315 v60 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
@@ -950,8 +985,13 @@ def main():
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
+                    page.locator(".c9-discovery").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
+                    page.locator(".c9-character-glyph").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
-                    return "Service Worker reloaded the app offline"
+                    return "Service worker serves compiled original Home, lesson and character offline"
                 finally: ctx.set_offline(False)
             check("offline cached shell",offline)
             ctx.close()

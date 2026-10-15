@@ -52,7 +52,7 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const primaryLabel=primary.kind==='journey'&&!hasActivity?'Start learning':primary.kind==='resume'?'Resume saved study':'Continue learning';
  const storageNotice=!storageReady?'<div class="c9-home-notice c9-home-notice--warning" role="status"><strong>Local saving is unavailable</strong><span>You can browse the available material, but progress cannot be saved until browser storage works. Existing learning records have not been changed.</span></div>':'';
  const offlineNotice='<div id="c9-home-offline-notice" class="c9-home-notice" role="status"'+(offline?'':' hidden')+'><strong>Offline</strong><span>'+
- (offlineShell==='ready'?'The original static source cache is complete according to the controlling service worker. Original progress still depends on local browser storage.':
+ (offlineShell==='ready'?'The compiled original lessons and runtime assets are available offline according to the controlling service worker. Progress still depends on local browser storage.':
  offlineShell==='incomplete'?'Some original offline assets are missing from the current cache. Reconnect before starting an offline lesson.':
  offlineShell==='outdated'?'The active offline worker is from an older source manifest. Reconnect and reload online to finish updating before offline study.':
  'The offline source cache is not confirmed complete on this device. Reconnect to prepare it.')+
