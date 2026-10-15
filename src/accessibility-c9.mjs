@@ -12,7 +12,9 @@ export const C9_NATIVE_DISCLOSURE_CLASSES=Object.freeze([
  'c9-context-more',
  'c9-learn-existing',
  'c9-assessment-extra',
- 'c9-media-catalog'
+ 'c9-media-catalog',
+ 'p29-transfer',
+ 'p29-transfer-witness'
 ]);
 const safeFocus=el=>{if(!el)return false;try{el.focus({preventScroll:true});return document.activeElement===el;}catch{return false;}};
 const isEditable=el=>Boolean(el?.closest?.('input,textarea,select,[contenteditable="true"]'));
