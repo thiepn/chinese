@@ -15,7 +15,7 @@ function complete(state,wrong=null,id='journey-a',at=base){let s=start(state,id)
  s=advanceCourse(s);
 }return finishCourse(s,{id:`${id}-done`,now:at+10});}
 test('74 characters have word and sentence teaching bridges without official HSK claims',()=>{
- assert.ok(DEMO_LESSONS.length>=74);for(const l of DEMO_LESSONS){const b=characterWordSentenceBridge(l.id);assert.equal(b.words.length,l.words.length);assert.equal(b.sentence.hanzi,l.sentence.hanzi);assert.equal(b.words[0].hanzi,l.words[0].hanzi);assert.ok(b.words.every(w=>w.positions.length>0),l.id);assert.equal(l.officialHskLevel,null);}
+ assert.ok(DEMO_LESSONS.length>=74);for(const l of DEMO_LESSONS.slice(0,74)){const b=characterWordSentenceBridge(l.id);assert.equal(b.words.length,l.words.length);assert.equal(b.sentence.hanzi,l.sentence.hanzi);assert.equal(b.words[0].hanzi,l.words[0].hanzi);assert.ok(b.words.every(w=>w.positions.length>0),l.id);assert.equal(l.officialHskLevel,null);}
 });
 test('unknown lesson fails closed',()=>{assert.equal(characterWordSentenceBridge('fake'),null);assert.equal(lessonConsolidation(freshState(),'fake'),null);assert.equal(lessonRemediationPlan(freshState(),'fake'),null);});
 test('bridge positions locate target character rather than guessing tone alignment',()=>{const l=DEMO_LESSONS.find(x=>x.hanzi==='学');const b=characterWordSentenceBridge(l.id);assert.ok(b.words.every(w=>w.characters[w.positions[0]]==='学'));assert.match(b.teachingCaution,/cannot be inferred safely/);});

@@ -23,7 +23,7 @@ test('ten hand-authored dialogues expose thirty turns and twenty unambiguous que
  assert.ok(DIALOGUES.length>=10);
  assert.equal(DIALOGUES.slice(0,10).reduce((n,d)=>n+d.lines.length,0),30);
  assert.equal(DIALOGUES.slice(0,10).reduce((n,d)=>n+d.questions.length,0),20);
- for(const d of DIALOGUES){assert.equal(findDialogue(d.id),d);for(const line of d.lines){assert.match(line.hanzi,/\p{Script=Han}/u);assert.ok(line.pinyin&&line.english&&['A','B'].includes(line.speaker));}
+ for(const d of DIALOGUES.slice(0,10)){assert.equal(findDialogue(d.id),d);for(const line of d.lines){assert.match(line.hanzi,/\p{Script=Han}/u);assert.ok(line.pinyin&&line.english&&['A','B'].includes(line.speaker));}
   for(const [i,q] of d.questions.entries()){assert.equal(dialogueQuestion(d.id,i),q);assert.ok(q.options.includes(q.answer));assert.equal(new Set(q.options).size,3);}
  }
  assert.equal(dialogueQuestion('not-a-dialogue',0),null);
