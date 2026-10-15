@@ -15,7 +15,7 @@ if(!html.includes('No official HSK corpus')&&!html.includes('No official HSK cur
  // Permit exact assertion in description, including lowercase form.
  if(!html.toLowerCase().includes('no official hsk corpus'))throw new Error('Missing official-content notice');
 }
-for(const req of ['href="#main"','aria-label="Primary mobile"','id="app-content"'])if(!html.includes(req))throw new Error(`HTML structure missing ${req}`);
+for(const req of ['href="#main"','aria-label="Primary mobile navigation"','id="app-content"'])if(!html.includes(req))throw new Error(`HTML structure missing ${req}`);
 const sw=await readFile(join(dist,'sw.js'),'utf8');
 for(const req of ['index.html','styles.css','app.mjs','demo-lessons.mjs','study.mjs','study-storage.mjs','manifest.webmanifest'])if(!sw.includes(req))throw new Error(`Offline shell missing ${req}`);
 if(DEMO_LESSONS.some(x=>x.officialHskLevel!==null))throw new Error('Demo content incorrectly claims HSK status');

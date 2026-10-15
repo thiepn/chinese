@@ -144,7 +144,7 @@ export function p50Lesson(p,state,act,esc,{stage='language',readingHelp=false,
  act('p50-reader-answer',esc(o),'choice','data-option="'+esc(o)+'"')).join('')+'</div>'+
  '<div class="p50-actions">'+act('p50-reader-model','Reveal reference · assisted','button outline')+
  act('p50-stage','Continue without submission →','button outline','data-stage="listen"')+'</div>')+'</div></div>':'')+
- (stage==='listen'?'<div class="p50-pane"><h3>Track each speaker's evidence and objection</h3>'+
+ (stage==='listen'?'<div class="p50-pane"><h3>Track each speaker’s evidence and objection</h3>'+
  '<p>Listen before opening the transcript. Device synthesized playback is not recorded human speech or a pronunciation assessment.</p>'+
  '<div class="p50-actions">'+act('p50-play','Play full debate','button primary')+
  act('p50-play-slow','Replay slowly','button outline')+

@@ -11,12 +11,12 @@ const rows=[...P37_SCENES_A,...P37_SCENES_B,...P37_SCENES_C,...P37_SCENES_D];
 const evidence=[5,2,4,2,6,3,2,2,5,2,6,2,6,4,1,5,3,3,5,4,0,2,3,4,2,6,4,2,5,3];
 export const P37_SCENES=Object.freeze(rows.map((s,i)=>Object.freeze({
  ...s,id:'p37-'+String(i+1).padStart(2,'0'),sequence:i+1,evidenceIndex:evidence[i],
- turns:Object.freeze(s.turns.map(([hanzi,pinyin,english],j)=>Object.freeze([
-  j%2===0?'A':'B',hanzi,pinyin,english
+ turns:Object.freeze(s.turns.map(([speaker,hanzi,pinyin,english])=>Object.freeze([
+  speaker,hanzi,pinyin,english
  ]))),
  vocabulary:Object.freeze(s.vocab.map(([hanzi,pinyin,english])=>Object.freeze({
-  hanzi,pinyin,english,examples:Object.freeze(s.turns.filter(t=>t[0].includes(hanzi)).slice(0,2).map(t=>Object.freeze({
-   hanzi:t[0],pinyin:t[1],english:t[2]
+  hanzi,pinyin,english,examples:Object.freeze(s.turns.filter(t=>t[1].includes(hanzi)).slice(0,2).map(t=>Object.freeze({
+   hanzi:t[1],pinyin:t[2],english:t[3]
   })))
  }))),
  questions:Object.freeze(s.questions.map(q=>Object.freeze([...q]))),
