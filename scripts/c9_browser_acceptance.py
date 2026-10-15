@@ -120,6 +120,72 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-47 — exercise the actual integrated P9 first-fold, source
+            # previews, native section routing and dark visual hierarchy.
+            for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
+                ctx,page,errors=session(width,height,mobile)
+                def source_led_surfaces():
+                    open_route(page,"today")
+                    page.locator(".c9-home-first-fold .c9-home-hero").wait_for(state="visible")
+                    page.locator(".c9-home-first-fold .c9-home-plan").wait_for(state="visible")
+                    home=page.locator(".c9-home-source-preview")
+                    if not home.locator('[lang="zh-Hans"]').inner_text().strip():
+                        raise AssertionError("Home lost source-authored Chinese example")
+                    home_english=home.locator("p").inner_text()
+                    if not home_english: raise AssertionError("Home source gloss absent")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    preview=page.locator(".c9-lesson-source-preview")
+                    preview.wait_for(state="visible")
+                    if preview.locator("article").count()<3:
+                        raise AssertionError("Lesson source trilogy missing")
+                    preview.locator('[data-action="c9-lesson-jump"][data-section="vocabulary"]').click()
+                    if not page.locator("#c9-lesson-vocabulary").count():
+                        raise AssertionError("Native vocabulary section not preserved")
+                    open_route(page,"character/demo-01")
+                    sample=page.locator(".c9-character-source-sample")
+                    sample.wait_for(state="visible")
+                    if not sample.locator('[lang="zh-Hans"]').count():
+                        raise AssertionError("Character source sample absent")
+                    if not page.locator(".c9-character-top>.c9-character-tabs").count():
+                        raise AssertionError("Character navigation not in mobile-first hero")
+                    sample.locator('[data-action="c9-character-jump"][data-section="writing"]').click()
+                    if not page.locator("#c9-writing-canvas").count():
+                        raise AssertionError("Original freehand pad removed")
+                    if "Not installed" not in page.locator(".c9-character-evidence").inner_text():
+                        raise AssertionError("Stroke data limitation removed")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("C9-47 character screen horizontal overflow")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-47-character-"+str(width)+".png")),full_page=True)
+                    return "Original next-lesson Home, native Lesson jumps, Character Study source examples and writing at "+str(width)+"px"
+                check("C9-47 source study surfaces "+str(width),source_led_surfaces)
+                ctx.close()
+            for width,height,mobile in [(1440,900,False),(390,844,True)]:
+                ctx,page,errors=session(width,height,mobile)
+                def dark_source_surfaces():
+                    open_route(page,"settings")
+                    page.locator('input[data-setting="dark"]').check()
+                    open_route(page,"today")
+                    if page.evaluate("()=>document.documentElement.dataset.theme")!="dark":
+                        raise AssertionError("Original dark theme selection not applied")
+                    element=page.locator(".c9-home-source-preview")
+                    element.wait_for(state="visible")
+                    colors=element.evaluate("""e=>{
+                      const s=getComputedStyle(e),t=getComputedStyle(e.querySelector('strong'));
+                      return [s.borderTopColor,t.color]
+                    }""")
+                    if not colors or colors[1] in ("rgba(0, 0, 0, 0)","rgb(0, 0, 0)"):
+                        raise AssertionError("Dark Chinese text invisible")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Dark Home horizontal overflow")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-47-home-dark-"+str(width)+".png")),full_page=True)
+                    return "Native dark mode and P9 source contrast at "+str(width)+"px"
+                check("C9-47 dark source contrast "+str(width),dark_source_surfaces)
+                ctx.close()
             # C9-46: screenshot-backed original desktop lesson overlap regression.
             # The desktop vertical lesson rail must never paint across the
             # adjacent native teaching panel; the mobile rail may scroll.
@@ -412,11 +478,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v53-service-worker takeover in a real user profile.
+            # not a running-v54-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v53-c9-45-complete-lesson-units"
-                current="character-study-working-v54-c9-46-lesson-layout-repair"
+                legacy="character-study-working-v54-c9-46-lesson-layout-repair"
+                current="character-study-working-v55-c9-47-source-led-study"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -433,8 +499,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v53-c9-45-complete-lesson-units')&&
-                    keys.includes('character-study-working-v54-c9-46-lesson-layout-repair');
+                  return !keys.includes('character-study-working-v54-c9-46-lesson-layout-repair')&&
+                    keys.includes('character-study-working-v55-c9-47-source-led-study');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -448,8 +514,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v53 CacheStorage deleted; 315 v54 assets retained and offline reload works (not live SW takeover)"
-            check("C9-46 stale offline cache migration",stale_cache_upgrade)
+                return "Old v54 CacheStorage deleted; 315 v55 assets retained and offline reload works (not live SW takeover)"
+            check("C9-47 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():
