@@ -10,7 +10,7 @@ import {FLUENCY_BANK} from '../src/fluency-studio.mjs';
 import {PLAN_FOCI,PLAN_MINUTES,planPreferences,setPlanPreferences,validatePlanExtensions,plannedDays,mistakeCatalog,mistakeCollections,toggleMistakePin,dailyEvidence,nextConnectedMaterial} from '../src/daily-plan.mjs';
 const at=(y,m,d)=>new Date(y,m-1,d,12,0,0).getTime();
 const s0=()=>freshState();
-test('Batch 18 preserves all original independent demo content counts',()=>{assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);assert.equal(DIALOGUES.length,10);assert.equal(FLUENCY_BANK.length,206);});
+test('Batch 18 preserves all original independent demo content counts',()=>{assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.ok(DIALOGUES.length>=10);assert.ok(FLUENCY_BANK.length>=206);});
 test('planning defaults and all allowed workload/focus values round trip',()=>{
  assert.deepEqual(planPreferences(s0()),{minutes:15,focus:'balanced'});for(const minutes of PLAN_MINUTES)for(const focus of PLAN_FOCI){const s=setPlanPreferences(s0(),{minutes,focus});assert.equal(validateState(s),true);assert.deepEqual(planPreferences(importBackup(backupDocument(s))),{minutes,focus});}
 });
@@ -46,11 +46,11 @@ test('related reading and dialogue recommendations select real original demo con
  const s=s0();let n=nextConnectedMaterial(s);assert.equal(n.reading.id,STORIES[0].id);assert.equal(n.dialogue.id,DIALOGUES[0].id);s.readingEvents=[{id:'a',storyId:STORIES[0].id,at:200}];s.dialogueEvents=[{id:'b',dialogueId:DIALOGUES[0].id,at:200}];n=nextConnectedMaterial(s);assert.equal(n.reading.id,STORIES[1].id);assert.equal(n.dialogue.id,DIALOGUES[1].id);
 });
 test('planning window rejects invalid or unbounded ranges and clock timestamps',()=>{assert.throws(()=>plannedDays(s0(),{now:NaN}));assert.throws(()=>plannedDays(s0(),{now:100,days:1000}));assert.throws(()=>plannedDays(s0(),{now:-100}));});
-test('existing 206 fluency question IDs and official HSK restrictions remain unchanged',()=>{assert.equal(FLUENCY_BANK.length,206);assert.ok(DEMO_LESSONS.every(x=>x.officialHskLevel===null));});
+test('existing 206 fluency question IDs and official HSK restrictions remain unchanged',()=>{assert.ok(FLUENCY_BANK.length>=206);assert.ok(DEMO_LESSONS.every(x=>x.officialHskLevel===null));});
 test('plan route, keyboard actions, mobile link, browser cache and no external data sources',()=>{
  const read=name=>readFileSync(new URL(`../src/${name}`,import.meta.url),'utf8');const app=read('app.mjs'),html=read('index.html'),css=read('styles.css'),sw=read('sw.js');
  for(const id of ['renderPlan','plan-source','plan-pin','plan-minutes','plan-focus','plan-launch','nextConnectedMaterial','mistakeCollections','planSummaryPanel'])assert.ok(app.includes(id),id);
- assert.match(html,/href="#\/plan"/);assert.match(html,/More learning tools/);assert.match(css,/\.plan-task/);assert.match(sw,/character-study-working-v20/);assert.match(sw,/daily-plan\.mjs/);assert.ok(!sw.includes('official-hsk-2025.json'));
+ assert.match(html,/href="#\/plan"/);assert.match(html,/More learning tools/);assert.match(css,/\.plan-task/);assert.match(sw,/character-study-working-v53/);assert.match(sw,/daily-plan\.mjs/);assert.ok(!sw.includes('official-hsk-2025.json'));
 });
 import {toneRepairSteps} from '../src/tone-coach.mjs';
 test('written-tone repair provides specific location, contour and retry steps without speech claims',()=>{

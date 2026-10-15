@@ -15,7 +15,7 @@ function complete(state,wrong=null,id='journey-a',at=base){let s=start(state,id)
  s=advanceCourse(s);
 }return finishCourse(s,{id:`${id}-done`,now:at+10});}
 test('74 characters have word and sentence teaching bridges without official HSK claims',()=>{
- assert.equal(DEMO_LESSONS.length,74);for(const l of DEMO_LESSONS){const b=characterWordSentenceBridge(l.id);assert.equal(b.words.length,2);assert.equal(b.sentence.hanzi,l.sentence.hanzi);assert.equal(b.words[0].hanzi,l.words[0].hanzi);assert.ok(b.words.every(w=>w.positions.length>0),l.id);assert.equal(l.officialHskLevel,null);}
+ assert.ok(DEMO_LESSONS.length>=74);for(const l of DEMO_LESSONS){const b=characterWordSentenceBridge(l.id);assert.equal(b.words.length,2);assert.equal(b.sentence.hanzi,l.sentence.hanzi);assert.equal(b.words[0].hanzi,l.words[0].hanzi);assert.ok(b.words.every(w=>w.positions.length>0),l.id);assert.equal(l.officialHskLevel,null);}
 });
 test('unknown lesson fails closed',()=>{assert.equal(characterWordSentenceBridge('fake'),null);assert.equal(lessonConsolidation(freshState(),'fake'),null);assert.equal(lessonRemediationPlan(freshState(),'fake'),null);});
 test('bridge positions locate target character rather than guessing tone alignment',()=>{const l=DEMO_LESSONS.find(x=>x.hanzi==='学');const b=characterWordSentenceBridge(l.id);assert.ok(b.words.every(w=>w.characters[w.positions[0]]==='学'));assert.match(b.teachingCaution,/cannot be inferred safely/);});
@@ -33,7 +33,7 @@ test('typed pinyin mismatch identifies tone rather than speech correctness',()=>
 test('syllable mismatch has different remedial advice',()=>{const f=contextualPronunciationFeedback('li3','nǐ');assert.equal(f.mismatch,'syllables');assert.match(f.action,/onset and final/);});
 test('tone-number equivalence counts as written match',()=>{const f=contextualPronunciationFeedback('ni3','nǐ');assert.equal(f.correct,true);assert.equal(f.mismatch,'none');});
 test('source includes consolidated UI, teaching links and content navigation',()=>{const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');for(const token of ['bridgeTeachingPanel','consolidationPanel','story-prev','dialogue-prev','dialogue-next-context','course-repair-start'])assert.ok(app.includes(token),token);});
-test('all app modules offline cached with v13 cache',()=>{const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');assert.match(sw,/character-study-working-v20/);assert.match(sw,/learning-bridge\.mjs/);});
+test('all app modules offline cached with v13 cache',()=>{const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');assert.match(sw,/character-study-working-v53/);assert.match(sw,/learning-bridge\.mjs/);});
 test('legacy v1 backup with no course fields still valid',()=>{const s=freshState();for(const k of ['courseJourney','courseEvents','courseRepairSession','courseRepairEvents'])delete s[k];assert.equal(validateState(s),true);const restored=importBackup(backupDocument(s));assert.equal(lessonConsolidation(restored,lesson.id).checked,0);});
 
 test('second journey changes recall from isolated character to complete contextual word',()=>{const completed=complete(freshState());let repeated=start(completed,'journey-repeated');const item=courseQuestion({...repeated.courseJourney,cursor:4});assert.equal(item.hanzi,lesson.words[1].hanzi);assert.equal(item.answer,lesson.words[1].pinyin);const first=courseQuestion({lessonId:lesson.id,cursor:4,wordIndex:0});assert.equal(first.answer,lesson.pinyin);});

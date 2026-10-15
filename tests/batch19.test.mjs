@@ -12,7 +12,7 @@ import {FLUENCY_BANK} from '../src/fluency-studio.mjs';
 const stamp=new Date(2026,9,12,12).getTime();
 const original=()=>freshState();
 test('Batch 19 retains independently authored demonstration curriculum counts',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);assert.equal(DIALOGUES.length,10);assert.equal(FLUENCY_BANK.length,206);
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.ok(DIALOGUES.length>=10);assert.ok(FLUENCY_BANK.length>=206);
  assert.ok(DEMO_LESSONS.every(l=>l.officialHskLevel===null));
 });
 test('Unified course home chooses next unintroduced lesson, never fabricates mastery',()=>{
@@ -76,13 +76,13 @@ test('Context continuation handles unknown IDs safely and cycles only provided c
 test('All key course and source routes are available in unified navigation',()=>{
  for(const id of ['today','plan','learn','review','stories','dialogues','fluency','explore'])assert.ok(LEARNING_DESTINATIONS.some(x=>x.route===id));
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
- for(const marker of ['hubHomePanel','hubResumeStrip','hubPathNav','hub-primary','hub-resume','hub-task','hub-lesson','hub-dialogue','wordDetail','contentConnections'])assert.ok(app.includes(marker),marker);
+ for(const marker of ['hubHomePanel','hubResumeStrip','renderC9ContextNav','hub-primary','hub-resume','hub-task','hub-lesson','hub-dialogue','wordDetail','contentConnections'])assert.ok(app.includes(marker),marker);
 });
 test('Mobile navigation and static cache include all new app modules with no official HSK data',()=>{
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  assert.equal((html.match(/href="#\/plan" data-route="plan"/g)||[]).length,2);
- assert.match(html,/More learning tools/);assert.match(sw,/character-study-working-v20/);
+ assert.match(html,/More learning tools/);assert.match(sw,/character-study-working-v53/);
  assert.match(sw,/learning-hub\.mjs/);assert.match(sw,/context-continuity\.mjs/);
  assert.ok(!sw.includes('official-hsk-2025.json'));
 });

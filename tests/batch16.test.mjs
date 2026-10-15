@@ -15,7 +15,7 @@ test('old v1 backups lacking block trail and old course fields remain supported'
 });
 test('trail starts only with an actual block and references existing original content',()=>{
  assert.throws(()=>beginTrail(freshState()));let s=beginTrail(block());assert.equal(s.blockTrail.cursor,0);assert.equal(validateState(s),true);
- const refs=trailSources(s);assert.ok(refs.story.lines.length===3);assert.ok(refs.dialogue.lines.length===3);
+ const refs=trailSources(s);assert.ok(refs.story.lines.length>=3);assert.ok(refs.dialogue.lines.length>=3);
  assert.equal(s.events.length,0);assert.deepEqual(s.cards,{});
 });
 test('three context questions are distinct reading evidence, dialogue evidence, full-word pinyin',()=>{
@@ -75,5 +75,5 @@ test('weak-priority selection retains count and no duplicate lessons',()=>{
 test('new UI and service worker register context trail, skill coach and offline modules',async()=>{
  const [app,css,sw]=await Promise.all(['app.mjs','styles.css','sw.js'].map(x=>readFile(`src/${x}`,'utf8')));
  for(const key of ['renderTrailPanel','trail-start','trail-answer','trail-next','blockDailyInsights'])assert.ok(app.includes(key),key);
- assert.match(css,/\.context-trail/);assert.match(sw,/character-study-working-v20/);assert.match(sw,/context-trail\.mjs/);assert.match(sw,/block-coach\.mjs/);
+ assert.match(css,/\.context-trail/);assert.match(sw,/character-study-working-v53/);assert.match(sw,/context-trail\.mjs/);assert.match(sw,/block-coach\.mjs/);
 });

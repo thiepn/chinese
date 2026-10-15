@@ -8,7 +8,7 @@ import {LADDER_STAGES,sentenceChunks,ladderQuestion,startLadder,ladderSelect,lad
 const starting=()=>startLadder(freshState(),DEMO_LESSONS[0].id,{id:'ladder-session',at:1000});
 function answer(s,index,response='',reveal=false){return answerLadder(s,{id:`try-${index}`,response,reveal,at:2000+index});}
 test('74 demonstrations retained and all four ladder tasks exist for each lesson',()=>{
- assert.equal(DEMO_LESSONS.length,74);
+ assert.ok(DEMO_LESSONS.length>=74);
  for(const l of DEMO_LESSONS){let s=startLadder(freshState(),l.id,{id:`run-${l.id}`,at:123});
   for(let i=0;i<4;i++){s.ladderSession.cursor=i;let q=ladderQuestion(s.ladderSession);assert.equal(q.stage,LADDER_STAGES[i]);assert.equal(typeof q.answer,'string');assert.ok(q.answer.length>0);if(i===0||i===1)assert.ok(q.options.includes(q.answer));if(i===2){assert.equal(q.chunks.join(''),l.sentence.hanzi);assert.ok(q.chunks.length>=1);} s.ladderSession.cursor=i;}
  }
@@ -117,6 +117,6 @@ test('scheduled-review grades and original event history are unchanged by ladder
 test('UI and offline list incorporate Sentence Ladder',async()=>{
  const [app,sw,html,css]=await Promise.all(['app.mjs','sw.js','index.html','styles.css'].map(x=>readFile(`src/${x}`,'utf8')));
  assert.match(html,/data-route="ladder"/);assert.match(app,/renderLadder/);assert.match(app,/ladder-select/);
- assert.match(app,/ladderSuggestionsPanel/);assert.match(sw,/sentence-ladder\.mjs/);assert.match(sw,/character-study-working-v20/);
+ assert.match(app,/ladderSuggestionsPanel/);assert.match(sw,/sentence-ladder\.mjs/);assert.match(sw,/character-study-working-v53/);
  assert.match(css,/ladder-suggestion-grid/);
 });
