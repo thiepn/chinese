@@ -4,6 +4,16 @@
  * assessment evidence, network data or the original router.
  */
 const focusable='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+/** Original native disclosure identities. UI visibility and focus only:
+ * never store private text, historical IDs, grading or learning state. */
+export const C9_NATIVE_DISCLOSURE_CLASSES=Object.freeze([
+ 'c9-home-explore-more',
+ 'c9-original-curriculum-disclosure',
+ 'c9-context-more',
+ 'c9-learn-existing',
+ 'c9-assessment-extra',
+ 'c9-media-catalog'
+]);
 const safeFocus=el=>{if(!el)return false;try{el.focus({preventScroll:true});return document.activeElement===el;}catch{return false;}};
 const isEditable=el=>Boolean(el?.closest?.('input,textarea,select,[contenteditable="true"]'));
 export function captureC9Focus(root){
@@ -12,8 +22,8 @@ export function captureC9Focus(root){
  // Native details summaries have no action ID. The C9-41 Home, Course and
  // contextual menus must keep keyboard focus after same-route repaint.
  const disclosure=target.tagName==='SUMMARY'?
-  ['c9-home-explore-more','c9-original-curriculum-disclosure','c9-context-more']
-   .find(name=>target.parentElement?.classList.contains(name))||null:null;
+  C9_NATIVE_DISCLOSURE_CLASSES.find(name=>
+   target.parentElement?.classList.contains(name))||null:null;
  return {
   route:location.hash,
   id:target.id||null,
@@ -31,8 +41,7 @@ export function restoreC9Focus(root,snapshot){
  if(!snapshot||snapshot.route!==location.hash)return;
  let target=snapshot.id?root.querySelector('#'+CSS.escape(snapshot.id)):null;
  if(!target&&snapshot.disclosure&&
-  ['c9-home-explore-more','c9-original-curriculum-disclosure','c9-context-more']
-   .includes(snapshot.disclosure))
+  C9_NATIVE_DISCLOSURE_CLASSES.includes(snapshot.disclosure))
   target=root.querySelector('details.'+snapshot.disclosure+' > summary');
  if(!target&&snapshot.action){
   target=[...root.querySelectorAll('[data-action]')].find(el=>
