@@ -80,6 +80,16 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   (before?act('c9-character-open','← Previous','c9-button c9-button--secondary c9-button--small','data-id="'+txt(before.id,esc)+'"'):'<span>First lesson</span>')+
   (after?act('c9-character-open','Next →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(after.id,esc)+'"'):'<span>Final lesson</span>')+
   '</div></header>';
+ const previewSentence=lesson.sentence?.hanzi&&lesson.sentence?.english?lesson.sentence:null;
+ const previewWords=(lesson.words||[]).filter(w=>w?.hanzi&&w?.english).slice(0,2);
+ const sourceSample='<div class="c9-character-source-sample" aria-label="Source-backed character study preview">'+
+  '<div class="c9-character-sample-head"><span class="c9-eyebrow">USE IT IN CONTEXT</span>'+
+  act('c9-character-jump','Read examples →','c9-button c9-button--quiet c9-button--small','data-section="sentences" aria-controls="c9-sentences"')+'</div>'+
+  (previewSentence?'<p lang="zh-Hans" class="c9-character-sample-hanzi">'+txt(previewSentence.hanzi,esc)+'</p>'+
+   (showPinyin?'<span class="c9-character-sample-pinyin">'+txt(previewSentence.pinyin,esc)+'</span>':'')+
+   (showTranslations?'<span class="c9-character-sample-english">'+txt(previewSentence.english,esc)+'</span>':''):'')+
+  '<div class="c9-character-sample-words">'+previewWords.map(w=>'<span><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong><small>'+txt(w.english,esc)+'</small></span>').join('')+'</div>'+
+  '<div class="c9-character-sample-links">'+act('c9-character-jump',icon('pen')+' Free writing →','c9-button c9-button--secondary c9-button--small','data-section="writing" aria-controls="c9-writing"')+'</div></div>';
  const identity='<section class="c9-character-identity" aria-labelledby="c9-character-name">'+
   '<div class="c9-character-glyph-wrap"><div class="c9-character-glyph" lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</div><span class="c9-character-seal">'+txt(lesson.hanzi,esc)+' · ORIGINAL STUDY</span></div>'+
   '<div class="c9-character-identity-content"><span class="c9-eyebrow">LESSON '+String(index+1).padStart(3,'0')+' / '+DEMO_LESSONS.length+
@@ -90,7 +100,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div class="c9-character-hero-actions">'+act('speak',icon('audio')+'Hear the character','c9-button c9-button--primary','data-text="'+txt(lesson.hanzi,esc)+'"')+
   act('c9-character-lesson',icon('book')+'Full lesson','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+
-  '<p class="c9-character-audio-notice">Pronunciation uses the device Mandarin speech voice when installed; no certified recording is supplied.</p></div></section>';
+  '<p class="c9-character-audio-notice">Pronunciation uses the device Mandarin speech voice when installed; no certified recording is supplied.</p>'+sourceSample+'</div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+
   '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
   row('Original lesson',''+(index+1)+' / '+DEMO_LESSONS.length)+
@@ -173,7 +183,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
    '<div class="c9-character-inline-actions c9-unified-actions">'+act('c9-character-lesson','Open original lesson →','c9-button c9-button--primary','data-id="'+txt(lesson.id,esc)+'"')+
     act('practice-lesson','Independent practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
     '<a href="#/review" class="c9-button c9-button--secondary">Scheduled review</a></div></footer>';
- return '<div class="c9-character-page">'+heading+'<div class="c9-character-top">'+identity+evidence+'</div>'+sequence+navigation+
+ return '<div class="c9-character-page">'+heading+'<div class="c9-character-top">'+identity+navigation+evidence+'</div>'+sequence+
  '<div class="c9-character-body">'+grammar+writing+vocabulary+examples+connections+'</div>'+footer+'</div>';
 }
 

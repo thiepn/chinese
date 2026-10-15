@@ -347,3 +347,64 @@
  }
  .c9-writing-controls .c9-inline{width:100%;justify-content:space-between;}
 }
+
+
+/* C9-47 — keep Character, source examples and actions before long metadata on
+   small screens. Grading, strokes and official labels remain untouched. */
+.c9-character-top>.c9-character-identity{grid-column:1;grid-row:1}
+.c9-character-top>.c9-character-evidence{grid-column:2;grid-row:1;align-self:start}
+.c9-character-top>.c9-character-tabs{
+ grid-column:1/-1;grid-row:2;min-width:0;margin-top:1px
+}
+.c9-character-source-sample{
+ width:100%;display:grid;gap:6px;min-width:0;margin-top:22px;
+ padding:16px 0 0;border-top:1px solid var(--c9-line)
+}
+.c9-character-sample-head{
+ display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap
+}
+.c9-character-sample-hanzi{
+ color:var(--c9-ink);font:500 clamp(23px,2.5vw,31px)/1.6 var(--c9-hanzi-display);
+ margin:1px 0;overflow-wrap:anywhere
+}
+.c9-character-sample-pinyin{
+ font:500 12px/1.45 var(--c9-ui);color:var(--c9-green)
+}
+.c9-character-sample-english{
+ font:400 12px/1.5 var(--c9-ui);color:var(--c9-sub)
+}
+.c9-character-sample-words{
+ display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-top:6px;
+ min-width:0
+}
+.c9-character-sample-words>span{
+ display:grid;gap:2px;flex:1 1 125px;min-width:0;
+ padding:10px 12px;border:1px solid var(--c9-line);
+ background:var(--c9-surface-2);border-radius:var(--c9-r-sm)
+}
+.c9-character-sample-words strong{
+ font:500 21px/1.5 var(--c9-hanzi-display);color:var(--c9-ink)
+}
+.c9-character-sample-words small{
+ font:400 11px/1.45 var(--c9-ui);color:var(--c9-sub)
+}
+.c9-character-sample-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.c9-character-sample-links .c9-button{min-height:44px}
+@media(max-width:1280px){
+ .c9-character-top>.c9-character-identity{grid-column:1;grid-row:1}
+ .c9-character-top>.c9-character-tabs{grid-column:1;grid-row:2}
+ .c9-character-top>.c9-character-evidence{grid-column:1;grid-row:3}
+}
+@media(max-width:700px){
+ .c9-character-page{gap:15px}
+ .c9-character-heading .c9-character-back{margin-bottom:9px}
+ .c9-character-heading h1{margin:4px 0;font-size:26px}
+ .c9-character-glyph-wrap{padding:10px}
+ .c9-character-glyph{width:min(150px,100%);font-size:88px}
+ .c9-character-identity-content{padding:17px}
+ .c9-character-identity-content h2{margin-top:5px}
+ .c9-character-source-sample{margin-top:14px;padding-top:12px}
+ .c9-character-top>.c9-character-tabs{margin:0}
+ .c9-character-tabs .c9-character-tab{min-height:48px}
+ .c9-character-evidence{grid-template-columns:minmax(0,1fr)}
+}

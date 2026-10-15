@@ -96,6 +96,18 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const lessonDue=cardsForLesson(lesson.id).filter(id=>new Set(dueCards(state)).has(id)).length;
  const position=index+1;
  const positionPercent=Math.round(position/DEMO_LESSONS.length*100);
+ const words=(lesson.words||[]).filter(w=>w?.hanzi&&w?.english).slice(0,2);
+ const example=lesson.sentence?.hanzi&&lesson.sentence?.english?lesson.sentence:null;
+ const preview='<section class="c9-lesson-source-preview" aria-labelledby="c9-lesson-source-title">'+
+  '<div class="c9-lesson-preview-title"><div><p class="c9-eyebrow">BEFORE YOU BEGIN · ORIGINAL CONTENT</p><h2 id="c9-lesson-source-title">What you will learn</h2></div><span class="c9-badge">Read-only preview</span></div>'+
+  '<div class="c9-lesson-preview-grid">'+
+   '<article class="c9-lesson-preview-character"><span>01 · CHARACTER</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><small>'+(showPinyin?esc(lesson.pinyin):'Pinyin hidden')+'</small><p>'+esc(lesson.meaning)+'</p>'+
+   act('c9-lesson-jump','Study the character →','c9-button c9-button--secondary c9-button--small','data-section="overview" aria-controls="c9-lesson-overview"')+'</article>'+
+   '<article class="c9-lesson-preview-words"><span>02 · WHOLE WORDS</span><div>'+words.map(w=>'<div class="c9-lesson-preview-word"><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong><span>'+(showPinyin?esc(w.pinyin)+' · ':'')+esc(w.english)+'</span></div>').join('')+'</div>'+
+   act('c9-lesson-jump','Study vocabulary →','c9-button c9-button--secondary c9-button--small','data-section="vocabulary" aria-controls="c9-lesson-vocabulary"')+'</article>'+
+   (example?'<article class="c9-lesson-preview-sentence"><span>03 · CONTEXT SENTENCE</span><strong lang="zh-Hans">'+esc(example.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(example.pinyin)+'</small>':'')+'<p>'+esc(example.english)+'</p>'+
+   act('c9-lesson-jump','Read in context →','c9-button c9-button--secondary c9-button--small','data-section="context" aria-controls="c9-lesson-context"')+'</article>':'')+
+  '</div><p class="c9-lesson-preview-disclaimer">These examples are teaching material. Browsing them never introduces a lesson or records a grade.</p></section>';
  const heading='<header class="c9-lesson-header"><div class="c9-lesson-heading-main">'+
   act('c9-learn-back','← All lessons','c9-button c9-button--quiet c9-button--small')+
   '<p class="c9-eyebrow">UNIT '+String(group?.index??1).padStart(2,'0')+
@@ -118,7 +130,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   introduced?'Introduced · keep practising':'Learning is ready',
   introduced?'Scheduled independent recall is tracked separately from this lesson.':
    'Review prompts are registered only when you explicitly introduce the lesson in the final section.');
- return '<div class="c9-lesson-workspace">'+heading+
+ return '<div class="c9-lesson-workspace">'+heading+preview+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
