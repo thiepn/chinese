@@ -1822,6 +1822,14 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(await act({dataset:{action:target,id}})!==true)return false;
   c9DiscoveryTrail=nextTrail;render();return true;
  }
+ if(name==='pathway-jump-current'){
+  const target=root.querySelector('#p29-current-mission');
+  if(!target)return false;
+  target.scrollIntoView({behavior:'auto',block:'start'});
+  target.focus({preventScroll:true});
+  announceC9Interaction('Current original Mandarin mission, '+(findPathwayMission(pathwaySelection())?.title||'study')+'.');
+  return true;
+ }
  if(name==='pathway-open'){
   const mission=pathwayResume(state);if(!mission||!go('pathway'))return false;
   pathwaySelected=mission.id;render();return true;
