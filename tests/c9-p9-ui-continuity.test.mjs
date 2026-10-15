@@ -48,3 +48,53 @@ test('P9 Character still prioritizes real whole words and sentence without fake 
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
  assert.equal(JSON.stringify(state),before);
 });
+
+test('C9-50 integrated Character preserves native source links and ungraded writing on translation checks',()=>{
+ const state=freshState(),before=JSON.stringify(state),lesson=DEMO_LESSONS[0];
+ const html=renderC9CharacterStudy({lesson,state,act,esc,showTranslations:false});
+ assert.ok(html.includes('data-translations="false"'));
+ for(const key of ['class="c9-character-word-gloss" hidden','class="c9-character-example-translation" hidden',
+  'class="c9-character-sample-english" hidden','class="c9-character-first-actions"',
+  'data-action="lookup-word"','data-action="c9-character-reader"','id="c9-writing-canvas"'])
+  assert.ok(html.includes(key),key);
+ const source=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ const start=source.indexOf("if(name==='c9-character-support')"),end=source.indexOf("if(name==='c9-character-jump')",start);
+ assert.ok(start>0&&end>start);
+ const handler=source.slice(start,end);
+ assert.ok(handler.includes('page.dataset.translations=String(c9CharacterShowTranslations)'));
+ assert.ok(handler.includes("node.hidden=!c9CharacterShowTranslations"));
+ assert.ok(handler.includes("button.textContent=c9CharacterShowTranslations"));
+ assert.ok(source.includes('.c9-character-tabs [data-action='));
+ assert.ok(source.includes('.c9-lesson-sections [data-action='));
+ assert.equal(JSON.stringify(state),before);
+});
+
+test('C9-50 P9 compact surfaces retain original guided and indexed curriculum authorities',()=>{
+ const state=freshState(),before=JSON.stringify(state),lesson=DEMO_LESSONS[0];
+ const home=renderC9Home(state,act,esc);
+ assert.ok(home.includes('class="c9-home-listening"'));
+ assert.ok(home.includes('Listen and shadow this sentence'));
+ assert.ok(home.includes('data-action="hub-lesson"'));
+ const html=renderC9LessonWorkspace({lesson,state,nativeMarkup:'',act,esc});
+ assert.ok(html.includes('class="c9-lesson-resources"'));
+ assert.ok(html.includes('Preview original source and audio'));
+ assert.ok(html.includes('class="c9-lesson-preview-toolbar"'));
+ assert.ok(html.includes('data-action="lookup-word"'));
+ assert.ok(html.includes('data-action="c9-character-reader"'));
+ assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-layout'));
+ assert.ok(html.includes('data-section="overview"'));
+ assert.equal(JSON.stringify(state),before);
+});
+
+test('P9 native source disclosures stay visually and keyboard hidden until activated',()=>{
+ const state=freshState(),previous=JSON.stringify(state);
+ const html=renderC9LessonWorkspace({lesson:DEMO_LESSONS[0],state,nativeMarkup:'',act,esc});
+ const home=renderC9Home(state,act,esc);
+ assert.ok(html.includes('<details class="c9-lesson-resources">'));
+ assert.ok(home.includes('<details class="c9-home-listening">'));
+ const a=readFileSync(new URL('../src/styles-c9-lesson.css',import.meta.url),'utf8');
+ const b=readFileSync(new URL('../src/styles-c9-home.css',import.meta.url),'utf8');
+ assert.ok(a.includes('.c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}'));
+ assert.ok(b.includes('.c9-home-listening:not([open]) > .c9-listening-deck{display:none!important}'));
+ assert.equal(JSON.stringify(state),previous);
+});

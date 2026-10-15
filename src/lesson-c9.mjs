@@ -127,7 +127,8 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<small>Curriculum position · not mastery or completion</small></div></div>'+
   '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
   act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+act('c9-character-reader','Read original story','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
-  act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
+  act('c9-lesson-jump','Start lesson ↓','c9-button c9-button--primary','data-section="overview" aria-controls="c9-lesson-overview"')+
+  act('course-lesson','Guided Daily Journey →','c9-button c9-button--quiet','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';
  const teaching=composeNativeSections(nativeMarkup,act,esc);
@@ -135,7 +136,10 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   introduced?'Introduced · keep practising':'Learning is ready',
   introduced?'Scheduled independent recall is tracked separately from this lesson.':
    'Review prompts are registered only when you explicitly introduce the lesson in the final section.');
- return '<div class="c9-lesson-workspace">'+heading+preview+sourceAudio+
+ const resources='<details class="c9-lesson-resources"><summary><span><strong>Preview original source and audio</strong>'+
+  '<small>Character · indexed whole words · original sentence · device listening</small></span><span aria-hidden="true">Explore ↘</span></summary>'+
+  '<div class="c9-lesson-resources-content">'+preview+sourceAudio+'</div></details>';
+ return '<div class="c9-lesson-workspace">'+heading+resources+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+

@@ -456,3 +456,61 @@
  .c9-lesson-preview-word{gap:4px}
 }
 @media(max-width:370px){.c9-lesson-header-actions{grid-template-columns:minmax(0,1fr)}}
+
+/* P9 native lesson teaching now follows a 56px accessible preview disclosure
+   instead of a tall duplicate character/word/audio stack. */
+.c9-lesson-resources{min-width:0;margin:0 0 15px;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);background:var(--c9-surface)}
+.c9-lesson-resources>summary{display:flex;align-items:center;justify-content:space-between;gap:11px;
+ cursor:pointer;min-height:56px;padding:11px 16px;color:var(--c9-ink);list-style:none}
+.c9-lesson-resources>summary::-webkit-details-marker{display:none}
+.c9-lesson-resources>summary:focus-visible{outline:3px solid var(--c9-focus);outline-offset:2px}
+.c9-lesson-resources>summary>span:first-child{display:grid;gap:3px;min-width:0}
+.c9-lesson-resources>summary strong{font:650 14px/1.4 var(--c9-display)}
+.c9-lesson-resources>summary small{font:400 11px/1.55 var(--c9-ui);color:var(--c9-sub)}
+.c9-lesson-resources>summary>span:last-child{white-space:nowrap;font:650 11px/1.45 var(--c9-ui);color:var(--c9-accent)}
+.c9-lesson-resources-content{padding:0 clamp(12px,2vw,20px) 16px;display:grid;gap:12px}
+.c9-lesson-resources-content .c9-lesson-source-preview,
+.c9-lesson-resources-content .c9-listening-deck{margin:0}
+.c9-lesson-main .c9-native-section{scroll-margin-top:92px}
+@media(max-width:700px){
+ .c9-lesson-header{gap:9px;margin-bottom:12px}
+ .c9-lesson-heading-main>p:last-child{font-size:12px;line-height:1.5}
+ .c9-lesson-course-position{margin-top:10px}
+ .c9-lesson-header-actions{gap:7px}
+ .c9-lesson-header-actions>.c9-button{min-height:44px}
+ .c9-lesson-header-actions>.c9-button[data-action="c9-lesson-jump"]{grid-column:1/-1}
+ .c9-lesson-header-actions>.c9-button[data-action="course-lesson"]{grid-column:1/-1}
+ .c9-lesson-resources>summary{padding:10px 12px}
+ .c9-lesson-resources>summary>span:last-child{max-width:73px;white-space:normal;text-align:right}
+ .c9-lesson-resources-content{padding:0 11px 12px}
+}
+
+/* C9-50 screenshot repair: grid child must be unpainted and unfocusable when its native disclosure is closed. */
+.c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}
+
+/* C9-50 visual acceptance: mobile first lesson should appear above fixed nav.
+   Keep native six sections, graded authorities, original copy and bottom pager. */
+@media(max-width:700px){
+ .c9-lesson-heading-main>.c9-lesson-title-row+p{font:400 12px/1.45 var(--c9-ui);color:var(--c9-sub);margin:7px 0 0}
+ .c9-lesson-course-position{margin-top:9px;padding:9px 11px;gap:5px}
+ .c9-lesson-header-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .c9-lesson-header-actions>.c9-lesson-pager{display:none}
+ .c9-lesson-header-actions>.c9-button[data-action="c9-lesson-jump"],
+ .c9-lesson-header-actions>.c9-button[data-action="course-lesson"]{grid-column:auto;min-width:0;min-height:44px;padding:9px 7px;font-size:11px;line-height:1.35}
+ .c9-lesson-resources{margin-bottom:10px}
+}
+
+/* C9-50 real 390px Chromium acceptance: the authored native teaching starts
+   behind fixed mobile nav because old Lesson status/metadata are duplicated
+   under the already accessible source/record heading. Remove only duplicate
+   visible chrome; preserve the live learning notice for screen readers. */
+@media(max-width:700px){
+ .c9-lesson-main .lesson-heading{display:none}
+ .c9-lesson-main .c9-lesson-start-status{
+  position:absolute!important;width:1px!important;height:1px!important;
+  padding:0!important;margin:0!important;border:0!important;
+  overflow:hidden!important;clip-path:inset(50%);white-space:nowrap
+ }
+ .c9-lesson-main .lesson-paper.c9-lesson-paper{gap:9px}
+}

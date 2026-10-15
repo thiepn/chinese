@@ -475,3 +475,78 @@
 @media(max-width:355px){
  .c9-character-sample-words,.c9-character-sample-links{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Post-PR65 P9 reconciliation: source-owned explanations remain mounted
+   when a learner checks translations. Free writing is never remounted. */
+.c9-character-page .c9-character-example-translation[hidden],
+.c9-character-page .c9-character-example-hidden[hidden],
+.c9-character-page .c9-character-sample-english[hidden],
+.c9-character-page .c9-character-word-gloss[hidden]{display:none!important}
+.c9-character-page[data-translations="false"] .c9-listening-english{display:none!important}
+.c9-character-page .c9-character-example-hidden{display:block;margin:8px 0;color:var(--c9-muted);font-size:12px;line-height:1.5}
+.c9-character-heading h1{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px}
+.c9-character-heading h1 [lang="zh-Hans"]{font:500 clamp(36px,4vw,55px)/1.15 var(--c9-hanzi-display);letter-spacing:0;color:var(--c9-accent)}
+.c9-character-heading h1 span:last-child{font:600 clamp(23px,2.5vw,33px)/1.3 var(--c9-display)}
+.c9-character-first-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;margin-top:13px}
+.c9-character-first-actions .c9-button{min-height:44px;white-space:normal;justify-content:center;font-size:12px;text-align:center}
+@media(max-width:700px){
+ .c9-character-heading h1{gap:8px;margin:5px 0}
+ .c9-character-heading h1 [lang="zh-Hans"]{font-size:36px}
+ .c9-character-heading h1 span:last-child{font-size:23px}
+ .c9-character-first-actions{grid-template-columns:minmax(0,1fr);gap:6px}
+}
+@media(forced-colors:active){.c9-character-heading h1 [lang="zh-Hans"]{color:CanvasText}}
+
+/* Balanced source-first Character mobile action density. Keep authentic ink,
+   original words/Reader and original grade separation untouched. */
+@media(max-width:700px){
+ .c9-character-heading{gap:6px}
+ .c9-character-heading h1{margin:4px 0;font-size:23px}
+ .c9-character-heading>div>p:last-child{font-size:11px;line-height:1.4}
+ .c9-character-neighbors{gap:5px}
+ .c9-character-identity-content{padding:12px}
+ .c9-character-glyph-wrap{padding:9px}
+ .c9-character-glyph{width:min(108px,100%);font-size:70px}
+ .c9-character-seal{font-size:9px}
+ .c9-character-hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%}
+ .c9-character-hero-actions .c9-button{min-width:0;min-height:44px;padding:8px 6px;
+  font-size:11px;line-height:1.3;white-space:normal}
+ .c9-character-hero-actions .c9-button:first-child{grid-column:1/-1}
+ .c9-character-first-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .c9-character-first-actions .c9-button{font-size:11px;line-height:1.4;padding:8px 7px}
+ .c9-character-source-sample{margin-top:10px}
+ .c9-character-heading .c9-character-back{margin-bottom:4px}
+}
+@media(max-width:370px){.c9-character-first-actions{grid-template-columns:minmax(0,1fr)}}
+
+
+/* P61–P63 — original source-led handwriting tasks. No automated scoring. */
+.c9-writing-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.c9-writing-modes .c9-button{min-width:0;min-height:44px;white-space:normal;text-align:center;justify-content:center}
+.c9-writing-modes [aria-pressed="true"]{background:var(--c9-accent-soft);border-color:var(--c9-accent);color:var(--c9-accent)}
+.c9-writing-task{padding:12px 15px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);margin:0 0 12px;background:var(--c9-surface-2)}
+.c9-writing-task strong{display:block;font:600 14px/1.4 var(--c9-ui);color:var(--c9-ink)}
+.c9-writing-task p{margin:5px 0 0;color:var(--c9-sub);font:400 12px/1.6 var(--c9-ui)}
+.c9-writing-guide>[hidden],.c9-writing-cue[hidden],.c9-writing-attempt-review[hidden],#c9-writing-reference-toggle[hidden]{display:none!important}
+.c9-writing-cue{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;max-width:100%;min-height:190px;text-align:center}
+.c9-writing-cue strong{font:600 11px/1.5 var(--c9-ui);text-transform:uppercase;letter-spacing:.08em;color:var(--c9-sub)}
+.c9-writing-cue>span{font:600 clamp(17px,2vw,24px)/1.35 var(--c9-display);color:var(--c9-ink)}
+.c9-writing-cue small{font:500 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-writing-attempt-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px}
+.c9-writing-attempt-controls .c9-button{min-height:44px;max-width:100%;white-space:normal;text-align:center}
+.c9-writing-attempt-review{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,150px);gap:16px;align-items:center;border-top:1px solid var(--c9-line);padding-top:12px;margin-top:7px}
+.c9-writing-attempt-review strong{font:600 13px/1.5 var(--c9-ui);color:var(--c9-ink)}
+.c9-writing-attempt-review p{font:400 11px/1.6 var(--c9-ui);margin:5px 0 0;color:var(--c9-sub)}
+.c9-writing-attempt-review canvas{width:100%;aspect-ratio:1;display:block;background:var(--c9-surface);border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)}
+.c9-writing-modes :focus-visible,.c9-writing-attempt-controls :focus-visible{outline:3px solid var(--c9-focus);outline-offset:2px}
+@media(max-width:700px){
+ .c9-writing-modes{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .c9-writing-modes .c9-button{font-size:11px;padding:8px 5px}
+ .c9-writing-cue{min-height:90px}
+ .c9-writing-attempt-review{grid-template-columns:minmax(0,1fr) 110px;gap:10px}
+}
+@media(max-width:350px){.c9-writing-modes{grid-template-columns:minmax(0,1fr)}}
+@media(forced-colors:active){.c9-writing-modes [aria-pressed="true"]{border:2px solid Highlight}}
+
+/* Screenshot repair: original desktop glyph had been vertically centered below the first viewport. */
+@media(min-width:901px){.c9-character-glyph-wrap{justify-content:flex-start;padding-top:clamp(22px,2.5vw,36px)}}

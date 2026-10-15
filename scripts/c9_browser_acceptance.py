@@ -145,6 +145,7 @@ def main():
                         raise AssertionError("Original contextual Reader empty")
                     open_route(page,"today")
                     page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                    page.locator("details.c9-lesson-resources summary").click()
                     page.locator(".c9-lesson-source-preview").wait_for(state="visible")
                     preview=page.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
@@ -156,6 +157,7 @@ def main():
                     page.wait_for_function("()=>location.hash==='#/explore'")
                     open_route(page,"today")
                     page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                    page.locator("details.c9-lesson-resources summary").click()
                     page.locator(".c9-lesson-source-preview").wait_for(state="visible")
                     page.locator(".c9-lesson-header-actions [data-action='c9-character-reader']").click()
                     page.wait_for_function("()=>location.hash==='#/reader'")
@@ -167,6 +169,7 @@ def main():
                         page.screenshot(path=str(args.artifacts/("c9-50-character-"+str(width)+".png")),full_page=True)
                         open_route(page,"today")
                         page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                        page.locator("details.c9-lesson-resources summary").click()
                         page.locator(".c9-lesson-source-preview").wait_for(state="visible")
                         page.screenshot(path=str(args.artifacts/("c9-50-lesson-"+str(width)+".png")),full_page=True)
                         open_route(page,"today")
@@ -303,13 +306,105 @@ def main():
                     return "Original unit roadmap, short context row and visible character at "+str(width)+"px"
                 check("P9 mobile context and study roadmap "+str(width),compact_home_context)
                 ctx.close()
+            # C9-50 final visual audit: screenshot showed source panel painted
+            # even with closed details semantics. Assert actual visibility,
+            # keyboard isolation, native sections, and accessible Enter toggle.
+            for width,height,mobile in ((1440,900,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def details_visibility():
+                    open_route(page,"today")
+                    home=page.locator("details.c9-home-listening")
+                    deck=home.locator(".c9-listening-deck")
+                    if home.evaluate("(e)=>e.open") or deck.is_visible():
+                        raise AssertionError("Home closed audio is visually exposed")
+                    hs=home.locator("summary")
+                    hs.focus()
+                    if not hs.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Home disclosure is not keyboard focusable")
+                    hs.press("Enter")
+                    deck.wait_for(state="visible")
+                    hs.press("Enter")
+                    if deck.is_visible():raise AssertionError("Home audio did not collapse")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    details=page.locator("details.c9-lesson-resources")
+                    preview=details.locator(".c9-lesson-source-preview")
+                    child=details.locator(".c9-lesson-resources-content")
+                    link=details.locator('[data-action="lookup-word"]').first
+                    if details.evaluate("(e)=>e.open") or child.is_visible() or preview.is_visible():
+                        raise AssertionError("Closed Lesson source preview is painted")
+                    link.evaluate("(e)=>e.focus()")
+                    if link.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Closed Lesson content accepts keyboard focus")
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Original native first stage missing")
+                    if not mobile:
+                        layout=page.locator(".c9-lesson-layout").bounding_box()
+                        box=details.bounding_box()
+                        if not layout or not box or layout["y"]>box["y"]+130:
+                            raise AssertionError("Optional preview is still burying native lesson")
+                    ds=details.locator("summary")
+                    ds.focus()
+                    ds.press("Enter")
+                    preview.wait_for(state="visible")
+                    ds.press("Enter")
+                    if preview.is_visible():raise AssertionError("Lesson preview remained open")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Horizontal layout overflow")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-final-collapsed-lesson-"+str(width)+".png")),full_page=False)
+                    return "native closed/open visibility, keyboard and original stage at "+str(width)
+                check("C9-50 final disclosure "+str(width),details_visibility)
+                ctx.close()
+            for width,height,mobile in ((1440,900,False),(390,844,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def character_first_fold():
+                    open_route(page,"character/demo-01")
+                    panel=page.locator(".c9-character-identity").bounding_box()
+                    glyph=page.locator(".c9-character-glyph").bounding_box()
+                    if not panel or not glyph:raise AssertionError("Original glyph missing")
+                    if not mobile and (glyph["y"]-panel["y"]>110 or glyph["y"]>height*.7):
+                        raise AssertionError("Desktop source glyph was buried in whitespace")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Character page horizontal overflow")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-final-character-fold-"+str(width)+".png")),full_page=False)
+                    return "original glyph visible near meaning at "+str(width)
+                check("C9-50 final glyph first fold "+str(width),character_first_fold)
+                ctx.close()
+            # Mobile-first fidelity: first native lesson stage remains in
+            # viewport; its adjacent-lesson pager is preserved at the bottom.
+            ctx,page,errors=session(390,844,True)
+            def mobile_original_lesson_fold():
+                open_route(page,"learn")
+                page.locator('[data-action="c9-lesson-open"]').first.click()
+                section=page.locator("#c9-lesson-overview").bounding_box()
+                if not section or section["y"]>764:
+                    raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
+                if not page.locator(".c9-lesson-bottom-nav [data-action]").count():
+                    raise AssertionError("Bottom original lesson pager missing")
+                if not page.locator('.c9-lesson-header-actions [data-action="c9-lesson-jump"]').is_visible():
+                    raise AssertionError("Primary native lesson action missing")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Lesson screen horizontal overflow")
+                if errors:raise RuntimeError("; ".join(errors[:2]))
+                if args.artifacts:
+                    page.screenshot(path=str(args.artifacts/"c9-final-original-mobile-fold.png"),full_page=False)
+                return "390px original teaching reaches first viewport without losing lesson controls"
+            check("C9-50 P9 original mobile lesson fold",mobile_original_lesson_fold)
+            ctx.close()
             # C9-48 — native source-led listening, device-voice lifecycle and
             # read-only source visibility. No synthetic scores or user speech.
             for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):
                 ctx,page,errors=session(width,height,mobile)
                 def original_listening_journey():
                     open_route(page,"today")
-                    home=page.locator(".c9-home-source-preview .c9-listening-deck")
+                    box=page.locator("details.c9-home-listening")
+                    if box.evaluate("(e)=>e.open"):raise AssertionError("P9 Home speech toolkit must be optional")
+                    box.locator("summary").click()
+                    home=box.locator(".c9-listening-deck")
                     home.wait_for(state="visible")
                     if home.locator('[data-action="speak"][data-rate="slow"]').count()!=1:
                         raise AssertionError("Home slow listen unavailable")
@@ -317,7 +412,10 @@ def main():
                         raise AssertionError("Home stop audio unavailable")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
-                    lesson=page.locator(".c9-lesson-workspace > .c9-listening-deck")
+                    box=page.locator("details.c9-lesson-resources")
+                    if box.evaluate("(e)=>e.open"):raise AssertionError("Original lesson stages should lead")
+                    box.locator("summary").click()
+                    lesson=box.locator(".c9-listening-deck")
                     lesson.wait_for(state="visible")
                     if lesson.locator(".c9-listening-clip").count()!=3:
                         raise AssertionError("Source-owned character, word and sentence audio stages missing")
@@ -360,6 +458,50 @@ def main():
                     return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
                 check("C9-48 real source listening "+str(width),original_listening_journey)
                 ctx.close()
+            # Original roadmap P61–P63/P69: exercise genuine native drawing
+            # and private text interaction on a narrow touch viewport.
+            ctx,page,errors=session(390,844,True)
+            def original_handwriting_and_personal_reading():
+                open_route(page,"character/demo-01")
+                page.locator('[data-writing-mode="recall"]').click()
+                if page.locator("#c9-writing-recall-cue").is_hidden():
+                    raise AssertionError("Recall cue is missing")
+                if not page.locator("#c9-writing-reference").is_hidden():
+                    raise AssertionError("Recall reference was not covered")
+                page.locator("#c9-writing-canvas").click()
+                keep=page.locator("#c9-writing-keep")
+                if not keep.is_enabled():
+                    raise AssertionError("Handwriting is not captured in recall mode")
+                keep.click()
+                if page.locator("#c9-writing-attempt-review").is_hidden():
+                    raise AssertionError("Prior local attempt not available to compare")
+                if page.locator("#c9-writing-compare").is_disabled():
+                    raise AssertionError("Attempt comparison control not enabled")
+                page.locator('[data-writing-mode="trace"]').click()
+                if page.locator("#c9-writing-trace-glyph").is_hidden():
+                    raise AssertionError("Printed source tracing missing")
+                if "not scored or saved" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Ungraded writing status not explicit")
+                open_route(page,"stories")
+                panel=page.locator(".c9-personal-reader details")
+                panel.locator("summary").click()
+                entry=page.locator("#c9-personal-input")
+                entry.fill("我在学校学习中文。我喜欢中文。")
+                page.locator("#c9-personal-analyze").click()
+                if page.locator(".c9-personal-line").count()!=2:
+                    raise AssertionError("Personal pasted sentences were not annotated")
+                page.locator('[data-personal-mine="0"]').click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Private sentence mining did not update")
+                if page.locator(".c9-personal-term").count()<1:
+                    raise AssertionError("Canonical source word lookup was not offered")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Original handwriting/personal reader overflow")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "390px original free writing, recall/copy trace, private source-backed text annotation and sentence selection"
+            check("P61-P63/P69 original writing and private reading mobile integration",
+                  original_handwriting_and_personal_reading)
+            ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
@@ -375,6 +517,7 @@ def main():
                     if not home_english: raise AssertionError("Home source gloss absent")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
+                    page.locator("details.c9-lesson-resources summary").click()
                     preview=page.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
                     if preview.locator("article").count()<3:
@@ -436,6 +579,37 @@ def main():
                     return "Native dark mode and P9 source contrast at "+str(width)+"px"
                 check("C9-47 dark source contrast "+str(width),dark_source_surfaces)
                 ctx.close()
+            # Preserve the original transient freehand pad across ungraded
+            # translation view changes; no new writer or assessment authority.
+            ctx,page,errors=session()
+            def translation_keeps_ink():
+                open_route(page,"character/demo-01")
+                canvas=page.locator("#c9-writing-canvas")
+                canvas.scroll_into_view_if_needed()
+                bounds=canvas.bounding_box()
+                if not bounds: raise AssertionError("Ungraded writing pad unavailable")
+                page.mouse.move(bounds["x"]+bounds["width"]*.32,bounds["y"]+bounds["height"]*.32)
+                page.mouse.down()
+                page.mouse.move(bounds["x"]+bounds["width"]*.61,bounds["y"]+bounds["height"]*.55,steps=6)
+                page.mouse.up()
+                if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Pointer input did not draw one original freehand line")
+                page.evaluate("()=>window.__c9Ink=document.querySelector('#c9-writing-canvas')")
+                support=page.locator('[data-action="c9-character-support"]')
+                support.click()
+                if not page.evaluate("()=>window.__c9Ink===document.querySelector('#c9-writing-canvas')"):
+                    raise AssertionError("Translation toggle remounted private handwriting")
+                if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Translation toggle erased unsaved handwriting")
+                if not page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
+                    raise AssertionError("Gloss remained visible after hide action")
+                support.click()
+                if page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
+                    raise AssertionError("Source gloss did not reappear")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Private ungraded ink survives native source visibility checks"
+            check("C9-50 in-place Character translation and private ink",translation_keeps_ink)
+            ctx.close()
             # C9-46: screenshot-backed original desktop lesson overlap regression.
             # The desktop vertical lesson rail must never paint across the
             # adjacent native teaching panel; the mobile rail may scroll.
@@ -732,7 +906,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v59-c9-50-source-journey"
+                current="character-study-working-v60-p61-p63-p69-original-learning"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -750,7 +924,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v59-c9-50-source-journey');
+                    keys.includes('character-study-working-v60-p61-p63-p69-original-learning');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -764,7 +938,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 315 v59 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 315 v60 assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()

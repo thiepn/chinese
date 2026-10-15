@@ -3,7 +3,8 @@
  * Visual and read-only projections of original source content. All activity
  * evaluation and storage remain in app.mjs native action dispatch.
  */
-import {STORIES} from './stories.mjs';
+import {STORIES,tokenizeSentence} from './stories.mjs';
+import {findWord} from './lexicon.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
 import {p34StudyStats,p34NextReading,p34NextListening} from './p34-screen.mjs';
@@ -223,4 +224,97 @@ export function renderC9ReaderIntro(lesson,act,esc){
  '<span>'+esc(lesson.pinyin)+'</span>'+
  '<div class="c9-inline">'+act('speak','Listen using device voice','c9-button c9-button--secondary c9-button--small','data-text="'+esc(lesson.sentence.hanzi)+'"')+
  act('c9-reader-character','Related character study →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>';
+}
+
+
+/* P69 original-roadmap personal reading: tokenize private, user-pasted text using
+ * the existing canonical STORY glossary and Lexicon; never treat user text as
+ * approved editorial curriculum, record a StudyEvent, or transmit it. */
+let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[];
+let disconnectPersonalReader=null;
+const PERSONAL_READER_LIMIT=1200;
+const personalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean).slice(0,32)||[];
+const personalHanzi=text=>/\p{Script=Han}/u.test(text);
+export function renderC9PersonalTextReader(esc){
+ const text=personalReaderText;
+ return '<section class="c9-personal-reader" aria-labelledby="c9-personal-reader-title"><details>'+
+  '<summary><strong id="c9-personal-reader-title">Read my own Chinese text</strong><span>Private, optional · source-linked dictionary · no grading</span></summary>'+
+  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace only holds your text and mined sentences in this browser tab until a refresh or close; it does not save them to the learning database.</p>'+
+  '<label for="c9-personal-input">My Chinese passage · up to '+PERSONAL_READER_LIMIT+' characters</label>'+
+  '<textarea id="c9-personal-input" rows="5" maxlength="'+PERSONAL_READER_LIMIT+'" spellcheck="false" lang="zh-Hans" placeholder="Paste your own Mandarin passage here">'+esc(text)+'</textarea>'+
+  '<div class="c9-personal-actions"><button type="button" id="c9-personal-analyze" class="c9-button c9-button--primary c9-button--small">Annotate with existing dictionary</button>'+
+  '<button type="button" id="c9-personal-clear" class="c9-button c9-button--secondary c9-button--small">Clear my text</button>'+
+  '<span id="c9-personal-status" role="status">Annotations are private study aids, not translations or grades.</span></div>'+
+  '<div id="c9-personal-results" aria-live="polite">'+personalReaderResults(esc)+'</div></div></details></section>';
+}
+function personalReaderResults(esc){
+ if(!personalReaderAnalyzed)return '';
+ const lines=personalLines(personalReaderAnalyzed);
+ if(!lines.length)return '<p>No sentences to annotate. Try pasting Chinese text.</p>';
+ const view=lines.map((line,i)=>{
+  const tokens=tokenizeSentence(line);
+  const text=tokens.map(token=>{
+   const key=token.entry?.wordKey;
+   const word=key&&findWord(key);
+   return word?'<button type="button" class="c9-personal-term" data-action="lookup-word" data-id="'+esc(word.key)+'" title="'+esc(word.pinyin+' · '+word.senses.join(' / '))+'" lang="zh-Hans">'+esc(token.text)+'</button>':'<span lang="zh-Hans">'+esc(token.text)+'</span>';
+  }).join('');
+  const mined=personalReaderMined.includes(line);
+  return '<article class="c9-personal-line"><div class="c9-personal-line-text">'+text+'</div>'+
+   '<button type="button" data-personal-mine="'+i+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
+ }).join('');
+ return '<div class="c9-personal-result-head"><strong>'+lines.length+' source-personal segment'+(lines.length===1?'':'s')+'</strong><small>Highlighted tokens link to existing indexed words; other tokens have no verified lookup.</small></div>'+
+  '<div class="c9-personal-lines">'+view+'</div>'+
+  '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
+   '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
+   (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
+   '<button type="button" id="c9-personal-copy" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy my mined sentences</button></div>';
+}
+export function connectC9PersonalTextReader(root,esc){
+ if(disconnectPersonalReader){disconnectPersonalReader();disconnectPersonalReader=null;}
+ const input=root.querySelector('#c9-personal-input');if(!input)return;
+ const panel=root.querySelector('#c9-personal-results'),status=root.querySelector('#c9-personal-status');
+ const analyze=root.querySelector('#c9-personal-analyze'),clear=root.querySelector('#c9-personal-clear');
+ const details=input.closest('details');
+ if(details&&(personalReaderAnalyzed||personalReaderText))details.open=true;
+ const update=()=>{if(panel)panel.innerHTML=personalReaderResults(esc);};
+ const onInput=()=>{personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);};
+ const onAnalyze=()=>{
+  personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
+  personalReaderAnalyzed=personalReaderText.trim();
+  personalReaderMined=[];update();
+  if(status)status.textContent=personalReaderAnalyzed?
+   (personalHanzi(personalReaderAnalyzed)?'Annotated using existing original word records. No text saved.':'No Chinese characters detected. No learning evidence changed.'):'Paste text before annotating.';
+ };
+ const onClear=()=>{
+  if((personalReaderText||personalReaderMined.length)&&!window.confirm('Discard your private pasted passage and temporary mined sentences?'))return;
+  personalReaderText='';personalReaderAnalyzed='';personalReaderMined=[];input.value='';update();
+  if(status)status.textContent='Private text cleared from this tab.';
+ };
+ const onPanelClick=async e=>{
+  const mine=e.target.closest('[data-personal-mine]');
+  if(mine){
+   const line=personalLines(personalReaderAnalyzed)[Number(mine.dataset.personalMine)];
+   if(!line)return;
+   personalReaderMined=personalReaderMined.includes(line)?personalReaderMined.filter(s=>s!==line):
+    [...personalReaderMined,line];
+   update();if(status)status.textContent=personalReaderMined.length+' temporary sentences in your list.';
+   return;
+  }
+  if(e.target.closest('#c9-personal-copy')){
+   try{
+    if(!navigator.clipboard?.writeText)throw Error('Clipboard permission unavailable');
+    await navigator.clipboard.writeText(personalReaderMined.join('\n'));
+    if(status)status.textContent='Mined sentences copied. Check your clipboard before closing this page.';
+   }catch{if(status)status.textContent='Automatic clipboard copy unavailable. Select the listed text to copy it manually.';}
+  }
+ };
+ input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
+ clear?.addEventListener('click',onClear);panel?.addEventListener('click',onPanelClick);
+ disconnectPersonalReader=()=>{
+  input.removeEventListener('input',onInput);analyze?.removeEventListener('click',onAnalyze);
+  clear?.removeEventListener('click',onClear);panel?.removeEventListener('click',onPanelClick);
+ };
+}
+export function disconnectC9PersonalTextReader(){
+ if(disconnectPersonalReader){disconnectPersonalReader();disconnectPersonalReader=null;}
 }

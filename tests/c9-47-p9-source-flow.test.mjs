@@ -46,7 +46,7 @@ test('C9-47 Character keeps original examples, accessible jumps, and truthful st
  assert.ok(html.includes('c9-character-source-sample'));
  assert.ok(html.includes('c9-character-sample-hanzi'));
  assert.ok(html.includes(esc(lesson.sentence.hanzi)));
- assert.ok(!html.includes('c9-character-sample-english'));
+ assert.ok(html.includes('class="c9-character-sample-english" hidden'));
  assert.ok(html.includes('data-section="writing"'));
  assert.ok(html.includes('data-section="sentences"'));
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
