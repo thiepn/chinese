@@ -68,3 +68,20 @@ test('C9-50 integrated Character preserves native source links and ungraded writ
  assert.ok(source.includes('.c9-lesson-sections [data-action='));
  assert.equal(JSON.stringify(state),before);
 });
+
+test('C9-50 P9 compact surfaces retain original guided and indexed curriculum authorities',()=>{
+ const state=freshState(),before=JSON.stringify(state),lesson=DEMO_LESSONS[0];
+ const home=renderC9Home(state,act,esc);
+ assert.ok(home.includes('class="c9-home-listening"'));
+ assert.ok(home.includes('Listen and shadow this sentence'));
+ assert.ok(home.includes('data-action="hub-lesson"'));
+ const html=renderC9LessonWorkspace({lesson,state,nativeMarkup:'',act,esc});
+ assert.ok(html.includes('class="c9-lesson-resources"'));
+ assert.ok(html.includes('Preview original source and audio'));
+ assert.ok(html.includes('class="c9-lesson-preview-toolbar"'));
+ assert.ok(html.includes('data-action="lookup-word"'));
+ assert.ok(html.includes('data-action="c9-character-reader"'));
+ assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-layout'));
+ assert.ok(html.includes('data-section="overview"'));
+ assert.equal(JSON.stringify(state),before);
+});
