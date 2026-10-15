@@ -958,9 +958,54 @@ function c9OpenNativeWorkshopTask(index,assisted=false){
  render();return true;
 }
 async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
-function speak(text,rate=demoSpeechRate){if(!('speechSynthesis'in window)){alertUser('Speech playback is unavailable in this browser.','error');return}const voices=speechSynthesis.getVoices();const voice=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
- if(!voice){alertUser('No Mandarin speech voice is installed. Playback is unavailable, and the text remains accessible.','error');return}
- const utt=new SpeechSynthesisUtterance(text);utt.voice=voice;utt.lang=voice.lang;utt.rate=rate;speechSynthesis.cancel();speechSynthesis.speak(utt);alertUser('Using your device’s Chinese speech voice. This audio is not linguistically certified.');}
+/* C9-48: one cancellable controller for the original device voice actions.
+ * No network TTS, recordings, transcription, listening grades or new state. */
+let c9SpeechGeneration=0;
+function stopC9Speech(notify=false){
+ c9SpeechGeneration++;
+ try{window.speechSynthesis?.cancel();}catch{}
+ if(notify){alertUser('Chinese audio stopped. Learning progress is unchanged.');announceC9Interaction('Chinese audio stopped.');}
+}
+function c9SelectMandarinVoice(voices){
+ const available=Array.from(voices||[]).filter(v=>String(v.lang||'').toLowerCase().startsWith('zh'));
+ return available.find(v=>String(v.lang).toLowerCase().startsWith('zh-cn'))||available[0]||null;
+}
+async function c9AwaitMandarinVoice(synthesis){
+ const existing=c9SelectMandarinVoice(synthesis.getVoices());
+ if(existing)return existing;
+ // Chromium and mobile browsers may populate local voices after a gesture.
+ // Waiting is bounded; absence remains unavailable, never simulated.
+ if(typeof synthesis.addEventListener!=='function')return null;
+ await new Promise(resolve=>{
+  let timer;
+  const done=()=>{clearTimeout(timer);synthesis.removeEventListener('voiceschanged',done);resolve();};
+  synthesis.addEventListener('voiceschanged',done,{once:true});
+  timer=setTimeout(done,1200);
+ });
+ return c9SelectMandarinVoice(synthesis.getVoices());
+}
+async function speak(text,rate=demoSpeechRate){
+ const phrase=String(text||'').trim();
+ if(!phrase)return alertUser('No original Chinese text is available to play.','error');
+ if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance!=='function')
+  return alertUser('Speech playback is unavailable in this browser. The written source remains available.','error');
+ stopC9Speech();
+ const request=c9SpeechGeneration;
+ const synthesis=window.speechSynthesis;
+ let voice;
+ try{voice=await c9AwaitMandarinVoice(synthesis);}
+ catch{if(request===c9SpeechGeneration)alertUser('The device speech list could not be loaded. Read the Chinese source instead.','error');return;}
+ if(request!==c9SpeechGeneration)return;
+ if(!voice)return alertUser('No Mandarin speech voice is installed. Playback is unavailable; the original text remains accessible.','error');
+ const utt=new SpeechSynthesisUtterance(phrase);
+ utt.voice=voice;utt.lang=voice.lang;utt.rate=Number.isFinite(rate)?Math.max(.55,Math.min(1.4,rate)):demoSpeechRate;
+ utt.onstart=()=>{if(request===c9SpeechGeneration){alertUser('Playing device Mandarin speech ('+utt.rate.toFixed(2)+'×), not a certified source recording.');announceC9Interaction('Chinese speech playing.');}};
+ utt.onend=()=>{if(request===c9SpeechGeneration)announceC9Interaction('Chinese speech finished.');};
+ utt.onerror=event=>{if(request===c9SpeechGeneration&&!['canceled','interrupted'].includes(event.error)){
+  alertUser('The device could not play Mandarin speech. Use the written original source instead.','error');}};
+ try{synthesis.speak(utt);}
+ catch{if(request===c9SpeechGeneration)alertUser('Speech playback failed on this device. The original Chinese text remains available.','error');}
+}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
  const handledWriting=await handleC9WritingAction(button,{
@@ -2446,7 +2491,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   announceC9Interaction('Native review grade saved. '+(sessionQueue?.length||0)+' prompts remain.');
   return true;
  }
- if(name==='speak')return speak(button.dataset.text||'');
+ if(name==='speak')return speak(button.dataset.text||'',button.dataset.rate==='slow'?0.68:demoSpeechRate);
+ if(name==='speech-stop'){stopC9Speech(true);return;}
  if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
  if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
  if(name==='import-open')return $('import-file')?.click();
@@ -2603,6 +2649,7 @@ window.addEventListener('hashchange',()=>{
   history.replaceState(null,'',previousHash);
   return;
  }
+ if(destination!==previous||sameScreenSourceChanged)stopC9Speech();
  // Following a *real* approved hash transition, synchronize source-specific
  // local input with the displayed original source, never with an old lesson.
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
