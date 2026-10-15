@@ -53,6 +53,10 @@ test('C9-48 Character keeps original study, private writing and device speech se
  assert.ok(html.includes('data-text="'+esc(first.words[0].hanzi)+'"'));
  assert.ok(html.includes('data-text="'+esc(first.sentence.hanzi)+'"'));
  assert.ok(html.includes('c9-writing-canvas'));
+ assert.ok(html.includes('id="c9-writing-trace-glyph"'));
+ assert.ok(html.includes('id="c9-writing-trace-toggle"'));
+ assert.ok(html.includes('aria-pressed="false"'));
+ assert.ok(html.includes('no stroke sequence or direction'));
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
  assert.equal(JSON.stringify(state),snapshot);
 });
@@ -66,4 +70,14 @@ test('C9-48 speech lifecycle cancels obsolete source requests and preserves orig
  assert.ok(src.includes('if(destination!==previous||sameScreenSourceChanged)stopC9Speech()'));
  assert.ok(src.includes("button.dataset.rate==='slow'?0.68:demoSpeechRate"));
  assert.ok(!src.includes('webkitSpeechRecognition'));
+});
+
+test('C9-48 reversible printed-glyph tracing never saves, sequences or grades strokes',()=>{
+ const src=readFileSync(new URL('../src/character-c9.mjs',import.meta.url),'utf8');
+ assert.ok(src.includes("traceToggle?.addEventListener('click',toggleTrace)"));
+ assert.ok(src.includes("traceToggle?.removeEventListener('click',toggleTrace)"));
+ assert.ok(src.includes("traceToggle?.setAttribute('aria-pressed',String(traceVisible))"));
+ assert.ok(src.includes("trace.hidden=!traceVisible"));
+ assert.ok(src.includes("Nothing is graded or saved."));
+ assert.ok(src.includes('No lines'));
 });
