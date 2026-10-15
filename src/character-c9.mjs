@@ -11,6 +11,7 @@ import {findP31Guide} from './p31-foundations.mjs';
 import {guideFor} from './lesson-guides.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
+import {renderC9ListeningDeck} from './ui-c9.mjs';
 
 const tabs=Object.freeze([
  ['overview','Character'],
@@ -90,6 +91,10 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
    (showTranslations?'<span class="c9-character-sample-english">'+txt(previewSentence.english,esc)+'</span>':''):'')+
   '<div class="c9-character-sample-words">'+previewWords.map(w=>'<span><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong><small>'+txt(w.english,esc)+'</small></span>').join('')+'</div>'+
   '<div class="c9-character-sample-links">'+act('c9-character-jump',icon('pen')+' Free writing →','c9-button c9-button--secondary c9-button--small','data-section="writing" aria-controls="c9-writing"')+'</div></div>';
+ const sourceAudio=renderC9ListeningDeck([
+  ...(previewWords[0]?[{label:'Whole word',...previewWords[0]}]:[]),
+  ...(previewSentence?[{label:'Source sentence',...previewSentence}]:[])
+ ],act,esc,{title:'Listen to words in context',compact:true,showPinyin,showTranslations});
  const identity='<section class="c9-character-identity" aria-labelledby="c9-character-name">'+
   '<div class="c9-character-glyph-wrap"><div class="c9-character-glyph" lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</div><span class="c9-character-seal">'+txt(lesson.hanzi,esc)+' · ORIGINAL STUDY</span></div>'+
   '<div class="c9-character-identity-content"><span class="c9-eyebrow">LESSON '+String(index+1).padStart(3,'0')+' / '+DEMO_LESSONS.length+
@@ -100,7 +105,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div class="c9-character-hero-actions">'+act('speak',icon('audio')+'Hear the character','c9-button c9-button--primary','data-text="'+txt(lesson.hanzi,esc)+'"')+
   act('c9-character-lesson',icon('book')+'Full lesson','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+
-  '<p class="c9-character-audio-notice">Pronunciation uses the device Mandarin speech voice when installed; no certified recording is supplied.</p>'+sourceSample+'</div></section>';
+  '<p class="c9-character-audio-notice">Pronunciation uses a device Mandarin voice when available; no certified recording is supplied.</p>'+sourceSample+sourceAudio+'</div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+
   '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
   row('Original lesson',''+(index+1)+' / '+DEMO_LESSONS.length)+
