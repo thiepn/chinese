@@ -5,6 +5,7 @@
  */
 import {STORIES,tokenizeSentence} from './stories.mjs';
 import {findWord} from './lexicon.mjs';
+import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
 import {p34StudyStats,p34NextReading,p34NextListening} from './p34-screen.mjs';
@@ -235,48 +236,71 @@ let disconnectPersonalReader=null;
 const PERSONAL_READER_LIMIT=1200;
 const personalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean).slice(0,32)||[];
 const personalHanzi=text=>/\p{Script=Han}/u.test(text);
-export function renderC9PersonalTextReader(esc){
+export function renderC9PersonalTextReader(esc,state={}){
  const text=personalReaderText;
  return '<section class="c9-personal-reader" aria-labelledby="c9-personal-reader-title"><details>'+
   '<summary><strong id="c9-personal-reader-title">Read my own Chinese text</strong><span>Private, optional · source-linked dictionary · no grading</span></summary>'+
-  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace only holds your text and mined sentences in this browser tab until a refresh or close; it does not save them to the learning database.</p>'+
+  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace holds text, word matches and mined sentences only in this browser tab until refresh or close. At most 32 text segments are annotated. Nothing is sent to the server or saved to the learning database unless you deliberately save an existing canonical word through the native Wordbook.</p>'+
   '<label for="c9-personal-input">My Chinese passage · up to '+PERSONAL_READER_LIMIT+' characters</label>'+
   '<textarea id="c9-personal-input" rows="5" maxlength="'+PERSONAL_READER_LIMIT+'" spellcheck="false" lang="zh-Hans" placeholder="Paste your own Mandarin passage here">'+esc(text)+'</textarea>'+
   '<div class="c9-personal-actions"><button type="button" id="c9-personal-analyze" class="c9-button c9-button--primary c9-button--small">Annotate with existing dictionary</button>'+
   '<button type="button" id="c9-personal-clear" class="c9-button c9-button--secondary c9-button--small">Clear my text</button>'+
   '<span id="c9-personal-status" role="status">Annotations are private study aids, not translations or grades.</span></div>'+
-  '<div id="c9-personal-results" aria-live="polite">'+personalReaderResults(esc)+'</div></div></details></section>';
+  '<div id="c9-personal-results" aria-live="polite">'+personalReaderResults(esc,state)+'</div></div></details></section>';
 }
-function personalReaderResults(esc){
+function personalReaderResults(esc,state={}){
  if(!personalReaderAnalyzed)return '';
  const lines=personalLines(personalReaderAnalyzed);
  if(!lines.length)return '<p>No sentences to annotate. Try pasting Chinese text.</p>';
+ const sources=new Map(),unmatched=new Set();
  const view=lines.map((line,i)=>{
   const tokens=tokenizeSentence(line);
   const text=tokens.map(token=>{
-   const key=token.entry?.wordKey;
-   const word=key&&findWord(key);
-   return word?'<button type="button" class="c9-personal-term" data-action="lookup-word" data-id="'+esc(word.key)+'" title="'+esc(word.pinyin+' · '+word.senses.join(' / '))+'" lang="zh-Hans">'+esc(token.text)+'</button>':'<span lang="zh-Hans">'+esc(token.text)+'</span>';
+   const key=token.entry?.wordKey,word=key&&findWord(key);
+   if(word){
+    const item=sources.get(word.key)||{word,count:0};
+    item.count++;sources.set(word.key,item);
+    return '<button type="button" class="c9-personal-term" data-action="lookup-word" data-id="'+esc(word.key)+'" title="'+esc(word.pinyin+' · '+word.senses.join(' / '))+'" lang="zh-Hans">'+esc(token.text)+'</button>';
+   }
+   if(personalHanzi(token.text))unmatched.add(token.text);
+   return '<span lang="zh-Hans">'+esc(token.text)+'</span>';
   }).join('');
+  const original=SENTENCE_LIBRARY.find(s=>s.hanzi===line);
   const mined=personalReaderMined.includes(line);
   return '<article class="c9-personal-line"><div class="c9-personal-line-text">'+text+'</div>'+
+   (original?'<small>Exact match: '+esc(original.id)+' · '+esc(original.topic)+'</small>'+
+    '<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="sentence-select" data-id="'+esc(original.id)+'">Open original sentence task →</button>':'')+
    '<button type="button" data-personal-mine="'+i+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
  }).join('');
- return '<div class="c9-personal-result-head"><strong>'+lines.length+' source-personal segment'+(lines.length===1?'':'s')+'</strong><small>Highlighted tokens link to existing indexed words; other tokens have no verified lookup.</small></div>'+
-  '<div class="c9-personal-lines">'+view+'</div>'+
+ const saved=new Set(state.bookmarkedWords||[]);
+ const matches=[...sources.values()].sort((a,b)=>b.count-a.count||a.word.hanzi.localeCompare(b.word.hanzi,'zh')).slice(0,24);
+ const indexed='<section class="c9-personal-index" aria-label="Indexed words in my passage"><h3>Words confirmed in existing source index</h3>'+
+  '<p>'+sources.size+' distinct indexed whole-word record'+(sources.size===1?'':'s')+
+  ' · '+unmatched.size+' unmatched Hanzi token'+(unmatched.size===1?'':'s')+
+  '. Matches do not imply a correct translation or that other words are unknown to you.</p>'+
+  (matches.length?'<div class="c9-personal-index-grid">'+matches.map(({word,count})=>
+   '<article><strong lang="zh-Hans">'+esc(word.hanzi)+'</strong><span>'+esc(word.pinyin)+'</span>'+
+   '<span>'+esc(word.senses.slice(0,2).join(' / '))+'</span><small>'+count+' indexed occurrence'+(count===1?'':'s')+'</small>'+
+   (word.examples[0]?'<small lang="zh-Hans">'+esc(word.examples[0].hanzi)+'</small>':'')+
+   '<div><button type="button" data-action="lookup-word" data-id="'+esc(word.key)+'" class="c9-button c9-button--secondary c9-button--small">Details</button>'+
+   '<button type="button" data-action="word-bookmark" data-id="'+esc(word.key)+'" class="c9-button c9-button--quiet c9-button--small">'+(saved.has(word.key)?'Unsave':'Save word')+'</button></div></article>').join('')+'</div>':'<p>No indexed whole words detected; do not infer unknown grammar or incorrectly translated text.</p>')+
+  (sources.size>matches.length?'<p>Showing the first 24 indexed words; the passage remains unchanged.</p>':'')+
+  '</section>';
+ return '<div class="c9-personal-result-head"><strong>'+lines.length+' private passage segment'+(lines.length===1?'':'s')+'</strong><small>Only existing indexed whole-word records become lookup links; the pasted passage stays ungraded.</small></div>'+
+  '<div class="c9-personal-lines">'+view+'</div>'+indexed+
   '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
    '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
    (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
    '<button type="button" id="c9-personal-copy" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy my mined sentences</button></div>';
 }
-export function connectC9PersonalTextReader(root,esc){
+export function connectC9PersonalTextReader(root,esc,state={}){
  if(disconnectPersonalReader){disconnectPersonalReader();disconnectPersonalReader=null;}
  const input=root.querySelector('#c9-personal-input');if(!input)return;
  const panel=root.querySelector('#c9-personal-results'),status=root.querySelector('#c9-personal-status');
  const analyze=root.querySelector('#c9-personal-analyze'),clear=root.querySelector('#c9-personal-clear');
  const details=input.closest('details');
  if(details&&(personalReaderAnalyzed||personalReaderText))details.open=true;
- const update=()=>{if(panel)panel.innerHTML=personalReaderResults(esc);};
+ const update=()=>{if(panel)panel.innerHTML=personalReaderResults(esc,state);};
  const onInput=()=>{personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);};
  const onAnalyze=()=>{
   personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
