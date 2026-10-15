@@ -153,3 +153,26 @@
 .c9-writing-backup-paste :focus-visible{outline:3px solid var(--c9-focus,var(--c9-accent));
  outline-offset:3px}
 @media(max-width:700px){.c9-writing-backup-paste button{width:100%}}
+
+
+/* C9-41: protect long-form writing focus and private recovery on a phone. */
+.c9-writing-workspace :where(.p43-studio,.c9-writing-portability,.c9-writing-transfer){
+ min-width:0;max-width:100%;
+}
+.c9-writing-workspace .p43-studio textarea{
+ max-width:100%;min-height:240px;line-height:1.85;
+ padding:14px 15px;font-size:17px;resize:vertical;
+}
+.c9-writing-workspace :where(.c9-writing-native-links,.c9-writing-intro-links){
+ display:flex;flex-wrap:wrap;gap:8px;
+}
+.c9-writing-workspace :where(.c9-writing-native-links,.c9-writing-intro-links) :where(button,a){
+ min-height:44px;max-width:100%;white-space:normal;
+}
+@media(max-width:640px){
+ .c9-writing-workspace .p43-studio textarea{min-height:250px;font-size:18px;padding:13px 12px;}
+ .c9-writing-workspace :where(.c9-writing-native-links,.c9-writing-intro-links) :where(button,a){flex:1 1 180px;}
+}
+@media(max-width:380px){
+ .c9-writing-workspace :where(.c9-writing-native-links,.c9-writing-intro-links) :where(button,a){flex-basis:100%;}
+}

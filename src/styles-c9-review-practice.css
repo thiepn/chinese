@@ -350,3 +350,30 @@
 @media(prefers-reduced-motion:reduce){
  .c9-practice-page *,.c9-assessment *{scroll-behavior:auto}
 }
+
+
+/* C9-41: keep the actual Review question and grade choice legible.
+ * Scrolling, response and grade events remain owned by original Review. */
+.c9-assessment-live .c9-assessment-question{
+ max-width:720px;margin-inline:auto;text-align:center;
+}
+.c9-assessment-live .c9-assessment-question h2{
+ max-width:62ch;margin-inline:auto;line-height:1.45;
+}
+.c9-assessment-live .c9-assessment-response{
+ width:100%;max-width:660px;
+}
+.c9-review-active .c9-assessment-actions>.c9-button{
+ min-height:48px;padding:11px 15px;
+}
+@media(max-width:700px){
+ .c9-assessment-live{padding:17px 13px;}
+ .c9-review-active .c9-assessment-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .c9-review-active .c9-assessment-actions>.c9-button{
+  width:100%;min-width:0;white-space:normal;line-height:1.4;
+ }
+ .c9-assessment-hanzi{font-size:clamp(42px,10vw,66px);line-height:1.4;}
+}
+@media(max-width:390px){
+ .c9-review-active .c9-assessment-actions{grid-template-columns:minmax(0,1fr);}
+}

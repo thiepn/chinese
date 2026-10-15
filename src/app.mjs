@@ -92,7 +92,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v47-c9-40-source-revision';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v48-c9-41-visual-cohesion';
 const C9_EXPECTED_OFFLINE_ASSETS=315;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -306,7 +306,6 @@ function renderWordbook(){
   '<p>Existing meaning, pronunciation, listening and contextual tasks; independent attempts stay separate from scheduled review.</p></div></div>'+
   renderWordbookNative()+'</section>';
  return '<div class="c9-language-workspace c9-language-workspace--vocabulary">'+
-  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook" aria-current="page">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
   (state.vocabularyJourney?study+browse:browse+study)+'</div>';
 }
 function renderDiagnosticPanel(){const d=progressDiagnostics(state);const connections=contextualProgress(state);const nextWeak=contextualWeaknesses(state).slice(0,3);return `<section class="simple-panel diagnostic-panel"><div class="panel-heading"><h2>Activity by learning mode</h2><span class="muted">Past 7 days · no mastery predictions</span></div><div class="diagnostic-list">${d.sources.map(s=>`<div><strong>${esc(s.name)}</strong><span>${s.recent} checked · ${s.independent} independent correct · ${s.assisted} assisted</span></div>`).join('')}</div><p class="muted">${d.totalRecent} recorded attempts across all modes this week. Scheduled-review events remain separate from supplementary exercises.</p><div class="button-row">${action('open-dialogues','Conversation Lab →','button outline')}${action('open-wordbook-practice','Practice saved words →','button outline')}${action('open-senses','Word sense lab →','button outline')}${action('open-workshop','Sentence workshop →','button outline')}</div><div class="connected-analytics"><h3>Connecting knowledge</h3><p class="muted">These attempts are supplemental, not scheduled mastery.</p><div class="connected-analytics-grid">${connections.map(c=>`<div class="connected-analytics-item"><strong>${esc(c.name)}</strong><span>${c.attempts} attempts · ${c.independent} independent · ${c.misses} misses</span></div>`).join('')}</div><p class="muted">Recommended context to practice: ${nextWeak.map(w=>w.type==='sense'?'word meanings':w.type==='sentence'?'sentence writing':'dialogue understanding').join(' · ')}.</p><div class="button-row">${action('connected-session','Practice these connections →','button primary')}</div></div>${d.extras.map(s=>`<div class="extra-diagnostic"><strong>${esc(s.name)}</strong><span>${s.all} total · ${s.independent} independent this week · ${s.assisted} assisted</span></div>`).join('')}</section>`;}
@@ -452,7 +451,6 @@ function renderGrammar(){
  const selected=selectedGrammarId();
  const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
  return '<div class="c9-language-workspace c9-language-workspace--grammar">'+
-  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar" aria-current="page">Grammar</a><a href="#/sentences">Sentences</a></nav>'+
   renderC9GrammarDirectory(state,action,esc)+
   '<section class="c9-language-native c9-language-study" id="c9-native-grammar" aria-label="Original grammar lessons">'+native+'</section></div>';
 }
@@ -509,7 +507,6 @@ function renderSentences(){
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
  return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
-  '<nav class="c9-language-switcher" aria-label="Language workspaces"><a href="#/wordbook">Vocabulary</a><a href="#/grammar">Grammar</a><a href="#/sentences" aria-current="page">Sentences</a></nav>'+
   renderC9SentenceDirectory(state,action,esc)+
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
@@ -623,7 +620,8 @@ function refreshC9DiscoveryResults(){
 }
 function renderLearn(){
  if(!c9LearnDetail){
-  const curriculum='<section class="c9-original-curriculum" aria-labelledby="c9-original-curriculum-title">'+
+  const curriculum='<details class="c9-original-curriculum-disclosure"><summary><span><strong>Original P31–P34 learning modules</strong><small>Character foundations, practical sentences, conversations and connected reading</small></span><span aria-hidden="true">⌄</span></summary>'+
+   '<section class="c9-original-curriculum" aria-labelledby="c9-original-curriculum-title">'+
    '<header class="c9-original-curriculum-head"><div><p class="c9-eyebrow">ORIGINAL AUTHOR-SUPPLIED TEACHING</p><h2 id="c9-original-curriculum-title">Build skills beyond the character list</h2>'+
    '<p>Characters lead into real vocabulary, grammar, sentence production, listening and connected reading. These are independent original teaching modules, not official HSK certification.</p></div>'+
    '<a href="#/skills" class="c9-button c9-button--primary">Continue by learning skill →</a>'+
@@ -632,7 +630,7 @@ function renderLearn(){
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p31-title"><div class="c9-original-curriculum-label"><span>01 / CHARACTERS & WORDS</span><h3 id="c9-p31-title">Character foundations</h3><p>Original P31 character families, contextual teaching and practical words.</p></div>'+p31Overview(state,action,esc,true)+'</section>'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p32-title"><div class="c9-original-curriculum-label"><span>02 / GRAMMAR & SENTENCES</span><h3 id="c9-p32-title">Use Chinese in sentences</h3><p>Source-based grammar patterns, sentence applications and controlled practice.</p></div>'+p32LearningHub(state,action,esc)+'</section>'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
-   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section>';
+   '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section></details>';
   const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
   return renderC9LearnHub(state,c9LearnUi(),action,esc)+renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra;
  }
@@ -1569,7 +1567,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    const target=button.dataset.target;
    if(!['c9-units-title','c9-browse-title','c9-content-title','c9-original-curriculum-title'].includes(target))return;
    const node=document.getElementById(target);
-   if(node){node.scrollIntoView({block:'start',behavior:'auto'});node.setAttribute('tabindex','-1');node.focus({preventScroll:true});}
+   if(node){
+    const hiddenModule=node.closest('details');
+    if(hiddenModule&&!hiddenModule.open)hiddenModule.open=true;
+    node.scrollIntoView({block:'start',behavior:'auto'});
+    node.setAttribute('tabindex','-1');
+    node.focus({preventScroll:true});
+   }
    return;
  }
  if(name==='c9-discovery-reset'){
