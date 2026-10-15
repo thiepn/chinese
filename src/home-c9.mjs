@@ -127,8 +127,8 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
  return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+
-  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+
+  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+
   '<details class="c9-home-explore-more"><summary><span><strong>Explore the rest of your course</strong><small>Original units, reading, conversations, grammar and pronunciation</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+
-  '<div class="c9-home-explore-content">'+roadmap+connected+'</div></details>'+
+  '<div class="c9-home-explore-content">'+connected+'</div></details>'+
   readiness+'</div>';
 }
