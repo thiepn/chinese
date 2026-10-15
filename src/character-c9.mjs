@@ -133,14 +133,23 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div><span>Understand</span><span>Write freely</span><span>Study words</span><span>Read in context</span></div>'+
   '<small>Teaching and ungraded writing are not mastery checkpoints.</small></div>';
  const writing='<section class="c9-character-section" id="c9-writing" aria-labelledby="c9-writing-title">'+
-  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">MANUAL CHARACTER PRACTICE</p><h2 id="c9-writing-title">Write by hand</h2></div><span class="c9-badge">Ungraded</span></header>'+
-  '<p>Compare your marks with the original glyph. Draw freely with touch, mouse or keyboard; practice stays on this screen and receives no grade.</p>'+
-  '<div class="c9-writing-workspace"><div class="c9-writing-guide" aria-label="Reference glyph in square guide"><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><small>Reference only</small></div>'+
-  '<div class="c9-writing-pad"><details class="c9-writing-instructions" open><summary>Touch, mouse and keyboard controls</summary><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Drag to write. With a keyboard: focus the pad, move with arrow keys (Shift for larger steps), press Space or Enter to start/end a stroke, and Escape to lift the pen. Undo and Clear work from the keyboard. Nothing is graded or saved.</p></details><div class="c9-writing-canvas-wrap"><span id="c9-writing-trace-glyph" class="c9-writing-trace-glyph" lang="zh-Hans" aria-hidden="true" hidden>'+txt(lesson.hanzi,esc)+'</span><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Optional keyboard-operated and freehand Chinese writing pad, ungraded" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">The writing pad requires canvas support. The reference character and original lesson are still available.</canvas></div>'+
-  '<div class="c9-writing-controls"><span id="c9-writing-feedback" role="status">Free practice · no saved strokes</span>'+
-  '<div class="c9-inline"><button type="button" id="c9-writing-trace-toggle" class="c9-button c9-button--secondary c9-button--small" aria-pressed="false" aria-controls="c9-writing-trace-glyph">Show printed tracing guide</button><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button>'+
-  '<button type="button" id="c9-writing-clear" class="c9-button c9-button--secondary c9-button--small" disabled>Clear</button></div></div></div></div>'+
-  '<div class="c9-character-caution"><strong>Stroke-order limitation.</strong> Verified sequence diagrams, canonical stroke counts, automatic recognition and grading are not installed. The optional faint printed-glyph overlay is a visual tracing guide only; it provides no stroke sequence or direction. This canvas is unrestricted handwriting practice, not an authoritative stroke-order demonstration.</div></section>';
+  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">ORIGINAL CHARACTER WRITING</p><h2 id="c9-writing-title">Copy, trace, then recall</h2></div><span class="c9-badge">Ungraded</span></header>'+
+  '<p>Choose a guided writing task, draw using touch, mouse or keyboard, then compare repeated attempts. All ink and comparisons stay in this mounted tab, without assessment credit or stored handwriting.</p>'+
+  '<div class="c9-writing-modes" role="group" aria-label="Choose writing exercise">'+
+   '<button type="button" class="c9-button c9-button--secondary" data-writing-mode="copy" aria-pressed="true">1 · Copy</button>'+
+   '<button type="button" class="c9-button c9-button--secondary" data-writing-mode="trace" aria-pressed="false">2 · Trace print</button>'+
+   '<button type="button" class="c9-button c9-button--secondary" data-writing-mode="recall" aria-pressed="false">3 · Recall from meaning</button>'+
+  '</div>'+
+  '<div class="c9-writing-task" role="group" aria-labelledby="c9-writing-task-title"><strong id="c9-writing-task-title">Copy with the original character visible</strong><p id="c9-writing-task-desc">Observe the reference, then write it without tracing. Move to recall when ready.</p></div>'+
+  '<div class="c9-writing-workspace"><div class="c9-writing-guide" aria-label="Original reference for self-check"><span id="c9-writing-reference" lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><div class="c9-writing-cue" id="c9-writing-recall-cue" hidden><strong>Recall cue</strong><span>'+txt(lesson.meaning,esc)+'</span>'+(showPinyin?'<small>'+txt(lesson.pinyin,esc)+'</small>':'<small>Pinyin hidden in settings</small>')+'</div><small>Source lesson · no stroke order supplied</small></div>'+
+  '<div class="c9-writing-pad"><details class="c9-writing-instructions"><summary>Touch, mouse and keyboard controls</summary><p id="c9-writing-keyboard-help" class="c9-writing-keyboard-help">Drag to write. With a keyboard: focus the pad, move with arrow keys (Shift for larger steps), press Space or Enter to start/end a line, and Escape to lift the pen. Undo reverses the latest line. Keeping an attempt clears the pad for a retry.</p></details>'+
+  '<div class="c9-writing-canvas-wrap"><span id="c9-writing-trace-glyph" class="c9-writing-trace-glyph" lang="zh-Hans" aria-hidden="true" hidden>'+txt(lesson.hanzi,esc)+'</span><canvas id="c9-writing-canvas" tabindex="0" role="group" aria-label="Ungraded Chinese character writing surface with pointer or keyboard" aria-describedby="c9-writing-keyboard-help c9-writing-feedback" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter Escape" width="640" height="640">Canvas drawing unavailable; use the original source glyph and lesson.</canvas></div>'+
+  '<div class="c9-writing-controls"><span id="c9-writing-feedback" role="status">Copy · no lines · nothing saved</span>'+
+  '<div class="c9-inline"><button type="button" id="c9-writing-reference-toggle" class="c9-button c9-button--secondary c9-button--small" hidden aria-pressed="false" aria-controls="c9-writing-reference">Reveal reference</button><button type="button" id="c9-writing-trace-toggle" class="c9-button c9-button--secondary c9-button--small" aria-pressed="false" aria-controls="c9-writing-trace-glyph">Show print overlay</button><button type="button" id="c9-writing-undo" class="c9-button c9-button--secondary c9-button--small" disabled>Undo</button><button type="button" id="c9-writing-clear" class="c9-button c9-button--secondary c9-button--small" disabled>Clear</button></div></div>'+
+  '<div class="c9-writing-attempt-controls"><button type="button" id="c9-writing-keep" class="c9-button c9-button--primary c9-button--small" disabled>Keep attempt &amp; retry</button><button type="button" id="c9-writing-compare" class="c9-button c9-button--secondary c9-button--small" disabled aria-expanded="false" aria-controls="c9-writing-attempt-review">Compare with last attempt</button></div>'+
+  '<section id="c9-writing-attempt-review" class="c9-writing-attempt-review" aria-label="Previous local attempt" hidden><div><strong>Previous attempt · this tab only</strong><p>Compare with your current drawing or reveal the original printed character. This is personal reflection, not handwriting recognition.</p></div><canvas id="c9-writing-previous-canvas" width="320" height="320" role="img" aria-label="Your previous handwritten attempt, reproduced locally from your drawing">Previous attempt preview requires canvas support.</canvas></section>'+
+  '</div></div>'+
+  '<div class="c9-character-caution"><strong>Stroke-order limitation.</strong> No verified stroke sequence, stroke count, radical decomposition or handwriting recognition source is installed. Tracing uses only the existing printed source glyph. Copying, recalling and comparing do not create grades, study events or evidence of canonical stroke order.</div></section>';
  const grammar='<section class="c9-character-section" id="c9-overview" aria-labelledby="c9-overview-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">TEACHING NOTES</p><h2 id="c9-overview-title">Meaning and usage</h2></div></header>'+
   '<div class="c9-character-guidance"><div><span class="c9-eyebrow">CHARACTER INSIGHT</span><h3>'+txt(guide.topic,esc)+'</h3><p>'+txt(guide.explanation,esc)+'</p><p>'+txt(guide.comparison,esc)+'</p></div>'+
@@ -197,54 +206,99 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  '<div class="c9-character-body">'+grammar+writing+vocabulary+examples+connections+'</div>'+footer+'</div>';
 }
 
-/* Freehand writing is a disposable local UI affordance, never persisted or graded.
- * Pointer strokes are held in module closure for this mounted canvas only. */
+/* P61–P63: source-owned copy, print tracing and independent handwritten
+ * recall on the existing C9 canvas. This is ephemeral UI-only state; it never
+ * mutates canonical Review, lessons, mastery, IndexedDB or Account records. */
 let disposeWriting=null;
 export function disconnectC9Writing(){if(disposeWriting){disposeWriting();disposeWriting=null;}}
 export function connectC9Writing(root){
  disconnectC9Writing();
  const canvas=root.querySelector('#c9-writing-canvas');if(!canvas)return;
- const undo=root.querySelector('#c9-writing-undo'),clear=root.querySelector('#c9-writing-clear');
- const feedback=root.querySelector('#c9-writing-feedback');
- const trace=root.querySelector('#c9-writing-trace-glyph'),traceToggle=root.querySelector('#c9-writing-trace-toggle');
- let traceVisible=false;
- const toggleTrace=()=>{traceVisible=!traceVisible;if(trace)trace.hidden=!traceVisible;
-  traceToggle?.setAttribute('aria-pressed',String(traceVisible));signal();};
- const context=canvas.getContext?.('2d');if(!context){
-  canvas.hidden=true;if(feedback)feedback.textContent='Drawing is unavailable in this browser.';return;
+ const el=id=>root.querySelector('#'+id);
+ const undo=el('c9-writing-undo'),clear=el('c9-writing-clear');
+ const keep=el('c9-writing-keep'),compare=el('c9-writing-compare');
+ const feedback=el('c9-writing-feedback'),task=el('c9-writing-task-title'),taskDesc=el('c9-writing-task-desc');
+ const guide=el('c9-writing-reference'),cue=el('c9-writing-recall-cue');
+ const trace=el('c9-writing-trace-glyph'),traceToggle=el('c9-writing-trace-toggle');
+ const referenceToggle=el('c9-writing-reference-toggle');
+ const review=el('c9-writing-attempt-review'),previousCanvas=el('c9-writing-previous-canvas');
+ const modeButtons=[...root.querySelectorAll('[data-writing-mode]')];
+ const context=canvas.getContext?.('2d'),previewContext=previousCanvas?.getContext?.('2d');
+ if(!context){
+  canvas.hidden=true;if(feedback)feedback.textContent='Canvas drawing is unavailable in this browser.';
+  for(const b of [...modeButtons,undo,clear,keep,compare,traceToggle,referenceToggle])if(b)b.disabled=true;
+  return;
  }
- let strokes=[],active=null,ratio=1;
+ let strokes=[],active=null,previous=null,attemptCount=0,ratio=1;
+ let mode='copy',traceVisible=false,referenceVisible=false,reviewVisible=false;
  let cursor=[.5,.5],keyboardDrawing=false,keyboardFocused=false;
+ const taskCopy={
+  copy:['Copy with the original character visible','Observe the original glyph at left; write it on the blank square. The printed overlay stays off.'],
+  trace:['Trace the printed character','A faint printable glyph appears beneath your pen. It is not a stroke sequence or a handwriting grade.'],
+  recall:['Recall from the English meaning','The nearby reference is covered. Write from the meaning cue, then reveal the original to check yourself. Other sections of this page may contain the character.']
+ };
  const signal=()=>{
   if(undo)undo.disabled=!strokes.length;
   if(clear)clear.disabled=!strokes.length;
-  if(feedback)feedback.textContent=(strokes.length?strokes.length+' line'+(strokes.length===1?'':'s'):'No lines')+(keyboardDrawing?' · keyboard pen down':' · pen up')+(traceVisible?' · printed glyph guide on':' · no printed guide')+' · not scored or saved';
+  if(keep)keep.disabled=!strokes.length;
+  if(compare)compare.disabled=!previous?.length;
+  if(feedback)feedback.textContent=mode[0].toUpperCase()+mode.slice(1)+' · '+strokes.length+' line'+(strokes.length===1?'':'s')+
+   (keyboardDrawing?' · keyboard pen down':' · pen up')+(traceVisible?' · print overlay on':'')+
+   (mode==='recall'&&referenceVisible?' · source revealed':'')+' · '+attemptCount+' prior attempt'+(attemptCount===1?'':'s')+' · ungraded, not saved';
+ };
+ const modes=()=>{
+  if(task)task.textContent=taskCopy[mode][0];
+  if(taskDesc)taskDesc.textContent=taskCopy[mode][1];
+  if(guide)guide.hidden=mode==='recall'&&!referenceVisible;
+  if(cue)cue.hidden=mode!=='recall';
+  if(trace)trace.hidden=!traceVisible;
+  if(traceToggle){
+   traceToggle.setAttribute('aria-pressed',String(traceVisible));
+   traceToggle.textContent=traceVisible?'Hide print overlay':'Show print overlay';
+  }
+  if(referenceToggle){
+   referenceToggle.hidden=mode!=='recall';
+   referenceToggle.setAttribute('aria-pressed',String(referenceVisible));
+   referenceToggle.textContent=referenceVisible?'Cover reference':'Reveal reference';
+  }
+  for(const b of modeButtons)b.setAttribute('aria-pressed',String(b.dataset.writingMode===mode));
+  signal();
+ };
+ const drawPaths=(ctx,paths,width,height)=>{
+  const ink=getComputedStyle(canvas).getPropertyValue('--c9-ink').trim()||
+   getComputedStyle(document.documentElement).getPropertyValue('--c9-ink').trim()||'#202827';
+  ctx.setTransform(width,0,0,height,0,0);
+  ctx.clearRect(0,0,1,1);
+  ctx.strokeStyle=ink;ctx.lineWidth=.009;ctx.lineCap='round';ctx.lineJoin='round';
+  for(const points of paths){
+   if(!points.length)continue;
+   ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+   if(points.length===1)ctx.lineTo(points[0][0]+.0001,points[0][1]+.0001);
+   else for(const [x,y] of points.slice(1))ctx.lineTo(x,y);
+   ctx.stroke();
+  }
+ };
+ const paintPreview=()=>{
+  if(!previewContext||!previous?.length)return;
+  const r=previousCanvas.getBoundingClientRect();
+  const width=Math.max(1,Math.round((r.width||160)*Math.min(2,window.devicePixelRatio||1)));
+  const height=Math.max(1,Math.round((r.height||160)*Math.min(2,window.devicePixelRatio||1)));
+  if(previousCanvas.width!==width||previousCanvas.height!==height){previousCanvas.width=width;previousCanvas.height=height;}
+  drawPaths(previewContext,previous,width,height);
  };
  const paint=()=>{
-  const rect=canvas.getBoundingClientRect();
-  if(!rect.width||!rect.height)return;
+  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
   ratio=Math.min(2,window.devicePixelRatio||1);
   const width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));
   if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
-  context.setTransform(width,0,0,height,0,0);
-  context.clearRect(0,0,1,1);
-  const ink=getComputedStyle(canvas).getPropertyValue('--c9-ink').trim()||
-   getComputedStyle(document.documentElement).getPropertyValue('--c9-ink').trim()||'#202827';
-  context.strokeStyle=ink;context.lineWidth=0.009;
-  context.lineCap='round';context.lineJoin='round';
-  for(const points of strokes){
-   if(!points.length)continue;
-   context.beginPath();context.moveTo(points[0][0],points[0][1]);
-   if(points.length===1){context.lineTo(points[0][0]+.0001,points[0][1]+.0001);}
-   else for(const [x,y] of points.slice(1))context.lineTo(x,y);
+  drawPaths(context,strokes,width,height);
+  if(keyboardFocused){
+   context.beginPath();context.lineWidth=.003;
+   context.moveTo(Math.max(0,cursor[0]-.015),cursor[1]);context.lineTo(Math.min(1,cursor[0]+.015),cursor[1]);
+   context.moveTo(cursor[0],Math.max(0,cursor[1]-.015));context.lineTo(cursor[0],Math.min(1,cursor[1]+.015));
    context.stroke();
   }
-  if(keyboardFocused){
-    context.beginPath();context.lineWidth=.003;
-    context.moveTo(Math.max(0,cursor[0]-.015),cursor[1]);context.lineTo(Math.min(1,cursor[0]+.015),cursor[1]);
-    context.moveTo(cursor[0],Math.max(0,cursor[1]-.015));context.lineTo(cursor[0],Math.min(1,cursor[1]+.015));
-    context.stroke();
-  }
+  if(reviewVisible)paintPreview();
  };
  const point=e=>{
   const r=canvas.getBoundingClientRect();
@@ -257,22 +311,42 @@ export function connectC9Writing(root){
   try{canvas.setPointerCapture(e.pointerId);}catch{}
   signal();paint();
  };
- const move=e=>{
-  if(!active)return;
-  e.preventDefault();active.push(point(e));paint();
- };
+ const move=e=>{if(!active)return;e.preventDefault();active.push(point(e));paint();};
  const up=e=>{
-  if(!active)return;active.push(point(e));active=null;paint();
+  if(!active)return;active.push(point(e));active=null;signal();paint();
   if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId);
  };
- const cancel=()=>{active=null;paint();};
+ const cancel=()=>{active=null;signal();paint();};
  const clearAction=()=>{strokes=[];active=null;keyboardDrawing=false;signal();paint();};
  const undoAction=()=>{strokes.pop();active=null;keyboardDrawing=false;signal();paint();};
+ const setMode=e=>{
+  const selected=e.currentTarget.dataset.writingMode;
+  if(!taskCopy[selected])return;
+  mode=selected;traceVisible=selected==='trace';referenceVisible=false;
+  modes();paint(); // existing ink intentionally stays until Clear or Keep & retry
+ };
+ const toggleTrace=()=>{traceVisible=!traceVisible;modes();paint();};
+ const toggleReference=()=>{if(mode!=='recall')return;referenceVisible=!referenceVisible;modes();};
+ const keepAction=()=>{
+  if(!strokes.length)return;
+  previous=strokes.map(points=>points.map(([x,y])=>[x,y]));
+  attemptCount++;
+  strokes=[];active=null;keyboardDrawing=false;
+  reviewVisible=true;if(review)review.hidden=false;
+  if(compare)compare.setAttribute('aria-expanded','true');
+  if(mode==='recall')referenceVisible=false;
+  modes();paint();paintPreview();
+ };
+ const toggleComparison=()=>{
+  if(!previous?.length)return;
+  reviewVisible=!reviewVisible;if(review)review.hidden=!reviewVisible;
+  if(compare)compare.setAttribute('aria-expanded',String(reviewVisible));
+  if(reviewVisible)paintPreview();
+ };
  const keydown=e=>{
   const movement={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
   if(movement[e.key]){
-   e.preventDefault();
-   const [x,y]=movement[e.key],step=e.shiftKey?.04:.015;
+   e.preventDefault();const [x,y]=movement[e.key],step=e.shiftKey?.04:.015;
    cursor=[Math.max(.02,Math.min(.98,cursor[0]+x*step)),
     Math.max(.02,Math.min(.98,cursor[1]+y*step))];
    if(keyboardDrawing&&active)active.push([...cursor]);
@@ -285,37 +359,26 @@ export function connectC9Writing(root){
    else active=null;
    signal();paint();return;
   }
-  if(e.key==='Escape'&&keyboardDrawing){
-   e.preventDefault();keyboardDrawing=false;active=null;signal();paint();
-  }
+  if(e.key==='Escape'&&keyboardDrawing){e.preventDefault();keyboardDrawing=false;active=null;signal();paint();}
  };
  const focusCanvas=()=>{keyboardFocused=true;paint();};
  const blurCanvas=()=>{keyboardFocused=false;keyboardDrawing=false;active=null;signal();paint();};
- canvas.addEventListener('pointerdown',down);
- canvas.addEventListener('pointermove',move);
- canvas.addEventListener('pointerup',up);
- canvas.addEventListener('pointercancel',cancel);
- canvas.addEventListener('keydown',keydown);
- canvas.addEventListener('focus',focusCanvas);
- canvas.addEventListener('blur',blurCanvas);
- undo?.addEventListener('click',undoAction);
- clear?.addEventListener('click',clearAction);
- traceToggle?.addEventListener('click',toggleTrace);
+ const registrations=[];
+ const listen=(target,type,fn)=>{if(target){target.addEventListener(type,fn);registrations.push([target,type,fn]);}};
+ listen(canvas,'pointerdown',down);listen(canvas,'pointermove',move);
+ listen(canvas,'pointerup',up);listen(canvas,'pointercancel',cancel);
+ listen(canvas,'keydown',keydown);listen(canvas,'focus',focusCanvas);listen(canvas,'blur',blurCanvas);
+ listen(undo,'click',undoAction);listen(clear,'click',clearAction);
+ listen(keep,'click',keepAction);listen(compare,'click',toggleComparison);
+ listen(traceToggle,'click',toggleTrace);listen(referenceToggle,'click',toggleReference);
+ for(const b of modeButtons)listen(b,'click',setMode);
  let observer=null;
  if(typeof ResizeObserver!=='undefined'){observer=new ResizeObserver(paint);observer.observe(canvas);}
- paint();signal();
+ else listen(window,'resize',paint);
+ modes();paint();
  disposeWriting=()=>{
   observer?.disconnect();
-  canvas.removeEventListener('pointerdown',down);
-  canvas.removeEventListener('pointermove',move);
-  canvas.removeEventListener('pointerup',up);
-  canvas.removeEventListener('pointercancel',cancel);
-  canvas.removeEventListener('keydown',keydown);
-  canvas.removeEventListener('focus',focusCanvas);
-  canvas.removeEventListener('blur',blurCanvas);
-  undo?.removeEventListener('click',undoAction);
-  clear?.removeEventListener('click',clearAction);
- traceToggle?.removeEventListener('click',toggleTrace);
-  strokes=[];active=null;
+  for(const [target,type,fn] of registrations)target.removeEventListener(type,fn);
+  strokes=[];previous=null;active=null;
  };
 }
