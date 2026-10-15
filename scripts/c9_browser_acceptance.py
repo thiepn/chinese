@@ -221,7 +221,10 @@ def main():
             ctx,page,errors=session()
             def grammar():
                 open_route(page,"grammar")
-                first=page.locator('[data-action="grammar-select"]').first
+                # Original grammar directory uses a collapsed native disclosure;
+                # selecting the first DOM match without opening it targets a hidden button.
+                page.locator('details.c9-library-chapter-lessons summary').first.click()
+                first=page.locator('details.c9-library-chapter-lessons[open] [data-action="grammar-select"]').first
                 first.wait_for(state="visible")
                 name=first.inner_text().strip()
                 first.click()
