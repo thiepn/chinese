@@ -27,9 +27,15 @@ for(const group of groups){
  paths.push(...[...raw.matchAll(/'(\.\/[^']*)'/g)].map(match=>match[1]));
 }
 const offlineAssets=[...new Set(paths)];
-const productionAssets=['./startup.mjs','./styles-startup.css'];
-if(offlineAssets.length+productionAssets.length!==declaredCount)
- throw Error('Offline source manifest count changed; update the current application contract.');
+// Audit every original source file, even though the production browser now
+// needs only the bundled JS, combined CSS and essential shell resources.
+const runtimeBlock=swSource.match(/const RUNTIME_ASSETS=\[([\s\S]*?)\];/)?.[1];
+const runtimeAssets=[...runtimeBlock?.matchAll(/'(\.\/[^']*)'/g)||[]].map(x=>x[1]);
+if(offlineAssets.length<300||new Set(offlineAssets).size!==offlineAssets.length)
+ throw Error('Original curriculum/source inventory unexpectedly shrank');
+if(new Set(runtimeAssets).size!==declaredCount||runtimeAssets.length!==declaredCount||
+ !runtimeAssets.includes('./startup.mjs')||!runtimeAssets.includes('./styles-startup.css'))
+ throw Error('Offline compiled runtime contract mismatch');
 await Promise.all(offlineAssets.map(path=>access(join(src,path==='./'?'index.html':path.slice(2)))
  .catch(()=>{throw Error('Required original offline asset missing: '+path);})));
 // Once all source-level release constraints pass, materialize the build.

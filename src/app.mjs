@@ -93,7 +93,7 @@ let c9ApprovedDeparture=null;
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
 const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v61-startup-bundle-original-learning';
-const C9_EXPECTED_OFFLINE_ASSETS=317;
+const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
@@ -1051,7 +1051,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   }
   await verifyC9OfflineShell('c9-offline-repair');
   alertUser(c9OfflineShell==='ready'?
-   'The current service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'The current service worker reports all required compiled learning and shell assets cached. Offline exercise behavior remains device-dependent.':
    c9OfflineShell==='outdated'?
    'A previous offline version still controls this tab. Save or export any private P43 writing, then reload online to finish updating. Your browser learning records were not modified.':
    'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
@@ -2745,7 +2745,7 @@ function networkLabel(){
   homeNotice.hidden=online;
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
-   'All original static source URLs are cached according to this service worker. Actual offline lessons and local progress still need device verification.':
+   'All compiled learning content and required offline shell files are cached. Local learner progress still depends on browser storage.':
    c9OfflineShell==='outdated'?
    'The active offline worker belongs to an earlier version. Reconnect and reload online to finish updating the current original static sources.':
    'Offline static source coverage is incomplete or not verified. Reconnect to prepare missing material.';

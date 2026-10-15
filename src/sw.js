@@ -332,11 +332,18 @@ const ADVANCED_SOURCE_ASSETS=[
 ];
 // C9-31: The C9-29 stage modules also occur in ADVANCED_SOURCE_ASSETS.
 // Duplicate Request URLs make Cache.addAll() reject, preventing installation.
-// Bundled artifacts are generated at build time. Original modules remain
-// cached for source availability, with production startup assets added.
-const PRODUCTION_ASSETS=['./startup.mjs','./styles-startup.css'];
-const ASSETS=[...new Set([...SHELL_ASSETS,...CONCEPT9_ASSETS,
- ...LEARNING_ASSETS,...ADVANCED_SOURCE_ASSETS,...PRODUCTION_ASSETS])];
+// The production JS bundle contains the complete reachable original learning
+// modules. Caching 269 individual source modules AGAIN delays startup and
+// duplicates network transfers without helping offline functionality.
+// Keep the exhaustive source groups above as the audited build-time manifest,
+// but install only resources that the compiled app actually requests.
+// Raw originals remain available online; no learner data is cached here.
+const RUNTIME_ASSETS=[
+ './','./index.html','./startup.mjs','./styles-startup.css',
+ './manifest.webmanifest','./icons/icon.svg',
+ './icons/icon-192.png','./icons/icon-512.png'
+];
+const ASSETS=[...new Set(RUNTIME_ASSETS)];
 const PRECACHE_BATCH_SIZE=24;
 /** A controlling SW is not proof that Cache Storage still contains all assets.
  * Only user-visible shell status is returned. Never send learner data.

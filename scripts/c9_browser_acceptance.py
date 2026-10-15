@@ -914,7 +914,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v60-p61-p63-p69-original-learning"
+                current="character-study-working-v61-startup-bundle-original-learning"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -938,15 +938,15 @@ def main():
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=317:
-                    raise AssertionError("Updated cache lacks original source assets: "+str(kept))
+                if kept!=8:
+                    raise AssertionError("Updated cache lacks complete compiled runtime assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 317 v61 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
