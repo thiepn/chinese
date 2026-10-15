@@ -458,6 +458,50 @@ def main():
                     return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
                 check("C9-48 real source listening "+str(width),original_listening_journey)
                 ctx.close()
+            # Original roadmap P61–P63/P69: exercise genuine native drawing
+            # and private text interaction on a narrow touch viewport.
+            ctx,page,errors=session(390,844,True)
+            def original_handwriting_and_personal_reading():
+                open_route(page,"character/demo-01")
+                page.locator('[data-writing-mode="recall"]').click()
+                if page.locator("#c9-writing-recall-cue").is_hidden():
+                    raise AssertionError("Recall cue is missing")
+                if not page.locator("#c9-writing-reference").is_hidden():
+                    raise AssertionError("Recall reference was not covered")
+                page.locator("#c9-writing-canvas").click()
+                keep=page.locator("#c9-writing-keep")
+                if not keep.is_enabled():
+                    raise AssertionError("Handwriting is not captured in recall mode")
+                keep.click()
+                if page.locator("#c9-writing-attempt-review").is_hidden():
+                    raise AssertionError("Prior local attempt not available to compare")
+                if page.locator("#c9-writing-compare").is_disabled():
+                    raise AssertionError("Attempt comparison control not enabled")
+                page.locator('[data-writing-mode="trace"]').click()
+                if page.locator("#c9-writing-trace-glyph").is_hidden():
+                    raise AssertionError("Printed source tracing missing")
+                if "not scored or saved" not in page.locator("#c9-writing-feedback").inner_text():
+                    raise AssertionError("Ungraded writing status not explicit")
+                open_route(page,"stories")
+                panel=page.locator(".c9-personal-reader details")
+                panel.locator("summary").click()
+                entry=page.locator("#c9-personal-input")
+                entry.fill("我在学校学习中文。我喜欢中文。")
+                page.locator("#c9-personal-analyze").click()
+                if page.locator(".c9-personal-line").count()!=2:
+                    raise AssertionError("Personal pasted sentences were not annotated")
+                page.locator('[data-personal-mine="0"]').click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Private sentence mining did not update")
+                if page.locator(".c9-personal-term").count()<1:
+                    raise AssertionError("Canonical source word lookup was not offered")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Original handwriting/personal reader overflow")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "390px original free writing, recall/copy trace, private source-backed text annotation and sentence selection"
+            check("P61-P63/P69 original writing and private reading mobile integration",
+                  original_handwriting_and_personal_reading)
+            ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
