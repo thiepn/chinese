@@ -244,7 +244,7 @@ export function connectC9Writing(root){
   if(compare)compare.disabled=!previous?.length;
   if(feedback)feedback.textContent=mode[0].toUpperCase()+mode.slice(1)+' · '+strokes.length+' line'+(strokes.length===1?'':'s')+
    (keyboardDrawing?' · keyboard pen down':' · pen up')+(traceVisible?' · print overlay on':'')+
-   (mode==='recall'&&referenceVisible?' · source revealed':'')+' · '+attemptCount+' prior attempt'+(attemptCount===1?'':'s')+' · ungraded, not saved';
+   (mode==='recall'&&referenceVisible?' · source revealed':'')+' · '+attemptCount+' prior attempt'+(attemptCount===1?'':'s')+' · not scored or saved';
  };
  const modes=()=>{
   if(task)task.textContent=taskCopy[mode][0];
