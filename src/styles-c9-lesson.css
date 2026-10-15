@@ -500,3 +500,17 @@
  .c9-lesson-header-actions>.c9-button[data-action="course-lesson"]{grid-column:auto;min-width:0;min-height:44px;padding:9px 7px;font-size:11px;line-height:1.35}
  .c9-lesson-resources{margin-bottom:10px}
 }
+
+/* C9-50 real 390px Chromium acceptance: the authored native teaching starts
+   behind fixed mobile nav because old Lesson status/metadata are duplicated
+   under the already accessible source/record heading. Remove only duplicate
+   visible chrome; preserve the live learning notice for screen readers. */
+@media(max-width:700px){
+ .c9-lesson-main .lesson-heading{display:none}
+ .c9-lesson-main .c9-lesson-start-status{
+  position:absolute!important;width:1px!important;height:1px!important;
+  padding:0!important;margin:0!important;border:0!important;
+  overflow:hidden!important;clip-path:inset(50%);white-space:nowrap
+ }
+ .c9-lesson-main .lesson-paper.c9-lesson-paper{gap:9px}
+}
