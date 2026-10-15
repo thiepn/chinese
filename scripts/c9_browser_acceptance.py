@@ -247,7 +247,7 @@ def main():
                     home=page.locator(".c9-home-source-preview")
                     if not home.locator('[lang="zh-Hans"]').inner_text().strip():
                         raise AssertionError("Home lost source-authored Chinese example")
-                    home_english=home.locator("p").inner_text()
+                    home_english=home.locator(":scope > p").inner_text()
                     if not home_english: raise AssertionError("Home source gloss absent")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
