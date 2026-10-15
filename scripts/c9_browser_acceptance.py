@@ -120,6 +120,62 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # P9 native sidebar and direct real course-unit discovery.
+            # Uses actual local route rendering and only synthetic browser state.
+            ctx,page,errors=session(1440,900,False)
+            def native_pathways():
+                open_route(page,"today")
+                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more")
+                if pathways.count()!=1: raise AssertionError("Study pathways disclosure missing")
+                if pathways.evaluate("(e)=>e.open"): raise AssertionError("Pathways should start closed on Home")
+                pathways.locator("summary").focus()
+                if not pathways.locator("summary").evaluate("(e)=>document.activeElement===e"):
+                    raise AssertionError("Disclosure summary cannot receive keyboard focus")
+                pathways.locator("summary").press("Enter")
+                if not pathways.evaluate("(e)=>e.open"):
+                    raise AssertionError("Keyboard Enter did not reveal original study routes")
+                for route in ("skills","writing","advanced","pathway","plan"):
+                    target=pathways.locator('[data-route="'+route+'"]')
+                    if target.count()!=1 or not target.is_visible():
+                        raise AssertionError("Study route missing from disclosed menu: "+route)
+                open_route(page,"skills")
+                if not pathways.evaluate("(e)=>e.open"):
+                    raise AssertionError("Active study route did not reopen disclosure")
+                if not pathways.locator('[data-route="skills"]').get_attribute("aria-current")=="page":
+                    raise AssertionError("Active study route lost selected state")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Five native study routes accessible by keyboard and auto-revealed on active route"
+            check("P9 desktop native pathways",native_pathways)
+            ctx.close()
+            for width,height in ((390,844),(320,700)):
+                ctx,page,errors=session(width,height,True)
+                def compact_home_context():
+                    open_route(page,"today")
+                    if not page.locator(".c9-home>.c9-home-roadmap").is_visible():
+                        raise AssertionError("Actual course units still hidden in collapsed Home panel")
+                    course=page.locator(".c9-home>.c9-home-roadmap")
+                    if course.locator(".c9-home-roadmap-unit").count()<1:
+                        raise AssertionError("Source course unit suggestions absent")
+                    context=page.locator(".c9-context-bar").first
+                    if context.count()!=1: raise AssertionError("Native contextual toolbar missing")
+                    bounds=context.bounding_box()
+                    if not bounds or bounds["width"]>width+4 or bounds["height"]>115:
+                        raise AssertionError("Context toolbar too large on mobile: "+str(bounds))
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Mobile Home horizontal overflow")
+                    open_route(page,"character/demo-01")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Compact character header causes horizontal overflow")
+                    glyph=page.locator(".c9-character-glyph").first
+                    rect=glyph.bounding_box()
+                    if not rect or rect["y"]>900:
+                        raise AssertionError("Original character is buried under toolbar and hero")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("p9-navigation-character-"+str(width)+".png")),full_page=True)
+                    return "Original unit roadmap, short context row and visible character at "+str(width)+"px"
+                check("P9 mobile context and study roadmap "+str(width),compact_home_context)
+                ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
@@ -488,11 +544,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v54-service-worker takeover in a real user profile.
+            # not a running-v55-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v54-c9-46-lesson-layout-repair"
-                current="character-study-working-v55-c9-47-source-led-study"
+                legacy="character-study-working-v55-c9-47-source-led-study"
+                current="character-study-working-v56-c9-p9-native-navigation"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -509,8 +565,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v54-c9-46-lesson-layout-repair')&&
-                    keys.includes('character-study-working-v55-c9-47-source-led-study');
+                  return !keys.includes('character-study-working-v55-c9-47-source-led-study')&&
+                    keys.includes('character-study-working-v56-c9-p9-native-navigation');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -524,8 +580,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v54 CacheStorage deleted; 315 v55 assets retained and offline reload works (not live SW takeover)"
-            check("C9-47 stale offline cache migration",stale_cache_upgrade)
+                return "Old v55 CacheStorage deleted; 315 v56 assets retained and offline reload works (not live SW takeover)"
+            check("P9 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():
