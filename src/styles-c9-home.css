@@ -411,7 +411,7 @@
 @media(max-width:700px){
  .c9-home-explore-content{gap:10px;padding:10px}
  .c9-home-explore-content .c9-home-roadmap,.c9-home-explore-content .c9-home-source-paths{padding:15px 12px}
- .c9-home-hero-actions .c9-button{flex:1 1 160px;white-space:normal;text-align:center}
+ .c9-home-hero-actions .c9-button{flex:0 0 auto;min-height:48px;white-space:normal;text-align:center}
 }
 @media(max-width:390px){
  .c9-home-explore-more>summary{padding:13px 12px}

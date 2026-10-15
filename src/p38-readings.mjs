@@ -47,7 +47,7 @@ const readingEvidencePairs=[
  [1,6],[3,8],[4,6],[3,1],[3,6],[3,7],[4,6],[3,6],[3,5],[3,8]
 ];
 export const P38_PASSAGES=Object.freeze(P37_SCENES.map((s,i)=>{
- const intro=outlines[i][0],closure=outlines[i][1];
+ const intro=outlines[i].slice(0,3),closure=outlines[i].slice(3,6);
  const original=expandedOriginal[i];
  const lines=[
   {hanzi:intro[0],pinyin:intro[1],english:intro[2]},
