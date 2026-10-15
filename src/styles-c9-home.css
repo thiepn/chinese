@@ -478,3 +478,14 @@
  .c9-home>.c9-home-roadmap{padding:16px 13px}
  .c9-home>.c9-home-roadmap .c9-home-roadmap-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+/* P9: focus the learner's next step, not an above-the-fold statistic wall. */
+.c9-home-record{min-width:0;border:1px solid var(--c9-line);border-radius:var(--c9-r);background:var(--c9-surface)}
+.c9-home-record>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:13px 18px;cursor:pointer;color:var(--c9-ink)}
+.c9-home-record>summary::marker{color:var(--c9-accent)}
+.c9-home-record>summary>span:first-child{display:grid;gap:3px;min-width:0}
+.c9-home-record>summary strong{font:650 16px/1.3 var(--c9-display)}
+.c9-home-record>summary small{font:400 12px/1.55 var(--c9-ui);color:var(--c9-sub)}
+.c9-home-record[open] .c9-home-explore-chevron{transform:rotate(180deg)}
+.c9-home-record>.c9-home-metrics{border:0;border-top:1px solid var(--c9-line);border-radius:0}
+@media(max-width:700px){.c9-home-record>summary{padding:13px}.c9-home-record .c9-home-stat{padding:14px 12px}}

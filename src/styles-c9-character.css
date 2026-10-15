@@ -448,3 +448,10 @@
 :root[data-theme="dark"] .c9-writing-trace-glyph{opacity:.20}
 @media(max-width:700px){.c9-writing-trace-glyph{font-size:clamp(120px,51vw,250px)}}
 @media(forced-colors:active){.c9-writing-trace-glyph{opacity:.25;color:CanvasText}}
+
+/* P9: reversible translation check never remounts unsaved handwriting. */
+.c9-character-page .c9-character-example-translation[hidden],
+.c9-character-page .c9-character-example-hidden[hidden],
+.c9-character-page .c9-character-sample-english[hidden]{display:none!important}
+.c9-character-page[data-translations="false"] .c9-listening-english{display:none!important}
+.c9-character-page .c9-character-example-hidden{display:block;margin:8px 0;color:var(--c9-muted);font-size:12px;line-height:1.5}

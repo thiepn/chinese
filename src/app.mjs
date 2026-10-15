@@ -1514,13 +1514,27 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    readerLessonId=selected.id;readerResult=null;showLessonTranslation=false;
    return go('reader');
  }
- if(name==='c9-character-support'){c9CharacterShowTranslations=!c9CharacterShowTranslations;return render();}
+ if(name==='c9-character-support'){
+   // Translation is a presentation preference. Re-rendering here discards
+   // ephemeral, intentionally unsaved strokes on the native writing canvas.
+   c9CharacterShowTranslations=!c9CharacterShowTranslations;
+   const page=root.querySelector('.c9-character-page');
+   if(!page)return render();
+   page.dataset.translations=String(c9CharacterShowTranslations);
+   for(const node of page.querySelectorAll('.c9-character-sample-english,.c9-character-example-translation'))
+     node.hidden=!c9CharacterShowTranslations;
+   for(const node of page.querySelectorAll('.c9-character-example-hidden'))
+     node.hidden=c9CharacterShowTranslations;
+   button.setAttribute('aria-pressed',String(c9CharacterShowTranslations));
+   button.textContent=c9CharacterShowTranslations?'Hide translations':'Show translations';
+   return;
+ }
  if(name==='c9-character-jump'){
    const section=button.dataset.section;
    if(!['overview','writing','vocabulary','sentences','connections'].includes(section))return;
    const target=root.querySelector('#c9-'+section);
    if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
-   for(const nav of root.querySelectorAll('[data-action="c9-character-jump"]')){
+   for(const nav of root.querySelectorAll('.c9-character-tabs [data-action="c9-character-jump"]')){
      const current=nav.dataset.section===section;
      nav.classList.toggle('is-current',current);
      if(current)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');
@@ -1569,7 +1583,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const section=button.dataset.section;
   if(!c9LearnDetail||!C9_LESSON_SECTIONS.some(s=>s.id===section))return;
   c9LessonSection=section;
-  for(const nav of root.querySelectorAll('[data-action="c9-lesson-jump"]')){
+  for(const nav of root.querySelectorAll('.c9-lesson-sections [data-action="c9-lesson-jump"]')){
     const active=nav.dataset.section===section;
     nav.classList.toggle('is-current',active);
     if(active)nav.setAttribute('aria-current','location');else nav.removeAttribute('aria-current');

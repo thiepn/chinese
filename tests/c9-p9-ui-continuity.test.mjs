@@ -13,7 +13,8 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
  const state=freshState(),before=JSON.stringify(state);
  const html=renderC9Home(state,act,esc);
  for(const key of ['c9-home-first-fold','c9-home-source-preview','c9-home-plan','c9-home-metrics','c9-home-roadmap','hub-primary','hub-task','hub-lesson'])assert.ok(html.includes(key),key);
- assert.ok(html.indexOf('c9-home-roadmap')<html.indexOf('c9-home-explore-more'));
+ assert.ok(html.indexOf('c9-home-roadmap')<html.indexOf('c9-home-record'));
+ assert.ok(html.indexOf('c9-home-record')<html.indexOf('c9-home-explore-more'));
  assert.ok(html.includes(esc(DEMO_LESSONS[0].sentence.hanzi)));
  assert.ok(html.includes('Introduced does not mean mastered'));
  assert.doesNotMatch(html,/HSK 1 progress|12.day streak|92% accuracy/);
@@ -47,4 +48,19 @@ test('P9 Character still prioritizes real whole words and sentence without fake 
  assert.ok(html.includes(esc(lesson.sentence.hanzi)));
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
  assert.equal(JSON.stringify(state),before);
+});
+
+test('P9 source translations are reversible without replacing the writing canvas',()=>{
+ const html=renderC9CharacterStudy({lesson:DEMO_LESSONS[0],state:freshState(),act,esc,showTranslations:false});
+ assert.ok(html.includes('data-translations="false"'));
+ assert.ok(html.includes('class="c9-character-example-translation" hidden'));
+ assert.ok(html.includes('class="c9-character-sample-english" hidden'));
+ assert.ok(html.includes('id="c9-writing-canvas"'));
+ const src=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ const section=src.slice(src.indexOf("if(name==='c9-character-support')"),src.indexOf("if(name==='c9-character-jump')"));
+ assert.ok(section.includes("page.dataset.translations=String(c9CharacterShowTranslations)"));
+ assert.ok(section.includes("node.hidden=!c9CharacterShowTranslations"));
+ assert.ok(section.includes("button.textContent=c9CharacterShowTranslations"));
+ assert.ok(src.includes('.c9-character-tabs [data-action='));
+ assert.ok(src.includes('.c9-lesson-sections [data-action='));
 });

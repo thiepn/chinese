@@ -78,6 +78,7 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   metric(overview.introduced+' / '+overview.total,'Lessons introduced','Original demonstration lessons')+
   metric(overview.scheduled.independent,'Independent recall','Correct scheduled attempts')+
   metric(overview.savedWords,'Saved vocabulary','Words in your wordbook')+'</section>';
+ const record='<details class="c9-home-record"><summary><span><strong>Your learning record</strong><small>Scheduled reviews, introductions, independent recall and saved vocabulary</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+metrics+'</details>';
  const today='<section class="c9-home-panel c9-unified-card c9-home-plan" aria-labelledby="c9-home-plan-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">STUDY ROUTINE</p><h2 id="c9-home-plan-title">Today’s study plan</h2></div><span class="c9-home-plan-time">'+icon('time')+esc(String(plan.minutes))+' min target</span></div><p class="c9-home-panel-desc">Suggested activities, not required tasks. A recorded attempt is not proof of mastery.</p><ol class="c9-home-tasks">'+hub.cards.map(t=>taskRow(t,act,esc)).join('')+'</ol><div class="c9-home-footer-link"><a href="#/plan">Edit workload and view the seven-day plan '+icon('arrow')+'</a></div></section>';
  const studyProgress='<section class="c9-home-panel c9-unified-card c9-home-learning" aria-labelledby="c9-home-progress-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">YOUR COURSE</p><h2 id="c9-home-progress-title">Learning progress</h2></div><a href="#/progress" class="c9-home-small-link">Details '+icon('arrow')+'</a></div>'+
   progress(overview.introduced,overview.total,'Original character lessons introduced')+
@@ -127,8 +128,8 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
- return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+
-  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+
+ return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+
+  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+record+
   '<details class="c9-home-explore-more"><summary><span><strong>Explore the rest of your course</strong><small>Original units, reading, conversations, grammar and pronunciation</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="c9-home-explore-content">'+connected+'</div></details>'+
   readiness+'</div>';
