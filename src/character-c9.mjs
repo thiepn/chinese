@@ -75,7 +75,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
  const words=wordLinks(lesson),related=relationLessons(lesson,words),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
-  '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1>Study a character in depth</h1>'+
+  '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
   '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
   '<div class="c9-character-neighbors">'+
   (before?act('c9-character-open','← Previous','c9-button c9-button--secondary c9-button--small','data-id="'+txt(before.id,esc)+'"'):'<span>First lesson</span>')+
@@ -105,7 +105,11 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div class="c9-character-hero-actions">'+act('speak',icon('audio')+'Hear the character','c9-button c9-button--primary','data-text="'+txt(lesson.hanzi,esc)+'"')+
   act('c9-character-lesson',icon('book')+'Full lesson','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+
-  '<p class="c9-character-audio-notice">Pronunciation uses a device Mandarin voice when available; no certified recording is supplied.</p>'+sourceSample+sourceAudio+'</div></section>';
+  '<p class="c9-character-audio-notice">Pronunciation uses a device Mandarin voice when available; no certified recording is supplied.</p>'+
+  '<div class="c9-character-first-actions" aria-label="Study the current character now">'+
+  act('c9-character-jump',icon('pen')+' Write this character →','c9-button c9-button--primary','data-section="writing" aria-controls="c9-writing"')+
+  act('c9-character-jump',icon('book')+' Read example sentences →','c9-button c9-button--secondary','data-section="sentences" aria-controls="c9-sentences"')+
+  '</div>'+sourceSample+sourceAudio+'</div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+
   '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
   row('Original lesson',''+(index+1)+' / '+DEMO_LESSONS.length)+

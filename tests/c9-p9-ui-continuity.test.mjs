@@ -76,3 +76,26 @@ test('P9 Home links the next authored character and sentence directly to the ori
  assert.ok(app.includes("c9LastLessonId=id;c9LessonSection=targetSection||'overview'"));
  assert.ok(app.includes("target.focus({preventScroll:true})"));
 });
+
+test('P9 Lesson starts with authored native teaching, optional source preview, and one primary start action',()=>{
+ const lesson=DEMO_LESSONS[0];
+ const originalSection='<section id="c9-lesson-overview" class="c9-native-section" tabindex="-1" aria-label="Character"></section>';
+ const html=renderC9LessonWorkspace({lesson,state:freshState(),nativeMarkup:originalSection,act,esc});
+ assert.ok(html.includes('class="c9-lesson-resources"'));
+ assert.ok(html.includes('Preview and listen to the source'));
+ assert.ok(html.includes('data-action="c9-lesson-jump" class="c9-button c9-button--primary" data-section="overview"'));
+ assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-layout'));
+ assert.ok(html.indexOf('c9-lesson-layout')<html.indexOf('id="c9-lesson-overview"'));
+ assert.ok(html.includes(esc(lesson.sentence.hanzi)));
+ assert.ok(html.includes('six source-owned sections'));
+});
+test('P9 Character puts a source-specific heading and real writing/reading actions above the native canvas',()=>{
+ const lesson=DEMO_LESSONS[0];
+ const html=renderC9CharacterStudy({lesson,state:freshState(),act,esc});
+ assert.ok(html.includes('<h1><span lang="zh-Hans">'+esc(lesson.hanzi)+'</span><span>'+esc(lesson.meaning)+'</span></h1>'));
+ assert.ok(html.includes('class="c9-character-first-actions"'));
+ assert.ok(html.includes('data-section="writing" aria-controls="c9-writing"'));
+ assert.ok(html.includes('data-section="sentences" aria-controls="c9-sentences"'));
+ assert.ok(html.indexOf('c9-character-first-actions')<html.indexOf('c9-character-source-sample'));
+ assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
+});

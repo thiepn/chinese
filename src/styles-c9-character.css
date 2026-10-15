@@ -455,3 +455,21 @@
 .c9-character-page .c9-character-sample-english[hidden]{display:none!important}
 .c9-character-page[data-translations="false"] .c9-listening-english{display:none!important}
 .c9-character-page .c9-character-example-hidden{display:block;margin:8px 0;color:var(--c9-muted);font-size:12px;line-height:1.5}
+
+/* P9: character identity and real work are visible before secondary metadata.
+   All actions use existing source-authoritative navigation, speech and canvas. */
+.c9-character-heading h1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.c9-character-heading h1 [lang="zh-Hans"]{font:500 clamp(36px,4vw,55px)/1.15 var(--c9-hanzi-display);letter-spacing:0;color:var(--c9-accent)}
+.c9-character-heading h1 span:last-child{font:600 clamp(23px,2.5vw,33px)/1.3 var(--c9-display)}
+.c9-character-first-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;margin-top:13px}
+.c9-character-first-actions .c9-button{min-height:48px;white-space:normal;text-align:center;justify-content:center;font-size:12px}
+.c9-character-first-actions .c9-button svg{flex:none}
+.c9-character-page[data-translations="false"] .c9-character-sample-words small{display:none!important}
+@media(max-width:700px){
+ .c9-character-heading h1{gap:8px;margin:5px 0}
+ .c9-character-heading h1 [lang="zh-Hans"]{font-size:36px}
+ .c9-character-heading h1 span:last-child{font-size:23px}
+ .c9-character-first-actions{grid-template-columns:minmax(0,1fr);gap:6px}
+ .c9-character-first-actions .c9-button{min-height:44px}
+}
+@media(forced-colors:active){.c9-character-heading h1 [lang="zh-Hans"]{color:CanvasText}}
