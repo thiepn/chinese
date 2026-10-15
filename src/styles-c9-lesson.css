@@ -426,37 +426,33 @@
  .c9-lesson-source-preview{gap:10px;margin-bottom:14px}
 }
 
-/* P9: show native teaching within the first viewport. Full authored preview
-   and existing speech controls remain accessible but no longer block the
-   six-section original lesson when unopened. */
-.c9-lesson-header{align-items:start;gap:14px;margin-bottom:11px}
-.c9-lesson-header-actions{gap:7px;align-items:stretch}
-.c9-lesson-header-actions>.c9-button{min-height:44px;justify-content:center}
-.c9-lesson-course-position{margin-top:10px}
-.c9-lesson-resources{border:1px solid var(--c9-line);border-radius:var(--c9-r);background:var(--c9-surface);margin:0 0 15px;min-width:0}
-.c9-lesson-resources>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:11px 17px;cursor:pointer;list-style:none;color:var(--c9-ink)}
-.c9-lesson-resources>summary::-webkit-details-marker{display:none}
-.c9-lesson-resources>summary:focus-visible{outline:3px solid var(--c9-focus);outline-offset:3px}
-.c9-lesson-resources>summary>span:first-child{display:grid;gap:3px;min-width:0}
-.c9-lesson-resources>summary strong{font:650 14px/1.3 var(--c9-display)}
-.c9-lesson-resources>summary small{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
-.c9-lesson-resource-cue{flex:none;color:var(--c9-accent);font-size:11px;font-weight:650}
-.c9-lesson-resources[open] .c9-lesson-resource-cue{font-size:0}
-.c9-lesson-resources[open] .c9-lesson-resource-cue::after{content:'Hide source ↗';font-size:11px}
-.c9-lesson-resources-content{display:grid;gap:12px;padding:0 clamp(12px,1.8vw,20px) 16px}
-.c9-lesson-resources-content .c9-listening-deck{margin:0}
-.c9-lesson-resources-content .c9-lesson-source-preview{margin:0}
-.c9-lesson-main .c9-lesson-start-status{margin-bottom:11px}
-.c9-lesson-main .c9-native-section{scroll-margin-top:88px}
-@media(max-width:1100px){
- .c9-lesson-left{top:0}
- .c9-lesson-layout{gap:12px}
+
+/* C9-50 — move from original P9 source orientation into the actual six
+   teaching stages. All buttons call existing native source/section actions. */
+.c9-lesson-preview-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.c9-lesson-preview-toolbar .c9-button{min-height:44px;white-space:normal}
+.c9-lesson-preview-word{min-width:0;align-items:start}
+.c9-lesson-preview-word>.c9-button{justify-self:start;min-height:44px;margin:0;font-size:11px;
+ white-space:normal;text-align:start}
+.c9-lesson-preview-grid>article{min-width:0}
+.c9-lesson-preview-title{align-items:center}
+.c9-lesson-header-actions{min-width:0}
+.c9-lesson-header-actions>.c9-button{min-height:44px;white-space:normal;text-align:center}
+@media(min-width:1441px){
+ .c9-lesson-layout{grid-template-columns:minmax(155px,185px) minmax(0,1fr) minmax(205px,245px)}
+ .c9-lesson-left{top:18px}
 }
-@media(max-width:700px){
- .c9-lesson-header{gap:10px}
- .c9-lesson-header-actions{align-items:stretch;width:100%}
- .c9-lesson-header-actions .c9-lesson-pager{order:2}
- .c9-lesson-resources>summary{padding:11px 12px}
- .c9-lesson-resource-cue{max-width:88px;text-align:right}
- .c9-lesson-resources-content{padding:0 12px 12px}
+@media(max-width:1080px){
+ .c9-lesson-preview-toolbar{width:100%;justify-content:space-between}
+ .c9-lesson-preview-toolbar .c9-button{flex:1 1 190px}
 }
+@media(max-width:650px){
+ .c9-lesson-preview-title h2{font-size:22px}
+ .c9-lesson-preview-toolbar>.c9-badge{font-size:10px}
+ .c9-lesson-preview-toolbar .c9-button{width:100%}
+ .c9-lesson-header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .c9-lesson-header-actions>.c9-lesson-pager{grid-column:1/-1}
+ .c9-lesson-header-actions>.c9-button{min-width:0;font-size:12px}
+ .c9-lesson-preview-word{gap:4px}
+}
+@media(max-width:370px){.c9-lesson-header-actions{grid-template-columns:minmax(0,1fr)}}

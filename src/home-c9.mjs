@@ -67,23 +67,9 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const offlineUpgrade='<div id="c9-home-offline-upgrade" class="c9-home-notice" role="status"'+
   (!offline&&offlineShell==='outdated'?'':' hidden')+'>'+
   '<strong>Update offline lessons</strong><span>An older cached version currently controls this tab. Before reloading, copy or export any unsaved private P43 writing. Reload online to let the current service worker prepare its original lessons. Your local review history is not reset.</span></div>';
- const scenery='<svg class="c9-home-mountains" viewBox="0 0 430 185" aria-hidden="true" focusable="false">'+
- '<circle cx="324" cy="42" r="25" fill="currentColor" opacity=".09"/>'+
- '<path d="M0 125q51-26 80 1Q132 40 164 83l27 38q36-97 67-75l55 75q56-58 117-9v73H0Z" fill="currentColor" opacity=".08"/>'+
- '<path d="M0 144Q76 117 115 132Q163 101 196 125q64-45 110 0q53-24 124 4v56H0Z" fill="currentColor" opacity=".09"/>'+
- '<g fill="none" stroke="currentColor" stroke-width="1.2" opacity=".23"><path d="M12 130q45-25 72 0Q136 37 164 82l25 34M192 115q40-104 67-67l52 72q62-59 119-6"/>'+
- '<path d="M0 151q65-16 126-6t125-3t179-1M0 164q75-11 131-6t150 0t149-2"/>'+
- '<path d="M215 139h75m-65 0 14-14h31l13 14m-48-17 6-12h25l6 12m-36 17v-15m14 15v-15m16 15v-15"/>'+
- '<path d="M30 166l7-23m-5 18-9-6m9-1 8-8m350 21-5-32m5 26-10-9m10 0 10-11"/></g>'+
- '<path d="M0 176q91-12 177-3q121-14 253-3v15H0Z" fill="currentColor" opacity=".06"/></svg>';
+ const scenery='<svg class="c9-home-mountains" viewBox="0 0 430 175" aria-hidden="true" focusable="false"><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130V175H0Z" fill="currentColor" opacity=".08"/><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130" fill="none" stroke="currentColor" opacity=".17"/><path d="M181 133h91m-76 0 17-18h38l17 18m-60-19 5-10h37l7 10m-12 19v-16m-22 16v-16m-21-15h69" fill="none" stroke="currentColor" opacity=".19"/><path d="M20 157h150m132 0h128" stroke="currentColor" opacity=".13"/></svg>';
  const nextSource=lesson?.sentence?.hanzi&&lesson?.sentence?.english?
-  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>AUTHORED EXAMPLE · NEXT LESSON</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+
-  '<details class="c9-home-listening"><summary>Listen and shadow the original sentence ↘</summary>'+
-  renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
-  '</details><div class="c9-home-source-actions">'+
-  act('c9-character-open','Explore '+esc(lesson.hanzi)+' →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+
-  act('c9-lesson-open','Read this sentence →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(lesson.id)+'" data-section="context"')+
-  '</div></div>':'';
+  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>AUTHORED EXAMPLE · NEXT LESSON</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+'<div class="c9-home-source-actions" role="group" aria-label="Continue this exact original Chinese example">'+act('hub-lesson','Open complete lesson →','c9-button c9-button--primary c9-button--small','data-id="'+esc(lesson.id)+'"')+act('c9-character-open','Explore this character','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>':'';
  const courseCaption=lesson?'LESSON '+String(lesson.order).padStart(3,'0')+' OF '+overview.total:'ORIGINAL CHARACTER COURSE';
  const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">YOUR NEXT STEP · ORIGINAL COURSE</span><h2 id="c9-home-next">'+esc(primary.label)+'</h2><p>'+esc(primary.detail)+'</p><div class="c9-home-hero-actions">'+act('hub-primary',primaryLabel+' '+icon('arrow'),'c9-button c9-button--primary')+'<a class="c9-button c9-button--secondary" href="#/plan">View study plan</a></div>'+nextSource+'</div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">'+(lesson?esc(lesson.hanzi):'学')+'</span><span class="c9-home-art-caption">'+courseCaption+'</span></div></section>';
  const greeting='<header class="c9-home-heading"><div><p class="c9-home-kicker">THIEPN CHINESE · TODAY</p><h1>'+(hasActivity?'Continue learning, one step at a time.':'A quiet place to begin Chinese.')+'</h1><p>Original characters, complete words and source sentences. Your next action is ready below.</p></div><span class="c9-home-date" aria-label="Local learning status">'+overview.introduced+' introduced · '+overview.due+' due</span></header>';
@@ -92,7 +78,6 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   metric(overview.introduced+' / '+overview.total,'Lessons introduced','Original demonstration lessons')+
   metric(overview.scheduled.independent,'Independent recall','Correct scheduled attempts')+
   metric(overview.savedWords,'Saved vocabulary','Words in your wordbook')+'</section>';
- const record='<details class="c9-home-record"><summary><span><strong>Your learning record</strong><small>Scheduled reviews, introductions, independent recall and saved vocabulary</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+metrics+'</details>';
  const today='<section class="c9-home-panel c9-unified-card c9-home-plan" aria-labelledby="c9-home-plan-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">STUDY ROUTINE</p><h2 id="c9-home-plan-title">Today’s study plan</h2></div><span class="c9-home-plan-time">'+icon('time')+esc(String(plan.minutes))+' min target</span></div><p class="c9-home-panel-desc">Suggested activities, not required tasks. A recorded attempt is not proof of mastery.</p><ol class="c9-home-tasks">'+hub.cards.map(t=>taskRow(t,act,esc)).join('')+'</ol><div class="c9-home-footer-link"><a href="#/plan">Edit workload and view the seven-day plan '+icon('arrow')+'</a></div></section>';
  const studyProgress='<section class="c9-home-panel c9-unified-card c9-home-learning" aria-labelledby="c9-home-progress-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">YOUR COURSE</p><h2 id="c9-home-progress-title">Learning progress</h2></div><a href="#/progress" class="c9-home-small-link">Details '+icon('arrow')+'</a></div>'+
   progress(overview.introduced,overview.total,'Original character lessons introduced')+
@@ -142,8 +127,8 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
- return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+
-  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+record+
+ return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+
+  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+
   '<details class="c9-home-explore-more"><summary><span><strong>Explore the rest of your course</strong><small>Original units, reading, conversations, grammar and pronunciation</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="c9-home-explore-content">'+connected+'</div></details>'+
   readiness+'</div>';

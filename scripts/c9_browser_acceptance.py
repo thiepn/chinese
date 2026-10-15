@@ -120,6 +120,60 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-50: verify the exact authored source can move between the
+            # real Home, Lesson, indexed Wordbook, Character and Reader.
+            # This is navigation only: no synthetic grades, strokes or saves.
+            for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def p9_source_journey():
+                    open_route(page,"today")
+                    actions=page.locator(".c9-home-source-actions")
+                    actions.wait_for(state="visible")
+                    if actions.locator('[data-action="hub-lesson"]').count()!=1:
+                        raise AssertionError("Home lost source-exact complete lesson handoff")
+                    actions.locator('[data-action="c9-character-open"]').click()
+                    page.wait_for_function("()=>location.hash==='#/character/demo-01'")
+                    word=page.locator(".c9-character-sample-words [data-action='lookup-word']").first
+                    word.wait_for(state="visible")
+                    word.click()
+                    page.wait_for_function("()=>location.hash==='#/explore'")
+                    if not page.locator("main").count():raise AssertionError("Original indexed word view absent")
+                    open_route(page,"character/demo-01")
+                    page.locator(".c9-character-sample-links [data-action='c9-character-reader']").click()
+                    page.wait_for_function("()=>location.hash==='#/reader'")
+                    if not page.locator("#app-content").inner_text().strip():
+                        raise AssertionError("Original contextual Reader empty")
+                    open_route(page,"today")
+                    page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                    page.locator(".c9-lesson-source-preview").wait_for(state="visible")
+                    preview=page.locator(".c9-lesson-source-preview")
+                    preview.wait_for(state="visible")
+                    start=preview.locator(".c9-lesson-preview-toolbar [data-action='c9-lesson-jump']")
+                    start.click()
+                    if not page.locator("#c9-lesson-overview").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Start teaching shortcut did not focus the original lesson")
+                    preview.locator(".c9-lesson-preview-word [data-action='lookup-word']").first.click()
+                    page.wait_for_function("()=>location.hash==='#/explore'")
+                    open_route(page,"today")
+                    page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                    page.locator(".c9-lesson-source-preview").wait_for(state="visible")
+                    page.locator(".c9-lesson-header-actions [data-action='c9-character-reader']").click()
+                    page.wait_for_function("()=>location.hash==='#/reader'")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Original Reader overflow after source handoff")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (1440,390):
+                        open_route(page,"character/demo-01")
+                        page.screenshot(path=str(args.artifacts/("c9-50-character-"+str(width)+".png")),full_page=True)
+                        open_route(page,"today")
+                        page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
+                        page.locator(".c9-lesson-source-preview").wait_for(state="visible")
+                        page.screenshot(path=str(args.artifacts/("c9-50-lesson-"+str(width)+".png")),full_page=True)
+                        open_route(page,"today")
+                        page.screenshot(path=str(args.artifacts/("c9-50-home-"+str(width)+".png")),full_page=True)
+                    return "Real original Home→Character→Wordbook→Reader and Lesson stage/word/Reader source handoff "+str(width)+"px"
+                check("C9-50 P9 authentic source journey "+str(width),p9_source_journey)
+                ctx.close()
             # C9-49 — real source-linked independent communication through
             # the existing P29 attempt writer, without private draft persistence.
             for width,height,mobile in ((1440,900,False),(390,844,True),(320,700,True)):
@@ -255,11 +309,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def original_listening_journey():
                     open_route(page,"today")
-                    homeDisclosure=page.locator(".c9-home-source-preview details.c9-home-listening")
-                    if homeDisclosure.evaluate("(e)=>e.open"):
-                        raise AssertionError("P9 Home listening should begin as an optional disclosure")
-                    homeDisclosure.locator("summary").click()
-                    home=homeDisclosure.locator(".c9-listening-deck")
+                    home=page.locator(".c9-home-source-preview .c9-listening-deck")
                     home.wait_for(state="visible")
                     if home.locator('[data-action="speak"][data-rate="slow"]').count()!=1:
                         raise AssertionError("Home slow listen unavailable")
@@ -267,11 +317,7 @@ def main():
                         raise AssertionError("Home stop audio unavailable")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
-                    resources=page.locator("details.c9-lesson-resources")
-                    if resources.evaluate("(e)=>e.open"):
-                        raise AssertionError("P9 teaching resources should begin collapsed")
-                    resources.locator("summary").click()
-                    lesson=resources.locator(".c9-listening-deck")
+                    lesson=page.locator(".c9-lesson-workspace > .c9-listening-deck")
                     lesson.wait_for(state="visible")
                     if lesson.locator(".c9-listening-clip").count()!=3:
                         raise AssertionError("Source-owned character, word and sentence audio stages missing")
@@ -329,9 +375,7 @@ def main():
                     if not home_english: raise AssertionError("Home source gloss absent")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
-                    resources=page.locator("details.c9-lesson-resources")
-                    resources.locator("summary").click()
-                    preview=resources.locator(".c9-lesson-source-preview")
+                    preview=page.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
                     if preview.locator("article").count()<3:
                         raise AssertionError("Lesson source trilogy missing")
@@ -392,73 +436,36 @@ def main():
                     return "Native dark mode and P9 source contrast at "+str(width)+"px"
                 check("C9-47 dark source contrast "+str(width),dark_source_surfaces)
                 ctx.close()
-            # C9-50: verify native Home-to-source handoffs on a real local origin.
-            # Do not infer mastery from visiting any of these presentation routes.
-            for width,height,mobile in [(390,844,True),(1440,900,False)]:
-                ctx,page,errors=session(width,height,mobile)
-                def p9_source_navigation():
-                    open_route(page,"today")
-                    buttons=page.locator(".c9-home-source-actions button")
-                    if buttons.count()!=2:
-                        raise AssertionError("P9 authored character/sentence entry points missing")
-                    hero_buttons=page.locator(".c9-home-hero-actions .c9-button")
-                    if not hero_buttons.count():
-                        raise AssertionError("P9 primary continue action missing")
-                    for btn in hero_buttons.all():
-                        if btn.is_visible() and btn.bounding_box()["height"]>78:
-                            raise AssertionError("Home action grew beyond compact mobile/desktop target")
-                    page.locator('.c9-home-source-actions [data-action="c9-lesson-open"]').click()
-                    section=page.locator("#c9-lesson-context")
-                    section.wait_for(state="visible")
-                    current=page.locator('.c9-lesson-sections [data-section="context"]')
-                    if current.get_attribute("aria-current")!="location":
-                        raise AssertionError("Home sentence handoff lost selected native lesson section")
-                    preview=page.locator("details.c9-lesson-resources")
-                    if not preview.count() or preview.evaluate("(e)=>e.open"):
-                        raise AssertionError("Source preview obstructs primary teaching or is missing")
-                    if page.locator("#c9-lesson-overview").count()!=1:
-                        raise AssertionError("Original first teaching section missing")
-                    open_route(page,"today")
-                    page.locator('.c9-home-source-actions [data-action="c9-character-open"]').click()
-                    page.locator(".c9-character-page").wait_for(state="visible")
-                    page.locator('.c9-character-first-actions [data-section="writing"]').click()
-                    if not page.locator("#c9-writing").evaluate("(e)=>document.activeElement===e"):
-                        raise AssertionError("Character writing CTA did not focus original writing section")
-                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
-                        raise AssertionError("P9 Home/source learning flow horizontally overflows")
-                    if errors: raise RuntimeError("; ".join(errors[:2]))
-                    if args.artifacts:
-                        page.screenshot(path=str(args.artifacts/("c9-50-character-"+str(width)+".png")),full_page=True)
-                    return "Original next sentence and character handoffs, teaching and writing focus at "+str(width)+"px"
-                check("C9-50 native P9 source handoffs "+str(width),p9_source_navigation)
-                ctx.close()
+            # Preserve the original transient freehand pad across ungraded
+            # translation view changes; no new writer or assessment authority.
             ctx,page,errors=session()
-            def character_toggle_keeps_private_ink():
+            def translation_keeps_ink():
                 open_route(page,"character/demo-01")
                 canvas=page.locator("#c9-writing-canvas")
                 canvas.scroll_into_view_if_needed()
-                box=canvas.bounding_box()
-                if not box: raise AssertionError("Original writing pad unavailable")
-                page.mouse.move(box["x"]+box["width"]*.35,box["y"]+box["height"]*.35)
+                bounds=canvas.bounding_box()
+                if not bounds: raise AssertionError("Ungraded writing pad unavailable")
+                page.mouse.move(bounds["x"]+bounds["width"]*.32,bounds["y"]+bounds["height"]*.32)
                 page.mouse.down()
-                page.mouse.move(box["x"]+box["width"]*.62,box["y"]+box["height"]*.54,steps=6)
+                page.mouse.move(bounds["x"]+bounds["width"]*.61,bounds["y"]+bounds["height"]*.55,steps=6)
                 page.mouse.up()
                 if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
-                    raise AssertionError("Freehand writing did not respond to pointer input")
-                page.evaluate("()=>window.__c9WritingPad=document.querySelector('#c9-writing-canvas')")
-                page.locator('[data-action="c9-character-support"]').click()
-                if not page.evaluate("()=>window.__c9WritingPad===document.querySelector('#c9-writing-canvas')"):
-                    raise AssertionError("Translation toggle destroyed the original freehand writing canvas")
+                    raise AssertionError("Pointer input did not draw one original freehand line")
+                page.evaluate("()=>window.__c9Ink=document.querySelector('#c9-writing-canvas')")
+                support=page.locator('[data-action="c9-character-support"]')
+                support.click()
+                if not page.evaluate("()=>window.__c9Ink===document.querySelector('#c9-writing-canvas')"):
+                    raise AssertionError("Translation toggle remounted private handwriting")
                 if "1 line" not in page.locator("#c9-writing-feedback").inner_text():
-                    raise AssertionError("Translation toggle erased unsaved writing")
+                    raise AssertionError("Translation toggle erased unsaved handwriting")
                 if not page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
-                    raise AssertionError("Source translation did not hide")
-                page.locator('[data-action="c9-character-support"]').click()
+                    raise AssertionError("Gloss remained visible after hide action")
+                support.click()
                 if page.locator(".c9-character-sample-english").evaluate("(e)=>e.hidden"):
-                    raise AssertionError("Source translation was not restored")
+                    raise AssertionError("Source gloss did not reappear")
                 if errors: raise RuntimeError("; ".join(errors[:2]))
-                return "Optional English visibility did not replace or erase original ungraded ink"
-            check("C9-50 character writing continuity across translation toggle",character_toggle_keeps_private_ink)
+                return "Private ungraded ink survives native source visibility checks"
+            check("C9-50 in-place Character translation and private ink",translation_keeps_ink)
             ctx.close()
             # C9-46: screenshot-backed original desktop lesson overlap regression.
             # The desktop vertical lesson rail must never paint across the
@@ -752,11 +759,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v57-service-worker takeover in a real user profile.
+            # not a running-v58-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v57-c9-48-native-listening"
-                current="character-study-working-v58-c9-49-context-transfer"
+                legacy="character-study-working-v58-c9-49-context-transfer"
+                current="character-study-working-v59-c9-50-source-journey"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -773,8 +780,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v57-c9-48-native-listening')&&
-                    keys.includes('character-study-working-v58-c9-49-context-transfer');
+                  return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
+                    keys.includes('character-study-working-v59-c9-50-source-journey');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -788,8 +795,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v57 CacheStorage deleted; 315 v58 assets retained and offline reload works (not live SW takeover)"
-            check("C9-49 stale offline cache migration",stale_cache_upgrade)
+                return "Old v58 CacheStorage deleted; 315 v59 assets retained and offline reload works (not live SW takeover)"
+            check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():

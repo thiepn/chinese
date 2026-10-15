@@ -89,8 +89,8 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   (previewSentence?'<p lang="zh-Hans" class="c9-character-sample-hanzi">'+txt(previewSentence.hanzi,esc)+'</p>'+
    (showPinyin?'<span class="c9-character-sample-pinyin">'+txt(previewSentence.pinyin,esc)+'</span>':'')+
    '<span class="c9-character-sample-english"'+(showTranslations?'':' hidden')+'>'+txt(previewSentence.english,esc)+'</span>':'')+
-  '<div class="c9-character-sample-words">'+previewWords.map(w=>'<span><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong><small>'+txt(w.english,esc)+'</small></span>').join('')+'</div>'+
-  '<div class="c9-character-sample-links">'+act('c9-character-jump',icon('pen')+' Free writing →','c9-button c9-button--secondary c9-button--small','data-section="writing" aria-controls="c9-writing"')+'</div></div>';
+  '<div class="c9-character-sample-words">'+previewWords.map(w=>'<span><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong>'+'<small class="c9-character-word-gloss"'+(showTranslations?'':' hidden')+'>'+txt(w.english,esc)+'</small>'+act('lookup-word','Open word →','c9-button c9-button--quiet c9-button--small','data-word="'+txt(w.hanzi,esc)+'"')+'</span>').join('')+'</div>'+
+  '<div class="c9-character-sample-links">'+act('c9-character-jump',icon('pen')+' Free writing →','c9-button c9-button--secondary c9-button--small','data-section="writing" aria-controls="c9-writing"')+act('c9-character-reader','Read the original lesson →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(lesson.id,esc)+'"')+'</div></div>';
  const sourceAudio=renderC9ListeningDeck([
   ...(previewWords[0]?[{label:'Whole word',...previewWords[0]}]:[]),
   ...(previewSentence?[{label:'Source sentence',...previewSentence}]:[])
@@ -106,8 +106,8 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   act('c9-character-lesson',icon('book')+'Full lesson','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+
   '<p class="c9-character-audio-notice">Pronunciation uses a device Mandarin voice when available; no certified recording is supplied.</p>'+
-  '<div class="c9-character-first-actions" aria-label="Study the current character now">'+
-  act('c9-character-jump',icon('pen')+' Write this character →','c9-button c9-button--primary','data-section="writing" aria-controls="c9-writing"')+
+  '<div class="c9-character-first-actions" aria-label="Study this source character now">'+
+  act('c9-character-jump',icon('pen')+' Free writing →','c9-button c9-button--primary','data-section="writing" aria-controls="c9-writing"')+
   act('c9-character-jump',icon('book')+' Read example sentences →','c9-button c9-button--secondary','data-section="sentences" aria-controls="c9-sentences"')+
   '</div>'+sourceSample+sourceAudio+'</div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+

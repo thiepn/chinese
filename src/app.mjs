@@ -92,7 +92,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v58-c9-49-context-transfer';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v59-c9-50-source-journey';
 const C9_EXPECTED_OFFLINE_ASSETS=315;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -1515,13 +1515,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    return go('reader');
  }
  if(name==='c9-character-support'){
-   // Translation is a presentation preference. Re-rendering here discards
-   // ephemeral, intentionally unsaved strokes on the native writing canvas.
+   // Keep local ungraded handwriting mounted when checking the English gloss.
    c9CharacterShowTranslations=!c9CharacterShowTranslations;
    const page=root.querySelector('.c9-character-page');
    if(!page)return render();
    page.dataset.translations=String(c9CharacterShowTranslations);
-   for(const node of page.querySelectorAll('.c9-character-sample-english,.c9-character-example-translation'))
+   for(const node of page.querySelectorAll('.c9-character-sample-english,.c9-character-example-translation,.c9-character-word-gloss'))
      node.hidden=!c9CharacterShowTranslations;
    for(const node of page.querySelectorAll('.c9-character-example-hidden'))
      node.hidden=c9CharacterShowTranslations;
@@ -1609,21 +1608,14 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-lesson-open'){
    if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
-   const targetSection=C9_LESSON_SECTIONS.some(s=>s.id===button.dataset.section)?button.dataset.section:null;
    if(route()==='learn'&&c9LearnDetail&&displayLessonId===id){
-    if(targetSection)return act({dataset:{action:'c9-lesson-jump',section:targetSection}});
-    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
+    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+    return true;
    }
-   if(route()==='learn'&&c9LearnDetail&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+   if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
-   // Keep the requested native section through renderLearn's lesson-change reset.
-   c9LastLessonId=id;c9LessonSection=targetSection||'overview';
-   render();
-   if(targetSection){
-    const target=root.querySelector('#c9-lesson-'+targetSection);
-    if(target){target.scrollIntoView({block:'start'});target.focus({preventScroll:true});}
-   }else root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+   render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
    return true;
  }
  if(name==='c9-unit-open'){
