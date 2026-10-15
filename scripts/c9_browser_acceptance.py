@@ -306,6 +306,74 @@ def main():
                     return "Original unit roadmap, short context row and visible character at "+str(width)+"px"
                 check("P9 mobile context and study roadmap "+str(width),compact_home_context)
                 ctx.close()
+            # C9-50 final visual audit: screenshot showed source panel painted
+            # even with closed details semantics. Assert actual visibility,
+            # keyboard isolation, native sections, and accessible Enter toggle.
+            for width,height,mobile in ((1440,900,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def details_visibility():
+                    open_route(page,"today")
+                    home=page.locator("details.c9-home-listening")
+                    deck=home.locator(".c9-listening-deck")
+                    if home.evaluate("(e)=>e.open") or deck.is_visible():
+                        raise AssertionError("Home closed audio is visually exposed")
+                    hs=home.locator("summary")
+                    hs.focus()
+                    if not hs.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Home disclosure is not keyboard focusable")
+                    hs.press("Enter")
+                    deck.wait_for(state="visible")
+                    hs.press("Enter")
+                    if deck.is_visible():raise AssertionError("Home audio did not collapse")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    details=page.locator("details.c9-lesson-resources")
+                    preview=details.locator(".c9-lesson-source-preview")
+                    child=details.locator(".c9-lesson-resources-content")
+                    link=details.locator('[data-action="lookup-word"]').first
+                    if details.evaluate("(e)=>e.open") or child.is_visible() or preview.is_visible():
+                        raise AssertionError("Closed Lesson source preview is painted")
+                    link.evaluate("(e)=>e.focus()")
+                    if link.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Closed Lesson content accepts keyboard focus")
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Original native first stage missing")
+                    if not mobile:
+                        layout=page.locator(".c9-lesson-layout").bounding_box()
+                        box=details.bounding_box()
+                        if not layout or not box or layout["y"]>box["y"]+130:
+                            raise AssertionError("Optional preview is still burying native lesson")
+                    ds=details.locator("summary")
+                    ds.focus()
+                    ds.press("Enter")
+                    preview.wait_for(state="visible")
+                    ds.press("Enter")
+                    if preview.is_visible():raise AssertionError("Lesson preview remained open")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Horizontal layout overflow")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-final-collapsed-lesson-"+str(width)+".png")),full_page=False)
+                    return "native closed/open visibility, keyboard and original stage at "+str(width)
+                check("C9-50 final disclosure "+str(width),details_visibility)
+                ctx.close()
+            for width,height,mobile in ((1440,900,False),(390,844,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def character_first_fold():
+                    open_route(page,"character/demo-01")
+                    panel=page.locator(".c9-character-identity").bounding_box()
+                    glyph=page.locator(".c9-character-glyph").bounding_box()
+                    if not panel or not glyph:raise AssertionError("Original glyph missing")
+                    if not mobile and (glyph["y"]-panel["y"]>110 or glyph["y"]>height*.7):
+                        raise AssertionError("Desktop source glyph was buried in whitespace")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Character page horizontal overflow")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("c9-final-character-fold-"+str(width)+".png")),full_page=False)
+                    return "original glyph visible near meaning at "+str(width)
+                check("C9-50 final glyph first fold "+str(width),character_first_fold)
+                ctx.close()
             # C9-48 — native source-led listening, device-voice lifecycle and
             # read-only source visibility. No synthetic scores or user speech.
             for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):

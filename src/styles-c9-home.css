@@ -531,3 +531,6 @@
  .c9-home-first-fold .c9-home-hero-actions{flex-wrap:wrap}
  .c9-home-first-fold .c9-home-hero-actions>.c9-button{flex:1 1 130px}
 }
+
+/* Preserve native closed-state keyboard and visual semantics on the Home audio disclosure. */
+.c9-home-listening:not([open]) > .c9-listening-deck{display:none!important}

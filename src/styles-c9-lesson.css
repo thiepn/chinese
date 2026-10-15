@@ -485,3 +485,6 @@
  .c9-lesson-resources>summary>span:last-child{max-width:73px;white-space:normal;text-align:right}
  .c9-lesson-resources-content{padding:0 11px 12px}
 }
+
+/* C9-50 screenshot repair: grid child must be unpainted and unfocusable when its native disclosure is closed. */
+.c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}

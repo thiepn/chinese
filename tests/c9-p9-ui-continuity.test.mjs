@@ -85,3 +85,16 @@ test('C9-50 P9 compact surfaces retain original guided and indexed curriculum au
  assert.ok(html.includes('data-section="overview"'));
  assert.equal(JSON.stringify(state),before);
 });
+
+test('P9 native source disclosures stay visually and keyboard hidden until activated',()=>{
+ const state=freshState(),previous=JSON.stringify(state);
+ const html=renderC9LessonWorkspace({lesson:DEMO_LESSONS[0],state,nativeMarkup:'',act,esc});
+ const home=renderC9Home(state,act,esc);
+ assert.ok(html.includes('<details class="c9-lesson-resources">'));
+ assert.ok(home.includes('<details class="c9-home-listening">'));
+ const a=readFileSync(new URL('../src/styles-c9-lesson.css',import.meta.url),'utf8');
+ const b=readFileSync(new URL('../src/styles-c9-home.css',import.meta.url),'utf8');
+ assert.ok(a.includes('.c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}'));
+ assert.ok(b.includes('.c9-home-listening:not([open]) > .c9-listening-deck{display:none!important}'));
+ assert.equal(JSON.stringify(state),previous);
+});
