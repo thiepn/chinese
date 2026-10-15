@@ -503,3 +503,25 @@
  .c9-home-hero-actions>.c9-button{flex:1 1 155px}
 }
 @media(prefers-reduced-motion:reduce){.c9-home-source-actions *{transition:none}}
+
+/* C9-50 screenshot-based correction: a flex-basis of 155px in a mobile
+   column produced giant primary and secondary buttons. Keep real 44px targets. */
+.c9-home-first-fold>.c9-home-hero{height:auto;align-self:start;min-height:0}
+.c9-home-source-preview .c9-home-listening{width:100%;margin:9px 0 0}
+.c9-home-listening>summary{display:flex;align-items:center;min-height:44px;
+ padding:9px 11px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);
+ color:var(--c9-accent);font:650 12px/1.45 var(--c9-ui);cursor:pointer}
+.c9-home-listening>summary:focus-visible{outline:3px solid var(--c9-focus);outline-offset:2px}
+.c9-home-listening[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.c9-home-listening .c9-listening-deck{margin-top:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+@media(max-width:700px){
+ .c9-home-hero-actions{display:flex;align-items:stretch;flex-direction:column;gap:8px}
+ .c9-home-hero-actions>.c9-button{flex:0 0 auto!important;width:100%;min-height:48px;max-height:none;padding:11px 14px}
+ .c9-home-source-actions .c9-button{flex:0 1 auto;width:100%;min-height:44px}
+ .c9-home-hero-actions>a[href="#/plan"]{display:none}
+ .c9-home-source-preview{margin-top:13px}
+ .c9-home-art{min-height:73px}
+}
+@media(max-width:380px){
+ .c9-home-hero-actions>.c9-button{flex-basis:auto!important}
+}

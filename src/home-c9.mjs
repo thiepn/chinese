@@ -77,8 +77,10 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  '<path d="M30 166l7-23m-5 18-9-6m9-1 8-8m350 21-5-32m5 26-10-9m10 0 10-11"/></g>'+
  '<path d="M0 176q91-12 177-3q121-14 253-3v15H0Z" fill="currentColor" opacity=".06"/></svg>';
  const nextSource=lesson?.sentence?.hanzi&&lesson?.sentence?.english?
-  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>AUTHORED EXAMPLE · NEXT LESSON</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
-  '<div class="c9-home-source-actions">'+
+  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>AUTHORED EXAMPLE · NEXT LESSON</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+
+  '<details class="c9-home-listening"><summary>Listen and shadow the original sentence ↘</summary>'+
+  renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
+  '</details><div class="c9-home-source-actions">'+
   act('c9-character-open','Explore '+esc(lesson.hanzi)+' →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+
   act('c9-lesson-open','Read this sentence →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(lesson.id)+'" data-section="context"')+
   '</div></div>':'';

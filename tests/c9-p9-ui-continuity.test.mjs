@@ -99,3 +99,14 @@ test('P9 Character puts a source-specific heading and real writing/reading actio
  assert.ok(html.indexOf('c9-character-first-actions')<html.indexOf('c9-character-source-sample'));
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
 });
+
+test('P9 mobile first-fold audio is optional and action targets are not CSS-driven fake progress',()=>{
+ const html=renderC9Home(freshState(),act,esc);
+ assert.ok(html.includes('class="c9-home-listening"'));
+ assert.ok(html.includes('Listen and shadow the original sentence'));
+ assert.ok(html.includes('c9-home-source-actions'));
+ assert.ok(html.indexOf('c9-home-listening')<html.indexOf('c9-home-source-actions'));
+ const css=readFileSync(new URL('../src/styles-c9-home.css',import.meta.url),'utf8');
+ assert.ok(css.includes('flex:0 0 auto!important'));
+ assert.ok(css.includes('.c9-home-listening>summary'));
+});

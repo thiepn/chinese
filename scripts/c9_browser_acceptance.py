@@ -255,7 +255,11 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def original_listening_journey():
                     open_route(page,"today")
-                    home=page.locator(".c9-home-source-preview .c9-listening-deck")
+                    homeDisclosure=page.locator(".c9-home-source-preview details.c9-home-listening")
+                    if homeDisclosure.evaluate("(e)=>e.open"):
+                        raise AssertionError("P9 Home listening should begin as an optional disclosure")
+                    homeDisclosure.locator("summary").click()
+                    home=homeDisclosure.locator(".c9-listening-deck")
                     home.wait_for(state="visible")
                     if home.locator('[data-action="speak"][data-rate="slow"]').count()!=1:
                         raise AssertionError("Home slow listen unavailable")
@@ -397,6 +401,12 @@ def main():
                     buttons=page.locator(".c9-home-source-actions button")
                     if buttons.count()!=2:
                         raise AssertionError("P9 authored character/sentence entry points missing")
+                    hero_buttons=page.locator(".c9-home-hero-actions .c9-button")
+                    if not hero_buttons.count():
+                        raise AssertionError("P9 primary continue action missing")
+                    for btn in hero_buttons.all():
+                        if btn.is_visible() and btn.bounding_box()["height"]>78:
+                            raise AssertionError("Home action grew beyond compact mobile/desktop target")
                     page.locator('.c9-home-source-actions [data-action="c9-lesson-open"]').click()
                     section=page.locator("#c9-lesson-context")
                     section.wait_for(state="visible")
