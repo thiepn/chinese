@@ -56,7 +56,7 @@ test('C9-48 Character keeps original study, private writing and device speech se
  assert.ok(html.includes('id="c9-writing-trace-glyph"'));
  assert.ok(html.includes('id="c9-writing-trace-toggle"'));
  assert.ok(html.includes('aria-pressed="false"'));
- assert.ok(html.includes('no stroke sequence or direction'));
+ assert.ok(html.includes('No verified stroke sequence, stroke count'));
  assert.ok(html.includes('Stroke-order data</span><strong>Not installed'));
  assert.equal(JSON.stringify(state),snapshot);
 });
