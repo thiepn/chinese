@@ -511,9 +511,10 @@ function renderSentences(){
  mode:libraryMode,typed:libraryTyped,order:libraryOrder,feedback:libraryFeedback,
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
+ const independentProduction=libraryPracticeFocus&&libraryMode==='production'&&!libraryFeedback;
+ const directory=independentProduction?'<p class="c9-unified-source-note" role="note">Original sentence previews are concealed while independent Chinese typing is active. Exit focused recall to browse source sentences.</p>':renderC9SentenceDirectory(state,action,esc);
  return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
-  renderC9TypingPath(state,action,esc)+
-  renderC9SentenceDirectory(state,action,esc)+
+  renderC9TypingPath(state,action,esc)+directory+
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
