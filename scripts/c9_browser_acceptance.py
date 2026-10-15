@@ -263,7 +263,11 @@ def main():
                         raise AssertionError("Home stop audio unavailable")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
-                    lesson=page.locator(".c9-lesson-workspace > .c9-listening-deck")
+                    resources=page.locator("details.c9-lesson-resources")
+                    if resources.evaluate("(e)=>e.open"):
+                        raise AssertionError("P9 teaching resources should begin collapsed")
+                    resources.locator("summary").click()
+                    lesson=resources.locator(".c9-listening-deck")
                     lesson.wait_for(state="visible")
                     if lesson.locator(".c9-listening-clip").count()!=3:
                         raise AssertionError("Source-owned character, word and sentence audio stages missing")
@@ -321,7 +325,9 @@ def main():
                     if not home_english: raise AssertionError("Home source gloss absent")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
-                    preview=page.locator(".c9-lesson-source-preview")
+                    resources=page.locator("details.c9-lesson-resources")
+                    resources.locator("summary").click()
+                    preview=resources.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
                     if preview.locator("article").count()<3:
                         raise AssertionError("Lesson source trilogy missing")
