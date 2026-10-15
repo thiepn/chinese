@@ -213,6 +213,21 @@ def main():
                         raise AssertionError("Playback stop did not report actual cancellation")
                     if not page.locator("#c9-writing-canvas").count():
                         raise AssertionError("Native ungraded character writing lost")
+                    guide=page.locator("#c9-writing-trace-toggle")
+                    glyph=page.locator("#c9-writing-trace-glyph")
+                    if not guide.count() or not glyph.count() or not glyph.is_hidden():
+                        raise AssertionError("Default private writing guide state not hidden")
+                    guide.click()
+                    if guide.get_attribute("aria-pressed")!="true" or glyph.is_hidden():
+                        raise AssertionError("Original printed reference tracing not enabled")
+                    canvas=page.locator("#c9-writing-canvas")
+                    if canvas.get_attribute("aria-label") is None:
+                        raise AssertionError("Ungraded keyboard canvas lost its accessible name")
+                    guide.click()
+                    if guide.get_attribute("aria-pressed")!="false" or not glyph.is_hidden():
+                        raise AssertionError("Printed reference tracing did not clear")
+                    if "not scored or saved" not in page.locator("#c9-writing-feedback").inner_text():
+                        raise AssertionError("Printed reference incorrectly claims scored or stored ink")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("Listening deck causes horizontal overflow")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
