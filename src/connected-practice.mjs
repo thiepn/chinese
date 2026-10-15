@@ -5,11 +5,16 @@ import {DIALOGUES,findDialogue} from './dialogues.mjs';
 import {missionQuestion,gradeMission,addMissionEvent} from './dialogue-missions.mjs';
 import {findStory} from './stories.mjs';
 export const CONNECTED_TYPES=Object.freeze(['sense','sentence','mission']);
+// Some advanced P43/P50/P51 writing tasks are editor prompts rather than a
+// single exact-form sentence. They remain in their native writing workflows,
+// but cannot safely be graded as a connected one-answer reconstruction.
+const reconstructable=task=>Boolean(task&&typeof task.hanzi==='string'&&task.hanzi.trim()&&typeof task.english==='string'&&task.english.trim());
+const CONNECTED_SENTENCE_TASKS=SENTENCE_TASKS.filter(reconstructable);
 export function validConnectedItem(item){
  if(!item||typeof item!=='object')return false;
  if(item.type==='sense')return SENSE_CASES.some(c=>c.id===item.id)&&item.mode==='meaning';
- if(item.type==='sentence')return SENTENCE_TASKS.some(t=>t.id===item.id)&&item.mode==='reconstruct';
- if(item.type==='mission')return !!findDialogue(item.id)&&Number.isInteger(item.step)&&item.step>=0&&item.step<=2&&item.mode==='dialogue';
+ if(item.type==='sentence')return CONNECTED_SENTENCE_TASKS.some(t=>t.id===item.id)&&item.mode==='reconstruct';
+ if(item.type==='mission')return !!findDialogue(item.id)&&Number.isInteger(item.step)&&item.step>=0&&item.step<=2&&item.mode==='dialogue'&&!!missionQuestion(item.id,item.step);
  return false;
 }
 export function connectedQuestion(item){
@@ -19,7 +24,7 @@ export function connectedQuestion(item){
   return {kind:'choice',prompt:`What does ${c.target} mean in this sentence?`,hanzi:c.hanzi,options:c.options,answer:c.answer,explanation:c.explanation,sourceType:'sense',sourceId:c.id,mode:item.mode,contextPinyin:c.pinyin,contextEnglish:c.english};
  }
  if(item.type==='sentence'){
-  const task=SENTENCE_TASKS.find(t=>t.id===item.id);
+  const task=CONNECTED_SENTENCE_TASKS.find(t=>t.id===item.id);
   return {kind:'hanzi',prompt:`Reconstruct the exact Chinese sentence: ${task.english}`,answer:task.hanzi,explanation:'This checks exact written reconstruction, not all possible Chinese translations.',sourceType:'sentence',sourceId:task.id,mode:item.mode,contextPinyin:task.pinyin,contextEnglish:task.english,storyId:task.storyId};
  }
  const q=missionQuestion(item.id,item.step);
@@ -28,7 +33,7 @@ export function connectedQuestion(item){
 export function gradeConnected(item,response){
  const q=connectedQuestion(item);
  if(item.type==='sense')return evaluateSense(item.id,response);
- if(item.type==='sentence')return checkSentence(SENTENCE_TASKS.find(t=>t.id===item.id),response);
+ if(item.type==='sentence')return checkSentence(CONNECTED_SENTENCE_TASKS.find(t=>t.id===item.id),response);
  return gradeMission(q,response);
 }
 export function recordConnectedAttempt(state,item,{eventId,correct,assisted,now=Date.now()}){
@@ -41,8 +46,8 @@ export function recordConnectedAttempt(state,item,{eventId,correct,assisted,now=
 export function contextualWeaknesses(state){
  const groups=[
   ['sense',SENSE_CASES.map(c=>({type:'sense',id:c.id,mode:'meaning'})),state.senseEvents||[],e=>e.caseId],
-  ['sentence',SENTENCE_TASKS.map(t=>({type:'sentence',id:t.id,mode:'reconstruct'})),state.sentenceEvents||[],e=>e.taskId],
-  ['mission',DIALOGUES.flatMap(d=>[0,1,2].map(step=>({type:'mission',id:d.id,step,mode:'dialogue'}))),state.missionEvents||[],e=>`${e.dialogueId}:${['meaning','evidence','pinyin'].indexOf(e.stage)}`]
+  ['sentence',CONNECTED_SENTENCE_TASKS.map(t=>({type:'sentence',id:t.id,mode:'reconstruct'})),state.sentenceEvents||[],e=>e.taskId],
+  ['mission',DIALOGUES.flatMap(d=>[0,1,2].map(step=>({type:'mission',id:d.id,step,mode:'dialogue'})).filter(validConnectedItem)),state.missionEvents||[],e=>`${e.dialogueId}:${['meaning','evidence','pinyin'].indexOf(e.stage)}`]
  ];
  const results=[];
  for(const [kind,items,events,key] of groups){
