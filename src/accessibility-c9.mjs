@@ -13,6 +13,7 @@ export const C9_NATIVE_DISCLOSURE_CLASSES=Object.freeze([
  'c9-learn-existing',
  'c9-assessment-extra',
  'c9-media-catalog',
+ 'c9-typing-disclosure',
  'p29-transfer',
  'p29-transfer-witness'
 ]);
