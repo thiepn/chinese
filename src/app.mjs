@@ -575,11 +575,7 @@ function renderToday(){
   '<a href="#/skills">Open Skill Paths →</a></section>'+
   renderC9LearningContinuity(state,action,esc)+onboardingPanel()+
   '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
-  '<div class="c9-home-extra-inner">'+gated()+
-  hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
-  connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
-  pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
-  '</div></details>';
+  '<div class="c9-home-extra-inner" data-c9-lazy-home="pending"></div></details>';
 }
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
@@ -2541,6 +2537,23 @@ document.addEventListener('click',ev=>{
   if(!c9ConfirmLeaveNativeAnswer(c9RenderedRoute))ev.preventDefault();
   else c9ApprovedDeparture={from:c9RenderedRoute,to:target};
  }
+},true);
+function renderC9OptionalHomePanels(){
+ return gated()+hubHomePanel()+pathwayHomePanel(state,action,esc)+
+  beginnerReadingTodayPanel()+connectedReadingTodayPanel()+
+  sentenceTodayPanel()+grammarTodayPanel()+pinyinTodayPanel()+
+  vocabularyTodayPanel()+finishOverviewPanel();
+}
+// The optional source-rich diagnostics are not part of first meaningful Home
+// content. Generate them only upon the learner opening their native disclosure.
+// No additional DB, state engine, navigation destination or grade is created.
+root.addEventListener('toggle',event=>{
+ const disclosure=event.target;
+ if(!disclosure.matches?.('details.c9-home-extra')||!disclosure.open)return;
+ const destination=disclosure.querySelector('[data-c9-lazy-home="pending"]');
+ if(!destination)return;
+ destination.innerHTML=renderC9OptionalHomePanels();
+ destination.removeAttribute('data-c9-lazy-home');
 },true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
