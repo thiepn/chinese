@@ -48,8 +48,11 @@ test('P65 authored character contrasts do not fabricate radicals or visual confu
 });
 
 test('P66 word library displays canonical contrasted words without new grading events',()=>{
- const state=freshState(),before=JSON.stringify(state);
- const html=c9WordCatalogResults(state,{query:'',filter:'all',page:0},act,esc);
+ const source=WORDS.find(w=>sourceWordComparisons(w.key).length>0);
+ assert.ok(source,'An existing word must have a source-backed comparison');
+ const state=freshState();state.bookmarkedWords.push(source.key);
+ const before=JSON.stringify(state);
+ const html=c9WordCatalogResults(state,{query:'',filter:'saved',page:0},act,esc);
  assert.ok(html.includes('c9-word-contrast'));
  assert.ok(html.includes('Compare original written words and readings'));
  assert.ok(html.includes('data-action="c9-word-open"'));
