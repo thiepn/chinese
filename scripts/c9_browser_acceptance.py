@@ -120,6 +120,76 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-49 — real source-linked independent communication through
+            # the existing P29 attempt writer, without private draft persistence.
+            for width,height,mobile in ((1440,900,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def pathway_transfer():
+                    open_route(page,"pathway/path-01")
+                    jump=page.locator('[data-action="pathway-jump-current"]')
+                    jump.wait_for(state="visible")
+                    jump.click()
+                    mission=page.locator("#p29-current-mission")
+                    if not mission.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Original mission shortcut did not move keyboard focus")
+                    position=mission.bounding_box()
+                    if not position or position["y"]<0 or position["y"]>height*.55:
+                        raise AssertionError("Current mission remains buried under band list")
+                    button=page.locator('[data-action="pathway-reveal"]').first
+                    button.wait_for(state="visible")
+                    button.click()
+                    disclosure=page.locator("details.p29-transfer")
+                    disclosure.wait_for(state="attached")
+                    disclosure.locator("summary").first.click()
+                    draft=page.locator("#p29-transfer-draft")
+                    draft.wait_for(state="visible")
+                    draft.fill("我先确认时间，再回复你。")
+                    if "我先确认时间" not in draft.input_value():
+                        raise AssertionError("Original P29 private source draft not editable")
+                    witness=page.locator("details.p29-transfer-witness")
+                    witness.locator("summary").first.click()
+                    if witness.locator('p[lang="zh-Hans"]').count()!=2:
+                        raise AssertionError("Two original Chinese source lines missing")
+                    if witness.locator('[data-action="speak"][data-rate="slow"]').count()!=1:
+                        raise AssertionError("Native slow Mandarin source playback missing")
+                    checks=page.locator(".p29-transfer-selfcheck input")
+                    if checks.count()!=3: raise AssertionError("Three self-review criteria missing")
+                    checks.first.check()
+                    if not checks.first.is_checked():raise AssertionError("Native optional self-check not interactive")
+                    if args.artifacts and width in (1440,390):
+                        page.screenshot(path=str(args.artifacts/("c9-49-transfer-expanded-"+str(width)+".png")),full_page=True)
+                    disclosure.locator('[data-action="pathway-transfer-clear"]').click()
+                    if draft.input_value():
+                        raise AssertionError("Ungraded source draft not cleared")
+                    if "No grade or saved record" not in page.locator("#p29-transfer-privacy").inner_text():
+                        raise AssertionError("Source draft privacy feedback missing")
+                    draft.fill("一个不保存的私人回答。")
+                    dismissed=[]
+                    def decline(dialog):
+                        dismissed.append(dialog.message)
+                        dialog.dismiss()
+                    page.on("dialog",decline)
+                    page.evaluate("location.hash='#/today'")
+                    page.wait_for_timeout(200)
+                    page.remove_listener("dialog",decline)
+                    if not dismissed or page.evaluate("()=>location.hash")!="#/pathway/path-01":
+                        raise AssertionError("Native unsent-answer departure safeguard bypassed")
+                    page.once("dialog",lambda dialog:dialog.accept())
+                    page.evaluate("location.hash='#/today'")
+                    page.wait_for_function("()=>location.hash==='#/today'")
+                    open_route(page,"pathway/path-01")
+                    # An old graded P29 result may remain locally recorded.
+                    # The optional private response must not return with it.
+                    if page.locator("#p29-transfer-draft").count() and page.locator("#p29-transfer-draft").input_value():
+                        raise AssertionError("Private response survived leaving the pathway")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P29 changed-context controls overflow viewport")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (1440,390):
+                        page.screenshot(path=str(args.artifacts/("c9-49-pathway-"+str(width)+".png")),full_page=True)
+                    return "P29 original transfer, private edit/clear, native source reveal, keyboard checks and unsent-departure protection at "+str(width)+"px"
+                check("C9-49 real changed-context P29 "+str(width),pathway_transfer)
+                ctx.close()
             # P9 native sidebar and direct real course-unit discovery.
             # Uses actual local route rendering and only synthetic browser state.
             ctx,page,errors=session(1440,900,False)
@@ -604,11 +674,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v56-service-worker takeover in a real user profile.
+            # not a running-v57-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v56-c9-p9-native-navigation"
-                current="character-study-working-v57-c9-48-native-listening"
+                legacy="character-study-working-v57-c9-48-native-listening"
+                current="character-study-working-v58-c9-49-context-transfer"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -625,8 +695,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v56-c9-p9-native-navigation')&&
-                    keys.includes('character-study-working-v57-c9-48-native-listening');
+                  return !keys.includes('character-study-working-v57-c9-48-native-listening')&&
+                    keys.includes('character-study-working-v58-c9-49-context-transfer');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -640,8 +710,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v56 CacheStorage deleted; 315 v57 assets retained and offline reload works (not live SW takeover)"
-            check("C9-48 stale offline cache migration",stale_cache_upgrade)
+                return "Old v57 CacheStorage deleted; 315 v58 assets retained and offline reload works (not live SW takeover)"
+            check("C9-49 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():

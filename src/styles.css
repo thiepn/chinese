@@ -984,3 +984,48 @@
 @media(max-width:800px){.p29-layout{grid-template-columns:minmax(0,1fr)}.p29-sidebar{position:static}.p29-schedule>ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}.p29-mission-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px}.p29-mission-list>h3{grid-column:1/-1}.p29-bands{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:560px){.p29-bands{grid-template-columns:repeat(2,minmax(0,1fr))}.p29-band{padding:10px;grid-template-columns:25px minmax(0,1fr)}.p29-band-number{font-size:19px}.p29-mission-list{grid-template-columns:1fr}.p29-schedule>ol{grid-template-columns:1fr}.p29-home-action{flex-direction:column;align-items:flex-start}.p29-home-action .button-row{width:100%}.p29-home-action .button-row>.button{flex:1 1 100%}.p29-modes>.p29-mode{flex:1 1 45%}.p29-lesson-nav>.button{flex:1 1 100%}.p29-lesson-heading .button-row>.button{flex:1 1 43%}}
 @media(prefers-reduced-motion:reduce){.p29-band,.p29-mission-card,.p29-mode,.p29-level{transition:none}}
+
+
+/* C9-49: optional changed-context Mandarin production in the ORIGINAL P29
+   mission. Private textarea is in-tab only, never a new grade or source store. */
+.p29-transfer{min-width:0;max-width:100%;margin:14px 0 4px;border:1px solid var(--line);background:var(--surface);padding:11px 14px}
+.p29-transfer>summary,.p29-transfer-witness>summary{cursor:pointer;color:var(--ink);font-weight:700;line-height:1.5;min-height:44px;align-content:center}
+.p29-transfer>summary:hover,.p29-transfer-witness>summary:hover{color:var(--accent)}
+.p29-transfer:focus-within{border-color:var(--accent)}
+.p29-transfer>p{font-size:13px;line-height:1.7;color:var(--sub);overflow-wrap:anywhere}
+.p29-transfer>p strong{color:var(--ink)}
+.p29-transfer-compose{display:grid;gap:9px;margin:15px 0;padding:14px;background:var(--soft);border:1px solid var(--line);min-width:0}
+.p29-transfer-compose>label{font-size:13px;font-weight:700;color:var(--ink)}
+#p29-transfer-draft{width:100%;min-height:112px;min-width:0;max-width:100%;resize:vertical;border:1px solid var(--line);background:var(--background);padding:12px;color:var(--ink);font:500 16px/1.65 var(--c9-hanzi,inherit)}
+#p29-transfer-draft:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.p29-transfer-draft-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.p29-transfer-draft-actions>span{flex:1 1 210px;min-width:0;color:var(--sub);font-size:11px;line-height:1.55}
+.p29-transfer-draft-actions>button{min-height:44px}
+.p29-transfer-witness{border:1px solid var(--line);padding:10px 14px;background:var(--background);margin:12px 0}
+.p29-transfer-witness>summary{font-size:13px}
+.p29-transfer-example{display:grid;gap:7px;margin:12px 0;padding:12px;border:1px solid var(--line);min-width:0}
+.p29-transfer-example>p{margin:0;line-height:1.65;font-size:12px;color:var(--sub);overflow-wrap:anywhere}
+.p29-transfer-example>p[lang="zh-Hans"]{font:500 clamp(19px,2vw,25px)/1.6 var(--c9-hanzi,inherit);color:var(--ink)}
+.p29-transfer-example>.button{justify-self:start;min-height:44px}
+.p29-transfer-selfcheck{display:grid;gap:10px;padding:13px;border:1px solid var(--line);margin:14px 0}
+.p29-transfer-selfcheck>legend{font-weight:700;font-size:13px;padding:0 4px}
+.p29-transfer-selfcheck>label{display:flex;align-items:start;gap:10px;line-height:1.6;font-size:12px;color:var(--ink)}
+.p29-transfer-selfcheck input{height:20px;width:20px;flex:0 0 20px;accent-color:var(--accent)}
+@media(max-width:560px){.p29-transfer{padding:10px}.p29-transfer-compose{padding:11px}.p29-transfer-witness{padding:10px}
+.p29-transfer-example>.button{width:100%}.p29-transfer-draft-actions>button{width:100%}}
+@media(forced-colors:active){.p29-transfer,.p29-transfer-compose,.p29-transfer-witness{border:1px solid CanvasText}}
+
+
+/* C9-49: the selected original mission is reachable before the nine-band
+   catalog on narrow screens, without another route or progress authority. */
+.p29-quick-jump{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:12px;padding:13px 16px;margin:10px 0 16px;border:1px solid var(--line);
+ background:var(--soft);min-width:0}
+.p29-quick-jump>span{display:grid;gap:3px;min-width:0}
+.p29-quick-jump strong{font-size:13px;color:var(--ink)}
+.p29-quick-jump small{font-size:12px;color:var(--sub);line-height:1.5}
+.p29-quick-jump>.button{min-height:44px}
+#p29-current-mission{scroll-margin-top:18px}
+#p29-current-mission:focus{outline:3px solid var(--accent);outline-offset:4px}
+@media(max-width:650px){.p29-quick-jump{margin:5px 0 11px;padding:11px}
+ .p29-quick-jump>.button{width:100%}}

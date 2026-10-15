@@ -92,7 +92,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v57-c9-48-native-listening';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v58-c9-49-context-transfer';
 const C9_EXPECTED_OFFLINE_ASSETS=315;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -114,6 +114,9 @@ const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  learn:['lesson-check-entry']
 });
 function c9OpenNativeAnswer(screen=c9RenderedRoute){
+ // A changed-context draft remains ungraded even after a P29 graded answer.
+ if(screen==='pathway'&&String(pathwayTransferDraft||'').trim())
+  return root.querySelector('#p29-transfer-draft')||{value:pathwayTransferDraft};
  // A visible answer may remain in the original input after submitting it.
  // Warn only about UNSUBMITTED text, not a graded native response.
  if((screen==='review'&&checkResult!==null)||
@@ -171,6 +174,7 @@ let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9Le
 let c9LessonSection='overview',c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
 let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
+let pathwayTransferDraft=''; // Session-only, no IndexedDB or StudyEvent writer.
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
 let missionStep=0,missionActive=false,missionSupport=false,missionTyped='',missionFeedback=null;
@@ -511,7 +515,7 @@ function renderSentences(){
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
-function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;}
+function pathwayReset(){pathwayMode='meaning';pathwayFocus=false;pathwayAssisted=false;pathwayTyped='';pathwayFeedback=null;pathwayTransferDraft='';}
 function openPathwayMission(id){
  const m=findPathwayMission(id);if(!m)return false;
  if(route()==='pathway'&&pathwaySelection()===id)return true;
@@ -523,7 +527,7 @@ function renderPathway(){
  if(!/^#\/pathway\/path-\d{2}$/.test(location.hash))return renderC9PathwayHub(state,action,esc);
  const m=findPathwayMission(pathwaySelection())||PATHWAY_MISSIONS[0];
  return '<nav class="c9-pathway-mission-back" aria-label="Pathway navigation"><a href="#/pathway">← All nine original study bands</a><span class="c9-meta">Band '+m.band+' · Original mission</span></nav>'+
-  renderPathwayScreen({id:m.id,band:m.band,minutes:pathwayMinutes,mode:pathwayMode,focus:pathwayFocus,assisted:pathwayAssisted,typed:pathwayTyped,feedback:pathwayFeedback,showPinyin:pathwayShowPinyin,showEnglish:pathwayShowEnglish,learner:state},action,esc,title,gated);
+  renderPathwayScreen({id:m.id,band:m.band,minutes:pathwayMinutes,mode:pathwayMode,focus:pathwayFocus,assisted:pathwayAssisted,typed:pathwayTyped,feedback:pathwayFeedback,transferDraft:pathwayTransferDraft,showPinyin:pathwayShowPinyin,showEnglish:pathwayShowEnglish,learner:state},action,esc,title,gated);
 }
 function beginnerReadingTodayPanel(){
  const metrics=beginnerReadingStats(state),last=(state.readingEvents||[]).filter(e=>findStory(e.storyId)?.beginner).at(-1);
@@ -942,7 +946,8 @@ function go(page,answerConfirmed=false){
  // actions; source-switch adapters decide separately when to preserve input.
  if(location.hash===target){render();return true;}
  const from=c9RenderedRoute;
- if(from!==page&&!answerConfirmed&&!c9ConfirmLeaveNativeAnswer(from))return false;
+ if((from!==page||(from==='pathway'&&location.hash!==target))&&!answerConfirmed&&!c9ConfirmLeaveNativeAnswer(from))return false;
+ if(from==='pathway'&&location.hash!==target)pathwayTransferDraft='';
  c9ApprovedDeparture={from,to:page};
  location.hash=target;return true;
 }
@@ -1817,6 +1822,14 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(await act({dataset:{action:target,id}})!==true)return false;
   c9DiscoveryTrail=nextTrail;render();return true;
  }
+ if(name==='pathway-jump-current'){
+  const target=root.querySelector('#p29-current-mission');
+  if(!target)return false;
+  target.scrollIntoView({behavior:'auto',block:'start'});
+  target.focus({preventScroll:true});
+  announceC9Interaction('Current original Mandarin mission, '+(findPathwayMission(pathwaySelection())?.title||'study')+'.');
+  return true;
+ }
  if(name==='pathway-open'){
   const mission=pathwayResume(state);if(!mission||!go('pathway'))return false;
   pathwaySelected=mission.id;render();return true;
@@ -1846,6 +1859,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='pathway-next-mission'){
   const current=findPathwayMission(pathwaySelection());if(!current)return;
   const next=pathwayNext(state,current.band,current.id);if(next)openPathwayMission(next.id);return;
+ }
+ if(name==='pathway-transfer-clear'){
+  const field=root.querySelector('#p29-transfer-draft');pathwayTransferDraft='';
+  if(field){field.value='';field.focus({preventScroll:true});}
+  const notice=root.querySelector('#p29-transfer-privacy');
+  if(notice)notice.textContent='Private response cleared from this tab. No grade or saved record was created.';
+  return true;
  }
  if(name==='pathway-workshop'){
   const m=findPathwayMission(pathwaySelection());if(!m)return false;
@@ -2548,7 +2568,7 @@ root.addEventListener('input',e=>{
  p30Query=e.target.value;p30Page=0;
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
  refreshC9FindWorkbench();return;
-}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
+}if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
  libraryTyped=e.target.value;
  const button=root.querySelector('[data-action="sentence-answer"]');if(button)button.disabled=!libraryTyped.trim();return;
 }
@@ -2642,14 +2662,18 @@ window.addEventListener('hashchange',()=>{
  const sameScreenSourceChanged=destination===previous&&Boolean(targetSource)&&
   targetSource!==(previousSource||(previous==='grammar'?grammarSelected:
    previous==='sentences'?librarySelected:pathwaySelected));
+ // Going from a P29 mission to its band index is a source departure even
+ // though the route name stays 'pathway' and the new hash has no source ID.
+ const pathwayMissionExit=previous==='pathway'&&
+  /^#\/pathway\/path-\d{2}$/.test(previousHash)&&currentHash!==previousHash&&!targetSource;
  // Back/Forward and pasted deep links do not go through the original native
  // controller. Guard both route changes and same-route source changes.
- if((destination!==previous||sameScreenSourceChanged)&&!approved&&
+ if((destination!==previous||sameScreenSourceChanged||pathwayMissionExit)&&!approved&&
   !c9ConfirmLeaveNativeAnswer(previous)){
   history.replaceState(null,'',previousHash);
   return;
  }
- if(destination!==previous||sameScreenSourceChanged)stopC9Speech();
+ if(destination!==previous||sameScreenSourceChanged||pathwayMissionExit){stopC9Speech();if(previous==='pathway')pathwayTransferDraft='';}
  // Following a *real* approved hash transition, synchronize source-specific
  // local input with the displayed original source, never with an old lesson.
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){

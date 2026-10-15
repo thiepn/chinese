@@ -1,7 +1,7 @@
 // P29 original pathway interface. Reuses the host application actions and
 // existing sentenceEvents. Study bands do not assert official HSK coverage.
 import {PATHWAY_BANDS,PATHWAY_MISSIONS,PATHWAY_MODES,findPathwayMission,pathwayQuestion,
- pathwayStats,pathwayNext,pathwayResume,pathwayDailyRoute,pathwayConnections,pathwayTaskId} from './pathway-course.mjs';
+ pathwayStats,pathwayNext,pathwayResume,pathwayDailyRoute,pathwayConnections,pathwayTaskId,pathwayIndependentTransfer} from './pathway-course.mjs';
 const names={meaning:'Read & understand',cloze:'Choose in context',listening:'Listen for meaning',production:'Write Chinese'};
 export function pathwayHomePanel(state,act,esc){
  const mission=pathwayResume(state),stats=pathwayStats(state,mission.band);
@@ -42,7 +42,7 @@ function authoredLines(m,ui,question,act,esc){
   'The original source is hidden. Use the masked sentence in the exercise.'}</p></section>`;
 }
 function practiceSection(m,ui,act,esc){
- const q=pathwayQuestion(m.id,ui.mode),done=ui.feedback;
+ const q=pathwayQuestion(m.id,ui.mode),done=ui.feedback,transfer=pathwayIndependentTransfer(m);
  return `<section class="p29-practice"><div class="panel-heading"><div><p class="eyebrow">FOUR CONNECTED LEARNING SKILLS</p><h3>Apply the scene</h3></div><span class="muted">${ui.focus?'Focused independent practice':'Open-book teaching mode'}</span></div>
  <div class="p29-modes" role="group">${PATHWAY_MODES.map(mode=>act('pathway-mode',esc(names[mode]),'p29-mode '+(ui.mode===mode?'active':''),`data-mode="${mode}" aria-pressed="${ui.mode===mode}"`)).join('')}</div>
  <div class="p29-task"><p class="eyebrow">${esc(names[ui.mode])}</p><h4>${esc(q.prompt)}</h4>
@@ -51,6 +51,24 @@ function practiceSection(m,ui,act,esc){
  ${done?`<div class="p29-result ${done.correct&&!done.assisted?'correct':'needs-review'}" role="status"><strong>${done.correct&&!done.assisted?'Independent taught answer accepted':'Study this answer and the explanation'}</strong>
  <p>${esc(done.message||'Compare your answer with the original model.')}</p><h4 lang="zh-Hans">${esc(q.mode==='production'?m.writing.hanzi:q.mode==='listening'?m.lines[0].hanzi:q.mode==='cloze'?m.lines.find(l=>l.hanzi.includes(m.cloze))?.hanzi||m.lines[1].hanzi:m.lines[q.evidence?m.question.evidence:0].hanzi)}</h4>
  <p>${esc(q.explanation)}</p>${q.evidence?`<p class="p29-evidence">Evidence: ${esc(q.evidence.hanzi)} · ${esc(q.evidence.english)}</p>`:''}
+ <details class="p29-transfer"><summary>Use this Mandarin in a different situation · ungraded</summary>
+ <p><strong>Situation:</strong> ${esc(transfer.context)}</p>
+ <p><strong>Independent response:</strong> ${esc(transfer.task)}</p>
+ <p class="muted">Make an original Mandarin response that fits the <em>changed situation</em>, not a copy of the old dialogue. This optional work does not earn a grade or an official HSK result.</p>
+ <div class="p29-transfer-compose">
+ <label for="p29-transfer-draft">Your own Mandarin response · ungraded</label>
+ <textarea id="p29-transfer-draft" rows="4" maxlength="1200" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="用中文回应新的情境。">${esc(ui.transferDraft||'')}</textarea>
+ <div class="p29-transfer-draft-actions"><span id="p29-transfer-privacy" role="status">Private to this tab; never saved, graded, synchronized or uploaded. Copy it before leaving the mission.</span>
+ ${act('pathway-transfer-clear','Clear private response','button outline small','aria-controls="p29-transfer-draft"')}</div></div>
+ <details class="p29-transfer-witness"><summary>Reveal original Chinese examples after your response (not a model answer for the new situation)</summary>
+ <div class="p29-transfer-example"><p lang="zh-Hans">${esc(transfer.witness.hanzi)}</p><p>${ui.showPinyin?esc(transfer.witness.pinyin)+' · ':''}${ui.showEnglish?esc(transfer.witness.english):'Translation hidden in pathway settings'}</p>
+ ${act('speak','Hear original source','button outline small',`data-text="${esc(transfer.witness.hanzi)}"`)}
+ ${act('speak','Slower','button outline small',`data-text="${esc(transfer.witness.hanzi)}" data-rate="slow"`)}</div>
+ <div class="p29-transfer-example"><p lang="zh-Hans">${esc(transfer.contrast.hanzi)}</p><p>${ui.showPinyin?esc(transfer.contrast.pinyin)+' · ':''}${ui.showEnglish?esc(transfer.contrast.english):'Translation hidden in pathway settings'}</p>
+ ${act('speak','Hear original contrast','button outline small',`data-text="${esc(transfer.contrast.hanzi)}"`)}</div></details>
+ <fieldset class="p29-transfer-selfcheck"><legend>Self-check, not an assessment</legend>
+ ${transfer.selfCheck.map(item=>`<label><input type="checkbox" aria-label="${esc(item)}"><span>${esc(item)}</span></label>`).join('')}
+ </fieldset></details>
  <div class="button-row">${act('pathway-next-skill','Next skill →','button primary')}${act('pathway-next-mission','Next mission →','button outline')}</div></div>`:
  q.kind==='hanzi'?`<label class="p29-writing-label" for="pathway-write">Write the model in Simplified Chinese</label><textarea id="pathway-write" rows="3" placeholder="输入中文句子" autocomplete="off" autocapitalize="off" spellcheck="false">${esc(ui.typed)}</textarea>
  <div class="button-row">${act('pathway-answer','Check Chinese →','button primary',ui.typed.trim()?'':'disabled')}${act('pathway-hint','Show a Pinyin hint · assisted','button outline small')}${act('pathway-reveal','Reveal model · assisted','button outline small')}</div>`:
@@ -64,6 +82,8 @@ export function renderPathwayScreen(ui,act,esc,title,gated){
  const stats=pathwayStats(ui.learner,band.number);
  const plan=pathwayDailyRoute(ui.learner,band.number,ui.minutes);
  return `${title('PROGRESSIVE MANDARIN PATHWAY','Learn Chinese with a connected plan.','Nine app-authored study bands inspired by increasingly demanding communication tasks. No official HSK 3.0 syllabus mapping or exam certification is claimed.')}${gated()}
+ <div class="p29-quick-jump" role="group" aria-label="Current study mission shortcut"><span><strong>Current mission</strong><small>${esc(m.title)} · original band ${m.band}</small></span>
+ ${act('pathway-jump-current','Jump to the current Mandarin mission ↓','button primary','aria-controls="p29-current-mission"')}</div>
  <section class="simple-panel p29-disclosure"><strong>Original curriculum, not official HSK levels</strong><p>Band numbers organize these ${PATHWAY_MISSIONS.length} authored sample missions. Bands 7–9 are advanced exploration, not comprehensive advanced teaching or exam preparedness. You can freely access any band and your real character, word, grammar and reading histories remain separate.</p></section>
  <div class="p29-bands" role="group" aria-label="Choose a study band">${PATHWAY_BANDS.map(b=>{const d=pathwayStats(ui.learner,b.number);
  return act('pathway-band',`<span class="p29-band-number">${b.number}</span><strong>${esc(b.title)}</strong><small>${d.observedMissions} / ${d.missions} with independent meaning and writing answers</small>`,
@@ -79,7 +99,7 @@ export function renderPathwayScreen(ui,act,esc,title,gated){
  </section><div class="p29-mission-list"><h3>Four missions in this band</h3>
  ${PATHWAY_MISSIONS.filter(t=>t.band===band.number).map(t=>missionCard(t,ui.learner,act,esc,t.id===m.id)).join('')}</div>
  <div class="button-row">${act('pathway-prev-band','← Previous band','button outline small',band.number===1?'disabled':'')}${act('pathway-next-band','Next band →','button outline small',band.number===9?'disabled':'')}</div></aside>
- <article class="p29-lesson"><div class="p29-lesson-heading"><p class="eyebrow">ORIGINAL LEARNING MISSION ${m.id.toUpperCase()} · BAND ${m.band}</p>
+ <article class="p29-lesson" id="p29-current-mission" tabindex="-1"><div class="p29-lesson-heading"><p class="eyebrow">ORIGINAL LEARNING MISSION ${m.id.toUpperCase()} · BAND ${m.band}</p>
  <h2>${esc(m.title)}</h2><p>${esc(m.purpose)}${!ui.focus||ui.feedback?' · '+esc(m.teaching):''}</p>
  <div class="button-row">${act('pathway-focus',ui.focus?'Exit focused recall':'Start focused recall','button primary')}
  ${act('pathway-toggle-pinyin',ui.showPinyin?'Hide Pinyin':'Show Pinyin','button outline small')}
