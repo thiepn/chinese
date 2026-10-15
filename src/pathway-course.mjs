@@ -52,6 +52,42 @@ const distinctOptions=(correct,wrong,shift=0)=>{
  const arr=[correct,...new Set(wrong.filter(x=>x&&x!==correct))].slice(0,4);
  return [...arr.slice(shift%arr.length),...arr.slice(0,shift%arr.length)];
 };
+/** Source-linked changed-context production, unscored and without new task identities. */
+const TRANSFER_CONTEXTS=Object.freeze([
+ ['a newcomer','the first meeting','the person’s identity','a question that verifies the introduction'],
+ ['a classmate','a changing appointment','the arranged time','a request for confirmation'],
+ ['a visitor','two available choices','the reason for choosing','a question about the remaining options'],
+ ['a study group','a proposed group plan','the people who actually agreed','the next action still needing consent'],
+ ['a colleague','a changed circumstance','the original proposal and the new fact','a polite correction'],
+ ['a project partner','a provisional result','the evidence and its limitation','a justified next step'],
+ ['a public listener','an attributed claim','the source and its limitations','a qualified conclusion'],
+ ['an academic partner','competing interpretations','the evidence supporting each','an open question'],
+ ['a committee','an uncertain recommendation','the objection and uncertainty','a conditional decision']
+].map(row=>Object.freeze(row)));
+const TRANSFER_VARIATIONS=Object.freeze([
+ 'Explain the starting situation to someone who never heard the original exchange.',
+ 'Change the relevant person and time; avoid presenting the previous arrangement as current.',
+ 'One essential detail is unknown; ask for confirmation without inventing an answer.',
+ 'Correct another speaker’s misunderstanding before suggesting an appropriate action.'
+]);
+export function pathwayIndependentTransfer(mission){
+ const actual=findPathwayMission(mission?.id);
+ if(!actual)return null;
+ const [audience,setting,contrast,outcome]=TRANSFER_CONTEXTS[actual.band-1];
+ return Object.freeze({
+  missionId:actual.id,
+  context:'Speak or write to '+audience+' about '+setting+'. '+TRANSFER_VARIATIONS[actual.numberInBand-1],
+  task:'Apply the goal of this original scene: '+actual.purpose+' Distinguish '+contrast+' and finish with '+outcome+'.',
+  selfCheck:Object.freeze([
+   'Adapt the people and facts; do not repeat the source unchanged.',
+   'Keep facts, proposals and unknown details separate.',
+   'Make your follow-up action or question clear to the listener.'
+  ]),
+  witness:actual.lines[0],contrast:actual.lines[1],
+  authority:'optional-self-review-only',graded:false
+ });
+}
+
 export function pathwayQuestion(id,mode){
  const mission=findPathwayMission(id);if(!mission||!PATHWAY_MODES.includes(mode))return null;
  const task=byTask.get(pathwayTaskId(id,mode));
