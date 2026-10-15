@@ -456,3 +456,12 @@
 @media(max-width:900px){.c9-home-columns{grid-template-columns:minmax(0,1fr)}.c9-home-shortcut-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:610px){.c9-home{gap:11px}.c9-home-lead-grid{gap:10px}.c9-home-lead-grid>.c9-home-hero{grid-template-columns:minmax(0,1fr) 90px;min-height:0}.c9-home-lead-grid .c9-home-hero-copy{padding:17px 11px 17px 15px}.c9-home-lead-grid .c9-home-hero h2{font-size:22px}.c9-home-hero p{font-size:12px;line-height:1.45;margin-bottom:7px}.c9-home-hero-course{margin:8px 0 12px}.c9-home-hero-course .c9-home-progress-head span{font-size:9px}.c9-home-hero-actions{gap:7px}.c9-home-hero-actions .c9-button{padding-inline:10px;min-width:0;font-size:11px}.c9-home-hero-actions .c9-button--secondary{display:none}.c9-home-hero-seal{font-size:58px}.c9-home-hero-ink{font-size:9px;right:4px}.c9-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-home-metrics .c9-home-stat{padding:10px 12px}.c9-home-metrics .c9-home-stat:nth-child(2){border-right:0}.c9-home-metrics .c9-home-stat:nth-child(-n+2){border-bottom:1px solid var(--c9-line)}.c9-home-shortcut-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.c9-home-shortcut-grid .c9-home-route{font-size:10px;min-height:69px;padding:8px 6px}.c9-home-plan .c9-home-task-content>span{display:none}.c9-home-plan .c9-home-task{padding-block:8px}.c9-home-panel{padding:15px}}
 @media(max-width:365px){.c9-home-lead-grid>.c9-home-hero{grid-template-columns:minmax(0,1fr) 60px}.c9-home-hero-ink{display:none}.c9-home-hero-actions .c9-button{width:auto}.c9-home-shortcut-grid .c9-home-route>.c9-home-icon:first-child{width:18px;height:18px}}
+/* Exact-head Chromium repair: restore mobile grid placement after legacy row ordering. */
+@media(max-width:610px){
+ .c9-home-lead-grid>.c9-home-hero>.c9-home-hero-copy{grid-column:1;grid-row:1;min-width:0}
+ .c9-home-lead-grid>.c9-home-hero>.c9-home-art{grid-column:2;grid-row:1;border-left:1px solid var(--c9-line);border-bottom:0;min-height:0}
+ .c9-home-lead-grid .c9-home-hero-actions{flex-direction:row;align-items:center}
+ .c9-home-lead-grid .c9-home-task{grid-template-columns:24px minmax(0,1fr) auto;gap:7px}
+ .c9-home-lead-grid .c9-home-task .c9-button{grid-column:3;justify-self:end;min-width:50px;min-height:40px;margin:0;padding-inline:8px}
+ .c9-home-lead-grid .c9-home-task-content{gap:2px}
+}
