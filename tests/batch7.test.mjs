@@ -87,5 +87,5 @@ test('app provides story sentence guidance, wordbook, adaptable speech and modul
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  for(const marker of ['story-help-line','word-bookmark','open-wordbook','speech-rate','Find evidence','Link the ideas','lessonConnections','visibleExploreResults'])assert.ok(app.includes(marker),marker);
- assert.ok(sw.includes('context-lab.mjs'));assert.ok(sw.includes('working-v53'));
+ assert.ok(sw.includes('context-lab.mjs'));assert.ok(sw.includes('working-v54'));
 });
