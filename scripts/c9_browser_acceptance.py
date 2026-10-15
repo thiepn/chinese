@@ -159,6 +159,16 @@ def main():
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     if args.artifacts:
                         page.screenshot(path=str(args.artifacts/("c9-47-character-"+str(width)+".png")),full_page=True)
+                    # Home must obey the same source Pinyin visibility setting
+                    # as native Lesson and Character Study.
+                    open_route(page,"settings")
+                    page.locator('input[data-setting="showPinyin"]').uncheck()
+                    open_route(page,"today")
+                    example=page.locator(".c9-home-source-preview")
+                    if not example.locator('[lang="zh-Hans"]').count():
+                        raise AssertionError("Pinyin preference hid Chinese text")
+                    if example.locator("small").count():
+                        raise AssertionError("Home leaked Pinyin after learner disabled it")
                     return "Original next-lesson Home, native Lesson jumps, Character Study source examples and writing at "+str(width)+"px"
                 check("C9-47 source study surfaces "+str(width),source_led_surfaces)
                 ctx.close()
