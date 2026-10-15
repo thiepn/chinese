@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -24,7 +24,14 @@ if(!html.includes('src="./startup.mjs"')||!html.includes('href="./styles-startup
 if((html.match(/rel="stylesheet"/g)||[]).length!==1)
  throw new Error('More than one render-blocking stylesheet in production');
 const js=await readFile(join(dist,'startup.mjs'),'utf8');
-if(js.length>=2200000)throw new Error('Production startup bundle exceeds the 2.2MB uncompressed guard');
+const originalNames=(await readdir(join(root,'src'))).filter(name=>name.endsWith('.mjs'));
+const sourceTotal=(await Promise.all(originalNames.map(name=>stat(join(root,'src',name))))).reduce((sum,meta)=>sum+meta.size,0);
+if(js.length>=sourceTotal)
+ throw new Error('Bundled JavaScript is not smaller than the original source modules');
+const cssBytes=(await readFile(join(dist,'styles-startup.css'))).length;
+console.log('Production startup: '+Math.round(js.length/1024)+' KiB JS and '+
+ Math.round(cssBytes/1024)+' KiB CSS; original flat MJS source '+
+ Math.round(sourceTotal/1024)+' KiB; one stylesheet and one script request');
 if(DEMO_LESSONS.some(x=>x.officialHskLevel!==null))throw new Error('Demo content incorrectly claims HSK status');
 if((await readdir(dist)).includes('node_modules'))throw new Error('External dependencies bundled');
 console.log(`PASS: ${Object.keys(manifest).length} built assets verified, shell/offline guard present, ${DEMO_LESSONS.length} non-HSK demo lessons`);
