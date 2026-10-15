@@ -987,7 +987,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     page.locator(".c9-home-hero").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
-                    page.locator(".c9-learn-workspace").wait_for(state="visible")
+                    page.locator(".c9-discovery").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
                     page.locator(".c9-character-glyph").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
