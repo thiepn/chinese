@@ -112,6 +112,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('course-lesson','Guided Daily Journey →','c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"')+
   '</div></header>';
+ const introduction='<section class="c9-lesson-visual-entry" aria-label="Lesson introduction and learning steps"><div class="c9-lesson-visual-copy"><span class="c9-eyebrow">TODAY’S ORIGINAL LESSON</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><h2>'+esc(lesson.meaning)+'</h2><p>'+esc(lesson.pinyin)+' · Character, useful words, sentence context and recall.</p><div class="c9-lesson-visual-actions">'+act('c9-lesson-jump','Start with character & sounds →','c9-button c9-button--primary','data-section="overview"')+'</div></div><div class="c9-lesson-visual-art" aria-hidden="true"><svg viewBox="0 0 480 180" preserveAspectRatio="xMidYMax slice"><path d="M0 161Q65 118 130 144T256 103T480 144V180H0Z" fill="currentColor" opacity=".13"/><path d="M40 169Q96 72 153 132Q196 90 260 117Q328 18 431 139" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M275 149h120m-104 0 15-18h72l14 18m-75-20 9-9h50l9 9m-29-7v-25m-41 52v-18m67 18v-18" fill="none" stroke="currentColor" opacity=".4"/></svg><span lang="zh-Hans">学</span></div></section>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';
  const teaching=composeNativeSections(nativeMarkup,act,esc);
  const status=renderC9NativeStatus(introduced?'success':'info',
@@ -122,7 +123,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
-  '<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
+  introduction+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
   '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
 }

@@ -347,3 +347,25 @@
  }
  .c9-writing-controls .c9-inline{width:100%;justify-content:space-between;}
 }
+
+/* Concept 9: character-first hierarchy using only verified existing source data. */
+.c9-character-page{gap:14px}
+.c9-character-heading{align-items:center;gap:8px}
+.c9-character-back{margin-bottom:6px}
+.c9-character-heading h1{font-size:clamp(23px,2.2vw,30px);margin:3px 0}
+.c9-character-top{gap:12px;grid-template-columns:minmax(0,1.65fr) minmax(250px,.8fr)}
+.c9-character-identity{grid-template-columns:minmax(145px,.75fr) minmax(0,1.25fr)}
+.c9-character-glyph-wrap{padding:14px}
+.c9-character-glyph{width:min(100%,220px)}
+.c9-character-identity-content{padding:17px 19px}
+.c9-character-note{margin-bottom:9px}
+.c9-character-quick-source{display:grid;gap:9px;width:100%;margin:7px 0 13px;padding:10px 0;border-block:1px solid var(--c9-line)}
+.c9-character-quick-source>div{display:grid;justify-items:start;gap:4px;min-width:0}
+.c9-character-quick-source strong{font:500 18px/1.5 var(--c9-hanzi-display)}
+.c9-character-quick-source small{font-size:11px;line-height:1.5;color:var(--c9-sub)}
+.c9-character-quick-words{display:flex;gap:8px;flex-wrap:wrap}
+.c9-character-quick-words span{background:var(--c9-surface-2);border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:2px 8px;font:500 16px/1.5 var(--c9-hanzi-display)}
+.c9-character-quick-source .c9-button{min-height:30px;padding:3px 6px;font-size:11px}
+.c9-character-tabs{gap:18px}
+@media(max-width:900px){.c9-character-top{grid-template-columns:minmax(0,1fr)}.c9-character-identity{grid-template-columns:minmax(150px,.7fr) minmax(0,1.3fr)}.c9-character-evidence{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.c9-character-heading{align-items:start}.c9-character-heading h1{font-size:22px}.c9-character-heading p:last-child{display:none}.c9-character-neighbors{gap:5px}.c9-character-neighbors .c9-button{font-size:11px;min-height:38px}.c9-character-identity{grid-template-columns:minmax(0,1fr)}.c9-character-glyph-wrap{padding:10px 12px;gap:4px}.c9-character-glyph{width:min(190px,100%);font-size:115px}.c9-character-identity-content{padding:13px 16px}.c9-character-identity-content h2{font-size:24px;margin:5px 0}.c9-character-pinyin{margin:0 0 5px}.c9-character-note{margin-bottom:5px}.c9-character-hero-actions{margin:0}.c9-character-hero-actions .c9-button{min-height:44px}.c9-character-evidence{grid-template-columns:minmax(0,1fr)}.c9-character-quick-source{gap:7px;margin:5px 0}.c9-character-seal{font-size:9px}}

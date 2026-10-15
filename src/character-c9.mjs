@@ -74,8 +74,8 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
  const words=wordLinks(lesson),related=relationLessons(lesson,words),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
-  '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1>Study a character in depth</h1>'+
-  '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
+  '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1>Character Study</h1>'+
+  '<p>One character. Pronunciation, useful words and sentences in context.</p></div>'+
   '<div class="c9-character-neighbors">'+
   (before?act('c9-character-open','← Previous','c9-button c9-button--secondary c9-button--small','data-id="'+txt(before.id,esc)+'"'):'<span>First lesson</span>')+
   (after?act('c9-character-open','Next →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(after.id,esc)+'"'):'<span>Final lesson</span>')+
@@ -87,6 +87,9 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<h2 id="c9-character-name">'+txt(lesson.meaning,esc)+'</h2>'+
   '<p class="c9-character-pinyin">'+(showPinyin?txt(lesson.pinyin,esc):'Pinyin hidden in settings')+'</p>'+
   '<p class="c9-character-note">'+txt(lesson.note,esc)+'</p>'+
+  '<div class="c9-character-quick-source" aria-label="Original words and first example">'+
+  '<div><span class="c9-eyebrow">RELATED WORDS</span><div class="c9-character-quick-words">'+words.slice(0,3).map(w=>'<span lang="zh-Hans">'+txt(w.hanzi,esc)+'</span>').join('')+'</div>'+act('c9-character-jump','Study words →','c9-button c9-button--quiet c9-button--small','data-section="vocabulary"')+'</div>'+
+  (sentences.length?'<div><span class="c9-eyebrow">IN A SENTENCE</span><strong lang="zh-Hans">'+txt(sentences[0].s.hanzi,esc)+'</strong><small>'+txt(sentences[0].s.english,esc)+'</small>'+act('c9-character-jump','Read examples →','c9-button c9-button--quiet c9-button--small','data-section="sentences"')+'</div>':'')+'</div>'+
   '<div class="c9-character-hero-actions">'+act('speak',icon('audio')+'Hear the character','c9-button c9-button--primary','data-text="'+txt(lesson.hanzi,esc)+'"')+
   act('c9-character-lesson',icon('book')+'Full lesson','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+
   act('practice-lesson',icon('repeat')+'Recall practice','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div>'+

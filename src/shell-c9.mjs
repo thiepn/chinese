@@ -53,6 +53,8 @@ export function syncC9Shell(route,{due=0,storageReady=true}={}){
     storage.textContent=storageReady?'Local learning record':'Storage unavailable';
     storage.dataset.status=storageReady?'ready':'unavailable';
   }
+  const pathways=document.querySelector('.c9-sidebar .c9-sidebar-study-more');
+  if(pathways&&pathways.querySelector('[data-route="'+route+'"]'))pathways.open=true;
   const details=document.querySelector('.c9-sidebar .more-tools');
   if(details&&details.querySelector('[data-route="'+route+'"]'))details.open=true;
 
