@@ -110,7 +110,7 @@ def main():
                     record(name,"FAIL",type(exc).__name__+": "+str(exc))
                     return False
             for route in ["today","learn","character/demo-01","review","practice",
-                          "wordbook","grammar","sentences","stories","dialogues",
+                          "wordbook","grammar","sentences","stories","dialogues","writing",
                           "progress","settings","pinyin","find"]:
                 ctx,page,errors=session()
                 def route_check():
@@ -296,6 +296,76 @@ def main():
                             page.screenshot(path=str(args.artifacts/(label+"-"+route+".png")),full_page=True)
                         return str(width)+"x"+str(height)+" no document overflow"
                     check(label+" "+route+" responsive",layout)
+                ctx.close()
+            # Original P43: deliberately synthetic writing, held in tab memory.
+            ctx,page,errors=session()
+            def private_writing():
+                open_route(page,"writing")
+                page.locator('[data-action="p43-step"][data-step="compose"]').first.click()
+                original="第一段：我学习中文。第二段：我根据原文修改解释。"
+                exported="第一段：我学习中文。第二段：我检查资料后再写。"
+                unsent="这段文字不应该被自动覆盖。"
+                page.locator("#p43-draft").fill(original)
+                page.locator('[data-action="p43-save"]').click()
+                page.locator("#p43-draft").fill(exported)
+                with page.expect_download() as capture:
+                    page.locator('[data-action="c9-writing-backup-export"]').click()
+                downloaded_json=Path(capture.value.path()).read_text(encoding="utf-8")
+                record_data=json.loads(downloaded_json)
+                if record_data.get("format")!="thiepn-chinese-p43-writing":
+                    raise AssertionError("Wrong private P43 export format")
+                if record_data.get("draft")!=exported or record_data.get("revisions")!=[original]:
+                    raise AssertionError("Original draft and revision absent from private export")
+                page.locator("#p43-draft").fill(unsent)
+                disclosure=page.locator("details.c9-writing-backup-paste")
+                if not disclosure.evaluate("(e)=>e.open"):
+                    disclosure.locator("summary").click()
+                page.locator("#c9-writing-backup-paste").fill(downloaded_json)
+                page.locator('[data-action="c9-writing-backup-import-paste"]').click()
+                page.locator("#c9-writing-pending").wait_for(state="visible")
+                if page.locator("#p43-draft").input_value()!=unsent:
+                    raise AssertionError("Unconfirmed import overwrote private draft")
+                page.locator('[data-action="p43-stay"]').first.click()
+                if page.locator("#p43-draft").input_value()!=unsent:
+                    raise AssertionError("Cancelled import lost private draft")
+                disclosure=page.locator("details.c9-writing-backup-paste")
+                if not disclosure.evaluate("(e)=>e.open"):
+                    disclosure.locator("summary").click()
+                page.locator("#c9-writing-backup-paste").fill(downloaded_json)
+                page.locator('[data-action="c9-writing-backup-import-paste"]').click()
+                page.locator("#c9-writing-pending").wait_for(state="visible")
+                page.locator('[data-action="p43-switch-confirm"]').first.click()
+                if page.locator("#p43-draft").input_value()!=exported:
+                    raise AssertionError("Confirmed import did not restore original private writing")
+                page.locator('[data-action="p43-next"]').click()
+                page.locator("#c9-writing-pending").wait_for(state="visible")
+                page.locator('[data-action="p43-stay"]').first.click()
+                if page.locator("#p43-draft").input_value()!=exported:
+                    raise AssertionError("Cancelled topic change lost original writing")
+                other=ctx.new_page()
+                open_route(other,"writing")
+                other.locator('[data-action="p43-step"][data-step="compose"]').first.click()
+                if other.locator("#p43-draft").input_value():
+                    raise AssertionError("P43 private writing was saved outside its source tab")
+                other.close()
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Private JSON download, preview/cancel, confirmed restore, topic guard, tab-only custody"
+            check("P43 private writing export/import/cancel",private_writing)
+            ctx.close()
+            for width,height,mobile in [(320,700,True),(640,360,False)]:
+                ctx,page,errors=session(width,height,mobile)
+                def writing_layout():
+                    open_route(page,"writing")
+                    page.locator('[data-action="p43-step"][data-step="compose"]').first.click()
+                    dimensions=page.evaluate("()=>[document.documentElement.scrollWidth,innerWidth]")
+                    if dimensions[0]>dimensions[1]+4:
+                        raise AssertionError("Original writing screen overflow "+str(dimensions))
+                    rect=page.locator("#p43-draft").bounding_box()
+                    if not rect or rect["x"]<0 or rect["x"]+rect["width"]>width+4:
+                        raise AssertionError("Original writing editor clipped from viewport")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return str(width)+"x"+str(height)+" original editor visible"
+                check("P43 "+str(width)+"x"+str(height)+" responsive",writing_layout)
                 ctx.close()
             ctx,page,errors=session()
             def offline():
