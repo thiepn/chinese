@@ -120,6 +120,57 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-50: verify the exact authored source can move between the
+            # real Home, Lesson, indexed Wordbook, Character and Reader.
+            # This is navigation only: no synthetic grades, strokes or saves.
+            for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def p9_source_journey():
+                    open_route(page,"today")
+                    actions=page.locator(".c9-home-source-actions")
+                    actions.wait_for(state="visible")
+                    if actions.locator('[data-action="hub-lesson"]').count()!=1:
+                        raise AssertionError("Home lost source-exact complete lesson handoff")
+                    actions.locator('[data-action="c9-character-open"]').click()
+                    page.wait_for_function("()=>location.hash==='#/character/demo-01'")
+                    word=page.locator(".c9-character-sample-words [data-action='lookup-word']").first
+                    word.wait_for(state="visible")
+                    word.click()
+                    page.wait_for_function("()=>location.hash==='#/explore'")
+                    if not page.locator("main").count():raise AssertionError("Original indexed word view absent")
+                    open_route(page,"character/demo-01")
+                    page.locator(".c9-character-sample-links [data-action='c9-character-reader']").click()
+                    page.wait_for_function("()=>location.hash==='#/reader'")
+                    if not page.locator("#app-content").inner_text().strip():
+                        raise AssertionError("Original contextual Reader empty")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    preview=page.locator(".c9-lesson-source-preview")
+                    preview.wait_for(state="visible")
+                    start=preview.locator(".c9-lesson-preview-toolbar [data-action='c9-lesson-jump']")
+                    start.click()
+                    if not page.locator("#c9-lesson-overview").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Start teaching shortcut did not focus the original lesson")
+                    preview.locator(".c9-lesson-preview-word [data-action='lookup-word']").first.click()
+                    page.wait_for_function("()=>location.hash==='#/explore'")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    page.locator(".c9-lesson-header-actions [data-action='c9-character-reader']").click()
+                    page.wait_for_function("()=>location.hash==='#/reader'")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Original Reader overflow after source handoff")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (1440,390):
+                        open_route(page,"character/demo-01")
+                        page.screenshot(path=str(args.artifacts/("c9-50-character-"+str(width)+".png")),full_page=True)
+                        open_route(page,"learn")
+                        page.locator('[data-action="c9-lesson-open"]').first.click()
+                        page.screenshot(path=str(args.artifacts/("c9-50-lesson-"+str(width)+".png")),full_page=True)
+                        open_route(page,"today")
+                        page.screenshot(path=str(args.artifacts/("c9-50-home-"+str(width)+".png")),full_page=True)
+                    return "Real original Home→Character→Wordbook→Reader and Lesson stage/word/Reader source handoff "+str(width)+"px"
+                check("C9-50 P9 authentic source journey "+str(width),p9_source_journey)
+                ctx.close()
             # C9-49 — real source-linked independent communication through
             # the existing P29 attempt writer, without private draft persistence.
             for width,height,mobile in ((1440,900,False),(390,844,True),(320,700,True)):
