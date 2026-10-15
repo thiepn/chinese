@@ -54,11 +54,21 @@ function practiceSection(m,ui,act,esc){
  <details class="p29-transfer"><summary>Use this Mandarin in a different situation · ungraded</summary>
  <p><strong>Situation:</strong> ${esc(transfer.context)}</p>
  <p><strong>Independent response:</strong> ${esc(transfer.task)}</p>
- <p class="muted">Try speaking aloud or composing a private response. This optional task stores no answers, creates no grades and makes no official HSK claim.</p>
- <details><summary>Compare original Chinese source after your attempt</summary>
- <p lang="zh-Hans">${esc(transfer.witness.hanzi)}</p><p>${esc(transfer.witness.pinyin)} · ${esc(transfer.witness.english)}</p>
- <p lang="zh-Hans">${esc(transfer.contrast.hanzi)}</p><p>${esc(transfer.contrast.pinyin)} · ${esc(transfer.contrast.english)}</p></details>
- <h5>Self-check, not an assessment</h5><ul>${transfer.selfCheck.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></details>
+ <p class="muted">Make an original Mandarin response that fits the <em>changed situation</em>, not a copy of the old dialogue. This optional work does not earn a grade or an official HSK result.</p>
+ <div class="p29-transfer-compose">
+ <label for="p29-transfer-draft">Your own Mandarin response · ungraded</label>
+ <textarea id="p29-transfer-draft" rows="4" maxlength="1200" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="用中文回应新的情境。">${esc(ui.transferDraft||'')}</textarea>
+ <div class="p29-transfer-draft-actions"><span id="p29-transfer-privacy" role="status">Private to this tab; never saved, graded, synchronized or uploaded. Copy it before leaving the mission.</span>
+ ${act('pathway-transfer-clear','Clear private response','button outline small','aria-controls="p29-transfer-draft"')}</div></div>
+ <details class="p29-transfer-witness"><summary>Reveal original Chinese examples after your response (not a model answer for the new situation)</summary>
+ <div class="p29-transfer-example"><p lang="zh-Hans">${esc(transfer.witness.hanzi)}</p><p>${ui.showPinyin?esc(transfer.witness.pinyin)+' · ':''}${ui.showEnglish?esc(transfer.witness.english):'Translation hidden in pathway settings'}</p>
+ ${act('speak','Hear original source','button outline small',`data-text="${esc(transfer.witness.hanzi)}"`)}
+ ${act('speak','Slower','button outline small',`data-text="${esc(transfer.witness.hanzi)}" data-rate="slow"`)}</div>
+ <div class="p29-transfer-example"><p lang="zh-Hans">${esc(transfer.contrast.hanzi)}</p><p>${ui.showPinyin?esc(transfer.contrast.pinyin)+' · ':''}${ui.showEnglish?esc(transfer.contrast.english):'Translation hidden in pathway settings'}</p>
+ ${act('speak','Hear original contrast','button outline small',`data-text="${esc(transfer.contrast.hanzi)}"`)}</div></details>
+ <fieldset class="p29-transfer-selfcheck"><legend>Self-check, not an assessment</legend>
+ ${transfer.selfCheck.map(item=>`<label><input type="checkbox" aria-label="${esc(item)}"><span>${esc(item)}</span></label>`).join('')}
+ </fieldset></details>
  <div class="button-row">${act('pathway-next-skill','Next skill →','button primary')}${act('pathway-next-mission','Next mission →','button outline')}</div></div>`:
  q.kind==='hanzi'?`<label class="p29-writing-label" for="pathway-write">Write the model in Simplified Chinese</label><textarea id="pathway-write" rows="3" placeholder="输入中文句子" autocomplete="off" autocapitalize="off" spellcheck="false">${esc(ui.typed)}</textarea>
  <div class="button-row">${act('pathway-answer','Check Chinese →','button primary',ui.typed.trim()?'':'disabled')}${act('pathway-hint','Show a Pinyin hint · assisted','button outline small')}${act('pathway-reveal','Reveal model · assisted','button outline small')}</div>`:
