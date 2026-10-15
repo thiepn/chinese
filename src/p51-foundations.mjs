@@ -10,7 +10,10 @@ const triplet=v=>{const [hanzi,pinyin,english]=v.split('~');return Object.freeze
 export const P51_CHARACTERS=Object.freeze(raw.map((line,i)=>{
  const [hanzi,pinyin,meaning,category,words,examples,teaching,pitfall]=line.split('|');
  return Object.freeze({id:'p51-character-'+String(i+1).padStart(2,'0'),sequence:i+1,hanzi,pinyin,meaning,category,
-  words:Object.freeze(words.split(';').map(triplet)),examples:Object.freeze(examples.split(';').map(triplet)),
+  // Split only at the next complete Hanzi~Pinyin~English entry. A source
+  // gloss may itself contain a semicolon (e.g. 'approximately; probably').
+  words:Object.freeze(words.split(/;(?=[^;~|]+~[^;~|]+~)/).map(triplet)),
+  examples:Object.freeze(examples.split(';').map(triplet)),
   teaching,pitfall,source:'original-p51-authorial',officialHskLevel:null});
 }));
 export const P51_CHARACTER_ROWS=Object.freeze(P51_CHARACTERS.map(g=>Object.freeze([
