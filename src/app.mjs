@@ -3,7 +3,7 @@ import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
-import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
+import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,renderC9TypingPath,C9_WORD_FILTERS} from './libraries-c9.mjs';
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
@@ -512,6 +512,7 @@ function renderSentences(){
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
  return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
+  renderC9TypingPath(state,action,esc)+
   renderC9SentenceDirectory(state,action,esc)+
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
@@ -1955,6 +1956,19 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='sentence-grammar-filter'){if(!GRAMMAR_LESSONS.some(g=>g.id===id))return;
   libraryGrammar=id;libraryTopic='all';librarySource='all';libraryPage=0;libraryQuery='';return go('sentences');}
  
+ if(name==='c9-typing-start'){
+  if(!findLibrarySentence(id))return alertUser('Original sentence unavailable.','error');
+  // Use the existing P26–P40 native production assessment and the established
+  // unsent-response guard, not a new typing grader or grade event type.
+  if(!openLibrarySentence(id))return false;
+  libraryMode='production';libraryPracticeFocus=true;libraryAssisted=false;
+  libraryTyped='';libraryOrder=[];libraryFeedback=null;
+  libraryShowPinyin=false;libraryShowEnglish=true;
+  render();
+  root.querySelector('#c9-native-sentences')?.scrollIntoView({block:'start',behavior:'auto'});
+  root.querySelector('#sentence-library-entry')?.focus({preventScroll:true});
+  return true;
+ }
  if(name==='sentence-select')return openLibrarySentence(id);
  if(name==='sentence-prev-page'||name==='sentence-next-page'){
   const count=searchSentences({query:libraryQuery,topic:libraryTopic,area:libraryArea,
