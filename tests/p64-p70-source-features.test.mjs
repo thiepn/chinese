@@ -6,9 +6,10 @@ import {DEEP_NOTES} from '../src/lesson-guides.mjs';
 import {WORDS,findWord,sourceWordComparisons} from '../src/lexicon.mjs';
 import {freshState} from '../src/study.mjs';
 import {SENTENCE_LIBRARY,sentencePracticeId} from '../src/sentence-library.mjs';
+import {STORIES} from '../src/stories.mjs';
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {c9TypingRecommendations,renderC9TypingPath,c9WordCatalogResults} from '../src/libraries-c9.mjs';
-import {renderC9PersonalTextReader} from '../src/media-c9.mjs';
+import {renderC9PersonalTextReader,c9ReadingRecommendations,renderC9ReadingContinuation} from '../src/media-c9.mjs';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[c]));
@@ -57,6 +58,21 @@ test('P66 word library displays canonical contrasted words without new grading e
  assert.ok(html.includes('Compare original written words and readings'));
  assert.ok(html.includes('data-action="c9-word-open"'));
  assert.equal(JSON.stringify(state),before);
+});
+
+test('P67–P68 reading continuation prioritizes genuine wrong/assisted source evidence without inventing levels',()=>{
+ assert.ok(STORIES.length>4);
+ const state=freshState(),miss=STORIES[3];
+ const current=state.readingEvents||[];
+ current.push({id:'synthetic-reading',storyId:miss.id,mode:'comprehension',correct:false,assisted:false});
+ const before=JSON.stringify(state),items=c9ReadingRecommendations(state,{limit:4});
+ assert.equal(items.length,4);
+ assert.equal(items[0].story.id,miss.id,'Actual unresolved attempt appears first');
+ const html=renderC9ReadingContinuation(state,STORIES[0].id,act,esc);
+ assert.ok(html.includes(miss.title));
+ assert.ok(html.includes('data-action="c9-media-open-story"'));
+ assert.ok(html.includes('No estimated level, proficiency claim'));
+ assert.equal(JSON.stringify(state),before,'Reading discovery must not record new evidence');
 });
 
 test('P70 recommendations derive ONLY from original production sentenceEvents and prioritize retry',()=>{
