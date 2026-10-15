@@ -126,6 +126,15 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def pathway_transfer():
                     open_route(page,"pathway/path-01")
+                    jump=page.locator('[data-action="pathway-jump-current"]')
+                    jump.wait_for(state="visible")
+                    jump.click()
+                    mission=page.locator("#p29-current-mission")
+                    if not mission.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Original mission shortcut did not move keyboard focus")
+                    position=mission.bounding_box()
+                    if not position or position["y"]<0 or position["y"]>height*.55:
+                        raise AssertionError("Current mission remains buried under band list")
                     button=page.locator('[data-action="pathway-reveal"]').first
                     button.wait_for(state="visible")
                     button.click()
@@ -147,6 +156,8 @@ def main():
                     if checks.count()!=3: raise AssertionError("Three self-review criteria missing")
                     checks.first.check()
                     if not checks.first.is_checked():raise AssertionError("Native optional self-check not interactive")
+                    if args.artifacts and width in (1440,390):
+                        page.screenshot(path=str(args.artifacts/("c9-49-transfer-expanded-"+str(width)+".png")),full_page=True)
                     disclosure.locator('[data-action="pathway-transfer-clear"]').click()
                     if draft.input_value():
                         raise AssertionError("Ungraded source draft not cleared")
