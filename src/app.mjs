@@ -563,7 +563,7 @@ function renderToday(){
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false,
-   offlineShell:c9OfflineShell})+
+   offlineShell:c9OfflineShell,showPinyin:state.settings.showPinyin})+
   '<section class="c9-skills-home-cta" aria-label="Continue language skills"><div>'+
   '<strong>Connect characters, reading, dialogue and writing</strong>'+
   '<p>Choose one learning skill, continue with source-backed material, and return to the original native practice.</p></div>'+
