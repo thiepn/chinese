@@ -11,7 +11,10 @@ import {lessonSkillLedger} from './block-coach.mjs';
 
 const ASSESSMENTS=[];
 for(const [i,c] of SENSE_CASES.entries()) ASSESSMENTS.push(Object.freeze({id:`sense:${i}`,kind:'sense',skill:'context',origin:{type:'sense',id:c.id},hanzi:c.hanzi,context:c.hanzi,prompt:`In this sentence, what does ${c.target} mean?`,options:c.options,answer:c.answer,teaching:`${c.explanation} · ${c.pinyin}`}));
-for(const [i,t] of SENTENCE_TASKS.entries()) ASSESSMENTS.push(Object.freeze({id:`write:${i}`,kind:'writing',skill:'sentence',origin:t.storyId?{type:'reading',id:t.storyId}:{type:'sentence',id:t.id},context:t.english,prompt:'Reconstruct the original Chinese sentence exactly. Valid alternative translations are not assessed here.',answer:t.hanzi,teaching:t.pinyin}));
+for(const [i,t] of SENTENCE_TASKS.entries()) {
+ if(![t.hanzi,t.pinyin,t.english].every(v=>typeof v==='string'&&v.trim()))continue;
+ ASSESSMENTS.push(Object.freeze({id:`write:${i}`,kind:'writing',skill:'sentence',origin:t.storyId?{type:'reading',id:t.storyId}:{type:'sentence',id:t.id},context:t.english,prompt:'Reconstruct the original Chinese sentence exactly. Valid alternative translations are not assessed here.',answer:t.hanzi,teaching:t.pinyin}));
+}
 for(const [i,s] of STORIES.entries()){
  const line=s.lines[1];ASSESSMENTS.push(Object.freeze({id:`read:${i}`,kind:'reading',skill:'sentence',origin:{type:'reading',id:s.id},context:s.lines.map(l=>l.hanzi).join('  '),prompt:`Which Chinese sentence means “${line.english}”?`,options:s.lines.map(l=>l.hanzi),answer:line.hanzi,teaching:line.pinyin}));
 }
