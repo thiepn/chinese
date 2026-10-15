@@ -484,3 +484,36 @@
     .p30-filter.active,.c9-lesson-nav-button.is-current
   ) {forced-color-adjust:auto;}
 }
+
+
+/* C9-47 — distinct, readable editorial source surfaces in the existing dark
+   theme. No separate theme store, remote assets or light-only imagery. */
+:root[data-theme="dark"] .c9-home-source-preview,
+:root[data-theme="dark"] .c9-character-source-sample{
+ border-top-color:var(--c9-line-strong);
+}
+:root[data-theme="dark"] .c9-home-source-preview>strong,
+:root[data-theme="dark"] .c9-lesson-preview-grid strong[lang="zh-Hans"],
+:root[data-theme="dark"] .c9-character-sample-hanzi,
+:root[data-theme="dark"] .c9-character-sample-words strong{
+ color:var(--c9-ink)
+}
+:root[data-theme="dark"] .c9-home-source-preview>small,
+:root[data-theme="dark"] .c9-lesson-preview-grid small,
+:root[data-theme="dark"] .c9-character-sample-pinyin{color:var(--c9-sage)}
+:root[data-theme="dark"] .c9-home-art-caption{color:var(--c9-sage)}
+:root[data-theme="dark"] .c9-lesson-source-preview,
+:root[data-theme="dark"] .c9-lesson-preview-grid{
+ background:var(--c9-surface);border-color:var(--c9-line)
+}
+:root[data-theme="dark"] .c9-character-sample-words>span{
+ background:var(--c9-surface-2);border-color:var(--c9-line)
+}
+:root[data-theme="dark"] .c9-lesson-preview-grid>article{
+ border-color:var(--c9-line)
+}
+:root[data-theme="dark"] .c9-home-source-preview>span,
+:root[data-theme="dark"] .c9-lesson-preview-grid>article>span:first-child,
+:root[data-theme="dark"] .c9-character-sample-head .c9-eyebrow{
+ color:var(--c9-muted)
+}
