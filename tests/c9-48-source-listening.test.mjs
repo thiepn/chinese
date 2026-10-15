@@ -81,6 +81,6 @@ test('C9-48 printed glyph tracing remains reversible under the native P61–P63 
  assert.ok(src.includes("traceToggle.setAttribute('aria-pressed',String(traceVisible))"));
  assert.ok(src.includes('No verified stroke sequence, stroke count'));
  assert.ok(src.includes('never'));
- assert.ok(src.includes('ungraded, not saved'));
+ assert.ok(src.includes('not scored or saved'));
  assert.ok(!src.includes("gradeCard("));
 });
