@@ -374,6 +374,27 @@ def main():
                     return "original glyph visible near meaning at "+str(width)
                 check("C9-50 final glyph first fold "+str(width),character_first_fold)
                 ctx.close()
+            # Mobile-first fidelity: first native lesson stage remains in
+            # viewport; its adjacent-lesson pager is preserved at the bottom.
+            ctx,page,errors=session(390,844,True)
+            def mobile_original_lesson_fold():
+                open_route(page,"learn")
+                page.locator('[data-action="c9-lesson-open"]').first.click()
+                section=page.locator("#c9-lesson-overview").bounding_box()
+                if not section or section["y"]>764:
+                    raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
+                if not page.locator(".c9-lesson-bottom-nav [data-action]").count():
+                    raise AssertionError("Bottom original lesson pager missing")
+                if not page.locator('.c9-lesson-header-actions [data-action="c9-lesson-jump"]').is_visible():
+                    raise AssertionError("Primary native lesson action missing")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Lesson screen horizontal overflow")
+                if errors:raise RuntimeError("; ".join(errors[:2]))
+                if args.artifacts:
+                    page.screenshot(path=str(args.artifacts/"c9-final-original-mobile-fold.png"),full_page=False)
+                return "390px original teaching reaches first viewport without losing lesson controls"
+            check("C9-50 P9 original mobile lesson fold",mobile_original_lesson_fold)
+            ctx.close()
             # C9-48 — native source-led listening, device-voice lifecycle and
             # read-only source visibility. No synthetic scores or user speech.
             for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):

@@ -488,3 +488,15 @@
 
 /* C9-50 screenshot repair: grid child must be unpainted and unfocusable when its native disclosure is closed. */
 .c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}
+
+/* C9-50 visual acceptance: mobile first lesson should appear above fixed nav.
+   Keep native six sections, graded authorities, original copy and bottom pager. */
+@media(max-width:700px){
+ .c9-lesson-heading-main>.c9-lesson-title-row+p{font:400 12px/1.45 var(--c9-ui);color:var(--c9-sub);margin:7px 0 0}
+ .c9-lesson-course-position{margin-top:9px;padding:9px 11px;gap:5px}
+ .c9-lesson-header-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .c9-lesson-header-actions>.c9-lesson-pager{display:none}
+ .c9-lesson-header-actions>.c9-button[data-action="c9-lesson-jump"],
+ .c9-lesson-header-actions>.c9-button[data-action="course-lesson"]{grid-column:auto;min-width:0;min-height:44px;padding:9px 7px;font-size:11px;line-height:1.35}
+ .c9-lesson-resources{margin-bottom:10px}
+}
