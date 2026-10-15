@@ -18,6 +18,9 @@ test('C9-47 Home first fold uses original sentence and actual course progress',(
  assert.ok(html.includes('c9-home-source-preview'));
  assert.ok(html.includes(esc(example.hanzi)));
  assert.ok(html.includes(esc(example.english)));
+ const hidden=renderC9Home(state,act,esc,{storageReady:true,offline:false,offlineShell:'ready',showPinyin:false});
+ assert.ok(hidden.includes(esc(example.hanzi)));
+ assert.ok(!hidden.includes('<small>'+esc(example.pinyin)+'</small>'));
  assert.ok(html.includes('0 / '+DEMO_LESSONS.length));
  assert.ok(!html.includes('HSK 1 progress'));
  assert.equal(JSON.stringify(state),snapshot);
