@@ -120,6 +120,49 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # C9-46: screenshot-backed original desktop lesson overlap regression.
+            # The desktop vertical lesson rail must never paint across the
+            # adjacent native teaching panel; the mobile rail may scroll.
+            for width,height,mobile in [(1280,900,False),(1440,900,False),(1680,960,False),(390,844,True)]:
+                ctx,page,errors=session(width,height,mobile)
+                def lesson_hitboxes():
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    page.locator(".c9-lesson-layout").wait_for(state="visible")
+                    positions=page.evaluate("""() => {
+                      const left=document.querySelector('.c9-lesson-left');
+                      const main=document.querySelector('.c9-lesson-main');
+                      const buttons=[...document.querySelectorAll('.c9-lesson-left .c9-lesson-nav-button')];
+                      if(!left||!main||!buttons.length)return null;
+                      const r=e=>{const b=e.getBoundingClientRect();
+                        return {x:b.left,right:b.right,width:b.width,top:b.top,bottom:b.bottom}};
+                      return {left:r(left),main:r(main),buttons:buttons.map(r),
+                        columnMode:getComputedStyle(document.querySelector('.c9-lesson-layout')).gridTemplateColumns,
+                        overflow:document.documentElement.scrollWidth-innerWidth};
+                    }""")
+                    if not positions or len(positions["buttons"])<4:
+                        raise AssertionError("Native lesson sections missing")
+                    if positions["overflow"]>4:
+                        raise AssertionError("Original lesson page horizontal overflow")
+                    if not mobile:
+                        for b in positions["buttons"]:
+                            if b["x"]<positions["left"]["x"]-2 or b["right"]>positions["left"]["right"]+2:
+                                raise AssertionError("Desktop lesson navigation leaves its left column: "+str(positions))
+                        if positions["left"]["right"]>positions["main"]["x"]+2:
+                            raise AssertionError("Desktop navigation overlaps lesson main panel")
+                    else:
+                        if positions["main"]["top"]<positions["left"]["bottom"]-2:
+                            raise AssertionError("Mobile horizontal rail covers lesson content")
+                    target=page.locator(".c9-lesson-left .c9-lesson-nav-button").first
+                    target.focus()
+                    if not target.evaluate("(node)=>document.activeElement===node"):
+                        raise AssertionError("Lesson section cannot take keyboard focus")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (390,1440):
+                        page.screenshot(path=str(args.artifacts/("c9-46-lesson-"+str(width)+".png")),full_page=True)
+                    return "Native lesson rail clear of content and keyboard-focusable at "+str(width)+"px"
+                check("C9-46 lesson navigation hitboxes "+str(width),lesson_hitboxes)
+                ctx.close()
             ctx,page,errors=session()
             def dark():
                 open_route(page,"settings")
