@@ -147,6 +147,41 @@ export function renderC9ListeningWorkflow(dialogue,question,feedback,assisted,ac
   'Listening and playback do not automatically submit answers. Opening translation or transcript invokes the original assistance rules.')+
  '</p></section>';
 }
+/** P67–P68: source-only continuation using original passage IDs and observed
+ * independent readingEvents. A reading is never claimed as a certified HSK
+ * level, or completed by opening/previewing it. */
+export function c9ReadingRecommendations(state,{limit=4}={}){
+ const histories=new Map();
+ for(const e of state.readingEvents||[]){
+  if(!STORIES.some(s=>s.id===e.storyId))continue;
+  const old=histories.get(e.storyId)||{last:null,independent:false};
+  histories.set(e.storyId,{last:e,independent:old.independent||Boolean(e.correct&&!e.assisted)});
+ }
+ const saved=new Set(state.bookmarkedStories||[]);
+ return STORIES.map((story,index)=>{
+  const history=histories.get(story.id)||{last:null,independent:false};
+  const priority=history.independent?3:history.last?0:saved.has(story.id)?1:2;
+  return {story,history,priority,index};
+ }).sort((a,b)=>a.priority-b.priority||a.index-b.index)
+ .slice(0,Math.max(0,Math.min(16,Number.isInteger(limit)?limit:4)));
+}
+export function renderC9ReadingContinuation(state,currentId,act,esc){
+ const choices=c9ReadingRecommendations(state);
+ return '<section class="c9-reading-queue" aria-labelledby="c9-reading-queue-title">'+
+  '<div class="c9-reading-queue-head"><div><span class="c9-eyebrow">P67–P68 · ORIGINAL READING CONTINUATION</span>'+
+  '<h2 id="c9-reading-queue-title">Read next or repair a passage</h2>'+
+  '<p>Original editorial passages are ordered by actual reading history: unresolved attempts, saved unattempted texts, then other source texts. No estimated level, proficiency claim or completion award is generated.</p></div></div>'+
+  '<div class="c9-reading-queue-items">'+choices.map(({story,history})=>
+   '<article'+(story.id===currentId?' class="is-current"':'')+'><span class="c9-eyebrow">'+esc(passageKind(story))+
+   ' · '+story.lines.length+' sentences</span><h3>'+esc(story.title)+'</h3>'+
+   '<p>'+esc(story.theme)+'</p>'+
+   '<small>'+(history.independent?'Independent correct response recorded':history.last?
+    'Recorded wrong or assisted response · revisit':'No original reading response recorded')+'</small>'+
+   act('c9-media-open-story',story.id===currentId?'Return to current passage →':'Read original passage →',
+    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"')+'</article>').join('')+'</div>'+
+  '</section>';
+}
+
 export function renderC9ReadingHub(state,story,act,esc,options={}){
  const histories=state.readingEvents||[],attempted=new Set(histories.map(e=>e.storyId));
  const independent=new Set(histories.filter(e=>e.correct&&!e.assisted).map(e=>e.storyId));
@@ -170,6 +205,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
+ renderC9ReadingContinuation(state,story.id,act,esc)+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+
  catalogControls('reading',options,act,esc)+
