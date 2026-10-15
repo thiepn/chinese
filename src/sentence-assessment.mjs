@@ -19,5 +19,5 @@ export function sentenceAssessment(storyId,mode){const story=findStory(storyId);
 }
 export function validateSentenceAssessments(){for(const s of STORIES)for(const mode of SENTENCE_MODES){const q=sentenceAssessment(s.id,mode);
  if(!q||!q.answer||mode==='line-meaning'&&(q.options.length!==4||new Set(q.options).size!==4||!q.options.includes(q.answer))||
- mode==='line-order'&&(q.chunks.length!==3||q.chunks.join('')!==q.answer))throw Error('Invalid sentence exercise');
+ mode==='line-order'&&(q.chunks.length!==s.lines.length||q.chunks.length<3||q.chunks.join('')!==q.answer))throw Error('Invalid sentence exercise');
  }return true;}
