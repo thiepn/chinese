@@ -117,6 +117,33 @@ def main():
                 except Exception as exc:
                     record(name,"FAIL",type(exc).__name__+": "+str(exc))
                     return False
+
+            # Measure real compiled startup requests, not expected source names.
+            # CI local timing is diagnostic, not a device-wide time guarantee.
+            for width,height,mobile in ((390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def compiled_first_home():
+                    page.goto(args.base_url.rstrip("/")+"/#/today",wait_until="domcontentloaded")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    info=page.evaluate("""()=>{
+                      const paths=performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname);
+                      return {ms:Math.round(performance.now()),
+                        js:paths.filter(s=>s.endsWith('.mjs')),
+                        css:paths.filter(s=>s.endsWith('.css')),
+                        links:document.querySelectorAll('link[rel="stylesheet"]').length};
+                    }""")
+                    if info["js"]!=["/startup.mjs"] or info["css"]!=["/styles-startup.css"] or info["links"]!=1:
+                        raise AssertionError("Startup fetched legacy modules or styles: "+str(info))
+                    details=page.locator("details.c9-home-extra")
+                    inner=details.locator(".c9-home-extra-inner")
+                    if inner.inner_text().strip():
+                        raise AssertionError("Closed supplementary Home panels were rendered eagerly")
+                    details.locator("summary").click()
+                    page.wait_for_function("()=>document.querySelector('.c9-home-extra-inner')?.textContent?.trim().length>80")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return str(info["ms"])+"ms first Home at "+str(width)+"px; one script/stylesheet and lazy original teaching"
+                check("Compiled minimal Home boot "+str(width),compiled_first_home)
+                ctx.close()
             for route in ["today","learn","character/demo-01","review","practice",
                           "wordbook","grammar","sentences","stories","dialogues","writing",
                           "progress","settings","pinyin","find"]:
@@ -958,8 +985,13 @@ def main():
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
+                    page.locator(".c9-learn-workspace").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
+                    page.locator(".c9-character-glyph").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
-                    return "Service Worker reloaded the app offline"
+                    return "Service worker serves compiled original Home, lesson and character offline"
                 finally: ctx.set_offline(False)
             check("offline cached shell",offline)
             ctx.close()
