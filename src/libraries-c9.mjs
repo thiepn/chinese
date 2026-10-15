@@ -138,8 +138,8 @@ export function renderC9TypingPath(state,act,esc){
  const tasks=c9TypingRecommendations(state);
  const events=(state.sentenceEvents||[]).filter(e=>e.taskId?.endsWith(':production'));
  const correct=new Set(events.filter(e=>e.correct&&!e.assisted).map(e=>e.taskId));
- return '<section class="c9-typing-path" aria-labelledby="c9-typing-path-title">'+
-  '<header><p class="c9-eyebrow">P70 · ORIGINAL SENTENCE PRODUCTION</p><h2 id="c9-typing-path-title">Type Mandarin from meaning</h2>'+
+ return '<section class="c9-typing-path" aria-labelledby="c9-typing-path-title"><details><summary><span class="c9-eyebrow">P70 · ORIGINAL SENTENCE PRODUCTION</span><strong id="c9-typing-path-title">Type Mandarin from meaning</strong><span>Open independent typing pathway →</span></summary><div class="c9-typing-body">'+
+  '<header>'+
   '<p>Work through complete authored sentences, using the one existing Sentence Library production check. Independent focus hides the Chinese model until your answer. Successful answers are recorded by that native engine—not by this pathway.</p></header>'+
   '<div class="c9-typing-evidence"><strong>'+correct.size+' original sentences with an independently correct production answer</strong>'+
   '<span>'+events.length+' existing typed production checks, including assisted attempts and retries · not a certified writing level</span></div>'+
@@ -150,7 +150,7 @@ export function renderC9TypingPath(state,act,esc){
    ' · '+esc(s.id)+'</small>'+
    act('c9-typing-start',last&&last.correct&&!last.assisted?'Type again →':'Start typing →',
     'c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+'</article>').join('')+'</div>'+
-  '<p class="c9-library-disclaimer">Only the original taught model can be automatically matched. Other valid Chinese sentences may need human review. This is not a handwriting, HSK or free-composition grade.</p></section>';
+  '<p class="c9-library-disclaimer">Only the original taught model can be automatically matched. Other valid Chinese sentences may need human review. This is not a handwriting, HSK or free-composition grade.</p></div></details></section>';
 }
 
 export function renderC9SentenceDirectory(state,act,esc){
