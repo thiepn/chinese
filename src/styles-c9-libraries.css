@@ -634,3 +634,14 @@
 .c9-typing-cards .c9-button{min-height:44px;white-space:normal}
 @media(max-width:700px){.c9-typing-cards{grid-template-columns:minmax(0,1fr)}.c9-typing-body{padding:13px}.c9-typing-path>details>summary{padding:14px}}
 @media(forced-colors:active){.c9-typing-path,.c9-word-contrast{border-color:CanvasText}}
+
+
+/* Original P70 full-catalog controls, all based on existing source tasks/events. */
+.c9-typing-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.c9-typing-filters label{display:grid;gap:5px;min-width:0;font:600 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-typing-filters select{width:100%;max-width:100%;min-width:0;min-height:44px}
+.c9-typing-list-status{font:500 12px/1.5 var(--c9-ui);color:var(--c9-sub);margin:12px 0}
+.c9-typing-pages{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin:13px 0}
+.c9-typing-pages .c9-button{min-height:44px}
+.c9-typing-pages span{font:500 12px/1.4 var(--c9-ui);color:var(--c9-sub)}
+@media(max-width:580px){.c9-typing-filters{grid-template-columns:minmax(0,1fr)}}
