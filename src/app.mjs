@@ -1609,14 +1609,21 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-lesson-open'){
    if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
+   const targetSection=C9_LESSON_SECTIONS.some(s=>s.id===button.dataset.section)?button.dataset.section:null;
    if(route()==='learn'&&c9LearnDetail&&displayLessonId===id){
-    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
-    return true;
+    if(targetSection)return act({dataset:{action:'c9-lesson-jump',section:targetSection}});
+    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
    }
-   if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+   if(route()==='learn'&&c9LearnDetail&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
    if(route()!=='learn'&&!go('learn'))return false;
    displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
-   render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+   // Keep the requested native section through renderLearn's lesson-change reset.
+   c9LastLessonId=id;c9LessonSection=targetSection||'overview';
+   render();
+   if(targetSection){
+    const target=root.querySelector('#c9-lesson-'+targetSection);
+    if(target){target.scrollIntoView({block:'start'});target.focus({preventScroll:true});}
+   }else root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
    return true;
  }
  if(name==='c9-unit-open'){

@@ -64,3 +64,15 @@ test('P9 source translations are reversible without replacing the writing canvas
  assert.ok(src.includes('.c9-character-tabs [data-action='));
  assert.ok(src.includes('.c9-lesson-sections [data-action='));
 });
+
+test('P9 Home links the next authored character and sentence directly to the original lesson',()=>{
+ const html=renderC9Home(freshState(),act,esc);
+ const first=DEMO_LESSONS[0];
+ assert.ok(html.includes('data-action="c9-character-open"'));
+ assert.ok(html.includes('data-action="c9-lesson-open"'));
+ assert.ok(html.includes('data-id="'+esc(first.id)+'" data-section="context"'));
+ assert.ok(html.includes(esc(first.sentence.hanzi)));
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ assert.ok(app.includes("c9LastLessonId=id;c9LessonSection=targetSection||'overview'"));
+ assert.ok(app.includes("target.focus({preventScroll:true})"));
+});

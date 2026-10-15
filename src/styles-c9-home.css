@@ -489,3 +489,17 @@
 .c9-home-record[open] .c9-home-explore-chevron{transform:rotate(180deg)}
 .c9-home-record>.c9-home-metrics{border:0;border-top:1px solid var(--c9-line);border-radius:0}
 @media(max-width:700px){.c9-home-record>summary{padding:13px}.c9-home-record .c9-home-stat{padding:14px 12px}}
+
+/* P9 source-first Home: one-step original character and sentence handoffs. */
+.c9-home-source-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:10px;min-width:0}
+.c9-home-source-actions .c9-button{min-height:44px;white-space:normal;font-size:12px;flex:1 1 145px}
+.c9-home-hero-copy .c9-home-source-preview{padding-bottom:4px}
+.c9-home-art{isolation:isolate}
+.c9-home-mountains{color:var(--c9-green);opacity:.95}
+@media(max-width:700px){
+ .c9-home-source-actions{gap:6px}
+ .c9-home-source-actions .c9-button{flex:1 1 100%;justify-content:center}
+ .c9-home-hero-actions{width:100%}
+ .c9-home-hero-actions>.c9-button{flex:1 1 155px}
+}
+@media(prefers-reduced-motion:reduce){.c9-home-source-actions *{transition:none}}
