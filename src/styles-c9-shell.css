@@ -467,3 +467,18 @@
 .c9-sidebar-study-more>nav{padding:4px 0 5px 8px}
 .c9-sidebar-study-more>nav a{font-size:12px;min-height:38px}
 @media(prefers-reduced-motion:reduce){.c9-sidebar-study-more .c9-chevron{transition:none}}
+/* P9 mobile: one contextual row instead of a second page-height navigation. */
+@media(max-width:700px){
+ .c9-app-shell .c9-context-bar{flex-wrap:nowrap;align-items:center;gap:4px;padding:5px 6px;margin-bottom:9px;overflow:visible}
+ .c9-app-shell .c9-context-ident{display:none}
+ .c9-app-shell .c9-context-links{display:flex;flex:1 1 auto;min-width:0;flex-wrap:nowrap;gap:2px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-inline:contain}
+ .c9-app-shell .c9-context-links::-webkit-scrollbar{display:none}
+ .c9-app-shell .c9-context-link{flex:0 0 auto;min-height:38px;padding:7px 9px;white-space:nowrap;font-size:11px}
+ .c9-app-shell .c9-context-more{order:0;flex:0 0 auto}
+ .c9-app-shell .c9-context-more>summary{width:auto;justify-content:center;min-height:38px;padding:7px}
+ .c9-app-shell .c9-context-search{flex:0 0 auto;min-height:38px;padding:7px;margin:0}
+ .c9-app-shell .c9-context-bar:has(.c9-context-more[open]){flex-wrap:wrap}
+ .c9-app-shell .c9-context-more[open]{flex:1 1 100%;order:3}
+ .c9-app-shell .c9-context-more[open]>summary{width:100%;justify-content:space-between}
+ .c9-app-shell .c9-context-more-links{position:static;width:100%;max-width:none;z-index:auto}
+}
