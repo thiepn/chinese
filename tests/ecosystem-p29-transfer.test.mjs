@@ -41,6 +41,10 @@ test('C9-49 all 36 canonical P29 missions expose source-linked private Mandarin 
    'private response','pathway-transfer-clear','p29-transfer-selfcheck',
    'p29-transfer-witness','aria-label="'])assert.ok(html.includes(required),m.id+': '+required);
   assert.ok(html.includes('我的回答'));
+  assert.ok(html.includes('data-action="pathway-jump-current"'));
+  assert.ok(html.includes('id="p29-current-mission"'));
+  assert.ok(html.indexOf('p29-quick-jump')<html.indexOf('p29-bands'));
+
   assert.ok(html.includes('data-text="'+esc(m.lines[0].hanzi)+'"'),m.id);
   assert.ok(html.includes('data-rate="slow"'));
   assert.ok(html.includes('not a model answer for the new situation'));
