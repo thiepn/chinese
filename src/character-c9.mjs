@@ -8,7 +8,7 @@ import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {WORDS} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {findP31Guide} from './p31-foundations.mjs';
-import {guideFor} from './lesson-guides.mjs';
+import {guideFor,DEEP_NOTES} from './lesson-guides.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
@@ -187,9 +187,23 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
     '</article>').join('')+'</div>'+
   '<div class="c9-character-inline-actions c9-unified-actions"><a class="c9-button c9-button--secondary" href="#/sentences">Sentence library</a>'+
   act('c9-character-reader','Sentence comprehension →','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div></section>';
+ const authoredNote=DEEP_NOTES[lesson.hanzi]?.[2]||null;
+ const authoredContrastWords=authoredNote?WORDS.filter(w=>w.hanzi.length>=2&&
+  authoredNote.includes(w.hanzi)&&w.senses.length).slice(0,5):[];
+ const authoredContrast=authoredNote?'<div class="c9-authored-contrast"><div>'+
+  '<span class="c9-eyebrow">P65 · ORIGINAL AUTHOR COMPARISON</span>'+
+  '<h3>Compare the taught forms, not imagined character structure</h3>'+
+  '<p>'+txt(authoredNote,esc)+'</p>'+
+  '<small>Original authored teaching note for '+txt(lesson.hanzi,esc)+'. This does not assert visually confusable forms, shared radicals or etymology.</small></div>'+
+  (authoredContrastWords.length?'<div class="c9-authored-contrast-words">'+authoredContrastWords.map(w=>
+   '<article><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong>'+
+   '<span>'+txt(w.pinyin,esc)+' · '+txt(w.senses.slice(0,2).join(' / '),esc)+'</span>'+
+   act('lookup-word','Open original entry →','c9-button c9-button--secondary c9-button--small',
+    'data-id="'+txt(w.key,esc)+'"')+'</article>').join('')+'</div>':'')+'</div>':'';
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
   '<p>Relationships below only indicate that both characters occur in the same indexed whole word; no radical, etymological or semantic relationship is asserted.</p>'+
+  authoredContrast+
   (related.length?'<div class="c9-character-related">'+related.map(({other,words:via})=>
     '<article><div><strong lang="zh-Hans">'+txt(other.hanzi,esc)+'</strong>'+
     '<span>'+txt(other.pinyin,esc)+' · '+txt(other.meaning,esc)+'</span>'+
