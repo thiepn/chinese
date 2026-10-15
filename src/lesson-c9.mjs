@@ -6,7 +6,7 @@
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
-import {renderC9NativeStatus} from './ui-c9.mjs';
+import {renderC9NativeStatus,renderC9ListeningDeck} from './ui-c9.mjs';
 
 export const C9_LESSON_SECTIONS=Object.freeze([
  {id:'overview',name:'Character & sounds',description:'Meaning, Mandarin pronunciation and tone contrasts'},
@@ -108,6 +108,11 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    (example?'<article class="c9-lesson-preview-sentence"><span>03 · CONTEXT SENTENCE</span><strong lang="zh-Hans">'+esc(example.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(example.pinyin)+'</small>':'')+'<p>'+esc(example.english)+'</p>'+
    act('c9-lesson-jump','Read in context →','c9-button c9-button--secondary c9-button--small','data-section="context" aria-controls="c9-lesson-context"')+'</article>':'')+
   '</div><p class="c9-lesson-preview-disclaimer">These examples are teaching material. Browsing them never introduces a lesson or records a grade.</p></section>';
+ const sourceAudio=renderC9ListeningDeck([
+  {label:'Character',hanzi:lesson.hanzi,pinyin:lesson.pinyin,english:lesson.meaning},
+  ...(words[0]?[{label:'Whole word',hanzi:words[0].hanzi,pinyin:words[0].pinyin,english:words[0].english}]:[]),
+  ...(example?[{label:'Context sentence',...example}]:[])
+ ],act,esc,{title:'Hear it, then read it',showPinyin});
  const heading='<header class="c9-lesson-header"><div class="c9-lesson-heading-main">'+
   act('c9-learn-back','← All lessons','c9-button c9-button--quiet c9-button--small')+
   '<p class="c9-eyebrow">UNIT '+String(group?.index??1).padStart(2,'0')+
@@ -130,7 +135,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   introduced?'Introduced · keep practising':'Learning is ready',
   introduced?'Scheduled independent recall is tracked separately from this lesson.':
    'Review prompts are registered only when you explicitly introduce the lesson in the final section.');
- return '<div class="c9-lesson-workspace">'+heading+preview+
+ return '<div class="c9-lesson-workspace">'+heading+preview+sourceAudio+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
