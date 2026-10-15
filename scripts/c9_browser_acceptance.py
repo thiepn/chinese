@@ -120,6 +120,122 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # P9 native sidebar and direct real course-unit discovery.
+            # Uses actual local route rendering and only synthetic browser state.
+            ctx,page,errors=session(1440,900,False)
+            def native_pathways():
+                open_route(page,"today")
+                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more")
+                if pathways.count()!=1: raise AssertionError("Study pathways disclosure missing")
+                if pathways.evaluate("(e)=>e.open"): raise AssertionError("Pathways should start closed on Home")
+                pathways.locator("summary").focus()
+                if not pathways.locator("summary").evaluate("(e)=>document.activeElement===e"):
+                    raise AssertionError("Disclosure summary cannot receive keyboard focus")
+                pathways.locator("summary").press("Enter")
+                if not pathways.evaluate("(e)=>e.open"):
+                    raise AssertionError("Keyboard Enter did not reveal original study routes")
+                for route in ("skills","writing","advanced","pathway","plan"):
+                    target=pathways.locator('[data-route="'+route+'"]')
+                    if target.count()!=1 or not target.is_visible():
+                        raise AssertionError("Study route missing from disclosed menu: "+route)
+                open_route(page,"skills")
+                if not pathways.evaluate("(e)=>e.open"):
+                    raise AssertionError("Active study route did not reopen disclosure")
+                if not pathways.locator('[data-route="skills"]').get_attribute("aria-current")=="page":
+                    raise AssertionError("Active study route lost selected state")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Five native study routes accessible by keyboard and auto-revealed on active route"
+            check("P9 desktop native pathways",native_pathways)
+            ctx.close()
+            for width,height in ((390,844),(320,700)):
+                ctx,page,errors=session(width,height,True)
+                def compact_home_context():
+                    open_route(page,"today")
+                    if not page.locator(".c9-home>.c9-home-roadmap").is_visible():
+                        raise AssertionError("Actual course units still hidden in collapsed Home panel")
+                    course=page.locator(".c9-home>.c9-home-roadmap")
+                    if course.locator(".c9-home-roadmap-unit").count()<1:
+                        raise AssertionError("Source course unit suggestions absent")
+                    # Home deliberately omits the redundant contextual rail.
+                    # Study routes retain the compact native related-destinations row.
+                    open_route(page,"learn")
+                    context=page.locator(".c9-context-bar").first
+                    if context.count()!=1: raise AssertionError("Native contextual toolbar missing")
+                    bounds=context.bounding_box()
+                    if not bounds or bounds["width"]>width+4 or bounds["height"]>115:
+                        raise AssertionError("Context toolbar too large on mobile: "+str(bounds))
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Mobile Home horizontal overflow")
+                    open_route(page,"character/demo-01")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Compact character header causes horizontal overflow")
+                    glyph=page.locator(".c9-character-glyph").first
+                    rect=glyph.bounding_box()
+                    if not rect or rect["y"]>900:
+                        raise AssertionError("Original character is buried under toolbar and hero")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts:
+                        page.screenshot(path=str(args.artifacts/("p9-navigation-character-"+str(width)+".png")),full_page=True)
+                    return "Original unit roadmap, short context row and visible character at "+str(width)+"px"
+                check("P9 mobile context and study roadmap "+str(width),compact_home_context)
+                ctx.close()
+            # C9-48 — native source-led listening, device-voice lifecycle and
+            # read-only source visibility. No synthetic scores or user speech.
+            for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_listening_journey():
+                    open_route(page,"today")
+                    home=page.locator(".c9-home-source-preview .c9-listening-deck")
+                    home.wait_for(state="visible")
+                    if home.locator('[data-action="speak"][data-rate="slow"]').count()!=1:
+                        raise AssertionError("Home slow listen unavailable")
+                    if not home.locator('[data-action="speech-stop"]').count():
+                        raise AssertionError("Home stop audio unavailable")
+                    open_route(page,"learn")
+                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    lesson=page.locator(".c9-lesson-workspace > .c9-listening-deck")
+                    lesson.wait_for(state="visible")
+                    if lesson.locator(".c9-listening-clip").count()!=3:
+                        raise AssertionError("Source-owned character, word and sentence audio stages missing")
+                    if lesson.locator('[data-action="speak"][data-rate="slow"]').count()!=3:
+                        raise AssertionError("Lesson slow playback controls missing")
+                    open_route(page,"character/demo-01")
+                    character=page.locator(".c9-character-identity-content > .c9-listening-deck")
+                    character.wait_for(state="visible")
+                    if character.locator(".c9-listening-clip").count()!=2:
+                        raise AssertionError("Character native word/sentence stages missing")
+                    original=character.locator('[data-action="speak"][data-rate="slow"]').first
+                    if not original.get_attribute("data-text"):
+                        raise AssertionError("Audio source has no Mandarin text")
+                    original.click()
+                    character.locator('[data-action="speech-stop"]').click()
+                    if "audio stopped" not in page.locator("#alert-banner").inner_text().lower():
+                        raise AssertionError("Playback stop did not report actual cancellation")
+                    if not page.locator("#c9-writing-canvas").count():
+                        raise AssertionError("Native ungraded character writing lost")
+                    guide=page.locator("#c9-writing-trace-toggle")
+                    glyph=page.locator("#c9-writing-trace-glyph")
+                    if not guide.count() or not glyph.count() or not glyph.is_hidden():
+                        raise AssertionError("Default private writing guide state not hidden")
+                    guide.click()
+                    if guide.get_attribute("aria-pressed")!="true" or glyph.is_hidden():
+                        raise AssertionError("Original printed reference tracing not enabled")
+                    canvas=page.locator("#c9-writing-canvas")
+                    if canvas.get_attribute("aria-label") is None:
+                        raise AssertionError("Ungraded keyboard canvas lost its accessible name")
+                    guide.click()
+                    if guide.get_attribute("aria-pressed")!="false" or not glyph.is_hidden():
+                        raise AssertionError("Printed reference tracing did not clear")
+                    if "not scored or saved" not in page.locator("#c9-writing-feedback").inner_text():
+                        raise AssertionError("Printed reference incorrectly claims scored or stored ink")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Listening deck causes horizontal overflow")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    if args.artifacts and width in (1440,390):
+                        page.screenshot(path=str(args.artifacts/("c9-48-listening-"+str(width)+".png")),full_page=True)
+                    return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
+                check("C9-48 real source listening "+str(width),original_listening_journey)
+                ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
@@ -131,7 +247,7 @@ def main():
                     home=page.locator(".c9-home-source-preview")
                     if not home.locator('[lang="zh-Hans"]').inner_text().strip():
                         raise AssertionError("Home lost source-authored Chinese example")
-                    home_english=home.locator("p").inner_text()
+                    home_english=home.locator(":scope > p").inner_text()
                     if not home_english: raise AssertionError("Home source gloss absent")
                     open_route(page,"learn")
                     page.locator('[data-action="c9-lesson-open"]').first.click()
@@ -488,11 +604,11 @@ def main():
                 ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
-            # not a running-v54-service-worker takeover in a real user profile.
+            # not a running-v56-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
-                legacy="character-study-working-v54-c9-46-lesson-layout-repair"
-                current="character-study-working-v55-c9-47-source-led-study"
+                legacy="character-study-working-v56-c9-p9-native-navigation"
+                current="character-study-working-v57-c9-48-native-listening"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -509,8 +625,8 @@ def main():
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
-                  return !keys.includes('character-study-working-v54-c9-46-lesson-layout-repair')&&
-                    keys.includes('character-study-working-v55-c9-47-source-led-study');
+                  return !keys.includes('character-study-working-v56-c9-p9-native-navigation')&&
+                    keys.includes('character-study-working-v57-c9-48-native-listening');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -524,8 +640,8 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v54 CacheStorage deleted; 315 v55 assets retained and offline reload works (not live SW takeover)"
-            check("C9-47 stale offline cache migration",stale_cache_upgrade)
+                return "Old v56 CacheStorage deleted; 315 v57 assets retained and offline reload works (not live SW takeover)"
+            check("C9-48 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
             def offline():

@@ -408,3 +408,43 @@
  .c9-character-tabs .c9-character-tab{min-height:48px}
  .c9-character-evidence{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Source-preserving compact P9 mobile entry: keep the original sentence, 
+   speech, freehand writing and truthful stroke data in the same native surface. */
+@media(max-width:700px){
+ .c9-character-page{gap:13px}
+ .c9-character-heading{gap:8px;align-items:start}
+ .c9-character-back{margin-bottom:5px}
+ .c9-character-heading h1{font-size:24px;margin:3px 0 4px}
+ .c9-character-heading p:last-child{font-size:12px;line-height:1.45}
+ .c9-character-neighbors{gap:6px}
+ .c9-character-neighbors .c9-button{min-height:44px;font-size:11px}
+ .c9-character-glyph-wrap{padding:9px;gap:6px}
+ .c9-character-glyph{width:min(127px,100%);font-size:81px}
+ .c9-character-identity-content{padding:15px}
+ .c9-character-identity-content h2{margin:4px 0;font-size:25px}
+ .c9-character-pinyin{margin:0 0 8px}
+ .c9-character-note{margin:0 0 10px}
+ .c9-character-source-sample{margin-top:10px;padding-top:10px}
+ .c9-character-top>.c9-character-tabs{scroll-margin-top:15px}
+}
+
+
+/* C9-48 — source-glyph tracing is a reversible print overlay, not stroke data.
+ * The existing pointer/keyboard canvas is the only writing controller. */
+.c9-writing-canvas-wrap{position:relative;width:min(100%,460px);aspect-ratio:1;
+ margin:0 auto;background:var(--c9-surface);border-radius:var(--c9-r-xs);isolation:isolate}
+.c9-writing-canvas-wrap #c9-writing-canvas{position:relative;z-index:1;width:100%;
+ background-color:transparent;margin:0}
+.c9-writing-trace-glyph{position:absolute;inset:0;display:grid;place-items:center;z-index:0;
+ color:var(--c9-ink);opacity:.15;pointer-events:none;user-select:none;
+ font:500 clamp(115px,24vw,295px)/1 var(--c9-hanzi-display)}
+.c9-writing-trace-glyph[hidden]{display:none!important}
+#c9-writing-trace-toggle{min-height:44px;white-space:normal}
+#c9-writing-trace-toggle[aria-pressed="true"]{background:var(--c9-accent-soft);
+ border-color:var(--c9-accent);color:var(--c9-accent)}
+:root[data-theme="dark"] .c9-writing-canvas-wrap{background:var(--c9-surface)}
+:root[data-theme="dark"] .c9-writing-trace-glyph{opacity:.20}
+@media(max-width:700px){.c9-writing-trace-glyph{font-size:clamp(120px,51vw,250px)}}
+@media(forced-colors:active){.c9-writing-trace-glyph{opacity:.25;color:CanvasText}}

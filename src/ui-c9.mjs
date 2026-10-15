@@ -118,3 +118,29 @@ export function renderC9ContextNav(route,esc){
  (route==='find'?'':'<a href="#/find" class="c9-context-search" aria-label="Find original source material">'+icon('search')+
  '<span>Find</span></a>')+'</nav>';
 }
+
+
+/** C9-48: a read-only playback projection of original authored source lines.
+ * Delegates every play/stop action to the ONE existing app.mjs speech controller.
+ * Never grades pronunciation, stores recordings or promises human-authored audio.
+ */
+export function renderC9ListeningDeck(clips,act,esc,{title='Listen and shadow',compact=false,showPinyin=true,showTranslations=true}={}){
+ const lines=(Array.isArray(clips)?clips:[]).filter(clip=>
+  clip&&typeof clip.hanzi==='string'&&clip.hanzi.trim()&&
+  typeof clip.label==='string'&&clip.label.trim()).slice(0,3);
+ if(!lines.length)return '';
+ const button=(clip,slow)=>act('speak',slow?'Slower':'Listen',
+  'c9-button c9-button--secondary c9-button--small',
+  'data-text="'+esc(clip.hanzi)+'" data-rate="'+(slow?'slow':'normal')+
+  '" aria-label="'+esc((slow?'Play slowly: ':'Play: ')+clip.label)+'"');
+ return '<section class="c9-listening-deck'+(compact?' c9-listening-deck--compact':'')+'" aria-label="Mandarin listening practice">'+
+  '<div class="c9-listening-deck-heading"><div><span class="c9-eyebrow">LISTENING FIRST · ORIGINAL SOURCE</span><h3>'+esc(title)+'</h3></div>'+
+  act('speech-stop','Stop audio','c9-button c9-button--quiet c9-button--small','aria-label="Stop Chinese speech playback"')+'</div>'+
+  '<div class="c9-listening-clips">'+lines.map(clip=>'<div class="c9-listening-clip">'+
+   '<div class="c9-listening-clip-text"><span>'+esc(clip.label)+'</span>'+
+   (!compact?'<strong lang="zh-Hans">'+esc(clip.hanzi)+'</strong>':'')+
+   (!compact&&showPinyin&&clip.pinyin?'<small>'+esc(clip.pinyin)+'</small>':'')+
+   (!compact&&showTranslations&&clip.english?'<small class="c9-listening-english">'+esc(clip.english)+'</small>':'')+
+   '</div><div class="c9-listening-controls">'+button(clip,false)+button(clip,true)+'</div></div>').join('')+'</div>'+
+  '<p class="c9-listening-limits">Uses an available Mandarin voice on your device; not a verified recording or pronunciation assessment. If no voice is installed, read the original text instead.</p></section>';
+}
