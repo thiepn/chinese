@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {DEEP_NOTES} from '../src/lesson-guides.mjs';
-import {WORDS,findWord,sourceWordComparisons} from '../src/lexicon.mjs';
+import {WORDS,findWord,sourceWordComparisons,wordsForWrittenForm} from '../src/lexicon.mjs';
 import {freshState} from '../src/study.mjs';
-import {SENTENCE_LIBRARY,sentencePracticeId} from '../src/sentence-library.mjs';
+import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from '../src/sentence-library.mjs';
 import {STORIES} from '../src/stories.mjs';
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
-import {c9TypingRecommendations,renderC9TypingPath,c9WordCatalogResults} from '../src/libraries-c9.mjs';
+import {c9TypingRecommendations,c9TypingCatalog,renderC9TypingPath,c9WordCatalogResults} from '../src/libraries-c9.mjs';
 import {renderC9PersonalTextReader,c9ReadingRecommendations,renderC9ReadingContinuation} from '../src/media-c9.mjs';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -116,4 +116,69 @@ test('P69 private reader source links and word save are native, not user-text im
  const html=renderC9PersonalTextReader(esc,freshState());
  assert.ok(html.includes('c9-personal-input'));
  assert.ok(html.includes('Nothing is sent to the server'));
+});
+
+
+test('P70 full original source typing discovery offers topic/status filtering, repeatable pagination and real event evidence',()=>{
+ const state=freshState(),topic=SENTENCE_TOPICS[0];
+ assert.ok(topic);
+ const initial=c9TypingCatalog(state);
+ assert.equal(initial.counts.all,SENTENCE_LIBRARY.length);
+ assert.equal(initial.counts.unattempted,SENTENCE_LIBRARY.length);
+ assert.equal(initial.counts.retry,0);
+ assert.equal(initial.counts.independent,0);
+ assert.ok(initial.pages>1);
+ assert.equal(initial.items.length,6);
+ const follow=c9TypingCatalog(state,{page:1});
+ assert.notEqual(follow.items[0].sentence.id,initial.items[0].sentence.id);
+ assert.ok(initial.items.every(x=>x.stage==='unattempted'));
+ const target=SENTENCE_LIBRARY[1],taskId=sentencePracticeId(target.id,'production');
+ state.sentenceEvents.push({id:'typing-failure',taskId,correct:false,assisted:true});
+ assert.equal(c9TypingCatalog(state,{status:'retry'}).items[0].sentence.id,target.id);
+ assert.equal(c9TypingCatalog(state,{status:'unattempted'}).counts.unattempted,SENTENCE_LIBRARY.length-1);
+ state.sentenceEvents.push({id:'typing-retry',taskId,correct:true,assisted:false});
+ const passed=c9TypingCatalog(state,{status:'independent'});
+ assert.equal(passed.counts.independent,1);
+ assert.equal(passed.items[0].sentence.id,target.id);
+ assert.equal(passed.everIndependent,1);
+ const inTopic=c9TypingCatalog(state,{topic:topic.id});
+ assert.ok(inTopic.items.every(x=>x.sentence.topicId===topic.id));
+ const html=renderC9TypingPath(state,act,esc,{status:'independent',page:0});
+ for(const key of ['id="c9-typing-topic"','id="c9-typing-status"',
+   'data-action="c9-typing-page"','c9-typing-disclosure'])
+  assert.ok(html.includes(key),key);
+});
+
+test('P69 multi-reading written forms are never silently reduced to one canonical sense',()=>{
+ const source=readFileSync(new URL('../src/media-c9.mjs',import.meta.url),'utf8');
+ const candidates=WORDS.find(w=>wordsForWrittenForm(w.hanzi).length>1);
+ if(candidates){
+  const readings=wordsForWrittenForm(candidates.hanzi);
+  assert.ok(readings.length>1);
+  assert.ok(readings.every(w=>w.hanzi===candidates.hanzi&&findWord(w.key)===w));
+ }
+ for(const key of ["const readings=wordsForWrittenForm(token.text)",
+  "if(readings.length>1)",'c9-personal-ambiguous','c9-personal-ambiguities',
+  'Nothing is chosen automatically'])
+  assert.ok(source.includes(key),key);
+});
+
+test('P69 editable private text retains mined sentences until explicit replacement consent',()=>{
+ const source=readFileSync(new URL('../src/media-c9.mjs',import.meta.url),'utf8');
+ for(const key of [
+  'next!==personalReaderAnalyzed&&personalReaderMined.length',
+  "window.confirm('Replace annotated passage",
+  'if(next!==personalReaderAnalyzed)personalReaderMined=[]',
+  'panel.hidden=!(personalReaderAnalyzed&&personalReaderText.trim()===personalReaderAnalyzed)',
+  'allLines.length>32',
+  'Only the first 32 of'
+ ])assert.ok(source.includes(key),key);
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const key of [
+  "if(name==='c9-typing-page')",
+  "if(e.target.id==='c9-typing-topic')",
+  "if(e.target.id==='c9-typing-status')",
+  "c9TypingPage=0;render()",
+  "const independentProduction=libraryPracticeFocus&&libraryMode==='production'&&!libraryFeedback;"
+ ])assert.ok(app.includes(key),key);
 });
