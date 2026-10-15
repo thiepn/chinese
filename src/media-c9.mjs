@@ -4,7 +4,7 @@
  * evaluation and storage remain in app.mjs native action dispatch.
  */
 import {STORIES,tokenizeSentence} from './stories.mjs';
-import {findWord} from './lexicon.mjs';
+import {findWord,wordsForWrittenForm} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
@@ -270,7 +270,8 @@ export function renderC9ReaderIntro(lesson,act,esc){
 let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[];
 let disconnectPersonalReader=null;
 const PERSONAL_READER_LIMIT=1200;
-const personalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean).slice(0,32)||[];
+const allPersonalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean)||[];
+const personalLines=text=>allPersonalLines(text).slice(0,32);
 const personalHanzi=text=>/\p{Script=Han}/u.test(text);
 export function renderC9PersonalTextReader(esc,state={}){
  const text=personalReaderText;
@@ -286,13 +287,20 @@ export function renderC9PersonalTextReader(esc,state={}){
 }
 function personalReaderResults(esc,state={}){
  if(!personalReaderAnalyzed)return '';
- const lines=personalLines(personalReaderAnalyzed);
+ const allLines=allPersonalLines(personalReaderAnalyzed),lines=allLines.slice(0,32);
  if(!lines.length)return '<p>No sentences to annotate. Try pasting Chinese text.</p>';
- const sources=new Map(),unmatched=new Set();
+ const sources=new Map(),unmatched=new Set(),ambiguous=new Map();
  const view=lines.map((line,i)=>{
   const tokens=tokenizeSentence(line);
   const text=tokens.map(token=>{
-   const key=token.entry?.wordKey,word=key&&findWord(key);
+   const readings=wordsForWrittenForm(token.text);
+   // Source tokenizer may pick one entry for a multi-reading written form.
+   // Do not silently present that entry as the correct contextual sense.
+   if(readings.length>1){
+    ambiguous.set(token.text,readings);
+    return '<span class="c9-personal-ambiguous" lang="zh-Hans" title="Multiple indexed readings; interpret from context">'+esc(token.text)+'<sup aria-label="multiple readings">?</sup></span>';
+   }
+   const word=readings[0]||(token.entry?.wordKey&&findWord(token.entry.wordKey));
    if(word){
     const item=sources.get(word.key)||{word,count:0};
     item.count++;sources.set(word.key,item);
@@ -311,19 +319,28 @@ function personalReaderResults(esc,state={}){
  const saved=new Set(state.bookmarkedWords||[]);
  const matches=[...sources.values()].sort((a,b)=>b.count-a.count||a.word.hanzi.localeCompare(b.word.hanzi,'zh')).slice(0,24);
  const indexed='<section class="c9-personal-index" aria-label="Indexed words in my passage"><h3>Words confirmed in existing source index</h3>'+
-  '<p>'+sources.size+' distinct indexed whole-word record'+(sources.size===1?'':'s')+
+  '<p>'+sources.size+' indexed whole-word record'+(sources.size===1?'':'s')+
+  ' · '+ambiguous.size+' written form'+(ambiguous.size===1?'':'s')+' with multiple readings'+
   ' · '+unmatched.size+' unmatched Hanzi token'+(unmatched.size===1?'':'s')+
-  '. Matches do not imply a correct translation or that other words are unknown to you.</p>'+
+  '. A dictionary match does not establish the intended meaning in context.</p>'+
   (matches.length?'<div class="c9-personal-index-grid">'+matches.map(({word,count})=>
    '<article><strong lang="zh-Hans">'+esc(word.hanzi)+'</strong><span>'+esc(word.pinyin)+'</span>'+
    '<span>'+esc(word.senses.slice(0,2).join(' / '))+'</span><small>'+count+' indexed occurrence'+(count===1?'':'s')+'</small>'+
    (word.examples[0]?'<small lang="zh-Hans">'+esc(word.examples[0].hanzi)+'</small>':'')+
    '<div><button type="button" data-action="lookup-word" data-id="'+esc(word.key)+'" class="c9-button c9-button--secondary c9-button--small">Details</button>'+
-   '<button type="button" data-action="word-bookmark" data-id="'+esc(word.key)+'" class="c9-button c9-button--quiet c9-button--small">'+(saved.has(word.key)?'Unsave':'Save word')+'</button></div></article>').join('')+'</div>':'<p>No indexed whole words detected; do not infer unknown grammar or incorrectly translated text.</p>')+
+   '<button type="button" data-action="word-bookmark" data-id="'+esc(word.key)+'" class="c9-button c9-button--quiet c9-button--small">'+(saved.has(word.key)?'Unsave':'Save word')+'</button></div></article>').join('')+'</div>':'<p>No unambiguous indexed whole words detected.</p>')+
   (sources.size>matches.length?'<p>Showing the first 24 indexed words; the passage remains unchanged.</p>':'')+
   '</section>';
- return '<div class="c9-personal-result-head"><strong>'+lines.length+' private passage segment'+(lines.length===1?'':'s')+'</strong><small>Only existing indexed whole-word records become lookup links; the pasted passage stays ungraded.</small></div>'+
-  '<div class="c9-personal-lines">'+view+'</div>'+indexed+
+ const alternatives=ambiguous.size?'<section class="c9-personal-ambiguities" aria-label="Multiple indexed readings"><h3>Choose a reading from context</h3>'+
+  '<p>The original dictionary records more than one reading for these written forms. Nothing is chosen automatically.</p>'+
+  [...ambiguous.entries()].map(([hanzi,readings])=>
+   '<article><strong lang="zh-Hans">'+esc(hanzi)+'</strong><div>'+
+   readings.map(word=>'<span><b>'+esc(word.pinyin)+'</b> · '+esc(word.senses.slice(0,2).join(' / '))+
+    '<button type="button" data-action="lookup-word" class="c9-button c9-button--secondary c9-button--small" data-id="'+esc(word.key)+'">View this reading</button></span>').join('')+
+   '</div></article>').join('')+'</section>':'';
+ return '<div class="c9-personal-result-head"><strong>'+lines.length+' private passage segment'+(lines.length===1?'':'s')+'</strong><small>Only original indexed words become lookups; pasted text remains ungraded.</small></div>'+
+  (allLines.length>32?'<p class="c9-personal-limit" role="status">Only the first 32 of '+allLines.length+' segments are annotated or mineable. The remainder stays in the input above.</p>':'')+
+  '<div class="c9-personal-lines">'+view+'</div>'+indexed+alternatives+
   '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
    '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
    (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
@@ -336,12 +353,28 @@ export function connectC9PersonalTextReader(root,esc,state={}){
  const analyze=root.querySelector('#c9-personal-analyze'),clear=root.querySelector('#c9-personal-clear');
  const details=input.closest('details');
  if(details&&(personalReaderAnalyzed||personalReaderText))details.open=true;
- const update=()=>{if(panel)panel.innerHTML=personalReaderResults(esc,state);};
- const onInput=()=>{personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);};
+ const update=()=>{
+  if(!panel)return;
+  panel.hidden=!(personalReaderAnalyzed&&personalReaderText.trim()===personalReaderAnalyzed);
+  if(!panel.hidden)panel.innerHTML=personalReaderResults(esc,state);
+ };
+ const onInput=()=>{
+  personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
+  update();
+  if(status&&personalReaderText.trim()!==personalReaderAnalyzed)
+   status.textContent='Text edited. Re-annotate this version; prior sentence selections remain in tab memory until replacement.';
+ };
  const onAnalyze=()=>{
   personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
-  personalReaderAnalyzed=personalReaderText.trim();
-  personalReaderMined=[];update();
+  const next=personalReaderText.trim();
+  if(next!==personalReaderAnalyzed&&personalReaderMined.length&&
+   !window.confirm('Replace annotated passage and clear '+personalReaderMined.length+' mined sentence(s)? Copy them first if needed.')){
+   update();
+   if(status)status.textContent='Previous selections retained. Restore the earlier text or copy the list before replacing it.';
+   return;
+  }
+  if(next!==personalReaderAnalyzed)personalReaderMined=[];
+  personalReaderAnalyzed=next;update();
   if(status)status.textContent=personalReaderAnalyzed?
    (personalHanzi(personalReaderAnalyzed)?'Annotated using existing original word records. No text saved.':'No Chinese characters detected. No learning evidence changed.'):'Paste text before annotating.';
  };
@@ -368,7 +401,7 @@ export function connectC9PersonalTextReader(root,esc,state={}){
    }catch{if(status)status.textContent='Automatic clipboard copy unavailable. Select the listed text to copy it manually.';}
   }
  };
- input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
+ update();input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
  clear?.addEventListener('click',onClear);panel?.addEventListener('click',onPanelClick);
  disconnectPersonalReader=()=>{
   input.removeEventListener('input',onInput);analyze?.removeEventListener('click',onAnalyze);
