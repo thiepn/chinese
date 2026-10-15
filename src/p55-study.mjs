@@ -32,15 +32,21 @@ export function p55Native(id){
 export function p55Reference(id,kind='reading',index=0){
  const original=p55Source(id),native=p55Native(id);
  if(!original)return null;
+ const authoredDialogue=native?.dialogue?.[original.id.split('-')[0]]?.questions;
  const pool=kind==='dialogue'?
-  (original.dialogueQuestions?.length?original.dialogueQuestions:native?.dialogue?.questions||[]):
+  (original.dialogueQuestions?.length?original.dialogueQuestions:
+   authoredDialogue?.length?authoredDialogue:native?.dialogue?.questions||[]):
   original.questions||[];
  if(!Number.isInteger(index)||index<0||index>=pool.length)return null;
  const q=pool[index];
+ // P50/P51 original dialogue metadata carries exact evidenceIndex, while
+ // generic DIALOGUES questions are answer-only and lose the turn citation.
+ // P52–P54 already provide their own sourced dialogueQuestions/turns.
  const explicit=q.evidenceIndex??q.evidence;
- const sourceIndex=kind==='reading'?(explicit??null):explicit??null;
- const item=sourceIndex===null?null:kind==='dialogue'?
-  original.turns?.[sourceIndex]:original.lines?.[sourceIndex];
+ const sourceIndex=Number.isInteger(explicit)&&explicit>=0?explicit:null;
+ const lines=kind==='dialogue'?
+  (original.turns?.length?original.turns:native?.dialogue?.lines):original.lines;
+ const item=sourceIndex===null?null:lines?.[sourceIndex];
  return Object.freeze({question:q,kind,questionIndex:index,index:item?sourceIndex:null,
   hanzi:item?.hanzi||null,pinyin:item?.pinyin||null,english:item?.english||null,
   sourceIndex:item?.sourceIndex??null,speaker:item?.speaker??null,
