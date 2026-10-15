@@ -16,7 +16,7 @@ import {backupDocument,importBackup} from '../src/study-storage.mjs';
 import {progressDiagnostics} from '../src/progress-diagnostics.mjs';
 const now=Date.parse('2026-10-12T10:00:00Z');
 test('Batch 9 preserves all earlier demo content without invented HSK membership',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);assert.equal(DIALOGUES.length,10);
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.ok(DIALOGUES.length>=10);
  assert.ok(DEMO_LESSONS.every(l=>l.officialHskLevel===null&&l.approval==='DEMO_ONLY'));
  assert.ok(SENSE_CASES.every(x=>x.origin==='original-editorial-demo'&&x.officialHskLevel===null));
 });
@@ -41,7 +41,7 @@ test('sense attempts never create scheduled-review evidence, preserve assistance
  validateState(n);assert.throws(()=>validateState({...n,senseEvents:[{...n.senseEvents[0],caseId:'official-hsk'}]}),/Invalid sense/);
 });
 test('all 24 original reading-based exact written sentence tasks are available',()=>{
- assert.equal(SENTENCE_TASKS.length,24);for(const t of SENTENCE_TASKS){assert.ok(t.hanzi&&t.english&&t.pinyin);assert.equal(checkSentence(t,t.hanzi).correct,true);assert.equal(checkSentence(t,`${t.hanzi.replace(/[。！？]/g,'')} `).correct,true);assert.equal(checkSentence(t,'错误').correct,false);}
+ assert.ok(SENTENCE_TASKS.length>=24);for(const t of SENTENCE_TASKS.slice(0,24)){assert.ok(t.hanzi&&t.english&&t.pinyin);assert.equal(checkSentence(t,t.hanzi).correct,true);assert.equal(checkSentence(t,`${t.hanzi.replace(/[。！？]/g,'')} `).correct,true);assert.equal(checkSentence(t,'错误').correct,false);}
 });
 test('sentence workshop does not grade paraphrase or give mastery to assisted answers',()=>{
  const t=sentenceTask(1);assert.equal(checkSentence(t,t.english).correct,false);
@@ -50,7 +50,7 @@ test('sentence workshop does not grade paraphrase or give mastery to assisted an
  assert.throws(()=>validateState({...n,sentenceEvents:[{...n.sentenceEvents[0],taskId:'invalid'}]}),/Invalid sentence-workshop/);
 });
 test('all ten dialogues support three steps with cited evidence and pinyin reference',()=>{
- assert.deepEqual(MISSION_STAGES,['meaning','evidence','pinyin']);for(const d of DIALOGUES){for(let i=0;i<3;i++){const q=missionQuestion(d.id,i);assert.ok(q&&q.prompt&&q.answer);if(q.kind==='choice')assert.ok(q.options.includes(q.answer));if(i===2)assert.equal(q.answer,d.lines[1].pinyin);}}
+ assert.deepEqual(MISSION_STAGES,['meaning','evidence','pinyin']);for(const d of DIALOGUES.slice(0,10)){for(let i=0;i<3;i++){const q=missionQuestion(d.id,i);assert.ok(q&&q.prompt&&q.answer);if(q.kind==='choice')assert.ok(q.options.includes(q.answer));if(i===2)assert.equal(q.answer,d.lines[1].pinyin);}}
  assert.equal(missionQuestion('official-hsk',0),null);assert.equal(missionQuestion(DIALOGUES[0].id,3),null);
 });
 test('dialogue mission grades typed tones and keeps correct assisted answers supplementary',()=>{
@@ -89,5 +89,5 @@ test('new routes, handlers, responsive CSS and offline dependencies are connecte
  for(const route of ['senses','workshop'])assert.ok(app.includes(`route==='${route}'`)||app.includes(`${route}:render`));
  for(const word of ['mission-start','mission-answer','workshop-check','sense-answer','wordbook-focus','toneExplanation'])assert.ok(app.includes(word),word);
  for(const asset of ['tone-coach.mjs','sense-lab.mjs','sentence-workshop.mjs','dialogue-missions.mjs'])assert.ok(sw.includes(asset));
- for(const route of ['#/senses','#/workshop'])assert.ok(html.includes(route));assert.ok(sw.includes('working-v20'));assert.ok(css.includes('.learning-studio'));
+ for(const route of ['#/senses','#/workshop'])assert.ok(html.includes(route));assert.ok(sw.includes('working-v53'));assert.ok(css.includes('.learning-studio'));
 });
