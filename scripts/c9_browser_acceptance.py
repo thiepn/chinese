@@ -458,6 +458,36 @@ def main():
                     return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
                 check("C9-48 real source listening "+str(width),original_listening_journey)
                 ctx.close()
+            # Original P70 — the typing path must actually land inside the
+            # already authoritative Sentence Library's production mode.
+            ctx,page,errors=session(390,844,True)
+            def source_typing_progression():
+                open_route(page,"sentences")
+                pathway=page.locator(".c9-typing-path details")
+                pathway.locator("summary").click()
+                cards=pathway.locator('[data-action="c9-typing-start"]')
+                if cards.count()<3:
+                    raise AssertionError("Original typed sentence pathway not available")
+                selected=cards.first.get_attribute("data-id")
+                cards.first.click()
+                entry=page.locator("#sentence-library-entry")
+                entry.wait_for(state="visible")
+                if page.locator('[data-action="sentence-focus"]').count()<1:
+                    raise AssertionError("Original independent-focus authority lost")
+                entry.fill("这是我自己输入的句子")
+                answer=page.locator('[data-action="sentence-answer"]').first
+                if not answer.is_enabled():
+                    raise AssertionError("Original production grader was not enabled by typed Hanzi")
+                answer.click()
+                page.wait_for_function("()=>Boolean(document.querySelector('.p26-feedback'))")
+                if not page.locator(".p26-feedback").is_visible():
+                    raise AssertionError("Existing native sentence feedback missing")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("P70 original typing path has mobile horizontal overflow")
+                if errors:raise RuntimeError("; ".join(errors[:2]))
+                return "390px original source "+str(selected)+" routed to native typed production and feedback, no duplicate scoring engine"
+            check("P70 original independent Chinese typing",source_typing_progression)
+            ctx.close()
             # Original roadmap P61–P63/P69: exercise genuine native drawing
             # and private text interaction on a narrow touch viewport.
             ctx,page,errors=session(390,844,True)
