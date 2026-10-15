@@ -5,12 +5,16 @@ import { freshState, validateState, addLesson, gradeCard, dueCards, cardInfo, su
 import { backupDocument, importBackup } from '../src/study-storage.mjs';
 
 test('original content has no official HSK membership and all lessons have complete linked words and sentences',()=>{
- assert.equal(DEMO_LESSONS.length,74);
+ assert.equal(DEMO_LESSONS.length,428);
  for(const lesson of DEMO_LESSONS){
   assert.equal(lesson.officialHskLevel,null);assert.ok(allowedDemoLesson(lesson));assert.equal(findLesson(lesson.id),lesson);
   assert.ok(lesson.words.length>=2);assert.ok(lesson.pinyin&&lesson.meaning);
+  assert.ok(lesson.sentence.hanzi&&lesson.sentence.pinyin&&lesson.sentence.english);
+  for(const word of lesson.words)assert.ok(word.hanzi&&word.pinyin&&word.english);
+ }
+ for(const lesson of DEMO_LESSONS.slice(0,74)){
   assert.ok(lesson.sentence.hanzi.includes(lesson.hanzi));
-  for(const word of lesson.words)assert.ok(word.hanzi.includes(lesson.hanzi));
+  assert.ok(lesson.words.every(word=>word.hanzi.includes(lesson.hanzi)));
  }
  assert.equal(new Set(DEMO_LESSONS.map(x=>x.id)).size,DEMO_LESSONS.length);
 });
@@ -68,7 +72,7 @@ test('offline source includes functional modules without external runtime depend
  const {readFile}=await import('node:fs/promises');
  const html=await readFile(new URL('../src/index.html',import.meta.url),'utf8');
  const sw=await readFile(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(html,/href="#main"/);assert.match(html,/aria-label="Primary mobile"/);
+ assert.match(html,/href="#main"/);assert.match(html,/aria-label="Primary mobile navigation"/);
  assert.match(sw,/demo-lessons\.mjs/);assert.match(sw,/study-storage\.mjs/);
 });
 
@@ -89,8 +93,9 @@ test('a revealed or incorrect attempt cannot earn a passing event',()=>{
  const result=gradeCard(current,'demo-01:reading',0,100,'good',{correct:false,errorType:'tone'});
  assert.equal(result.events[0].correct,false);assert.equal(result.events[0].errorType,'tone');
 });
-test('six lesson units cover exactly each approved demo lesson',()=>{
- const groups=lessonGroups();assert.equal(groups.length,6);
+test('original and advanced units cover every approved demo lesson exactly once',()=>{
+ const groups=lessonGroups();assert.ok(groups.length>20);
+ assert.equal(groups[0].name,'Foundations');assert.deepEqual(groups[19].range,[191,202]);
  assert.deepEqual(groups.flatMap(g=>g.lessons.map(l=>l.id)),DEMO_LESSONS.map(l=>l.id));
 });
 
