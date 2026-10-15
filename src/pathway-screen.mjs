@@ -82,6 +82,8 @@ export function renderPathwayScreen(ui,act,esc,title,gated){
  const stats=pathwayStats(ui.learner,band.number);
  const plan=pathwayDailyRoute(ui.learner,band.number,ui.minutes);
  return `${title('PROGRESSIVE MANDARIN PATHWAY','Learn Chinese with a connected plan.','Nine app-authored study bands inspired by increasingly demanding communication tasks. No official HSK 3.0 syllabus mapping or exam certification is claimed.')}${gated()}
+ <div class="p29-quick-jump" role="group" aria-label="Current study mission shortcut"><span><strong>Current mission</strong><small>${esc(m.title)} · original band ${m.band}</small></span>
+ ${act('pathway-jump-current','Jump to the current Mandarin mission ↓','button primary','aria-controls="p29-current-mission"')}</div>
  <section class="simple-panel p29-disclosure"><strong>Original curriculum, not official HSK levels</strong><p>Band numbers organize these ${PATHWAY_MISSIONS.length} authored sample missions. Bands 7–9 are advanced exploration, not comprehensive advanced teaching or exam preparedness. You can freely access any band and your real character, word, grammar and reading histories remain separate.</p></section>
  <div class="p29-bands" role="group" aria-label="Choose a study band">${PATHWAY_BANDS.map(b=>{const d=pathwayStats(ui.learner,b.number);
  return act('pathway-band',`<span class="p29-band-number">${b.number}</span><strong>${esc(b.title)}</strong><small>${d.observedMissions} / ${d.missions} with independent meaning and writing answers</small>`,
@@ -97,7 +99,7 @@ export function renderPathwayScreen(ui,act,esc,title,gated){
  </section><div class="p29-mission-list"><h3>Four missions in this band</h3>
  ${PATHWAY_MISSIONS.filter(t=>t.band===band.number).map(t=>missionCard(t,ui.learner,act,esc,t.id===m.id)).join('')}</div>
  <div class="button-row">${act('pathway-prev-band','← Previous band','button outline small',band.number===1?'disabled':'')}${act('pathway-next-band','Next band →','button outline small',band.number===9?'disabled':'')}</div></aside>
- <article class="p29-lesson"><div class="p29-lesson-heading"><p class="eyebrow">ORIGINAL LEARNING MISSION ${m.id.toUpperCase()} · BAND ${m.band}</p>
+ <article class="p29-lesson" id="p29-current-mission" tabindex="-1"><div class="p29-lesson-heading"><p class="eyebrow">ORIGINAL LEARNING MISSION ${m.id.toUpperCase()} · BAND ${m.band}</p>
  <h2>${esc(m.title)}</h2><p>${esc(m.purpose)}${!ui.focus||ui.feedback?' · '+esc(m.teaching):''}</p>
  <div class="button-row">${act('pathway-focus',ui.focus?'Exit focused recall':'Start focused recall','button primary')}
  ${act('pathway-toggle-pinyin',ui.showPinyin?'Hide Pinyin':'Show Pinyin','button outline small')}
