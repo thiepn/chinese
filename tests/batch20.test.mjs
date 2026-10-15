@@ -11,13 +11,16 @@ import {DIALOGUES} from '../src/dialogues.mjs';
 import {FLUENCY_BANK} from '../src/fluency-studio.mjs';
 const fixed=Date.UTC(2026,9,12,12);
 test('Batch 20 preserves the exact original demonstration curriculum',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);assert.equal(DIALOGUES.length,10);assert.equal(FLUENCY_BANK.length,206);
+ assert.equal(DEMO_LESSONS.length,428);
+ assert.deepEqual(DEMO_LESSONS.slice(0,74).map(l=>l.id),
+  Array.from({length:74},(_,i)=>'demo-'+String(i+1).padStart(2,'0')));
+ assert.ok(STORIES.length>=12);assert.ok(DIALOGUES.length>=10);assert.ok(FLUENCY_BANK.length>=206);
  assert.ok(DEMO_LESSONS.every(l=>l.officialHskLevel===null));
 });
 test('Course overview reads fresh learner data without creating mastery events',()=>{
  const s=freshState(),before=structuredClone(s);const report=courseOverview(s,{now:fixed});
- assert.equal(report.introduced,0);assert.equal(report.total,74);assert.equal(report.scheduled.attempts,0);assert.equal(report.supplementary,0);
- assert.equal(report.remaining,74);assert.equal(report.sessions.length,0);assert.deepEqual(s,before);
+ assert.equal(report.introduced,0);assert.equal(report.total,DEMO_LESSONS.length);assert.equal(report.scheduled.attempts,0);assert.equal(report.supplementary,0);
+ assert.equal(report.remaining,DEMO_LESSONS.length);assert.equal(report.sessions.length,0);assert.deepEqual(s,before);
 });
 test('Course overview keeps supplementary events independent from scheduled credit',()=>{
  let s=addLesson(freshState(),'demo-01',fixed-50000);s=gradeCard(s,'demo-01:meaning',2,fixed,'ev1',{correct:true,assisted:false});
@@ -75,15 +78,19 @@ test('Source exposes explicit backup preview and safe separate restore action',(
  for(const token of ['backupPreviewPanel','restore-confirm','restore-cancel','restore-ack','finishOverviewPanel','recoveryCenterPanel','finish-next','MAX_BACKUP_BYTES'])assert.ok(app.includes(token),token);
  assert.equal(app.includes("if(!confirm(`Replace local data with this valid backup?"),false);
 });
-test('Service worker caches the new modules with revision 20',()=>{
+test('Service worker keeps Batch 20 modules in the active v53 offline contract',()=>{
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- for(const token of ['character-study-working-v20','course-overview.mjs','backup-preview.mjs','learning-hub.mjs'])assert.ok(sw.includes(token));
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ const current=sw.match(/^const CACHE='([^']+)'/m)?.[1];
+ const expected=app.match(/^const C9_EXPECTED_OFFLINE_CACHE='([^']+)'/m)?.[1];
+ assert.equal(current,expected);assert.match(current,/^character-study-working-v53-/);
+ for(const token of ['course-overview.mjs','backup-preview.mjs','learning-hub.mjs'])assert.ok(sw.includes(token));
  assert.ok(!sw.includes('official-hsk-2025.json'));
 });
 test('Mobile course-navigation retains access to source learning tools',()=>{
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  const css=readFileSync(new URL('../src/styles.css',import.meta.url),'utf8');
- assert.match(html,/aria-label="Primary mobile"/);assert.match(css,/\.hub-path-nav\{display:flex;overflow-x:auto/);
+ assert.match(html,/aria-label="Primary mobile navigation"/);assert.match(css,/\.hub-path-nav\{display:flex;overflow-x:auto/);
  assert.match(css,/\.finish-compare/);assert.match(css,/\[data-hanzi-size="large"\]/);
 });
 test('Restore transaction carries an expected revision for cross-tab safety',()=>{

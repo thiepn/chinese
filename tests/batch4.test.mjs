@@ -10,7 +10,7 @@ import {backupDocument,importBackup} from '../src/study-storage.mjs';
 import {readFile} from 'node:fs/promises';
 
 test('all 74 lessons offer six distinct valid synthetic exercise formats',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(DRILL_MODES.length,6);assert.equal(validateDrills(),true);
+ assert.ok(DEMO_LESSONS.length>=74);assert.equal(DRILL_MODES.length,6);assert.equal(validateDrills(),true);
  for(const l of DEMO_LESSONS)for(const mode of DRILL_MODES){const d=buildDrill(l.id,mode);assert.ok(d,`${l.id}/${mode}`);
  if(d.kind==='choice'){assert.equal(d.options.length,4);assert.equal(new Set(d.options).size,4);assert.ok(d.options.includes(d.answer));assert.ok(gradeDrill(d,d.answer).correct)}
  else if(d.kind==='pinyin')assert.ok(gradeDrill(d,d.answer).correct,`${l.id} ${d.answer}`);

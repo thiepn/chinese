@@ -11,8 +11,8 @@ import {backupDocument,importBackup} from '../src/study-storage.mjs';
 
 const now=Date.parse('2026-10-12T12:00:00Z');
 test('prior curriculum and readings retained, no official HSK memberships',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);assert.equal(DRILL_MODES.length,6);
- assert.ok(DEMO_LESSONS.every(l=>l.words.length===2));
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.equal(DRILL_MODES.length,6);
+ assert.ok(DEMO_LESSONS.slice(0,74).every(l=>l.words.length===2));
  assert.ok(DEMO_LESSONS.every(l=>l.officialHskLevel===null||l.officialHskLevel===undefined));
 });
 test('recommendations prioritize real observed errors while preserving stable lesson IDs',()=>{
@@ -78,6 +78,6 @@ test('legacy Batch 4 backups without a practiceSession remain importable',()=>{
 });
 test('source contains new navigation, guided practice, reading and recovery states',()=>{
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
- for(const symbol of ['renderGuidedPractice','guided-start','guided-next','guided-reveal','open-story-link','recommendation-panel','Resume saved session'])assert.ok(app.includes(symbol),symbol);
+ for(const symbol of ['renderGuidedPractice','guided-start','guided-next','guided-reveal','open-story-link','lessonRecommendations','Resume saved session'])assert.ok(app.includes(symbol),symbol);
  assert.ok(!app.includes('[data-action="import-open",'));
 });

@@ -1,0 +1,63 @@
+name: Chinese release qualification
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    name: Original source tests and offline build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source regression suite
+        run: npm test
+      - name: Source-to-dist and offline manifest
+        run: npm run build && npm run verify
+  chromium:
+    name: Isolated local-origin Chromium acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Playwright browser
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Build exact checked-out source
+        run: npm run build && npm run verify
+      - name: Local HTTP browser qualification
+        run: |
+          npm run serve >/tmp/chinese-serve.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for _ in range(80):
+              try:
+                  with urllib.request.urlopen('http://127.0.0.1:4173/',timeout=1) as r:
+                      assert r.status==200
+                  break
+              except Exception:
+                  time.sleep(0.25)
+          else:
+              raise RuntimeError('Local source server did not start')
+          PY
+          python scripts/c9_browser_acceptance.py --expected-head "${{ github.sha }}" --chromium "$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" --artifacts /tmp/chinese-acceptance
+      - name: Preserve public-only UI acceptance screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chinese-c9-local-ui-screenshots
+          path: /tmp/chinese-acceptance/*.png
+          retention-days: 7
+          if-no-files-found: warn

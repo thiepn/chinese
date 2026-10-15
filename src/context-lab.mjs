@@ -22,12 +22,31 @@ export const CONTEXT_MODES=Object.freeze(['evidence','connection']);
 export function contextQuestion(storyId,mode){
  const story=findStory(storyId),index=STORIES.findIndex(s=>s.id===storyId);
  if(!story||!CONTEXT_MODES.includes(mode))return null;
+ // Keep the twelve specifically authored inference fixtures unchanged. Later
+ // original reading sources have their own wording, not those old answer keys:
+ // ask only sequence questions provable from the actual authored sentence order.
+ if(index>=evidenceLines.length){
+  if(!Array.isArray(story.lines)||story.lines.length<3)return null;
+  const answer=mode==='evidence'?story.lines[0].hanzi:story.lines[1].hanzi;
+  const prompt=mode==='evidence'?'Which sentence opens this original passage?':'Which sentence comes immediately after the opening sentence?';
+  const others=story.lines.map(line=>line.hanzi).filter(line=>line!==answer);
+  return {kind:'choice',mode,prompt,answer,options:[answer,...others],
+   explanation:mode==='evidence'?'Identify the original opening line.':'Read the passage in its authored order; this is the second line.'};
+ }
  if(mode==='evidence')return {kind:'choice',mode,prompt:`Which Chinese sentence best supports this answer? ${story.question.prompt}`,answer:story.lines[evidenceLines[index]].hanzi,options:story.lines.map(l=>l.hanzi),explanation:`Look for the sentence that directly states: ${story.question.answer}`};
  const [prompt,answer,...rest]=links[index];const distractors=rest.slice(0,3),explanation=rest[3];
  return {kind:'choice',mode,prompt,answer,options:[...distractors.slice(index%4),answer,...distractors.slice(0,index%4)].slice(0,4),explanation};
 }
-export function validateContextQuestions(){if(evidenceLines.length!==STORIES.length||links.length!==STORIES.length)throw Error('Missing context fixtures');
- for(const s of STORIES)for(const mode of CONTEXT_MODES){const q=contextQuestion(s.id,mode);if(!q||q.kind!=='choice'||new Set(q.options).size!==(mode==='evidence'?3:4)||!q.options.includes(q.answer)||!q.explanation||!q.prompt)throw Error('Invalid contextual reasoning exercise');}
+export function validateContextQuestions(){
+ // The first twelve remain source-specific. Extended readings use literal,
+ // verifiable sequence questions rather than invented inference answer keys.
+ if(evidenceLines.length!==12||links.length!==12)throw Error('Changed original context fixtures');
+ for(const [index,s] of STORIES.entries())for(const mode of CONTEXT_MODES){
+  const q=contextQuestion(s.id,mode);
+  const expected=index<12?(mode==='evidence'?3:4):new Set(s.lines.map(l=>l.hanzi)).size;
+  if(!q||q.kind!=='choice'||new Set(q.options).size!==expected||
+   !q.options.includes(q.answer)||!q.explanation||!q.prompt)throw Error('Invalid contextual reasoning exercise');
+ }
  return true;
 }
 export function lessonConnections(lessonId){const lesson=findLesson(lessonId);if(!lesson)return null;

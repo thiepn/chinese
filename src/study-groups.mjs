@@ -1,6 +1,14 @@
 /** Shared static demonstration unit ranges; independent of syllabus editions. */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
-export function lessonGroups(){return [{name:'Foundations',range:[1,13]},{name:'Everyday Language',range:[14,26]},{name:'People & Place',range:[27,40]},{name:'Time & Communication',range:[41,52]},{name:'Travel & Essentials',range:[53,64]},{name:'Work & Culture',range:[65,74]},
+import {FOUNDATION_ADDITIONS} from './foundational-expansion.mjs';
+import {P31_CHARACTER_ROWS} from './p31-foundations.mjs';
+import {P35_CHARACTER_ROWS} from './p35-foundations.mjs';
+import {P39_CHARACTER_ROWS} from './p39-foundations.mjs';
+import {P46_CHARACTER_ROWS} from './p46-foundations.mjs';
+import {P47_CHARACTER_ROWS} from './p47-foundations.mjs';
+import {P50_CHARACTER_ROWS} from './p50-foundations.mjs';
+import {P51_CHARACTER_ROWS} from './p51-foundations.mjs';
+const ORIGINAL_GROUPS=[{name:'Foundations',range:[1,13]},{name:'Everyday Language',range:[14,26]},{name:'People & Place',range:[27,40]},{name:'Time & Communication',range:[41,52]},{name:'Travel & Essentials',range:[53,64]},{name:'Work & Culture',range:[65,74]},
  {name:'People & Conversation',range:[75,84]},
  {name:'Politeness & Actions',range:[85,94]},
  {name:'Connecting Ideas',range:[95,104]},
@@ -14,4 +22,37 @@ export function lessonGroups(){return [{name:'Foundations',range:[1,13]},{name:'
  {name:'Seasons & Weather · New Foundations',range:[166,175]},
  {name:'Food & Meals · New Foundations',range:[176,183]},
  {name:'Useful Actions · New Foundations',range:[184,190]},
- {name:'Qualities & Comparisons · New Foundations',range:[191,202]}].map((g,i)=>({...g,index:i+1,lessons:DEMO_LESSONS.filter(l=>l.order>=g.range[0]&&l.order<=g.range[1])}));}
+ {name:'Qualities & Comparisons · New Foundations',range:[191,202]}];
+
+// Append the original P31/P35/P39/P46/P47/P50/P51 lesson sources without
+// changing the first 20 established unit IDs or any historical lesson ID.
+// Derive boundaries from the same authored modules as demo-lessons.mjs.
+const ADVANCED_SECTIONS=[
+ ['P31 Character Study',P31_CHARACTER_ROWS],
+ ['P35 Character Study',P35_CHARACTER_ROWS],
+ ['P39 Character Study',P39_CHARACTER_ROWS],
+ ['P46 Advanced Character Study',P46_CHARACTER_ROWS],
+ ['P47 Advanced Character Study',P47_CHARACTER_ROWS],
+ ['P50 Advanced Character Study',P50_CHARACTER_ROWS],
+ ['P51 Advanced Character Study',P51_CHARACTER_ROWS]
+];
+const ADVANCED_UNIT_SIZE=12;
+export function lessonGroups(){
+ const ranges=[...ORIGINAL_GROUPS];
+ let first=75+FOUNDATION_ADDITIONS.length;
+ for(const [name,rows] of ADVANCED_SECTIONS){
+  // The established first 20 units already include the earliest P31 rows.
+  // Skip that covered prefix instead of registering duplicate lessons.
+  const uncovered=Math.max(203,first);
+  for(let start=uncovered;start<first+rows.length;start+=ADVANCED_UNIT_SIZE){
+   ranges.push({name:`${name} · Part ${Math.floor((start-first)/ADVANCED_UNIT_SIZE)+1}`,
+    range:[start,Math.min(first+rows.length-1,start+ADVANCED_UNIT_SIZE-1)]});
+  }
+  first+=rows.length;
+ }
+ return ranges.map((group,i)=>({
+  ...group,index:i+1,
+  lessons:DEMO_LESSONS.filter(lesson=>lesson.order>=group.range[0]&&lesson.order<=group.range[1])
+ }));
+}
+

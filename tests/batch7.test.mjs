@@ -13,8 +13,8 @@ import {createGuidedSession,guidedQuestion,recordGuidedAnswer,advanceGuidedSessi
 const now=Date.parse('2026-10-12T12:00:00Z');
 
 test('previous complete demonstrator curriculum is unchanged, synthetic rights gates still apply',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);
- assert.ok(DEMO_LESSONS.every(l=>l.words.length===2&&l.approval==='DEMO_ONLY'&&l.officialHskLevel===null));
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);
+ assert.ok(DEMO_LESSONS.slice(0,74).every(l=>l.words.length===2&&l.approval==='DEMO_ONLY'&&l.officialHskLevel===null));
  assert.ok(STORIES.every(s=>s.approval==='DEMO_ONLY'&&s.officialHskLevel===null));
 });
 test('contextual exercises are complete for all stories and never use an unattested external syllabus',()=>{
@@ -87,5 +87,5 @@ test('app provides story sentence guidance, wordbook, adaptable speech and modul
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  for(const marker of ['story-help-line','word-bookmark','open-wordbook','speech-rate','Find evidence','Link the ideas','lessonConnections','visibleExploreResults'])assert.ok(app.includes(marker),marker);
- assert.ok(sw.includes('context-lab.mjs'));assert.ok(sw.includes('working-v20'));
+ assert.ok(sw.includes('context-lab.mjs'));assert.ok(sw.includes('working-v53'));
 });

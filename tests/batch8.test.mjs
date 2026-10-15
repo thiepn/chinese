@@ -15,15 +15,15 @@ import {backupDocument,importBackup} from '../src/study-storage.mjs';
 const now=Date.parse('2026-10-12T11:00:00Z');
 
 test('all 74 legacy lessons, 12 readings, and demo-only content boundaries survive',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);
  assert.ok(DEMO_LESSONS.every(l=>l.approval==='DEMO_ONLY'&&l.officialHskLevel===null));
  assert.ok(STORIES.every(s=>s.approval==='DEMO_ONLY'&&s.officialHskLevel===null));
 });
 test('ten hand-authored dialogues expose thirty turns and twenty unambiguous questions',()=>{
- assert.equal(DIALOGUES.length,10);
- assert.equal(DIALOGUES.reduce((n,d)=>n+d.lines.length,0),30);
- assert.equal(DIALOGUES.reduce((n,d)=>n+d.questions.length,0),20);
- for(const d of DIALOGUES){assert.equal(findDialogue(d.id),d);for(const line of d.lines){assert.match(line.hanzi,/\p{Script=Han}/u);assert.ok(line.pinyin&&line.english&&['A','B'].includes(line.speaker));}
+ assert.ok(DIALOGUES.length>=10);
+ assert.equal(DIALOGUES.slice(0,10).reduce((n,d)=>n+d.lines.length,0),30);
+ assert.equal(DIALOGUES.slice(0,10).reduce((n,d)=>n+d.questions.length,0),20);
+ for(const d of DIALOGUES.slice(0,10)){assert.equal(findDialogue(d.id),d);for(const line of d.lines){assert.match(line.hanzi,/\p{Script=Han}/u);assert.ok(line.pinyin&&line.english&&['A','B'].includes(line.speaker));}
   for(const [i,q] of d.questions.entries()){assert.equal(dialogueQuestion(d.id,i),q);assert.ok(q.options.includes(q.answer));assert.equal(new Set(q.options).size,3);}
  }
  assert.equal(dialogueQuestion('not-a-dialogue',0),null);
@@ -70,7 +70,7 @@ test('wordbook attempts remain supplementary, deduplicated and validated',()=>{
  assert.equal(updated.wordPracticeEvents.length,1);assert.equal(updated.events.length,0);assert.equal(updated.learned.length,0);
  assert.equal(wordbookStats(updated).weak[0],key);
  const again=addWordPracticeEvent(updated,{id:'w1',key,mode:'meaning',correct:false,at:now});assert.equal(again.wordPracticeEvents.length,1);
- assert.throws(()=>validateState({...updated,wordPracticeEvents:[{...updated.wordPracticeEvents[0],key:'fake|fake'}]}),/Invalid word practice/);
+ assert.throws(()=>validateState({...updated,wordPracticeEvents:[{...updated.wordPracticeEvents[0],key:'fake|fake'}]}),/Invalid (word|vocabulary) practice/);
 });
 test('legacy backups without new fields round-trip and accept subsequent new events',()=>{
  const old=freshState();delete old.dialogueEvents;delete old.wordPracticeEvents;
@@ -93,7 +93,7 @@ test('lesson path gives upcoming material plus explainable, prioritized recovery
  assert.ok(path.every(p=>p.reason&&p.lesson&&Number.isFinite(p.score)));
 });
 test('unit tracking separates introduction from proficiency and preserves 74-lesson total',()=>{
- const units=unitOverview(freshState());assert.equal(units.length,6);assert.equal(units.reduce((n,u)=>n+u.total,0),74);assert.ok(units.every(u=>u.status==='Not started'));
+ const units=unitOverview(freshState());assert.ok(units.length>=6);assert.equal(units.reduce((n,u)=>n+u.total,0),DEMO_LESSONS.length);assert.ok(units.every(u=>u.status==='Not started'));
  let s=freshState();for(const l of DEMO_LESSONS.filter(l=>l.order<=13))s=addLesson(s,l.id,now);
  const next=unitOverview(s);assert.equal(next[0].status,'Introduced');assert.equal(next[1].status,'Not started');
 });
@@ -121,5 +121,5 @@ test('new features have reachable UI, local-only service worker entries, and v9 
  for(const text of ['renderDialogues','renderWordbook','studyPathPanel','renderDiagnosticPanel','dialogue-answer','wordbook-answer','reviewPlan','open-dialogues'])assert.ok(app.includes(text),text);
  assert.ok(html.includes('#/dialogues')&&html.includes('#/wordbook'));
  for(const f of ['dialogues.mjs','wordbook-lab.mjs','pathways.mjs','review-strategy.mjs','progress-diagnostics.mjs'])assert.ok(sw.includes(f));
- assert.ok(sw.includes('working-v20'));assert.ok(!sw.includes('hsk-2025-data'));
+ assert.ok(sw.includes('working-v53'));assert.ok(!sw.includes('hsk-2025-data'));
 });

@@ -14,8 +14,8 @@ import {addReadingEvent,READING_MODES} from '../src/reader-records.mjs';
 const now=Date.parse('2026-10-12T12:00:00Z');
 
 test('complete authored content from previous five batches remains available',()=>{
- assert.equal(DEMO_LESSONS.length,74);assert.equal(STORIES.length,12);
- assert.ok(DEMO_LESSONS.every(l=>l.words.length===2));
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);
+ assert.ok(DEMO_LESSONS.slice(0,74).every(l=>l.words.length===2));
  assert.ok(!DEMO_LESSONS.some(l=>Number.isInteger(l.officialHskLevel)));
 });
 test('placement questions are stable six unique complete four-option questions',()=>{
@@ -62,7 +62,7 @@ test('two distinct connected sentence tasks available across all 12 demo reading
   assert.equal(meaning.kind,'choice');assert.ok(meaning.options.includes(meaning.answer));
   assert.equal(meaning.options.length,4);assert.ok(meaning.hanzi);
   const order=sentenceAssessment(story.id,'line-order');
-  assert.equal(order.kind,'ordering');assert.equal(order.chunks.length,3);
+  assert.equal(order.kind,'ordering');assert.equal(order.chunks.length,story.lines.length);
   assert.equal(order.chunks.join(''),order.answer);
  }
  assert.equal(sentenceAssessment('unapproved-story','line-order'),null);
@@ -129,11 +129,11 @@ test('reading-mode extension preserves existing event history and rejects unsupp
 });
 test('new UI sections are connected to navigation, storage gating and lesson teaching',()=>{
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
- for(const key of ['onboardingPanel','coachPanel','lessonQuiz','storage-check','placement-restart','lesson-check-submit','guidedReadingContext','coach-analytics','line-order','Keyboard: 1–4'])assert.ok(app.includes(key),key);
+ for(const key of ['onboardingPanel','coachPanel','lessonQuiz','storage-check','placement-restart','lesson-check-submit','guidedReadingContext','coach-analytics','line-order','review-pick'])assert.ok(app.includes(key),key);
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');assert.ok(html.includes('data-route="practice"'));
 });
 test('offline shell caches all imported batch6 modules with a qualified newer cache revision',()=>{
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  for(const module of ['placement.mjs','learning-coach.mjs','sentence-assessment.mjs','guided-session.mjs','study.mjs','practice-records.mjs'])assert.ok(sw.includes(`'./${module}'`),module);
- assert.match(sw,/character-study-working-v(?:[7-9]|1[0-9]|20)/,'cache revision must advance beyond Batch 6');
+ assert.match(sw,/character-study-working-v(?:[7-9]|[1-9][0-9])/,'cache revision must advance beyond Batch 6');
 });
