@@ -173,6 +173,7 @@ let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=fa
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
 let c9LessonSection='overview',c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
+let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
 let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
 let pathwayTransferDraft=''; // Session-only, no IndexedDB or StudyEvent writer.
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
@@ -514,7 +515,7 @@ function renderSentences(){
  const independentProduction=libraryPracticeFocus&&libraryMode==='production'&&!libraryFeedback;
  const directory=independentProduction?'<p class="c9-unified-source-note" role="note">Original sentence previews are concealed while independent Chinese typing is active. Exit focused recall to browse source sentences.</p>':renderC9SentenceDirectory(state,action,esc);
  return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
-  renderC9TypingPath(state,action,esc)+directory+
+  renderC9TypingPath(state,action,esc,{topic:c9TypingTopic,status:c9TypingStatus,page:c9TypingPage})+directory+
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
@@ -1957,6 +1958,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='sentence-grammar-filter'){if(!GRAMMAR_LESSONS.some(g=>g.id===id))return;
   libraryGrammar=id;libraryTopic='all';librarySource='all';libraryPage=0;libraryQuery='';return go('sentences');}
  
+ if(name==='c9-typing-page'){
+  const delta=Number(button.dataset.delta);
+  if(![-1,1].includes(delta))return false;
+  c9TypingPage=Math.max(0,c9TypingPage+delta);render();
+  root.querySelector('#c9-typing-path-title')?.scrollIntoView({block:'nearest',behavior:'auto'});
+  return true;
+ }
  if(name==='c9-typing-start'){
   if(!findLibrarySentence(id))return alertUser('Original sentence unavailable.','error');
   // Use the existing P26–P40 native production assessment and the established
@@ -2617,6 +2625,14 @@ root.addEventListener('change',async e=>{
  }
  if(e.target.id==='c9-reading-filter'){if(!['all','unattempted','repair','saved','independent'].includes(e.target.value))return;c9ReadingFilter=e.target.value;c9ReadingPage=0;refreshC9MediaCatalog('reading');return;}
  if(e.target.id==='c9-dialogue-filter'){if(!['all','unattempted','repair','independent','listening'].includes(e.target.value))return;c9DialogueFilter=e.target.value;c9DialoguePage=0;refreshC9MediaCatalog('dialogue');return;}
+ if(e.target.id==='c9-typing-topic'){
+  if(e.target.value!=='all'&&!SENTENCE_TOPICS.some(t=>t.id===e.target.value))return;
+  c9TypingTopic=e.target.value;c9TypingPage=0;render();return;
+ }
+ if(e.target.id==='c9-typing-status'){
+  if(!['all','retry','unattempted','independent'].includes(e.target.value))return;
+  c9TypingStatus=e.target.value;c9TypingPage=0;render();return;
+ }
  if(e.target.id==='c9-word-status'){if(!C9_WORD_FILTERS.includes(e.target.value))return;c9WordFilter=e.target.value;c9WordPage=0;refreshC9Words();return;}
 
  if(e.target.id==='c9-learn-unit'||e.target.id==='c9-learn-status'){
