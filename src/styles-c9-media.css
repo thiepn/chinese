@@ -358,3 +358,18 @@
  .c9-personal-actions .c9-button{flex:1 1 140px;white-space:normal}
 }
 @media(forced-colors:active){.c9-personal-term{border-bottom:2px solid LinkText;background:Canvas;color:CanvasText}}
+
+
+/* P69 continued — indexed-word evidence for optional private pasted text. */
+.c9-personal-index{border-top:1px solid var(--c9-line);padding-top:14px;margin-top:10px}
+.c9-personal-index h3{font:600 16px/1.4 var(--c9-display);margin:0 0 7px}
+.c9-personal-index>p{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-personal-index-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}
+.c9-personal-index-grid article{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:5px;padding:12px;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)}
+.c9-personal-index-grid article>strong{font:550 22px/1.2 var(--c9-hanzi-display);color:var(--c9-ink)}
+.c9-personal-index-grid article>span{font:400 12px/1.5 var(--c9-ui);overflow-wrap:anywhere}
+.c9-personal-index-grid article>small{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub);overflow-wrap:anywhere}
+.c9-personal-index-grid article>div{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}
+.c9-personal-index-grid article .c9-button{min-height:44px}
+.c9-personal-line>small{font:400 11px/1.6 var(--c9-ui);color:var(--c9-sub)}
+@media(max-width:650px){.c9-personal-index-grid{grid-template-columns:minmax(0,1fr)}}
