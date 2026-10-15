@@ -478,3 +478,31 @@
  .c9-home>.c9-home-roadmap{padding:16px 13px}
  .c9-home>.c9-home-roadmap .c9-home-roadmap-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* C9-50 — P9 original-source journal. Keep real Chinese copy and original
+   illustrated SVG, not third-party mock HSK grades or fabricated assets. */
+.c9-home-source-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ width:100%;margin-top:5px;min-width:0}
+.c9-home-source-actions .c9-button{flex:1 1 145px;min-height:44px;
+ text-align:center;justify-content:center;white-space:normal}
+.c9-home-source-preview .c9-listening-deck{padding:10px;gap:7px}
+.c9-home-source-preview .c9-listening-deck-heading{align-items:center}
+.c9-home-source-preview .c9-listening-deck-heading .c9-eyebrow{display:none}
+.c9-home-source-preview .c9-listening-deck-heading h3{font-size:14px}
+.c9-home-source-preview .c9-listening-deck--compact .c9-listening-limits{font-size:10px}
+.c9-home-hero-copy .c9-home-source-preview>strong{letter-spacing:.018em}
+@media(min-width:1231px){
+ .c9-home-first-fold{grid-template-columns:minmax(0,1.4fr) minmax(280px,.82fr)}
+ .c9-home-first-fold>.c9-home-plan{align-self:stretch}
+ .c9-home-first-fold .c9-home-source-preview{margin-top:22px}
+}
+@media(max-width:767px){
+ .c9-home-source-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .c9-home-source-actions .c9-button{width:100%;min-width:0;min-height:46px;font-size:12px;padding:9px 7px}
+ .c9-home-source-preview .c9-listening-deck{margin:7px 0 0}
+ .c9-home-source-preview .c9-listening-deck--compact .c9-listening-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-home-first-fold .c9-home-art{min-height:75px}
+ .c9-home-first-fold .c9-home-hero-copy{padding:15px}
+}
+@media(max-width:355px){.c9-home-source-actions{grid-template-columns:minmax(0,1fr)}}
