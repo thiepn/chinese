@@ -173,6 +173,9 @@ for(const word of WORDS){
  const pronounced=sameReading(word.pinyin),readings=byReading.get(pronounced)||[];
  readings.push(word);byReading.set(pronounced,readings);
 }
+/** All canonical readings for the exact written surface. Never guess the
+ * intended reading/sense for an arbitrary user-pasted passage. */
+export function wordsForWrittenForm(hanzi){return Object.freeze([...(byScript.get(String(hanzi??''))||[])]);}
 export function sourceWordComparisons(key,{limit=4}={}){
  const source=findWord(key);if(!source)return [];
  const size=Math.max(0,Math.min(12,Number.isInteger(limit)?limit:4));
