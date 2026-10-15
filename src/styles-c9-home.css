@@ -468,3 +468,13 @@
  .c9-home-art-caption{bottom:6px;font-size:9px}
  .c9-home-source-preview>strong{font-size:23px}
 }
+
+
+/* P9 continuation: the original three-unit roadmap is no longer buried in a
+   disclosure. Leave its authored course positions and introduction evidence unchanged. */
+.c9-home>.c9-home-roadmap{margin:0;min-width:0}
+.c9-home>.c9-home-roadmap .c9-home-panel-heading{align-items:center}
+@media(max-width:700px){
+ .c9-home>.c9-home-roadmap{padding:16px 13px}
+ .c9-home>.c9-home-roadmap .c9-home-roadmap-grid{grid-template-columns:minmax(0,1fr)}
+}
