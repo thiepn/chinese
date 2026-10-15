@@ -417,3 +417,54 @@
  .c9-home-explore-more>summary{padding:13px 12px}
  .c9-home-hero-actions .c9-button{width:100%}
 }
+
+/* C9-47 — P9 first-fold editorial composition, bound to the real learning hub.
+   No mock HSK progress, remote landscape assets or additional UI framework. */
+.c9-home-first-fold{
+ display:grid;grid-template-columns:minmax(0,1.36fr) minmax(310px,.82fr);
+ gap:16px;align-items:stretch;min-width:0;
+}
+.c9-home-first-fold>.c9-home-hero{height:100%;min-height:0;align-content:stretch}
+.c9-home-first-fold>.c9-home-plan{margin:0;align-self:start}
+.c9-home-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.c9-home-source-preview{
+ width:100%;display:grid;gap:4px;margin-top:clamp(22px,3vw,38px);
+ padding:17px 0 0;border-top:1px solid var(--c9-line);min-width:0
+}
+.c9-home-source-preview>span,.c9-home-art-caption{
+ font:700 10px/1.5 var(--c9-ui);letter-spacing:.095em;color:var(--c9-muted)
+}
+.c9-home-source-preview>strong{
+ display:block;font:500 clamp(21px,2.2vw,29px)/1.55 var(--c9-hanzi-display);
+ color:var(--c9-ink);overflow-wrap:anywhere
+}
+.c9-home-source-preview>small{
+ font:500 12px/1.5 var(--c9-ui);color:var(--c9-green)
+}
+.c9-home-source-preview>p{
+ font:400 12px/1.55 var(--c9-ui);color:var(--c9-sub);margin:0
+}
+.c9-home-art{padding-bottom:35px}
+.c9-home-art-caption{
+ position:absolute;bottom:14px;left:10px;right:10px;
+ color:var(--c9-green);text-align:center;z-index:1
+}
+.c9-home-first-fold .c9-home-panel-heading{margin-bottom:11px}
+.c9-home-first-fold .c9-home-panel-desc{margin-bottom:6px}
+.c9-home-first-fold .c9-home-task{padding-block:10px}
+.c9-home-first-fold .c9-home-task-content>small{font-size:10px}
+.c9-home-first-fold .c9-home-hero{box-shadow:none}
+@media(max-width:1230px){
+ .c9-home-first-fold{grid-template-columns:minmax(0,1fr)}
+ .c9-home-first-fold>.c9-home-hero{min-height:270px}
+ .c9-home-first-fold>.c9-home-plan{width:100%}
+}
+@media(max-width:767px){
+ .c9-home-first-fold{gap:12px}
+ .c9-home-first-fold>.c9-home-hero{min-height:0}
+ .c9-home-hero-copy{padding:19px 18px 22px}
+ .c9-home-source-preview{margin-top:18px;padding-top:13px}
+ .c9-home-art{padding:8px 16px 24px;min-height:90px}
+ .c9-home-art-caption{bottom:6px;font-size:9px}
+ .c9-home-source-preview>strong{font-size:23px}
+}
