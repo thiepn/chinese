@@ -2654,14 +2654,18 @@ window.addEventListener('hashchange',()=>{
  const sameScreenSourceChanged=destination===previous&&Boolean(targetSource)&&
   targetSource!==(previousSource||(previous==='grammar'?grammarSelected:
    previous==='sentences'?librarySelected:pathwaySelected));
+ // Going from a P29 mission to its band index is a source departure even
+ // though the route name stays 'pathway' and the new hash has no source ID.
+ const pathwayMissionExit=previous==='pathway'&&
+  /^#\/pathway\/path-\d{2}$/.test(previousHash)&&currentHash!==previousHash&&!targetSource;
  // Back/Forward and pasted deep links do not go through the original native
  // controller. Guard both route changes and same-route source changes.
- if((destination!==previous||sameScreenSourceChanged)&&!approved&&
+ if((destination!==previous||sameScreenSourceChanged||pathwayMissionExit)&&!approved&&
   !c9ConfirmLeaveNativeAnswer(previous)){
   history.replaceState(null,'',previousHash);
   return;
  }
- if(destination!==previous||sameScreenSourceChanged){stopC9Speech();if(previous==='pathway')pathwayTransferDraft='';}
+ if(destination!==previous||sameScreenSourceChanged||pathwayMissionExit){stopC9Speech();if(previous==='pathway')pathwayTransferDraft='';}
  // Following a *real* approved hash transition, synchronize source-specific
  // local input with the displayed original source, never with an old lesson.
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
