@@ -87,7 +87,8 @@ export function renderC9Review({
        '<div><strong>'+due.filter(id=>cardFamily(cardInfo(id))===key).length+'</strong><span>'+label+'</span></div>').join('')+
       '</div>'+
      '<div class="c9-assessment-actions c9-unified-actions">'+action('review-begin','Begin scheduled review →','c9-button c9-button--primary',filtered.length?'':'disabled')+
-     link('learn','Study new material')+'</div>'+
+     (due.length?'':link('practice','Practice now · no review due'))+
+     link('learn','Open your lessons')+'</div>'+
     '</section><section class="c9-assessment-panel c9-unified-card c9-assessment-plan" aria-labelledby="c9-review-priority-title">'+
     '<p class="c9-eyebrow">EXISTING QUEUE PRIORITIES</p><h2 id="c9-review-priority-title">Why these come first</h2>'+
     (why?'<ol class="c9-assessment-reasons">'+why+'</ol>':
