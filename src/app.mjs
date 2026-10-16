@@ -174,7 +174,7 @@ let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9Le
 let c9LessonSection='overview',c9LessonFocused=true,c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
 let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
-let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
+let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9ReadingQueueFilter='all',c9ReadingQueuePage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
 let pathwayTransferDraft=''; // Session-only, no IndexedDB or StudyEvent writer.
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
 let librarySelected='sent-001',libraryQuery='',libraryTopic='all',libraryArea='all',libraryDifficulty='all',libraryGrammar='all',libraryPurpose='all',libraryTone='all',librarySource='all',librarySavedOnly=false,libraryPage=0,libraryMode='meaning',libraryTyped='',libraryOrder=[],libraryFeedback=null,libraryAssisted=false,libraryShowPinyin=true,libraryShowEnglish=true,libraryPracticeFocus=false;
@@ -238,7 +238,7 @@ function renderReader(){
 function renderStories(){
  const story=findStory(storyId)||STORIES[0];
  return '<div class="c9-media-workspace c9-media-stories">'+
-  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage})+
+  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
   renderC9PersonalTextReader(esc,state)+
   '<div class="c9-media-native">'+renderStoriesNative()+'</div></div>';
 }
@@ -1443,7 +1443,31 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const d=findDialogue(dialogueId),line=d?.lines[c9DialogueTurn];if(!line)return;
   return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
  }
-  if(name==='c9-media-open-story'){
+  if(name==='c9-reading-queue-page'){
+  const delta=Number(button.dataset.delta);
+  if(![-1,1].includes(delta)||route()!=='stories')return false;
+  c9ReadingQueuePage=Math.max(0,c9ReadingQueuePage+delta);
+  render();
+  root.querySelector('#c9-reading-queue-title')?.scrollIntoView({block:'nearest',behavior:'auto'});
+  return true;
+ }
+ if(name==='c9-reading-queue-start'){
+  const story=findStory(id),mode=button.dataset.mode;
+  if(!story||!['comprehension','cloze','ordering','pronunciation'].includes(mode)||!storyExercise(story,mode))
+   return alertUser('Original source reading exercise unavailable.','error');
+  if(route()==='stories'&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  if(route()!=='stories'&&!go('stories'))return false;
+  storyId=story.id;
+  resetReadingNavigation();
+  resetStoryExercise();
+  storyMode=mode;
+  storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
+  render();
+  root.querySelector('.story-practice')?.scrollIntoView({block:'start',behavior:'auto'});
+  announceC9Interaction('Original '+story.title+' reading exercise opened. Your answer has not been graded.');
+  return true;
+ }
+ if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target){alertUser('Original reading unavailable.','error');return false;}
   if(route()==='stories'&&storyId===target.id){
    root.querySelector('.story-paper')?.scrollIntoView({block:'start'});return true;
@@ -2677,6 +2701,10 @@ root.addEventListener('change',async e=>{
   const phase=findC9AdvancedPhase(e.target.value);
   if(phase)return act({dataset:{action:'c9-advanced-phase',phase:String(phase.phase)}});
   return;
+ }
+ if(e.target.id==='c9-reading-queue-filter'){
+  if(!['all','retry','unattempted','saved','independent'].includes(e.target.value))return;
+  c9ReadingQueueFilter=e.target.value;c9ReadingQueuePage=0;render();return;
  }
  if(e.target.id==='c9-reading-filter'){if(!['all','unattempted','repair','saved','independent'].includes(e.target.value))return;c9ReadingFilter=e.target.value;c9ReadingPage=0;refreshC9MediaCatalog('reading');return;}
  if(e.target.id==='c9-dialogue-filter'){if(!['all','unattempted','repair','independent','listening'].includes(e.target.value))return;c9DialogueFilter=e.target.value;c9DialoguePage=0;refreshC9MediaCatalog('dialogue');return;}
