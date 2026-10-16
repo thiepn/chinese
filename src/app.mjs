@@ -116,6 +116,8 @@ const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  learn:['lesson-check-entry']
 });
 function c9OpenNativeAnswer(screen=c9RenderedRoute){
+ if(screen==='dialogues'&&p33Branch!==null&&!p33DecisionUi.revealed&&p33DecisionUi.typed.trim())
+  return root.querySelector('#p33-decision-entry')||{value:p33DecisionUi.typed};
  if(screen==='dialogues'&&!c9RoleplayUi.revealed&&c9RoleplayUi.typed.trim())
   return root.querySelector('#c9-roleplay-entry')||{value:c9RoleplayUi.typed};
  if(screen==='stories'&&!c9ReadingRecallUi.revealed&&c9ReadingRecallUi.typed.trim())
@@ -170,6 +172,11 @@ let pinyinSection='sounds',pinyinFilter='all',pinyinIndex=0,pinyinTyped='',pinyi
 let grammarSelected='g01',grammarChapter='all',grammarQuery='',grammarMode='meaning',grammarTyped='',grammarFeedback=null,grammarAssisted=false,grammarOrder=[],grammarShowEnglish=true;
 let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeedback=null;
 let p33Theme='all',p33Query='',p33Branch=null;
+const p33DecisionUi={typed:'',revealed:false,referenceSeen:false}; // In-tab source rehearsal, no grade writer.
+function resetP33Decision({newSource=false}={}){
+ p33DecisionUi.typed='';p33DecisionUi.revealed=false;
+ if(newSource)p33DecisionUi.referenceSeen=false;
+}
 let p34ShadowLine=0,p34TranscriptViewed=false;
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
@@ -225,7 +232,7 @@ function studyPathPanel(){const items=lessonPath(state,{limit:4}),units=unitOver
 function renderDialoguesNative(){const d=findDialogue(dialogueId)||DIALOGUES[0],q=dialogueQuestion(d.id,dialogueStep),stats=dialogueSummary(state);return `${gated()}${renderC9ListeningWorkflow(d,q,dialogueFeedback,dialogueSupport||p34TranscriptViewed,action,esc)}<details class="p34-catalog"><summary>Open P34 listening-first course · 25 situations</summary>${p34Overview(state,action,esc)}</details>${p34ListeningPanel(d,state,action,esc,{line:p34ShadowLine})}<details class="p33-browser"><summary>Browse ${P33_SCENARIOS.length} everyday communication situations</summary>${p33SceneShelf(state,d.p33?.id,action,esc,{theme:p33Theme,query:p33Query})}</details>
 <section class="simple-panel dialogue-top"><label for="dialogue-choice">Choose a dialogue<select id="dialogue-choice">${DIALOGUES.map((item,i)=>`<option value="${item.id}" ${d.id===item.id?'selected':''}>${i+1}. ${esc(item.title)}</option>`).join('')}</select></label><div class="stats-grid">${stat(stats.practiced,'Conversations practiced')}${stat(stats.independent,'Independent correct answers')}${stat(stats.attempts,'Supplementary responses')}</div></section><div class="content-continuation" aria-label="Conversation navigation">${action('dialogue-prev','← Previous conversation','button outline small')}${action('dialogue-next-context','Next conversation →','button outline small')}</div>
 <div class="dialogue-layout"><article class="simple-panel dialogue-paper" id="c9-native-dialogue" tabindex="-1"><div class="panel-heading"><h2>${esc(d.title)}</h2><span class="muted">${d.lines.length} speaking turns</span></div>${renderC9TurnNavigator(d,c9DialogueTurn,action,esc)}<div class="dialogue-turns">${d.lines.map((line,index)=>`<div class="dialogue-turn ${c9DialogueTurn===index?'is-c9-current':''}" tabindex="-1" data-c9-turn-index="${index}" aria-current="${c9DialogueTurn===index?'step':'false'}"><span class="speaker-label" aria-label="Speaker ${line.speaker}">${esc(line.speaker)}</span><div><p class="dialogue-chinese" ${d.p34&&!dialogueSupport?'':'lang="zh-Hans"'}>${d.p34&&!dialogueSupport?'Audio turn · reveal transcript when ready':esc(line.hanzi)}</p>${dialogueSupport?`<p class="dialogue-pinyin">${esc(line.pinyin)}</p><p class="muted">${esc(line.english)}</p>`:''}<div class="button-row">${action('speak','Listen to this turn','button outline small',`data-text="${esc(line.hanzi)}"`)}</div></div></div>`).join('')}</div><div class="button-row">${action('dialogue-support',dialogueSupport?'Hide language support':'Show pinyin + English','button outline',`aria-pressed="${dialogueSupport}"`)}${action('speak','Listen to the exchange','button outline',`data-text="${esc(d.lines.map(x=>x.hanzi).join(' '))}"`)}</div><p class="muted">Device TTS is optional and is not certified pronunciation audio. Revealing language support makes the next answer assisted.</p>${dialogueWordLinks(d.id).length?`<div class="dialogue-word-links"><p class="eyebrow">EXPLORE WORDS IN THIS EXCHANGE</p><p class="muted">Written-form matches only; verify their meanings in context.</p><div class="word-link-row">${dialogueWordLinks(d.id).map(w=>action('lookup-word',`${esc(w.hanzi)} <small>${esc(w.pinyin)}</small>`,'button outline small',`data-word="${esc(w.hanzi)}"`)).join('')}</div></div>`:''}</article>
-<section class="simple-panel dialogue-quiz"><p class="eyebrow">CONTEXT CHECK · ${dialogueStep+1} / ${d.questions.length}</p><h2>${esc(q.prompt)}</h2>${dialogueFeedback?`<div class="reader-feedback ${dialogueFeedback.correct&&!dialogueFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${dialogueFeedback.correct?'Correct answer':'Review the conversation'}</strong><p>Reference: ${esc(q.answer)}</p>${d.p34?`<p><strong>Listening evidence:</strong> ${esc(d.p34.feedback[dialogueStep]||d.p34.teaching)}</p><p lang="zh-Hans">${esc(d.lines[dialogueStep===0?1:3].hanzi)}</p><p class="muted">${esc(d.lines[dialogueStep===0?1:3].pinyin)} · ${esc(d.lines[dialogueStep===0?1:3].english)}</p>`:''}<p>${dialogueFeedback.assisted?'Assisted attempt — not independent evidence.':'Saved as separate conversation practice.'}</p></div><div class="button-row">${action('dialogue-next',dialogueStep+1<d.questions.length?'Next context question →':'Next conversation →','button primary')}${action('dialogue-retry','Repeat this question','button outline')}</div>`:`<div class="choice-list">${q.options.map((opt,i)=>action('dialogue-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(opt)}`,'choice',`data-option="${esc(opt)}"`)).join('')}</div><div class="button-row">${action('dialogue-reveal','Reveal reference','button outline')}</div>`}<p class="muted">These questions assess contextual meaning, not official curriculum mastery.</p></section></div>${p33ScenarioTeaching(d,p33Branch,action,esc)}${renderDialogueMission(d)}`;}
+<section class="simple-panel dialogue-quiz"><p class="eyebrow">CONTEXT CHECK · ${dialogueStep+1} / ${d.questions.length}</p><h2>${esc(q.prompt)}</h2>${dialogueFeedback?`<div class="reader-feedback ${dialogueFeedback.correct&&!dialogueFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${dialogueFeedback.correct?'Correct answer':'Review the conversation'}</strong><p>Reference: ${esc(q.answer)}</p>${d.p34?`<p><strong>Listening evidence:</strong> ${esc(d.p34.feedback[dialogueStep]||d.p34.teaching)}</p><p lang="zh-Hans">${esc(d.lines[dialogueStep===0?1:3].hanzi)}</p><p class="muted">${esc(d.lines[dialogueStep===0?1:3].pinyin)} · ${esc(d.lines[dialogueStep===0?1:3].english)}</p>`:''}<p>${dialogueFeedback.assisted?'Assisted attempt — not independent evidence.':'Saved as separate conversation practice.'}</p></div><div class="button-row">${action('dialogue-next',dialogueStep+1<d.questions.length?'Next context question →':'Next conversation →','button primary')}${action('dialogue-retry','Repeat this question','button outline')}</div>`:`<div class="choice-list">${q.options.map((opt,i)=>action('dialogue-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(opt)}`,'choice',`data-option="${esc(opt)}"`)).join('')}</div><div class="button-row">${action('dialogue-reveal','Reveal reference','button outline')}</div>`}<p class="muted">These questions assess contextual meaning, not official curriculum mastery.</p></section></div>${p33ScenarioTeaching(d,p33Branch,action,esc,p33DecisionUi)}${renderDialogueMission(d)}`;}
 function refreshC9MediaCatalog(kind){
  const reading=kind==='reading',target=root.querySelector(reading?'#c9-reading-results':'#c9-dialogue-results');if(!target)return;
  target.innerHTML=reading?renderC9ReadingCatalog(state,storyId,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage},action,esc):
@@ -1930,11 +1937,33 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(theme!=='all'&&![...new Set(P33_SCENARIOS.map(s=>s.theme))].includes(theme))return;
   p33Theme=theme;return render();
  }
- if(name==='p33-branch'){const index=Number(button.dataset.index);
-  if(!findDialogue(dialogueId)?.p33||!Number.isInteger(index)||index<0||index>1)return;
-  p33Branch=index;return render();
+ if(name==='p33-branch'){
+  const scene=findDialogue(dialogueId)?.p33,index=Number(button.dataset.index);
+  if(!scene||!Number.isInteger(index)||index<0||index>=scene.alternatives.length)return false;
+  if(p33Branch===index)return true;
+  if(!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  p33Branch=index;resetP33Decision();stopC9Speech();render();return true;
  }
- if(name==='p33-clear-branch'){p33Branch=null;return render();}
+ if(name==='p33-clear-branch'){
+  if(!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  stopC9Speech();p33Branch=null;resetP33Decision();render();return true;
+ }
+ if(name==='p33-decision-reveal'){
+  const scene=findDialogue(dialogueId)?.p33;
+  if(!scene||!Number.isInteger(p33Branch)||!scene.alternatives[p33Branch])return false;
+  // Source is authored; revealing the partner's reply permanently marks
+  // this dialogue's pending native comprehension/mission work assisted.
+  p33DecisionUi.revealed=true;p33DecisionUi.referenceSeen=true;
+  dialogueSupport=true;if(missionActive)missionSupport=true;
+  render();
+  announceC9Interaction('Original partner reply revealed. Native answers using this source are assisted.');
+  return true;
+ }
+ if(name==='p33-decision-retry'){
+  if(!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  p33DecisionUi.typed='';p33DecisionUi.revealed=false;
+  render();root.querySelector('#p33-decision-entry')?.focus({preventScroll:true});return true;
+ }
  if(name==='p33-write'){
   const scene=findP33Scenario(id),turn=Number(button.dataset.turn);
   if(!scene||![1,4,7].includes(turn))return false;
@@ -2539,7 +2568,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='mission-next'){if(missionStep===2){missionStep=0;missionActive=false;}else missionStep++;missionFeedback=null;missionSupport=false;missionTyped='';return render();}
  if(name==='mission-answer'||name==='mission-reveal'){
   if(!missionActive||missionFeedback)return;const q=missionQuestion(dialogueId,missionStep),response=name==='mission-reveal'?'':q.kind==='pinyin'?missionTyped:button.dataset.option||'';if(name==='mission-answer'&&!response.trim())return alertUser('Enter an answer first.','error');
-  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
+  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.referenceSeen||p33DecisionUi.referenceSeen||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addMissionEvent(s,{id,dialogueId,step:missionStep,correct:result.correct,assisted}));if(ok){missionFeedback={...result,assisted};render();}return;
  }
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
@@ -2562,7 +2591,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
-  const assisted=dialogueSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
+  const assisted=dialogueSupport||c9RoleplayUi.referenceSeen||p33DecisionUi.referenceSeen||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
   const eventId=globalThis.crypto?.randomUUID?.()||`dialogue-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addDialogueEvent(s,{id:eventId,dialogueId,question:dialogueStep,answer:response,assisted}));
   if(ok){dialogueFeedback={correct:response===q.answer,assisted};render();}return;
@@ -2839,7 +2868,8 @@ root.addEventListener('input',e=>{
  p30Query=e.target.value;p30Page=0;
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
  refreshC9FindWorkbench();return;
-}if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='c9-roleplay-entry'){c9RoleplayUi.typed=e.target.value;return;}
+}if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='p33-decision-entry'){p33DecisionUi.typed=e.target.value;return;}
+ if(e.target.id==='c9-roleplay-entry'){c9RoleplayUi.typed=e.target.value;return;}
 if(e.target.id==='c9-reading-recall-entry'){c9ReadingRecallUi.typed=e.target.value;return;}
 if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
  libraryTyped=e.target.value;
@@ -3001,7 +3031,7 @@ window.addEventListener('hashchange',()=>{
    dialogueId=next;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
    p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
    missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
-   c9DialogueSourceId=null;c9DialogueTurn=0;resetC9Roleplay();
+   c9DialogueSourceId=null;c9DialogueTurn=0;resetC9Roleplay();p33Branch=null;resetP33Decision({newSource:true});
   }
  }
  if(destination==='learn'){

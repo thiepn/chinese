@@ -416,6 +416,57 @@ def main():
                     return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
                 check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
                 ctx.close()
+            # C9-58 source-owned decision-to-production across real
+            # authored P33 choices, original partner replies, and native
+            # Sentence Workshop. No fake chatbot or synthetic branch grader.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def p33_original_decision_practice():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    decision=page.locator("#p33-scenario-decision")
+                    decision.wait_for(state="visible")
+                    if decision.locator(".p33-decision-reference").count():
+                        raise AssertionError("Partner continuation leaked before learner choice")
+                    if not decision.locator('.p33-decision-cue [data-action="speak"]').count():
+                        raise AssertionError("Original first-turn audio cue unavailable")
+                    decision.locator('[data-action="p33-branch"][data-index="0"]').click()
+                    decision.locator("#p33-decision-entry").wait_for(state="visible")
+                    decision.locator("#p33-decision-entry").fill("我想用中文回答。")
+                    decision.locator('[data-action="p33-decision-reveal"]').click()
+                    decision.locator(".p33-decision-reference").wait_for(state="visible")
+                    source_a=decision.locator(".p33-decision-reference strong").inner_text()
+                    if not source_a.strip():
+                        raise AssertionError("Original partner reply absent after reveal")
+                    decision.locator('[data-action="p33-decision-retry"]').click()
+                    if decision.locator(".p33-decision-reference").count():
+                        raise AssertionError("Retry did not hide source partner line")
+                    if decision.locator("#p33-decision-entry").input_value():
+                        raise AssertionError("Retry retained prior private draft")
+                    decision.locator('[data-action="p33-branch"][data-index="1"]').click()
+                    decision.locator('[data-action="p33-decision-reveal"]').click()
+                    decision.locator(".p33-decision-reference").wait_for(state="visible")
+                    if decision.locator(".p33-decision-reference strong").inner_text()==source_a:
+                        raise AssertionError("Two authorial alternatives did not produce distinct continuations")
+                    page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first.click()
+                    page.locator('.dialogue-quiz .reader-feedback').wait_for(state="visible")
+                    if "Assisted attempt" not in page.locator(".dialogue-quiz .reader-feedback").inner_text():
+                        raise AssertionError("Previously revealed branch improperly yielded independent dialogue evidence")
+                    source=page.locator('.p33-transfer [data-action="p33-write"]').first
+                    source.wait_for(state="visible")
+                    source.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    page.locator("#app-content").wait_for(state="visible")
+                    if not page.locator("main").count():
+                        raise AssertionError("Original native writing task handoff failed")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P33 mobile decision/writing workflow overflows viewport")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Two real authored alternatives, non-independent source reveal, original graded writing "+str(width)
+                check("C9-58 P33 authentic decision-to-writing "+str(width),p33_original_decision_practice)
+                ctx.close()
             # C9-57 two real ungraded communication activities, not a new
             # speech grader: source-exact role replies and listen-to-write.
             for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
