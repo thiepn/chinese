@@ -1921,11 +1921,11 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='p34-slow'||name==='p34-shadow-replay')return speak(button.dataset.text||'',0.68);
  if(name==='p34-write-listening'){
-  const item=P34_LISTENING.find(x=>x.id===id);
-  if(!item)return false;
-  const index=SENTENCE_TASKS.findIndex(t=>t.id==='p34:'+item.id+':writing');
+  const item=P34_LISTENING.find(x=>x.id===id),dialogue=item&&p34DialogueFor(item.id);
+  if(!item||!dialogue)return false;
+  const taskId='p34:'+item.id+':writing',index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
   if(index<0){alertUser('Original audio writing prompt unavailable.','error');return false;}
-  return c9OpenNativeWorkshopTask(index);
+  return c9OpenNativeWorkshopTask(index,false,{kind:'p34',dialogueId:dialogue.id,taskId});
  }
  if(name==='c9-circuit-open'){
   const selected=findDialogue(id),current=findDialogue(dialogueId);
@@ -1936,11 +1936,19 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-circuit-write'){
   const current=findDialogue(dialogueId),circuit=c9ConversationCircuit(current,state);
-  if(!circuit||circuit.current.writingTaskId!==id)return false;
+  if(!circuit||!circuit.current.writingTasks.some(task=>task.id===id))return false;
   const index=SENTENCE_TASKS.findIndex(t=>t.id===id);
   if(index<0)return false;
-  // This remains the sole canonical graded writing workshop.
-  return c9OpenNativeWorkshopTask(index);
+  // All three existing source-owned tasks use the only canonical writer.
+  return c9OpenNativeWorkshopTask(index,false,{kind:'p33',dialogueId:current.id,taskId:id});
+ }
+ if(name==='c9-circuit-p34-write'){
+  const circuit=c9ConversationCircuit(findDialogue(dialogueId),state);
+  const audio=P34_LISTENING.find(x=>x.id===id),dialogue=audio&&p34DialogueFor(audio.id);
+  if(!circuit||circuit.listening?.id!==id||!dialogue)return false;
+  const taskId='p34:'+audio.id+':writing',index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
+  if(index<0)return false;
+  return c9OpenNativeWorkshopTask(index,false,{kind:'p34',dialogueId:dialogue.id,taskId});
  }
  if(name==='p33-open-scenario'){
   const scene=findP33Scenario(id),target=scene&&DIALOGUES.find(d=>d.p33?.id===id);
@@ -1986,9 +1994,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='p33-write'){
   const scene=findP33Scenario(id),turn=Number(button.dataset.turn);
   if(!scene||![1,4,7].includes(turn))return false;
-  const index=SENTENCE_TASKS.findIndex(t=>t.id==='p33:'+scene.id+':turn'+turn);
+  const taskId='p33:'+scene.id+':turn'+turn,index=SENTENCE_TASKS.findIndex(t=>t.id===taskId);
   if(index<0){alertUser('The dialogue writing task is unavailable.','error');return false;}
-  return c9OpenNativeWorkshopTask(index);
+  const dialogue=DIALOGUES.find(d=>d.p33?.id===scene.id);
+  return c9OpenNativeWorkshopTask(index,false,dialogue?{kind:'p33',dialogueId:dialogue.id,taskId}:null);
  }
  if(name==='p32-repair'){
   const repair=p32RepairFor(id?.split(':').at(-1));
