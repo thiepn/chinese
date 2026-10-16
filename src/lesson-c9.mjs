@@ -127,6 +127,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<small>Curriculum position · not mastery or completion</small></div></div>'+
   '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
   act('c9-lesson-jump','Start at step 1 ↓','c9-button c9-button--primary','data-section="overview" aria-controls="c9-lesson-overview"')+
+  act('c9-lesson-copy-link','Copy lesson link','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'" aria-label="Copy public link to original lesson '+position+'"')+
   '<details class="c9-lesson-extra"><summary>Other ways to study this lesson</summary><div class="c9-lesson-extra-actions">'+
   act('c9-character-open','Character Study','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
   act('c9-character-reader','Read original story','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
