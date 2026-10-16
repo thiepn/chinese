@@ -200,7 +200,7 @@ def main():
                             raise AssertionError("Original Wordbook route lost after simplification")
                         page.locator("#c9-drawer-close").click()
                     open_route(page,"review")
-                    if page.locator(".c9-review-setup a[href='#/practice']").count()!=1:
+                    if page.locator(".c9-review-setup .c9-assessment-actions a[href='#/practice']").count()!=1:
                         raise AssertionError("Learner with no scheduled review has no free-practice route")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
