@@ -969,7 +969,7 @@ def main():
                     raise AssertionError("Source comparison cannot open original character lesson")
                 open_route(page,"stories")
                 disclosure=page.locator(".c9-personal-reader details")
-                if not disclosure.get_attribute("open"): disclosure.locator("summary").click()
+                if not disclosure.evaluate("(el)=>el.open"): disclosure.locator("summary").click()
                 entry=page.locator("#c9-personal-input")
                 entry.fill("我喜欢中文。"*20)
                 page.locator("#c9-personal-analyze").click()
@@ -1397,7 +1397,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v64-context-source-handoffs"
+                current="character-study-working-v65-p65-p69-original-private-study"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1415,7 +1415,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v64-context-source-handoffs');
+                    keys.includes('character-study-working-v65-p65-p69-original-private-study');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
