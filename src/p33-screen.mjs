@@ -45,7 +45,17 @@ export function p33SceneShelf(state,selectedId,act,esc,{theme='all',query='',com
  (compact?'<div class="p33-compact-footer">'+act('p33-browse','Browse all '+P33_SCENARIOS.length+' conversations →','button outline')+'</div>':'')+
  '</section>';
 }
-export function p33ScenarioTeaching(d,chosen,act,esc){
+/**
+ * Native P33 source-only decision projection. Both alternatives and partner
+ * replies already exist in the authored record; no generative branching,
+ * second grader, invented Chinese or learner progress writer.
+ */
+export function p33DecisionSource(scene,index){
+ if(!scene||!Number.isInteger(index)||index<0||index>=scene.alternatives.length)return null;
+ const option=scene.alternatives[index];
+ return {sceneId:scene.id,index,option,cue:scene.turns[0]||null};
+}
+export function p33ScenarioTeaching(d,chosen,act,esc,ui={}){
  const s=d?.p33;if(!s)return '';
  const grammar=findGrammarLesson(s.grammar);
  const linked=SENTENCE_LIBRARY.filter(row=>row.grammarIds.includes(s.grammar)).slice(0,3);
@@ -57,13 +67,43 @@ export function p33ScenarioTeaching(d,chosen,act,esc){
  '<div class="p33-concept-grid"><div><h4>How it sounds</h4><p>'+esc(s.sound)+'</p></div>'+
  '<div><h4>Social nuance</h4><p>'+esc(s.pragmatics)+'</p></div>'+
  '<div><h4>Common misunderstanding</h4><p>'+esc(s.pitfall)+'</p></div></div>'+
- '<section class="p33-response-branch"><div class="p33-section-head"><h3>Choose your next response</h3><small>Both are meaningful alternatives; the partner replies differently.</small></div>'+
+ '<section class="p33-response-branch" id="p33-scenario-decision" aria-labelledby="p33-decision-title"><div class="p33-section-head"><h3 id="p33-decision-title">Listen, decide and respond</h3><small>Two authentic authored alternatives. Neither is an invented or scored dialogue branch.</small></div>'+
+ '<div class="p33-decision-cue"><p class="eyebrow">1 · LISTEN TO THE SCENE</p>'+
+ '<p>Listen to the source opening, then choose a meaningful reply. Both original choices lead to different authored partner responses.</p>'+
+ (s.turns[0]?say(act,esc,s.turns[0][1],'Hear original opening'):'')+
+ '</div>'+
  '<div class="p33-alternatives">'+s.alternatives.map((a,i)=>
  act('p33-branch','<strong lang="zh-Hans">'+esc(a.hanzi)+'</strong><small>'+esc(a.english)+'</small>',
  'p33-alternative '+(chosen===i?'active':''),'data-index="'+i+'" aria-pressed="'+(chosen===i)+'"')).join('')+'</div>'+
- (chosenOption?'<div class="p33-partner-reply" role="status"><p class="eyebrow">YOUR CHOICE</p><p lang="zh-Hans">'+esc(chosenOption.hanzi)+'</p>'+
+ (chosenOption?'<div class="p33-partner-reply" role="group" aria-label="Chosen original response and written continuation">'+
+ '<p class="eyebrow">2 · YOUR AUTHORIAL CHOICE</p><p lang="zh-Hans">'+esc(chosenOption.hanzi)+'</p>'+
  '<span>'+esc(chosenOption.pinyin)+'</span><p>'+esc(chosenOption.use)+'</p>'+
- '<p class="eyebrow">PARTNER RESPONSE</p><strong lang="zh-Hans">'+esc(chosenOption.reply.hanzi)+'</strong>'+
+ say(act,esc,chosenOption.hanzi,'Hear your selected response')+
+ '<p class="eyebrow">3 · PREDICT THE PARTNER\'S NEXT LINE</p>'+
+ '<label class="p33-decision-label" for="p33-decision-entry">Optional: write how the partner might reply in Chinese before seeing the original</label>'+
+ '<textarea id="p33-decision-entry" rows="2" maxlength="500" lang="zh-Hans" autocomplete="off" spellcheck="false"'+(ui.revealed?' disabled':'')+
+ ' placeholder="Try your Chinese response here">'+esc(ui.typed||'')+'</textarea>'+
+ (!ui.revealed?'<div class="p33-decision-actions">'+
+ act('p33-decision-reveal','Hear and compare original partner reply','button primary small')+
+ act('p33-clear-branch','Choose a different original reply','button outline small')+'</div>':
+ '<div class="p33-decision-reference" role="status"><p class="eyebrow">SOURCE-EXACT PARTNER REPLY · ASSISTED</p>'+
+ '<strong lang="zh-Hans">'+esc(chosenOption.reply.hanzi)+'</strong>'+
+ '<span>'+esc(chosenOption.reply.pinyin)+'</span><p>'+esc(chosenOption.reply.english)+'</p>'+
+ ((ui.typed||'').trim()?'<p>'+((ui.typed||'').normalize('NFC').trim()===chosenOption.reply.hanzi.normalize('NFC').trim()?
+ 'Your written Chinese exactly matches the original partner line; no communication or pronunciation grade is assigned.':
+ 'Compare your wording with the exact original. Valid alternative replies are not automatically graded.')+'</p>':
+ '<p>No written prediction was submitted; use the reference to study the original continuation.</p>')+
+ '<p>Revealing this source marks pending native dialogue questions and conversation missions assisted.</p>'+
+ say(act,esc,chosenOption.reply.hanzi,'Replay original partner reply')+
+ '<div class="p33-decision-actions">'+act('p33-decision-retry','Try the partner line again','button outline small')+
+ act('p33-clear-branch','Compare the other authored outcome','button outline small')+'</div></div>')+
+ '</div>':
+ '<p class="muted">Select either authored reply to rehearse what its partner may say next. No answer or mastery is recorded.</p>')+
+ '<div class="p33-decision-continuation"><p>Continue beyond recognition: replay the original conversation, rehearse the source turns, or write one of its canonical production tasks.</p>'+
+ '<div class="button-row">'+act('c9-media-focus-native','Continue with the original role-taking studio →','button outline small','data-target="c9-roleplay-studio"')+
+ act('c9-media-focus-native','Original comprehension questions →','button outline small','data-target="c9-native-dialogue"')+'</div></div>'+
+ '</section>'+
+trong lang="zh-Hans">'+esc(chosenOption.reply.hanzi)+'</strong>'+
  '<span>'+esc(chosenOption.reply.pinyin)+'</span><p>'+esc(chosenOption.reply.english)+'</p>'+
  say(act,esc,chosenOption.reply.hanzi,'Hear partner response')+
  '<div class="button-row">'+act('p33-clear-branch','Compare another response →','button outline small')+'</div></div>':'<p class="muted">Select a response to see the partner’s authored continuation. No grade or progress is written.</p>')+
