@@ -455,7 +455,7 @@ def main():
                     reading=page.locator('#c9-lesson-transfer [data-action="c9-media-open-story"]')
                     if reading.count():
                         reading.first.click()
-                        page.wait_for_function("()=>location.hash==='#/stories'")
+                        page.wait_for_function("()=>location.hash.startsWith('#/stories/story-')")
                         page.locator(".story-paper").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Original lesson → exact dictionary, native sentence or passage and assisted-free navigation "+str(width)
