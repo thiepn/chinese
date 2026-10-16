@@ -20,35 +20,63 @@ const complete=record=>Boolean(record?.hanzi&&record?.pinyin&&record?.english);
  * Find independently authored evidence of this exact written form.
  * Returned source IDs are existing canonical IDs, never generated IDs.
  */
+/** Source records with exact written-form occurrence. These are *not* validated
+ * contextual sense matches. A canonical sentence or passage is counted only
+ * when the authored source itself contains the word's complete Hanzi form.
+ * Counts are cached in memory, with no learner writes or API requests. */
+const sourceCoverageCache=new Map();
+export function sourceWordCoverage(key){
+ const word=findWord(key);if(!word)return Object.freeze({sentences:0,stories:0,examples:0});
+ if(sourceCoverageCache.has(key))return sourceCoverageCache.get(key);
+ let sentences=0,stories=0;
+ for(const record of SENTENCE_LIBRARY)if(record.hanzi.includes(word.hanzi))sentences++;
+ for(const story of STORIES)for(const line of story.lines)if(line.hanzi.includes(word.hanzi))stories++;
+ const result=Object.freeze({sentences,stories,examples:word.examples.length});
+ sourceCoverageCache.set(key,result);return result;
+}
+/** Original written-form occurrences with complete native source links.
+ * Identical Chinese text may be independently authored in multiple canonical
+ * sources, so all exact source identities survive deduplication of the text.
+ */
 export function sourceWordUsage(key,{limit=6}={}){
  const word=findWord(key);if(!word)return Object.freeze([]);
- const rows=[],seen=new Set(),max=limitTo(limit,20);
+ const max=limitTo(limit,20),byText=new Map();
  const add=(record,sourceType,sourceId,sourceTitle,lineIndex=null)=>{
-  if(!complete(record)||!record.hanzi.includes(word.hanzi)||rows.length>=max)return;
+  if(!complete(record)||!record.hanzi.includes(word.hanzi))return;
   const identity=uniqueKey(record);
-  if(seen.has(identity))return;
-  seen.add(identity);
-  rows.push({hanzi:record.hanzi,pinyin:record.pinyin,english:record.english,
-   sourceType,sourceId,sourceTitle,lineIndex,
+  const link={sourceType,sourceId,sourceTitle,lineIndex};
+  const prior=byText.get(identity);
+  if(prior){
+   if(!prior.links.some(l=>l.sourceType===sourceType&&l.sourceId===sourceId&&l.lineIndex===lineIndex))
+    prior.links.push(link);
+   return;
+  }
+  byText.set(identity,{hanzi:record.hanzi,pinyin:record.pinyin,english:record.english,
+   sourceType,sourceId,sourceTitle,lineIndex,links:[link],
    claim:'Exact written-form occurrence; lexical sense in context is not independently verified'});
  };
- // Give source-owned sentence and passage handoffs a meaningful chance to appear
- // even for richly annotated lexicon entries. Never overwhelm the first page
- // with duplicate lexical examples before displaying canonical practice routes.
- if(word.examples[0])add(word.examples[0],'word',word.key,word.source);
- for(const sentence of SENTENCE_LIBRARY){
-  add(sentence,'sentence',sentence.id,sentence.topic);
-  if(rows.length>=max)break;
+ // Traverse canonical primary sources before lexical examples. A word already
+ // in an original passage cannot be hidden by a duplicate author example.
+ for(const sentence of SENTENCE_LIBRARY)add(sentence,'sentence',sentence.id,sentence.topic);
+ for(const story of STORIES)for(let i=0;i<story.lines.length;i++)
+  add(story.lines[i],'story',story.id,story.title,i);
+ for(const record of word.examples)add(record,'word',word.key,word.source);
+ const rows=[...byText.values()];
+ // Reserve the first slots for native learning handoffs when available,
+ // regardless of the relative size of the sentence and passage corpora.
+ const selected=[],seen=new Set();
+ const pull=type=>{
+  const item=rows.find(row=>!seen.has(row)&&row.links.some(link=>link.sourceType===type));
+  if(item){selected.push(item);seen.add(item);}
+ };
+ if(max){pull('sentence');if(selected.length<max)pull('story');}
+ for(const item of rows){
+  if(selected.length>=max)break;
+  if(!seen.has(item)){selected.push(item);seen.add(item);}
  }
- for(const story of STORIES){
-  for(let i=0;i<story.lines.length;i++){
-   add(story.lines[i],'story',story.id,story.title,i);
-   if(rows.length>=max)break;
-  }
-  if(rows.length>=max)break;
- }
- for(const record of word.examples.slice(1))add(record,'word',word.key,word.source);
- return freezeRows(rows);
+ return Object.freeze(selected.slice(0,max).map(item=>Object.freeze({
+  ...item,links:Object.freeze(item.links.map(link=>Object.freeze({...link})))
+ })));
 }
 /**
  * Original character lessons linked only through a canonical complete word.
