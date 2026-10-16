@@ -742,6 +742,40 @@ def main():
                 return "390px original passage "+str(target)+" opened in source mode "+str(mode)+" with native feedback"
             check("P67-P68 original reading queue and source-mode graded practice",original_reading_mode_progression)
             ctx.close()
+            # P66: trace a real canonical word from its source-filtered
+            # dictionary card into the exact original passage sentence.
+            ctx,page,errors=session(390,844,True)
+            def canonical_word_exact_reading_line():
+                open_route(page,"wordbook")
+                source_filter=page.locator("#c9-word-context")
+                source_filter.select_option("story")
+                if source_filter.input_value()!="story":
+                    raise AssertionError("Wordbook original story evidence filter was not retained")
+                cards=page.locator("#c9-word-catalog .c9-library-word")
+                if cards.count()<1:
+                    raise AssertionError("Source-backed word filter returned no original reading words")
+                context=cards.first.locator(".c9-word-usage")
+                context.locator("summary").click()
+                jump=context.locator('[data-action="c9-source-open-story-line"]').first
+                jump.wait_for(state="visible",timeout=12000)
+                story_id=jump.get_attribute("data-id")
+                sentence_index=jump.get_attribute("data-index")
+                if story_id is None or sentence_index is None:
+                    raise AssertionError("Canonical Wordbook reading source identity missing")
+                jump.click()
+                page.wait_for_function("()=>location.hash.startsWith('#/stories')")
+                line=page.locator('[data-c9-story-line="'+sentence_index+'"]')
+                line.wait_for(state="visible")
+                if line.get_attribute("aria-current")!="step":
+                    raise AssertionError("Dictionary source opening lost the exact original sentence focus")
+                if not page.locator(".story-practice").is_visible():
+                    raise AssertionError("Native story player or its original exercise was lost")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Original Wordbook-to-story source handoff overflowed 390px")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Original story "+story_id+" line "+sentence_index+" selected without reading grade"
+            check("P66 source word to exact original reading line mobile",canonical_word_exact_reading_line)
+            ctx.close()
             # P64–P68 original source bridges: exercise actual native Wordbook
             # and source-scored Reader without fabricated radical/HSK material.
             ctx,page,errors=session(390,844,True)
@@ -1276,7 +1310,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v63-reading-continuity"
+                current="character-study-working-v64-context-source-handoffs"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1294,7 +1328,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v63-reading-continuity');
+                    keys.includes('character-study-working-v64-context-source-handoffs');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

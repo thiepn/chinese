@@ -656,3 +656,15 @@
 .c9-word-usage-list p{font:500 17px/1.55 var(--c9-hanzi-body);margin:0;overflow-wrap:anywhere;color:var(--c9-ink)}
 .c9-word-usage-list small{font:400 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
 .c9-word-usage-list .c9-button{justify-self:start;min-height:44px;white-space:normal}
+
+
+/* P66 original Wordbook: complete source selectors and contextual navigation. */
+.c9-library-filters{grid-template-columns:minmax(0,2fr) repeat(2,minmax(155px,1fr))}
+.c9-word-coverage{font:500 11px/1.6 var(--c9-ui);color:var(--c9-sub);margin:7px 0;overflow-wrap:anywhere}
+.c9-word-evidence-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.c9-word-evidence-actions .c9-button{min-height:44px;white-space:normal}
+@media(max-width:1000px) and (min-width:651px){
+ .c9-library-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .c9-library-filters label:first-child{grid-column:1/-1}
+}
+@media(max-width:650px){.c9-library-filters{grid-template-columns:minmax(0,1fr)}}

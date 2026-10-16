@@ -3,7 +3,7 @@ import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
-import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,renderC9TypingPath,C9_WORD_FILTERS} from './libraries-c9.mjs';
+import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,renderC9TypingPath,C9_WORD_FILTERS,C9_WORD_CONTEXT_FILTERS} from './libraries-c9.mjs';
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
@@ -92,7 +92,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v63-reading-continuity';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v64-context-source-handoffs';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -172,7 +172,7 @@ let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
 let c9LessonSection='overview',c9LessonFocused=true,c9LastLessonId=null,c9CharacterShowTranslations=true;
-let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
+let c9WordQuery='',c9WordFilter='all',c9WordContext='all',c9WordPage=0;
 let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
 let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9ReadingQueueFilter='all',c9ReadingQueuePage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
 let pathwayTransferDraft=''; // Session-only, no IndexedDB or StudyEvent writer.
@@ -301,7 +301,7 @@ function renderWordbookNative(){
  ${!wordbookFeedback?`<p class="muted">Study note: other senses, pinyin and example translations appear after your attempt.</p>`:''}
  </section>`}`;
 }
-function c9WordUi(){return {query:c9WordQuery,filter:c9WordFilter,page:c9WordPage};}
+function c9WordUi(){return {query:c9WordQuery,filter:c9WordFilter,context:c9WordContext,page:c9WordPage};}
 function refreshC9Words(){
  const panel=$('c9-word-catalog');
  if(panel)panel.innerHTML=c9WordCatalogResults(state,c9WordUi(),action,esc);
@@ -1500,6 +1500,24 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   announceC9Interaction('Original '+story.title+' reading exercise opened. Your answer has not been graded.');
   return true;
  }
+ if(name==='c9-source-open-story-line'){
+  const target=findStory(id),index=Number(button.dataset.index);
+  if(!target||!Number.isInteger(index)||index<0||index>=target.lines.length)
+   return alertUser('Exact original passage source is unavailable.','error');
+  // Reuse existing source transition guard and original reading authority.
+  // Opening an authored example must never grant reading credit.
+  const opened=await act({dataset:{action:'c9-media-open-story',id:target.id}});
+  if(opened!==true)return false;
+  storyFocusIndex=index;
+  if(storyParagraphOnly&&target.extended)storyParagraph=paragraphFor(target,index);
+  if(target.beginner&&beginnerPart!=='all')beginnerPart=String(Math.floor(index/3));
+  render();
+  const line=root.querySelector('[data-c9-story-line="'+index+'"]');
+  line?.scrollIntoView({block:'nearest',behavior:'auto'});
+  line?.focus({preventScroll:true});
+  announceC9Interaction('Original '+target.title+', sentence '+(index+1)+' of '+target.lines.length+' focused; no learning answer recorded.');
+  return true;
+ }
  if(name==='c9-media-open-story'){
   const target=findStory(id);if(!target){alertUser('Original reading unavailable.','error');return false;}
   if(route()==='stories'&&storyId===target.id){
@@ -1605,11 +1623,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    return;
  }
  if(name==='c9-word-reset'){
-   c9WordQuery='';c9WordFilter='all';c9WordPage=0;
+   c9WordQuery='';c9WordFilter='all';c9WordContext='all';c9WordPage=0;
    if(route()==='wordbook'){
      refreshC9Words();
      const input=root.querySelector('#c9-word-query');
      if(input){input.value='';input.focus({preventScroll:true});}
+     const status=root.querySelector('#c9-word-status'),context=root.querySelector('#c9-word-context');
+     if(status)status.value='all';if(context)context.value='all';
    }else render();
    return;
  }
@@ -2756,6 +2776,7 @@ root.addEventListener('change',async e=>{
   c9TypingStatus=e.target.value;c9TypingPage=0;render();return;
  }
  if(e.target.id==='c9-word-status'){if(!C9_WORD_FILTERS.includes(e.target.value))return;c9WordFilter=e.target.value;c9WordPage=0;refreshC9Words();return;}
+ if(e.target.id==='c9-word-context'){if(!C9_WORD_CONTEXT_FILTERS.includes(e.target.value))return;c9WordContext=e.target.value;c9WordPage=0;refreshC9Words();return;}
 
  if(e.target.id==='c9-learn-unit'||e.target.id==='c9-learn-status'){
    if(e.target.id==='c9-learn-unit'){
