@@ -15,6 +15,8 @@ export const C9_NATIVE_DISCLOSURE_CLASSES=Object.freeze([
  'c9-catalog-optional',
  'c9-learn-extended',
  'c9-lesson-extra',
+ 'c9-review-options',
+ 'c9-review-priorities',
  'c9-assessment-extra',
  'c9-media-catalog',
  'p29-transfer',
