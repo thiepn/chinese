@@ -645,3 +645,14 @@
 .c9-typing-pages .c9-button{min-height:44px}
 .c9-typing-pages span{font:500 12px/1.4 var(--c9-ui);color:var(--c9-sub)}
 @media(max-width:580px){.c9-typing-filters{grid-template-columns:minmax(0,1fr)}}
+
+
+/* P66 source-only dictionary provenance. Source matches are not sense labels. */
+.c9-word-usage{margin-top:12px;padding:10px 0;border-top:1px solid var(--c9-line)}
+.c9-word-usage>summary{font:600 12px/1.5 var(--c9-ui);cursor:pointer;color:var(--c9-ink);min-height:30px}
+.c9-word-usage>p{margin:7px 0 10px;font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub)}
+.c9-word-usage-list{display:grid;gap:8px}
+.c9-word-usage-list article{display:grid;gap:4px;min-width:0;background:var(--c9-surface);border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);padding:10px}
+.c9-word-usage-list p{font:500 17px/1.55 var(--c9-hanzi-body);margin:0;overflow-wrap:anywhere;color:var(--c9-ink)}
+.c9-word-usage-list small{font:400 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-word-usage-list .c9-button{justify-self:start;min-height:44px;white-space:normal}
