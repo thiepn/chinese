@@ -134,3 +134,17 @@ test('C9-53 source-return helper preserves exact authored lessons and visible co
  assert.ok(workspace.includes('data-action="c9-lesson-select"'));
  assert.ok(workspace.includes('Scheduled review'));
 });
+
+
+test('C9-54 original lesson identity can be linked without changing private learning records',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const html=renderC9LessonWorkspace({lesson:DEMO_LESSONS[0],state,nativeMarkup:'',act,esc});
+ assert.ok(html.includes('data-action="c9-lesson-copy-link"'));
+ assert.ok(html.includes('data-id="'+DEMO_LESSONS[0].id+'"'));
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ assert.ok(app.includes('learn:/^#\\/learn\\/(demo-\\d{2,3})$/'), 'known original ID route required');
+ assert.ok(app.includes('findLesson(id)?id:null'),'must verify original source');
+ assert.ok(app.includes("location.hash=target"),'source handoff should enter browser history');
+ assert.ok(app.includes('c9OpenCatalogAfterHash'),'native catalog must be reachable by Back');
+ assert.equal(JSON.stringify(state),before,'public source link may not alter learner state');
+});
