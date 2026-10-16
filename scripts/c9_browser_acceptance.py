@@ -416,6 +416,83 @@ def main():
                     return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
                 check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
                 ctx.close()
+            # C9-60: genuine source-grade continuity through all native
+            # P33 writing turns and P34 listening-to-writing, with in-tab
+            # return context and mobile source-safe draft guards.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_workshop_source_continuation():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    circuit=page.locator("#c9-conversation-circuit")
+                    circuit.wait_for(state="visible")
+                    source=page.evaluate("()=>location.hash")
+                    tasks=circuit.locator(".c9-circuit-writing-steps [data-action='c9-circuit-write']")
+                    if tasks.count()!=3:
+                        raise AssertionError("Not all three original P33 writing tasks are available")
+                    second=tasks.nth(1).get_attribute("data-id")
+                    third=tasks.nth(2).get_attribute("data-id")
+                    tasks.nth(1).click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel=page.locator("#c9-workshop-continuation")
+                    panel.wait_for(state="visible")
+                    if panel.locator('[data-action="c9-workshop-next-source"]').get_attribute("data-id")!=third:
+                        raise AssertionError("Source-owned next writing task was not resolved")
+                    listening=page.locator('[data-action="c9-workshop-listen"]')
+                    listening.wait_for(state="visible")
+                    listening.click()
+                    page.locator(".lesson-guide").wait_for(state="visible")
+                    if "Help makes this attempt assisted" not in page.locator(".lesson-guide").inner_text():
+                        raise AssertionError("P33 model playback failed to mark original writing assisted")
+                    panel.locator('[data-action="c9-workshop-next-source"]').click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel.wait_for(state="visible")
+                    if panel.locator('[data-action="c9-workshop-next-source"]').count():
+                        raise AssertionError("Final authored source task still advertises a next task")
+                    entry=page.locator("#workshop-entry")
+                    entry.fill("请帮我练习中文。")
+                    page.once("dialog",lambda dialog: dialog.dismiss())
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    if page.evaluate("()=>location.hash")!="#/workshop":
+                        raise AssertionError("Declined native unsent writing guard lost original draft")
+                    if entry.input_value()!="请帮我练习中文。":
+                        raise AssertionError("Declined source handoff cleared actual native writing")
+                    page.once("dialog",lambda dialog: dialog.accept())
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    page.wait_for_function("(source)=>location.hash===source",arg=source)
+                    circuit.wait_for(state="visible")
+                    if circuit.locator(".c9-circuit-writing-steps [data-action='c9-circuit-write']").count()!=3:
+                        raise AssertionError("Original P33 source task list did not survive round trip")
+                    open_route(page,"dialogues")
+                    audio_catalog=page.locator("details.p34-catalog")
+                    audio_catalog.locator("summary").click()
+                    audio_catalog.locator('[data-action="p34-open-listening"]').first.click()
+                    page.wait_for_function("()=>location.hash.startsWith('#/dialogues/dialogue-')")
+                    p34_source=page.evaluate("()=>location.hash")
+                    p34_write=page.locator(".p34-listening-panel [data-action='p34-write-listening']")
+                    p34_write.wait_for(state="visible")
+                    p34_write.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel=page.locator("#c9-workshop-continuation")
+                    panel.wait_for(state="visible")
+                    if "P34" not in panel.inner_text() or panel.locator('[data-action="c9-workshop-next-source"]').count():
+                        raise AssertionError("P34 transfer did not use original listening-source ownership")
+                    listen=page.locator('[data-action="c9-workshop-listen"]')
+                    listen.wait_for(state="visible")
+                    listen.click()
+                    if page.locator(".lesson-guide").count():
+                        raise AssertionError("Original P34 listening prompt was incorrectly marked as assisted")
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    page.wait_for_function("(source)=>location.hash===source",arg=p34_source)
+                    page.locator("#c9-native-dialogue").wait_for(state="visible")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Source writing continuity overflow at "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Three original P33 writing turns, assisted model, guarded return, P34 audio prompt "+str(width)
+                check("C9-60 original writing recovery and listening transfer "+str(width),original_workshop_source_continuation)
+                ctx.close()
             # C9-59: genuinely connected, independently authored P33
             # scenarios. The source URL, original question writer and exact
             # production task must survive a multi-situation circuit.
@@ -445,7 +522,7 @@ def main():
                     page.go_back(wait_until="domcontentloaded")
                     page.wait_for_function("(expected)=>location.hash===expected",arg=first)
                     circuit.wait_for(state="visible")
-                    action=circuit.locator('[data-action="c9-circuit-write"]')
+                    action=circuit.locator('[data-action="c9-circuit-write"]').first
                     target=action.get_attribute("data-id")
                     action.click()
                     page.wait_for_function("()=>location.hash==='#/workshop'")
@@ -455,7 +532,7 @@ def main():
                     page.go_back(wait_until="domcontentloaded")
                     page.wait_for_function("(expected)=>location.hash===expected",arg=first)
                     circuit.wait_for(state="visible")
-                    if circuit.locator('[data-action="c9-circuit-write"]').get_attribute("data-id")!=target:
+                    if circuit.locator('[data-action="c9-circuit-write"]').first.get_attribute("data-id")!=target:
                         raise AssertionError("Browser history lost original P33 writing identity")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("Multi-situation circuit overflows "+str(width)+"px viewport")
