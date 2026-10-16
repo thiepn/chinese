@@ -157,11 +157,11 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const resources='<details class="c9-lesson-resources"><summary><span><strong>Preview original source and audio</strong>'+
   '<small>Character · indexed whole words · original sentence · device listening</small></span><span aria-hidden="true">Explore ↘</span></summary>'+
   '<div class="c9-lesson-resources-content">'+preview+sourceAudio+'</div></details>';
- return '<div class="c9-lesson-workspace" data-c9-focused="'+String(focused)+'">'+heading+resources+
+ return '<div class="c9-lesson-workspace" data-c9-focused="'+String(focused)+'">'+heading+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
-  stagebar+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+stageFooters+
+  stagebar+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+stageFooters+resources+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
   '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
 }
