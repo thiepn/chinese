@@ -151,7 +151,7 @@ export function renderC9LearnHub(state,ui,act,esc){
       '<small>'+esc(l.pinyin)+' · '+((state.learned||[]).includes(l.id)?'Introduced':'Not yet introduced')+'</small></span>'+
       '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
  return '<div class="c9-discovery">'+intro+featured+
-  '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons and study tools</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
+  '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons by unit</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
   '<div class="c9-discovery-search-heading"><label class="c9-discovery-search-label" for="c9-learn-query">Search Chinese characters, Pinyin, meanings or unit names</label>'+
  '<span class="c9-meta">Filters affect original lessons; they do not change your progress.</span></div>'+
@@ -162,7 +162,7 @@ export function renderC9LearnHub(state,ui,act,esc){
     '<option value="'+v+'"'+(status===v?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
   '<div id="c9-lesson-browser" aria-live="polite">'+renderC9LessonBrowser(state,ui,act,esc)+'</div></section>'+
   '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-units-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">ORIGINAL LESSON UNITS</p><h2 id="c9-units-title">Browse original lesson units</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
-  '<p class="c9-discovery-note">All units are browseable. Introduction counts reflect actual saved learner history; units do not represent official HSK assignment or a locked syllabus.</p>'+
+  '<p class="c9-discovery-note">Select a unit to see its numbered lessons above. You can open any authored lesson directly; introduction counts represent actual saved history, not mastery or official HSK levels.</p>'+
   unitCards(state,act,esc)+'</section>'+
   '<details class="c9-catalog-optional"><summary><strong>Other learning activities</strong><span>Grammar, words, reading, skills and optional learning paths</span></summary><div class="c9-catalog-optional-body">'+
   '<section class="c9-discovery-lead"><div><span class="c9-eyebrow">CONTINUE YOUR COURSE</span><h2>'+esc(hub.primary.label)+'</h2><p>'+esc(hub.primary.detail)+'</p>'+
