@@ -71,30 +71,37 @@ export function renderC9Review({
       '</span></li>';
   }).join('');
   return '<div class="c9-assessment c9-review-setup">'+
-    title('SCHEDULED RECALL · SETUP','Review what is due','Start scheduled recall when prompts are due, or practise independently at any time. Only submitted, graded scheduled responses affect the review queue.')+
-    '<div class="c9-assessment-stats">'+stat(due.length,'Currently due prompts')+stat(overview.cards,'Registered review targets')+
-      stat(overview.successful,'Correct independent attempts')+'</div>'+
-    '<div class="c9-assessment-columns"><section class="c9-assessment-panel c9-unified-card" aria-labelledby="c9-review-settings-title">'+
-     '<p class="c9-eyebrow">PERSONAL SESSION</p><h2 id="c9-review-settings-title">Set your focus</h2>'+
-     '<div class="c9-assessment-selects"><label for="review-focus">Recall focus<select id="review-focus">'+
+    title('SCHEDULED RECALL','Review what is due','Review the prompts due now, or practise independently without changing their schedule.')+
+    '<div class="c9-assessment-stats">'+stat(due.length,'Due now')+stat(overview.cards,'Registered recall targets')+
+      stat(overview.successful,'Independent correct attempts')+'</div>'+
+    '<section class="c9-assessment-panel c9-unified-card c9-review-start" aria-labelledby="c9-review-start-title">'+
+    '<p class="c9-eyebrow">READY WHEN YOU ARE</p><h2 id="c9-review-start-title">'+
+      (filtered.length?'Start with '+Math.min(filtered.length,size)+' original prompts':'No scheduled prompts match this focus')+'</h2>'+
+    '<p class="c9-assessment-note">'+(filtered.length?'Review uses your original due cards. You choose each grade; opening this page does not record progress.':
+       'Your review queue is clear for this focus. You can practise freely or study another original lesson.')+'</p>'+
+    '<div class="c9-assessment-actions c9-unified-actions">'+
+     (filtered.length?action('review-begin','Review now →','c9-button c9-button--primary'):
+       link('practice','Practise without scheduling →'))+
+     (filtered.length?link('practice','Practise freely'):link('learn','Open next lesson'))+
+     (filtered.length?link('learn','Browse lessons'):'')+'</div>'+
+    '<details class="c9-review-options"><summary>Change focus or session length <span>'+
+       esc(focusOptions.find(([key])=>key===focus)?.[1]||'All due skills')+' · up to '+size+' prompts</span></summary>'+
+     '<div class="c9-review-options-body"><div class="c9-assessment-selects"><label for="review-focus">Recall focus<select id="review-focus">'+
       focusOptions.map(([id,label])=>'<option value="'+id+'"'+(focus===id?' selected':'')+'>'+label+'</option>').join('')+
       '</select></label><label for="review-size">Session length<select id="review-size">'+[5,10,20,50].map(n=>
       '<option value="'+n+'"'+(size===n?' selected':'')+'>Up to '+n+' prompts</option>').join('')+'</select></label></div>'+
      '<p class="c9-assessment-note">'+filtered.length+' due prompt'+(filtered.length===1?'':'s')+
-       ' match this focus. '+plan.length+' will enter this queue. Unanswered or skipped prompts remain due.</p>'+
+       ' match this focus. '+plan.length+' enter this session; unanswered and skipped prompts remain due.</p>'+
      '<div class="c9-review-skill-overview" aria-label="Due prompts by skill">'+
       [['meanings','Meaning'],['pronunciation','Pinyin'],['sentences','Sentences']].map(([key,label])=>
        '<div><strong>'+due.filter(id=>cardFamily(cardInfo(id))===key).length+'</strong><span>'+label+'</span></div>').join('')+
-      '</div>'+
-     '<div class="c9-assessment-actions c9-unified-actions">'+action('review-begin','Begin scheduled review →','c9-button c9-button--primary',filtered.length?'':'disabled')+
-     link('practice','Practice anytime (not scheduled)')+
-     link('learn','Open your lessons')+'</div>'+
-    '</section><section class="c9-assessment-panel c9-unified-card c9-assessment-plan" aria-labelledby="c9-review-priority-title">'+
-    '<p class="c9-eyebrow">EXISTING QUEUE PRIORITIES</p><h2 id="c9-review-priority-title">Why these come first</h2>'+
-    (why?'<ol class="c9-assessment-reasons">'+why+'</ol>':
-      '<div class="c9-empty"><strong>No due prompts for this focus</strong><p>You can introduce another source lesson or select a different skill. No grades have been fabricated.</p></div>')+
-    '<p class="c9-assessment-note">Keyboard: 1–4 for choices, Enter to check, S to skip. Only the original grade buttons schedule cards.</p></section></div>'+
-    '<details class="c9-assessment-extra"><summary>Study recommendations and existing Review tools</summary><div>'+reviewWorkspace(state,action,esc)+'</div></details>'+
+      '</div></div></details>'+
+    '<details class="c9-review-priorities"><summary>Why these prompts come first</summary>'+
+     '<div class="c9-review-options-body">'+(why?'<ol class="c9-assessment-reasons">'+why+'</ol>':
+      '<p>No due prompts for the selected focus. No substitute grades or tasks are created.</p>')+
+     '<p class="c9-assessment-note">Keyboard: 1–4 for choices, Enter to check, S to skip. Only the original grade buttons reschedule cards.</p>'+
+     '</div></details></section>'+
+    '<details class="c9-assessment-extra"><summary>Study recommendations and other Review tools</summary><div>'+reviewWorkspace(state,action,esc)+'</div></details>'+
     subnote+'</div>';
  }
  if(paused&&queue.length){

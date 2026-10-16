@@ -953,6 +953,33 @@ function go(page,answerConfirmed=false){
  c9ApprovedDeparture={from,to:page};
  location.hash=target;return true;
 }
+/**
+ * Direct handoff to a source-owned original lesson. No new lesson identity,
+ * grader, save or scheduling authority. The previous source and draft remain
+ * selected if leaving the current learning screen is declined.
+ */
+function c9OpenAuthoredLesson(id){
+ const lesson=findLesson(id);
+ if(!lesson){alertUser('Original lesson unavailable.','error');return false;}
+ const previous={id:displayLessonId,detail:c9LearnDetail,section:c9LessonSection,focused:c9LessonFocused};
+ if(route()==='learn'&&c9LearnDetail&&displayLessonId!==lesson.id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
+ if(route()==='learn'&&c9LearnDetail&&displayLessonId===lesson.id){
+  root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
+ }
+ displayLessonId=lesson.id;c9LearnDetail=true;c9LessonSection='overview';c9LessonFocused=true;
+ showLessonTranslation=state.settings.showPinyin;
+ if(route()!=='learn'){
+  if(!go('learn')){
+   displayLessonId=previous.id;c9LearnDetail=previous.detail;c9LessonSection=previous.section;c9LessonFocused=previous.focused;
+   return false;
+  }
+ }else{
+  render();
+  root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
+  root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});
+ }
+ return true;
+}
 /** Open an ORIGINAL sentence task; this is a navigation adapter, never a
  * duplicate sentence evaluator or a learner-state writer. */
 function c9OpenNativeWorkshopTask(index,assisted=false){
@@ -1539,12 +1566,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    if(location.hash===target)render();else location.hash=target;
    return;
  }
- if(name==='c9-character-lesson'){
-   const selected=findLesson(id);if(!selected)return;
-   displayLessonId=selected.id;c9LearnDetail=true;c9LessonSection='overview';
-   showLessonTranslation=state.settings.showPinyin;
-   return go('learn');
- }
+ if(name==='c9-character-lesson')return c9OpenAuthoredLesson(id);
  if(name==='c9-character-reader'){
    const selected=findLesson(id);if(!selected)return;
    readerLessonId=selected.id;readerResult=null;showLessonTranslation=false;
@@ -1667,20 +1689,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-learn-back'){
   if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
   c9LearnDetail=false;render();
-  root.querySelector('.c9-discovery-head')?.scrollIntoView({block:'start'});return true;
+  const catalog=root.querySelector('details.c9-discovery-catalog');
+  if(catalog)catalog.open=true;
+  const target=root.querySelector('#c9-browse-title');
+  if(target){target.setAttribute('tabindex','-1');target.scrollIntoView({block:'start'});target.focus({preventScroll:true});}
+  return true;
  }
- if(name==='c9-lesson-open'){
-   if(!findLesson(id)){alertUser('Original character lesson unavailable.','error');return false;}
-   if(route()==='learn'&&c9LearnDetail&&displayLessonId===id){
-    root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
-    return true;
-   }
-   if(route()==='learn'&&displayLessonId!==id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
-   if(route()!=='learn'&&!go('learn'))return false;
-   displayLessonId=id;c9LearnDetail=true;showLessonTranslation=state.settings.showPinyin;
-   render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
-   return true;
- }
+ if(name==='c9-lesson-open')return c9OpenAuthoredLesson(id);
  if(name==='c9-unit-open'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
    if(!unit)return;
@@ -2228,7 +2243,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='plan-source'){
   const entry=mistakeCollections(state).all.find(x=>x.id===id);if(!entry)return;
-  const source=entry.source;if(source?.type==='lesson'&&findLesson(source.id)){displayLessonId=source.id;return go('learn');}
+  const source=entry.source;if(source?.type==='lesson'&&findLesson(source.id))return c9OpenAuthoredLesson(source.id);
   if(source?.type==='reading'&&findStory(source.id)){storyId=source.id;storyShowTranslation=false;resetStoryExercise();return go('stories');}
   if(source?.type==='dialogue'&&findDialogue(source.id)){dialogueId=source.id;dialogueStep=0;dialogueSupport=false;return go('dialogues');}
   if(source?.type==='sense'){const index=SENSE_CASES.findIndex(c=>c.id===source.id);if(index>=0){senseIndex=index;senseFeedback=null;return go('senses');}}
@@ -2254,7 +2269,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='fluency-abandon'){if(!confirm('Discard this unfinished Fluency Studio session? Submitted answer history will remain saved.'))return;return mutate(s=>abandonFluency(s));}
  if(name==='fluency-source'){
   const type=button.dataset.kind,target=button.dataset.id;
-  if(type==='lesson'&&findLesson(target)){displayLessonId=target;return go('learn');}
+  if(type==='lesson'&&findLesson(target))return c9OpenAuthoredLesson(target);
   if(type==='reading'&&findStory(target)){storyId=target;storyShowTranslation=false;storyAssist=false;return go('stories');}
   if(type==='dialogue'&&findDialogue(target)){dialogueId=target;dialogueStep=0;dialogueSupport=false;return go('dialogues');}
   if(type==='sense'){const index=SENSE_CASES.findIndex(c=>c.id===target);if(index>=0){senseIndex=index;senseSupport=false;senseFeedback=null;return go('senses');}}
@@ -2345,8 +2360,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='repair-pause'){return go('today');}
  if(name==='repair-abandon'){if(!confirm('End this unfinished correction session? Previously submitted attempts remain in your history.'))return;return mutate(s=>abandonCourseRepair(s));}
  if(name==='course-home-open'){displayLessonId=courseNextLesson(state);return go('journey');}
-  if(name==='foundation-unit'){if(!findLesson(id))return;displayLessonId=id;go('learn');render();root.querySelector('.lesson-paper')?.scrollIntoView({block:'start'});return;}
-  if(name==='context-open'){if(!findLesson(id))return;displayLessonId=id;go('learn');render();return;}
+  if(name==='foundation-unit')return c9OpenAuthoredLesson(id);
+  if(name==='context-open')return c9OpenAuthoredLesson(id);
   if(name==='course-next'){if(state.courseJourney)return go('journey');const index=DEMO_LESSONS.findIndex(item=>item.id===displayLessonId);displayLessonId=DEMO_LESSONS[Math.min(DEMO_LESSONS.length-1,Math.max(0,index)+1)].id;go('journey');render();return;}
  if(name==='course-lesson'){if(!findLesson(id))return;displayLessonId=id;if(state.courseJourney&&state.courseJourney.lessonId!==id)return go('journey');return go('journey');}
  if(name==='course-dialogue-link'){if(findDialogue(id)){dialogueId=id;dialogueStep=0;return go('dialogues');}return;}
@@ -2461,13 +2476,13 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='placement-start'||name==='placement-restart'){const ok=await mutate(s=>startPlacement({...structuredClone(s),placement:null}));if(ok&&route()!=='today')go('today');return;}
  if(name==='placement-answer'){const response=button.dataset.option||'';return mutate(s=>answerPlacement(s,response));}
  if(name==='placement-skip'){return mutate(s=>skipPlacement(s));}
- if(name==='placement-lesson'||name==='coach-open-lesson'){if(findLesson(id)){displayLessonId=id;return go('learn');}return;}
+ if(name==='placement-lesson'||name==='coach-open-lesson')return c9OpenAuthoredLesson(id);
  if(name==='coach-practice'){guidedFocus='weak';guidedLimit=10;return go('practice');}
  if(name==='connected-session'){guidedFocus='connected';guidedLimit=10;return go('practice');}
  if(name==='open-connected-item'){const t=button.dataset.type;if(t==='sense'){const i=SENSE_CASES.findIndex(c=>c.id===id);if(i>=0){senseIndex=i;senseFeedback=null;senseSupport=false;return go('senses');}}if(t==='sentence'){const i=SENTENCE_TASKS.findIndex(c=>c.id===id);if(i>=0){sentenceIndex=i;sentenceFeedback=null;sentenceSupport=false;return go('workshop');}}if(t==='mission'&&findDialogue(id)){dialogueId=id;dialogueStep=0;missionStep=Number(button.dataset.step)||0;missionActive=true;missionSupport=false;missionFeedback=null;return go('dialogues');}return alertUser('Learning connection unavailable.','error');}
 
  if(name==='guided-start'){const sid=globalThis.crypto?.randomUUID?.()||`practice-${Date.now()}`;const ok=await mutate(s=>({...structuredClone(s),practiceSession:createGuidedSession(s,{limit:guidedLimit,focus:guidedFocus,id:sid})}));if(ok){guidedTyped='';guidedOrder=[];guidedAssisted=false;}return;}
- if(name==='guided-explore'){const item=state.practiceSession?.items[state.practiceSession.cursor];if(!item)return;if(item.type==='sense'){senseIndex=Math.max(0,SENSE_CASES.findIndex(x=>x.id===item.id));return go('senses');}if(item.type==='sentence'){sentenceIndex=Math.max(0,SENTENCE_TASKS.findIndex(x=>x.id===item.id));return go('workshop');}if(item.type==='mission'){dialogueId=item.id;missionStep=item.step;missionActive=true;missionFeedback=null;return go('dialogues');}if(item.type==='story'){storyId=item.id;return go('stories');}displayLessonId=item.id;return go('learn');}
+ if(name==='guided-explore'){const item=state.practiceSession?.items[state.practiceSession.cursor];if(!item)return;if(item.type==='sense'){senseIndex=Math.max(0,SENSE_CASES.findIndex(x=>x.id===item.id));return go('senses');}if(item.type==='sentence'){sentenceIndex=Math.max(0,SENTENCE_TASKS.findIndex(x=>x.id===item.id));return go('workshop');}if(item.type==='mission'){dialogueId=item.id;missionStep=item.step;missionActive=true;missionFeedback=null;return go('dialogues');}if(item.type==='story'){storyId=item.id;return go('stories');}return c9OpenAuthoredLesson(item.id);}
  if(name==='guided-pause'){guidedTyped='';guidedOrder=[];return go('today');}
  if(name==='guided-hint'){guidedAssisted=true;return mutate(s=>{const n=structuredClone(s);if(n.practiceSession&&!n.practiceSession.feedback)n.practiceSession.assistanceUsed=true;return n;});}
  if(name==='guided-order-add'){const q=guidedQuestion(state.practiceSession),i=Number(button.dataset.index);if(q?.kind==='ordering'&&Number.isInteger(i)&&i>=0&&i<q.chunks.length&&!guidedOrder.includes(i)){guidedOrder.push(i);render()}return;}
@@ -2511,7 +2526,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='story-focus-off'){storyFocusIndex=-1;return render();}
  if(name==='story-mode'){const mode=button.dataset.mode;if(!['comprehension','cloze','ordering','pronunciation',...CONTEXT_MODES,...DEEP_READING_MODES.map(item=>item[0]),...BEGINNER_MODES.map(item=>item[0])].includes(mode)||DEEP_READING_MODES.some(([id])=>id===mode)&&!findStory(storyId)?.extended||BEGINNER_MODES.some(([id])=>id===mode)&&!findStory(storyId)?.beginner)return;storyMode=mode;resetStoryExercise();return render();}
  if(name==='story-token'){const entry=tokenizeSentence(findStory(storyId).lines.map(l=>l.hanzi).join('')).find(t=>t.entry?.hanzi===button.dataset.token)?.entry;if(!entry)return;storyGlossary=entry;storyAssist=true;return render();}
- if(name==='story-linked'){displayLessonId=button.dataset.id;return go('learn');}
+ if(name==='story-linked')return c9OpenAuthoredLesson(button.dataset.id);
  if(name==='story-reveal'){storyShowTranslation=!storyShowTranslation;c9StoryPinyin=storyShowTranslation;c9StoryEnglish=storyShowTranslation;if(storyShowTranslation)storyAssist=true;return render();}
  if(name==='story-order-add'){const i=Number(button.dataset.index),ex=storyExercise(findStory(storyId),storyMode);if(!Number.isInteger(i)||!ex||i<0||i>=ex.chunks.length||storySequence.includes(i))return;storySequence.push(i);return render();}
  if(name==='story-order-remove'){const i=Number(button.dataset.index);if(Number.isInteger(i)&&i>=0&&i<storySequence.length)storySequence.splice(i,1);return render();}
@@ -2563,7 +2578,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='reader-mode'){readerMode=button.dataset.mode==='cloze'?'cloze':'meaning';readerResult=null;showLessonTranslation=false;return render();}
  if(name==='reader-answer'){if(readerResult)return;const lesson=readerLesson(),cloze=makeCloze(lesson),answer=readerMode==='cloze'&&cloze?cloze.answer:lesson.sentence.english;readerResult={answer:button.dataset.option,correct:button.dataset.option===answer};return render();}
  if(name==='reader-reveal'){showLessonTranslation=!showLessonTranslation;return render();}
- if(name==='start-next'){const next=summary(state).next;if(next){displayLessonId=next.id;c9LearnDetail=true;go('learn')}else go('review');return}
+ if(name==='start-next'){const next=summary(state).next;return next?c9OpenAuthoredLesson(next.id):go('review');}
  if(name==='open-lesson')return act({dataset:{action:'c9-lesson-open',id}});
  if(name==='next-lesson'){
   const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);
@@ -2574,7 +2589,18 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   showLessonTranslation=state.settings.showPinyin;render();
   root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
  }
- if(name==='mark-studied'){if(!findLesson(id))return;const ok=await mutate(s=>addLesson(s,id));if(ok){alertUser(`Lesson introduced. ${cardsForLesson(id).length} distinct recall targets were added.`);const idx=DEMO_LESSONS.findIndex(l=>l.id===id);if(idx<DEMO_LESSONS.length-1){displayLessonId=DEMO_LESSONS[idx+1].id;render();}}return}
+ if(name==='mark-studied'){
+  if(!findLesson(id))return false;
+  const wasIntroduced=state.learned.includes(id);
+  const ok=await mutate(s=>addLesson(s,id));
+  if(ok){
+   // Keep the finished source visible. The learner explicitly chooses when
+   // to start the next lesson; introduction does not silently navigate.
+   c9LessonSection='finish';
+   alertUser(wasIntroduced?'Lesson already introduced.':`Lesson introduced. ${cardsForLesson(id).length} original recall targets are registered.`);
+  }
+  return ok;
+ }
  if(name==='toggle-translation'){showLessonTranslation=!showLessonTranslation;render();return}
  if(name==='start-review'){
   if(!go('review'))return false;

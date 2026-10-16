@@ -148,7 +148,11 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    '<div class="c9-lesson-step-buttons">'+
    (i?act('c9-lesson-jump','← Previous step','c9-button c9-button--quiet','data-section="'+C9_LESSON_SECTIONS[i-1].id+'"'):'')+
    (i+1<C9_LESSON_SECTIONS.length?act('c9-lesson-jump','Next: '+esc(C9_LESSON_SECTIONS[i+1].name)+' →','c9-button c9-button--primary','data-section="'+C9_LESSON_SECTIONS[i+1].id+'"'):
-    '<a class="c9-button c9-button--secondary" href="#/review">Open scheduled review →</a>')+
+    (introduced?
+       '<span class="c9-lesson-finish-confirmation" role="status">Lesson introduced · original review targets registered</span>':
+       '<span class="c9-lesson-finish-hint">Introduce this lesson using the source-owned action above when ready.</span>')+
+    (introduced?lessonMove(lesson,1,act,esc):'')+
+    '<a class="c9-button c9-button--secondary" href="#/review">Scheduled review →</a>')+
    '</div></div>').join('')+'</nav>';
  const status=renderC9NativeStatus(introduced?'success':'info',
   introduced?'Introduced · keep practising':'Learning is ready',
