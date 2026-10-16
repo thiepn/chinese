@@ -363,6 +363,51 @@ def main():
                     return "Canonical source lesson, reload, Back/Forward, catalog and invalid ID guard "+str(width)
                 check("C9-54 canonical lesson navigation "+str(width),canonical_lesson_history)
                 ctx.close()
+            # Original character → indexed word → native dictionary and
+            # exact sentence/passage handoffs. No duplicate answer writer.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def contextual_original_transfer():
+                    open_route(page,"learn/demo-01")
+                    transfer=page.locator("#c9-lesson-transfer")
+                    transfer.wait_for(state="visible")
+                    if not transfer.locator('.c9-lesson-transfer-words [data-action="lookup-word"]').count():
+                        raise AssertionError("No original indexed vocabulary transfer from lesson 001")
+                    if transfer.locator('.c9-lesson-transfer-sources article').count()>4:
+                        raise AssertionError("Unbounded source transfer overwhelmed native lesson")
+                    page.locator('.c9-lesson-sections [data-section="context"]').click()
+                    jump=page.locator('[data-action="c9-lesson-transfer-jump"]')
+                    if not jump.is_visible():
+                        raise AssertionError("Guided contextual teaching has no source-backed continuation")
+                    jump.click()
+                    if not transfer.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Context transfer did not focus exact authored source panel")
+                    word=transfer.locator('[data-action="lookup-word"]').first
+                    word.click()
+                    page.wait_for_function("()=>location.hash==='#/explore'")
+                    page.locator("#app-content").wait_for(state="visible")
+                    if page.locator(".c9-lesson-workspace").count():
+                        raise AssertionError("Dictionary handoff remained in original lesson")
+                    open_route(page,"learn/demo-01")
+                    page.locator("#c9-lesson-transfer").wait_for(state="visible")
+                    action=page.locator('#c9-lesson-transfer [data-action="sentence-select"]')
+                    if action.count():
+                        expected=action.first.get_attribute('data-id')
+                        action.first.click()
+                        page.wait_for_function("(id)=>location.hash==='#/sentences/'+id",arg=expected)
+                        if page.evaluate("()=>location.hash")!='#/sentences/'+expected:
+                            raise AssertionError("Original sentence handoff lost canonical source identity")
+                    open_route(page,"learn/demo-01")
+                    page.locator("#c9-lesson-transfer").wait_for(state="visible")
+                    reading=page.locator('#c9-lesson-transfer [data-action="c9-media-open-story"]')
+                    if reading.count():
+                        reading.first.click()
+                        page.wait_for_function("()=>location.hash==='#/stories'")
+                        page.locator(".story-paper").wait_for(state="visible")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original lesson → exact dictionary, native sentence or passage and assisted-free navigation "+str(width)
+                check("C9-55 original contextual transfer "+str(width),contextual_original_transfer)
+                ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
             # This is navigation only: no synthetic grades, strokes or saves.

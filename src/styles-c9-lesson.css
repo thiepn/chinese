@@ -514,3 +514,51 @@
  }
  .c9-lesson-main .lesson-paper.c9-lesson-paper{gap:9px}
 }
+
+
+/* C9-55 — native, source-owned transfer instead of generic route detours.
+   Bounded source excerpts; the original response, grade and ID remain elsewhere. */
+.c9-lesson-transfer{
+ display:grid;gap:16px;min-width:0;padding:clamp(15px,2.4vw,25px);
+ border:1px solid var(--c9-line);border-left:3px solid var(--c9-accent);
+ border-radius:var(--c9-r);background:var(--c9-surface)
+}
+.c9-lesson-transfer-head{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.c9-lesson-transfer-head>div{min-width:0}
+.c9-lesson-transfer-head h2{font:650 clamp(19px,2.2vw,25px)/1.32 var(--c9-display);margin:5px 0 7px}
+.c9-lesson-transfer-head p:not(.c9-eyebrow){font:400 13px/1.65 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-lesson-transfer-words h3{font:650 15px/1.35 var(--c9-display);margin:0 0 10px}
+.c9-lesson-transfer :where(ul){list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.c9-lesson-transfer-words li,.c9-lesson-transfer-related li{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);padding:11px 13px;
+ background:var(--c9-surface-2);min-width:0
+}
+.c9-lesson-transfer :where(li>span,.c9-lesson-transfer-card>div){display:grid;gap:3px;min-width:0;overflow-wrap:anywhere}
+.c9-lesson-transfer :where(li>span>strong,.c9-lesson-transfer-card strong){
+ font:650 clamp(20px,2.7vw,26px)/1.35 var(--c9-display)
+}
+.c9-lesson-transfer :where(li>span>small,.c9-lesson-transfer-card small){font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-lesson-transfer :where(li>span>span,.c9-lesson-transfer-card span:not(.c9-eyebrow)){font:400 12px/1.55 var(--c9-ui)}
+.c9-lesson-transfer-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.c9-lesson-transfer-card{display:flex;flex-direction:column;align-items:start;gap:12px;min-width:0;
+ border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:15px;background:var(--c9-surface-2)}
+.c9-lesson-transfer-card>.c9-button{margin-top:auto}
+.c9-lesson-transfer :where(.c9-lesson-transfer-related,.c9-lesson-transfer-other){
+ border-top:1px solid var(--c9-line);padding-top:11px
+}
+.c9-lesson-transfer :where(details>summary){cursor:pointer;min-height:44px;padding:11px 0;color:var(--c9-ink);font:650 13px/1.4 var(--c9-ui)}
+.c9-lesson-transfer-related ul{padding-bottom:12px}
+.c9-lesson-transfer-other nav{display:flex;flex-wrap:wrap;gap:8px;padding:5px 0 12px}
+.c9-lesson-transfer-other a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;
+ border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);color:var(--c9-ink);font-size:12px}
+.c9-lesson-transfer :where(button,summary,a):focus-visible{outline:3px solid var(--c9-accent);outline-offset:3px}
+@media(max-width:800px){
+ .c9-lesson-transfer-sources{grid-template-columns:minmax(0,1fr)}
+ .c9-lesson-transfer-head{flex-wrap:wrap}
+}
+@media(max-width:440px){
+ .c9-lesson-transfer :where(.c9-lesson-transfer-words li,.c9-lesson-transfer-related li){
+  align-items:start;flex-direction:column}
+ .c9-lesson-transfer :where(li>.c9-button,.c9-lesson-transfer-card>.c9-button){width:100%}
+}

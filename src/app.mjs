@@ -1702,6 +1702,14 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true});}
   return;
  }
+ if(name==='c9-lesson-transfer-jump'){
+  if(route()!=='learn'||!c9LearnDetail)return false;
+  const section=root.querySelector('#c9-lesson-transfer');
+  if(!section)return false;
+  section.scrollIntoView({block:'start',behavior:'auto'});
+  section.focus({preventScroll:true});
+  return true;
+ }
  if(name==='c9-lesson-copy-link'){
   const lesson=findLesson(id);
   if(!lesson||!c9LearnDetail||displayLessonId!==lesson.id)return false;

@@ -6,6 +6,8 @@
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
+import {canonicalWordKey,findWord} from './lexicon.mjs';
+import {sourceWordUsage,sourceCharacterLinks} from './source-bridges-c9.mjs';
 import {renderC9NativeStatus,renderC9ListeningDeck} from './ui-c9.mjs';
 
 export const C9_LESSON_SECTIONS=Object.freeze([
@@ -72,20 +74,75 @@ function evidencePanel(l,state,act,esc){
   '<p class="c9-lesson-intro-hint">Lesson introduction remains an explicit action in the final section. Opening this page does not create review cards.</p>')+
   '</section>';
 }
-function continuationPanel(l,state,act,esc){
- const group=lessonGroups().find(g=>g.lessons.some(x=>x.id===l.id));
- const number=DEMO_LESSONS.findIndex(x=>x.id===l.id)+1;
- const links=[
-   ['#/reader','Focused character reading','Read'],
-   ['#/stories','Connected reading','Read'],
-   ['#/dialogues','Natural conversations','Listen'],
-   ['#/grammar','Full grammar library','Grammar']
- ];
- return '<section class="c9-lesson-context-card c9-unified-card" aria-labelledby="c9-lesson-sources-title">'+
-  '<p class="c9-eyebrow">CONNECTED STUDY</p><h3 id="c9-lesson-sources-title">Continue in context</h3>'+
-  '<p>Lesson '+number+' of '+DEMO_LESSONS.length+(group?' · Unit '+group.index+' '+esc(group.name):'')+'</p>'+
-  '<div class="c9-lesson-related">'+links.map(([href,label,k])=>'<a href="'+href+'"><span><small>'+k+'</small><strong>'+label+'</strong></span><span aria-hidden="true">↗</span></a>').join('')+'</div>'+
-  '<p>Links open the existing native learning modes. They do not claim completion or change review scheduling.</p></section>';
+/**
+ * C9-55 contextual transfer projection. Only existing canonical word keys,
+ * authored sentence IDs, passage IDs and related original lesson IDs.
+ * Written-form occurrence is NOT proof of a particular lexical sense or
+ * grammatical relationship. Never stores a study event or grants credit.
+ */
+export function c9LessonTransferSources(lesson,state){
+ const selected=[],sentences=[],readings=[],seenSentences=new Set(),seenReadings=new Set();
+ for(const word of (lesson?.words||[])){
+  const source=findWord(canonicalWordKey(word.hanzi,word.pinyin));
+  if(!source||selected.some(row=>row.key===source.key))continue;
+  selected.push({key:source.key,hanzi:source.hanzi,pinyin:source.pinyin,gloss:word.english});
+  for(const usage of sourceWordUsage(source.key,{limit:20})){
+   if(usage.sourceType==='sentence'&&!seenSentences.has(usage.sourceId)){
+    seenSentences.add(usage.sourceId);
+    sentences.push({id:usage.sourceId,hanzi:usage.hanzi,pinyin:usage.pinyin,english:usage.english,word:source.hanzi,sourceTitle:usage.sourceTitle});
+   }
+   if(usage.sourceType==='story'&&!seenReadings.has(usage.sourceId)){
+    seenReadings.add(usage.sourceId);
+    readings.push({id:usage.sourceId,hanzi:usage.hanzi,pinyin:usage.pinyin,english:usage.english,word:source.hanzi,sourceTitle:usage.sourceTitle,
+     saved:Boolean(state?.bookmarkedStories?.includes(usage.sourceId))});
+   }
+  }
+  if(selected.length>=3)break;
+ }
+ const related=sourceCharacterLinks(lesson?.id,{limit:3}).map(link=>({
+  id:link.lesson.id,hanzi:link.lesson.hanzi,meaning:link.lesson.meaning,
+  introduced:Boolean(state?.learned?.includes(link.lesson.id)),
+  words:link.words.map(word=>word.hanzi)
+ }));
+ return {words:selected,sentences:sentences.slice(0,2),readings:readings.slice(0,2),related};
+}
+function continuationPanel(lesson,state,act,esc,{showPinyin=true}={}){
+ const sources=c9LessonTransferSources(lesson,state);
+ const known=sources.words.length;
+ const surface=(row)=>'<strong lang="zh-Hans">'+esc(row.hanzi)+'</strong>'+
+  (showPinyin?'<small>'+esc(row.pinyin)+'</small>':'')+
+  '<span>'+esc(row.english)+'</span>';
+ const wordRows=sources.words.map(w=>'<li><span><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
+  (showPinyin?'<small>'+esc(w.pinyin)+'</small>':'')+'<span>'+esc(w.gloss)+'</span></span>'+
+  act('lookup-word','Open dictionary','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+'</li>').join('');
+ const sentences=sources.sentences.map(row=>'<article class="c9-lesson-transfer-card"><div>'+
+  '<span class="c9-eyebrow">ORIGINAL SENTENCE · '+esc(row.sourceTitle)+'</span>'+surface(row)+
+  '<small>Includes the written form '+esc(row.word)+'; meaning must be checked in its context.</small></div>'+
+  act('sentence-select','Practise this sentence →','c9-button c9-button--primary c9-button--small','data-id="'+esc(row.id)+'"')+'</article>').join('');
+ const readings=sources.readings.map(row=>'<article class="c9-lesson-transfer-card"><div>'+
+  '<span class="c9-eyebrow">ORIGINAL READING · '+esc(row.sourceTitle)+(row.saved?' · SAVED':'')+'</span>'+surface(row)+
+  '<small>Passage contains the written form '+esc(row.word)+'; this is not a verified vocabulary-sense match.</small></div>'+
+  act('c9-media-open-story','Open exact reading →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(row.id)+'"')+'</article>').join('');
+ const related=sources.related.map(row=>'<li><span><strong lang="zh-Hans">'+esc(row.hanzi)+'</strong>'+
+  '<span>'+esc(row.meaning)+' · '+(row.introduced?'Introduced':'Not introduced')+'</span>'+
+  '<small>Indexed shared whole word: '+esc(row.words.join(', '))+'</small></span>'+
+  act('c9-lesson-open','Related lesson →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(row.id)+'"')+'</li>').join('');
+ return '<section class="c9-lesson-transfer c9-unified-card" id="c9-lesson-transfer" tabindex="-1" aria-labelledby="c9-lesson-transfer-title">'+
+  '<header class="c9-lesson-transfer-head"><div><p class="c9-eyebrow">SOURCE-BACKED TRANSFER · NO AUTO CREDIT</p>'+
+  '<h2 id="c9-lesson-transfer-title">Use this lesson in real context</h2>'+
+  '<p>Follow exact indexed original content into dictionary, sentence practice or reading. Opening a source never marks a lesson as learned or changes review scheduling.</p></div>'+
+  '<span class="c9-badge">'+known+' indexed word'+(known===1?'':'s')+'</span></header>'+
+  (known?'<div class="c9-lesson-transfer-words"><h3>Study complete words</h3><ul>'+wordRows+'</ul></div>':
+   '<p class="c9-assessment-note">No canonical dictionary entry is linked to this original lesson. Use the lesson’s own authored vocabulary instead.</p>')+
+  ((sentences||readings)?'<div class="c9-lesson-transfer-sources">'+sentences+readings+'</div>':
+   '<p class="c9-assessment-note">No exact original external sentence or reading match was found for these words. The lesson’s own sentence remains available above.</p>')+
+  (related?'<details class="c9-lesson-transfer-related"><summary>Related character lessons from shared indexed words ('+sources.related.length+')</summary>'+
+   '<ul>'+related+'</ul></details>':'')+
+  '<details class="c9-lesson-transfer-other"><summary>Explore other study libraries</summary>'+
+  '<nav aria-label="Original additional study modes">'+
+  '<a href="#/reader">Character reading</a><a href="#/stories">All readings</a>'+
+  '<a href="#/dialogues">Conversations</a><a href="#/grammar">Grammar</a></nav>'+
+  '</details><p class="c9-assessment-note">These are written-form and source-index connections only, not verified etymology, word-sense, mastery or official HSK evidence.</p></section>';
 }
 export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='overview',focused=true,showPinyin=true,act,esc}){
  const index=DEMO_LESSONS.findIndex(l=>l.id===lesson.id);
@@ -148,6 +205,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    '<span>STEP '+(i+1)+' / '+C9_LESSON_SECTIONS.length+' · '+esc(stage.name)+'</span>'+
    '<div class="c9-lesson-step-buttons">'+
    (i?act('c9-lesson-jump','← Previous step','c9-button c9-button--quiet','data-section="'+C9_LESSON_SECTIONS[i-1].id+'"'):'')+
+   (i===3?act('c9-lesson-transfer-jump','Find original contextual practice ↓','c9-button c9-button--secondary','aria-controls="c9-lesson-transfer"'):'')+
    (i+1<C9_LESSON_SECTIONS.length?act('c9-lesson-jump','Next: '+esc(C9_LESSON_SECTIONS[i+1].name)+' →','c9-button c9-button--primary','data-section="'+C9_LESSON_SECTIONS[i+1].id+'"'):
     (introduced?
        '<span class="c9-lesson-finish-confirmation" role="status">Lesson introduced · original review targets registered</span>':
@@ -166,7 +224,8 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
-  stagebar+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+stageFooters+resources+
+  stagebar+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+stageFooters+
+  continuationPanel(lesson,state,act,esc,{showPinyin})+resources+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
-  '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
+  '<aside class="c9-lesson-right" aria-label="Learning evidence">'+evidencePanel(lesson,state,act,esc)+'</aside></div></div>';
 }
