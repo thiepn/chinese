@@ -312,6 +312,10 @@ def main():
                     page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
                     page.locator("details.c9-lesson-resources summary").click()
                     page.locator(".c9-lesson-source-preview").wait_for(state="visible")
+                    extra=page.locator('details.c9-lesson-extra')
+                    if extra.evaluate('(e)=>e.open'):
+                        raise AssertionError('Secondary lesson modes should start closed')
+                    extra.locator('summary').click()
                     page.locator(".c9-lesson-header-actions [data-action='c9-character-reader']").click()
                     page.wait_for_function("()=>location.hash==='#/reader'")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
