@@ -435,3 +435,14 @@
 .c9-reading-queue-actions .c9-button{min-height:44px;white-space:normal}
 .c9-reading-queue-pages{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:14px 0 0}
 .c9-reading-queue-pages .c9-button{min-height:44px}
+
+
+/* P69: paginate private user text without persisting or grading its contents. */
+.c9-personal-pages,.c9-personal-copy-actions,.c9-personal-source-links{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.c9-personal-pages{justify-content:space-between;border-block:1px solid var(--c9-line);padding:12px 0}
+.c9-personal-pages span{font:500 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-personal-pages .c9-button,.c9-personal-copy-actions .c9-button,.c9-personal-source-links .c9-button{min-height:44px;white-space:normal}
+.c9-personal-source-links{padding:8px 0;border-top:1px solid var(--c9-line);margin-top:7px}
+.c9-personal-source-links small{flex-basis:100%;font:400 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-personal-copy-actions{margin-top:3px}
+@media(max-width:480px){.c9-personal-pages{justify-content:center}.c9-personal-pages span{flex-basis:100%;text-align:center;order:-1}}
