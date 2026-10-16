@@ -1,6 +1,7 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
+import {sourceWordUsage} from './source-bridges-c9.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from './sentence-library.mjs';
 
@@ -29,6 +30,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
  const cards=results.length?'<div class="c9-library-words">'+results.map(w=>{
   const intro=introduced.has(w.key),savedHere=saved.has(w.key);
   const comparisons=sourceWordComparisons(w.key,{limit:3});
+  const usage=sourceWordUsage(w.key,{limit:5});
   return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
@@ -52,6 +54,15 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
        '<small>'+esc(comparisonEvidence.english)+'</small>':'<small>No authored example indexed for this word.</small>')+
      act('c9-word-open','Compare full source →','c9-button c9-button--secondary c9-button--small',
       'data-id="'+esc(other.key)+'"')+'</article>').join('')+'</div></details>':'')+
+   (usage.length?'<details class="c9-word-usage"><summary>Where this written word appears · '+usage.length+' authored example'+(usage.length===1?'':'s')+'</summary>'+
+    '<p>These are exact written-form matches in source-owned examples and passages. Matching writing does not automatically establish the same word sense or reading.</p>'+
+    '<div class="c9-word-usage-list">'+usage.map(e=>'<article>'+
+     '<span class="c9-eyebrow">'+esc(e.sourceType==='word'?'Original word record':e.sourceType==='story'?'Original reading · '+e.sourceTitle:'Original sentence · '+e.sourceTitle)+'</span>'+
+     '<p lang="zh-Hans">'+esc(e.hanzi)+'</p>'+
+     '<span class="c9-library-pinyin">'+esc(e.pinyin)+'</span><small>'+esc(e.english)+'</small>'+
+     (e.sourceType==='sentence'?act('sentence-select','Open sentence learning →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):
+      e.sourceType==='story'?act('c9-media-open-story','Read this original passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):'')+
+     '</article>').join('')+'</div></details>':'')+
    '<div class="c9-library-word-actions">'+
    act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
    act('c9-word-open','Full details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+
