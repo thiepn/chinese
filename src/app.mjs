@@ -2539,7 +2539,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='mission-next'){if(missionStep===2){missionStep=0;missionActive=false;}else missionStep++;missionFeedback=null;missionSupport=false;missionTyped='';return render();}
  if(name==='mission-answer'||name==='mission-reveal'){
   if(!missionActive||missionFeedback)return;const q=missionQuestion(dialogueId,missionStep),response=name==='mission-reveal'?'':q.kind==='pinyin'?missionTyped:button.dataset.option||'';if(name==='mission-answer'&&!response.trim())return alertUser('Enter an answer first.','error');
-  const result=gradeMission(q,response),assisted=missionSupport||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
+  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.revealed||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addMissionEvent(s,{id,dialogueId,step:missionStep,correct:result.correct,assisted}));if(ok){missionFeedback={...result,assisted};render();}return;
  }
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
@@ -2562,7 +2562,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
-  const assisted=dialogueSupport||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
+  const assisted=dialogueSupport||c9RoleplayUi.revealed||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
   const eventId=globalThis.crypto?.randomUUID?.()||`dialogue-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addDialogueEvent(s,{id:eventId,dialogueId,question:dialogueStep,answer:response,assisted}));
   if(ok){dialogueFeedback={correct:response===q.answer,assisted};render();}return;
@@ -2668,7 +2668,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   let entered=name==='story-skip'?'':storyMode==='ordering'?storySequence.map(i=>ex.chunks[i]).join(''):(storyMode==='pronunciation'||ex.kind==='hanzi')?storyTyped:button.dataset.option||'';
   if(name!=='story-skip'&&!entered.trim())return alertUser('Answer before checking, or choose Reveal answer.','error');
   const evaluation=name==='story-skip'?{correct:false,message:'Answer revealed without independent recall.'}:storyMode==='pronunciation'?toneExplanation(entered,ex.answer):ex.kind==='hanzi'?checkSentence(ex.task,entered):storyMode==='ordering'?{correct:storySequence.join(',')===ex.chunks.map((_,i)=>i).join(','),message:'The expected chunk order reconstructs the sentence.'}:evaluateAnswer(entered,ex.answer,'choice');
-  const assisted=storyAssist||name==='story-skip',correct=Boolean(evaluation.correct);
+  const assisted=storyAssist||c9ReadingRecallUi.revealed||name==='story-skip',correct=Boolean(evaluation.correct);
   storyResult={correct,assisted,message:evaluation.detail||evaluation.message,entered,reference:ex.answer,explanation:ex.explanation||''};
   const eid=globalThis.crypto?.randomUUID?.()||`reading-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>ex.kind==='hanzi'&&(deep||beginner)?addSentenceEvent(s,{id:eid,taskId:ex.task.id,correct,assisted}):addReadingEvent(s,story.id,storyMode,correct,assisted,eid));
