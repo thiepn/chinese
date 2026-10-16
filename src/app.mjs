@@ -1587,7 +1587,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   for(const panel of root.querySelectorAll('.c9-native-section'))
     panel.hidden=c9LessonFocused&&panel.id!=='c9-lesson-'+c9LessonSection;
   for(const footer of root.querySelectorAll('.c9-lesson-step-footer'))
-    footer.hidden=c9LessonFocused&&footer.dataset.section!==c9LessonSection;
+    footer.hidden=footer.dataset.section!==c9LessonSection;
   root.querySelector('#c9-lesson-'+c9LessonSection)?.scrollIntoView({block:'start'});
   return;
  }
@@ -1599,7 +1599,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   for(const panel of root.querySelectorAll('.c9-native-section'))
     panel.hidden=c9LessonFocused&&panel.id!=='c9-lesson-'+section;
   for(const footer of root.querySelectorAll('.c9-lesson-step-footer'))
-    footer.hidden=c9LessonFocused&&footer.dataset.section!==section;
+    footer.hidden=footer.dataset.section!==section;
   const flowLabel=root.querySelector('#c9-lesson-flow-label');
   if(flowLabel)flowLabel.textContent='Step '+(idx+1)+' of '+C9_LESSON_SECTIONS.length+' · '+C9_LESSON_SECTIONS[idx].name;
   const flowProgress=root.querySelector('.c9-lesson-flow-progress');
