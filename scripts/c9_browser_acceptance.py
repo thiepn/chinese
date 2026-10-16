@@ -622,6 +622,40 @@ def main():
                     return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
                 check("C9-48 real source listening "+str(width),original_listening_journey)
                 ctx.close()
+            # P67–P68 uses original story IDs/modes and native reading
+            # history only; no shadow score, scheduler or chapter IDs.
+            ctx,page,errors=session(390,844,True)
+            def original_reading_mode_progression():
+                open_route(page,"stories")
+                queue=page.locator(".c9-reading-queue")
+                queue.wait_for(state="visible")
+                queue.locator("#c9-reading-queue-filter").select_option("unattempted")
+                if queue.locator("#c9-reading-queue-filter").input_value()!="unattempted":
+                    raise AssertionError("Original reading evidence filter not retained")
+                cards=queue.locator('[data-action="c9-reading-queue-start"]')
+                if cards.count()<1:
+                    raise AssertionError("Original source reading exercises cannot be started")
+                target=cards.first.get_attribute("data-id")
+                mode=cards.first.get_attribute("data-mode")
+                cards.first.click()
+                practice=page.locator(".story-practice")
+                practice.wait_for(state="visible")
+                if mode.upper() not in practice.locator(".eyebrow").inner_text().upper():
+                    raise AssertionError("Source-based suggested mode did not open in canonical reading player")
+                if not page.locator("#c9-native-reading").is_visible():
+                    raise AssertionError("Original passage was lost in reading mode transition")
+                answers=practice.locator('[data-action="story-answer"]')
+                if answers.count():
+                    answers.first.click()
+                    page.wait_for_function("()=>Boolean(document.querySelector('.story-practice .reader-feedback'))")
+                    if not practice.locator(".reader-feedback").is_visible():
+                        raise AssertionError("Original reader grade feedback missing")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("P67 source reading flow causes 390px overflow")
+                if errors:raise RuntimeError("; ".join(errors[:2]))
+                return "390px original passage "+str(target)+" opened in source mode "+str(mode)+" with native feedback"
+            check("P67-P68 original reading queue and source-mode graded practice",original_reading_mode_progression)
+            ctx.close()
             # P64–P68 original source bridges: exercise actual native Wordbook
             # and source-scored Reader without fabricated radical/HSK material.
             ctx,page,errors=session(390,844,True)
