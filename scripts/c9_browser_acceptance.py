@@ -544,8 +544,11 @@ def main():
                     raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
                 if not page.locator(".c9-lesson-bottom-nav [data-action]").count():
                     raise AssertionError("Bottom original lesson pager missing")
-                if not page.locator('.c9-lesson-header-actions [data-action="c9-lesson-jump"]').is_visible():
-                    raise AssertionError("Primary native lesson action missing")
+                if not page.locator("#c9-lesson-flow-label").is_visible():
+                    raise AssertionError("Guided lesson steps are not available at the first fold")
+                glyph=page.locator("#c9-lesson-overview .big-hanzi").bounding_box()
+                if not glyph or glyph["y"]>=height-180:
+                    raise AssertionError("Actual native character still buried below the first fold: "+str(glyph))
                 if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                     raise AssertionError("Lesson screen horizontal overflow")
                 if errors:raise RuntimeError("; ".join(errors[:2]))
