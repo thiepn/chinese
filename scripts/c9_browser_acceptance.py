@@ -168,7 +168,7 @@ def main():
                     if "Start lesson 001" not in entry.inner_text():
                         raise AssertionError("New learner cannot identify lesson one")
                     entry.click()
-                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    page.wait_for_function("()=>location.hash.startsWith('#/learn/demo-')")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Start lesson did not open the actual native teaching")
                     page.locator('[data-action="c9-learn-back"]').first.click()
@@ -287,7 +287,7 @@ def main():
                     if not link.is_visible():
                         raise AssertionError("Character → authored lesson handoff missing")
                     link.click()
-                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    page.wait_for_function("()=>location.hash.startsWith('#/learn/demo-')")
                     if not page.locator("#c9-lesson-title").inner_text().strip():
                         raise AssertionError("Original character lesson not mounted")
                     if not page.locator('.c9-lesson-workspace #c9-lesson-title [lang="zh-Hans"]').inner_text():
@@ -318,6 +318,42 @@ def main():
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Source-exact lesson, recorded completion without forced advance, one-tap scheduled review and persistent optional focus at "+str(width)+"px"
                 check("C9-53 source completion and review "+str(width),original_source_completion)
+                ctx.close()
+            # Canonical original source URL: reload, Back and Forward are
+            # navigation only and never touch grading or learner records.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def canonical_lesson_history():
+                    open_route(page,"learn")
+                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
+                    original=page.locator("#c9-lesson-title").inner_text()
+                    if not page.locator('[data-action="c9-lesson-copy-link"]').is_visible():
+                        raise AssertionError("Lesson has no source-exact share action")
+                    page.reload(wait_until="domcontentloaded")
+                    page.locator("#c9-lesson-overview").wait_for(state="visible")
+                    if page.evaluate("()=>location.hash")!="#/learn/demo-01" or page.locator("#c9-lesson-title").inner_text()!=original:
+                        raise AssertionError("Page reload forgot canonical authored lesson identity")
+                    page.locator('.c9-lesson-bottom-nav [data-action="c9-lesson-select"]').last.click()
+                    page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
+                    if page.locator("#c9-lesson-title").inner_text()==original:
+                        raise AssertionError("Next lesson URL left old native source visible")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
+                    if page.locator("#c9-lesson-title").inner_text()!=original:
+                        raise AssertionError("Back did not restore original lesson")
+                    page.go_forward(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
+                    page.locator('[data-action="c9-learn-back"]').first.click()
+                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
+                        raise AssertionError("All lessons left catalog closed after deep link")
+                    open_route(page,"learn/demo-999")
+                    if page.locator(".c9-lesson-workspace").count():
+                        raise AssertionError("Unknown original ID fabricated a lesson")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Canonical source lesson, reload, Back/Forward, catalog and invalid ID guard "+str(width)
+                check("C9-54 canonical lesson navigation "+str(width),canonical_lesson_history)
                 ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
