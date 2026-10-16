@@ -119,7 +119,7 @@ export function renderC9DialogueCatalog(state,currentId,options,act,esc){
  * Source definitions are only revealed after explicit assisted action or
  * completing the native check, so graded reading cannot silently receive hints.
  */
-export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=false}={}){
+export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=false,answered=false}={}){
  const items=originalStoryWordSupport(story?.id,state);
  if(!items.length)return '<p class="c9-reading-vocabulary-empty">No original indexed whole words are available in this passage.</p>';
  const heading='<div class="c9-reading-vocabulary-head"><span class="c9-eyebrow">ORIGINAL SOURCE · STUDY WORDS IN CONTEXT</span>'+
@@ -149,7 +149,7 @@ export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=f
     '</div>')+'</article>';
  }).join('');
  return '<section class="c9-reading-vocabulary" aria-label="Original reading vocabulary support">'+heading+
-  '<p class="c9-reading-vocabulary-caveat" role="status">Assisted source support is visible. The current answer is not eligible for independent reading credit. Written-form matches do not certify the correct lexical sense.</p>'+
+  '<p class="c9-reading-vocabulary-caveat" role="status">'+(answered?'Source help opened after checking. Your previously recorded response and its independent/assisted status are unchanged.':'Assisted source support is visible. The current unsubmitted answer will be recorded as assisted.')+' Written-form matches do not certify the correct lexical sense.</p>'+
   '<div class="c9-reading-vocabulary-grid">'+list+'</div>'+
   (items.length>=24?'<small>Showing at most 24 original written forms. The passage and native exercises are unchanged.</small>':'')+
   '</section>';
