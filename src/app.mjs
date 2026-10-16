@@ -190,6 +190,7 @@ let planMistakeFilter='unresolved';
 let pendingRestore=null,restoreAcknowledgement='';
 let c9RenderedHash=null;
 let c9OpenCatalogAfterHash=false; // UI navigation only; never learner evidence.
+let c9PendingStoryLine=null; // Session-only exact source handoff, never private evidence.
 let c9SearchFocusPending=false;
 function alertUser(message,type='info'){const target=$('alert-banner');target.textContent=message;target.className=`alert ${type}`;if(type==='error')target.setAttribute('role','alert');else target.setAttribute('role','status');}
 function clearAlert(){const a=$('alert-banner');a.textContent='';a.className='';a.setAttribute('role','status');}
@@ -1541,18 +1542,20 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const target=findStory(id),index=Number(button.dataset.index);
   if(!target||!Number.isInteger(index)||index<0||index>=target.lines.length)
    return alertUser('Exact original passage source is unavailable.','error');
-  // Reuse existing source transition guard and original reading authority.
-  // Opening an authored example must never grant reading credit.
+  // Pass the exact authored sentence through the hash navigation controller.
+  // Do not render the previous story or let source reset erase this focus.
+  c9PendingStoryLine={id:target.id,index};
   const opened=await act({dataset:{action:'c9-media-open-story',id:target.id}});
-  if(opened!==true)return false;
-  storyFocusIndex=index;
-  if(storyParagraphOnly&&target.extended)storyParagraph=paragraphFor(target,index);
-  if(target.beginner&&beginnerPart!=='all')beginnerPart=String(Math.floor(index/3));
-  render();
-  const line=root.querySelector('[data-c9-story-line="'+index+'"]');
-  line?.scrollIntoView({block:'nearest',behavior:'auto'});
-  line?.focus({preventScroll:true});
-  announceC9Interaction('Original '+target.title+', sentence '+(index+1)+' of '+target.lines.length+' focused; no learning answer recorded.');
+  if(opened!==true){c9PendingStoryLine=null;return false;}
+  if(location.hash==='#/stories/'+target.id&&route()==='stories'&&storyId===target.id){
+   storyFocusIndex=index;
+   if(storyParagraphOnly&&target.extended)storyParagraph=paragraphFor(target,index);
+   if(target.beginner&&beginnerPart!=='all')beginnerPart=String(Math.floor(index/3));
+   render();
+   const line=root.querySelector('[data-c9-story-line="'+index+'"]');
+   line?.scrollIntoView({block:'nearest',behavior:'auto'});line?.focus({preventScroll:true});
+   c9PendingStoryLine=null;
+  }
   return true;
  }
  if(name==='c9-media-open-story')return c9OpenMediaSource('stories',id);
@@ -2910,6 +2913,15 @@ window.addEventListener('hashchange',()=>{
    resetReadingNavigation();
   }
  }
+ if(destination==='stories'&&c9PendingStoryLine?.id===storyId){
+  const {index}=c9PendingStoryLine;
+  const source=findStory(storyId);
+  if(source&&index>=0&&index<source.lines.length){
+   storyFocusIndex=index;
+   if(storyParagraphOnly&&source.extended)storyParagraph=paragraphFor(source,index);
+   if(source.beginner&&beginnerPart!=='all')beginnerPart=String(Math.floor(index/3));
+  }
+ }
  if(destination==='dialogues'){
   const selected=c9HashLearningSource('dialogues',currentHash);
   const next=selected||(currentHash.startsWith('#/dialogues/')?DIALOGUES[0].id:dialogueId);
@@ -2950,6 +2962,16 @@ window.addEventListener('hashchange',()=>{
  if(sessionQueue?.length&&destination!=='review')reviewPaused=true;
  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
  render();window.scrollTo(0,0);
+ if(c9PendingStoryLine&&destination==='stories'){
+  const source=findStory(storyId),pending=c9PendingStoryLine;
+  c9PendingStoryLine=null;
+  if(source?.id===pending.id){
+   const line=root.querySelector('[data-c9-story-line="'+pending.index+'"]');
+   line?.scrollIntoView({block:'nearest',behavior:'auto'});
+   line?.focus({preventScroll:true});
+   announceC9Interaction('Original '+source.title+', sentence '+(pending.index+1)+' focused. No grade recorded.');
+  }
+ }
  if(c9OpenCatalogAfterHash&&destination==='learn'&&!c9LearnDetail){
   c9OpenCatalogAfterHash=false;
   const catalog=root.querySelector('details.c9-discovery-catalog');
