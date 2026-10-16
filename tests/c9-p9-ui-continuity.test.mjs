@@ -11,6 +11,9 @@ import {findLibrarySentence} from '../src/sentence-library.mjs';
 import {findStory,STORIES} from '../src/stories.mjs';
 import {findDialogue,DIALOGUES} from '../src/dialogues.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallSource,renderC9DialogueRoleplay,renderC9ReadingRecall} from '../src/media-c9.mjs';
+import {P33_SCENARIOS} from '../src/p33-scenarios.mjs';
+import {p33DecisionSource,p33ScenarioTeaching} from '../src/p33-screen.mjs';
+import {SENTENCE_TASKS} from '../src/sentence-workshop.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -261,4 +264,44 @@ test('C9-57 every original reading supports ungraded source-exact listen-to-writ
   "if(screen==='stories'&&!c9ReadingRecallUi.revealed", "if(name==='c9-reading-recall-reveal')"])
   assert.ok(app.includes(guard),'source-owned read/write and original grading: '+guard);
  assert.equal(JSON.stringify(state),before,'private learner history untouched');
+});
+
+
+test('C9-58 all 25 original P33 conversations offer two source-attested interactive decisions and native writing',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ assert.equal(P33_SCENARIOS.length,25,'this is the original authored scenario collection');
+ for(const scene of P33_SCENARIOS){
+  const dialogue=DIALOGUES.find(d=>d.p33?.id===scene.id);
+  assert.ok(dialogue,'native original dialogue exists');
+  assert.equal(scene.alternatives.length,2);
+  assert.equal(p33DecisionSource(scene,-1),null,'no synthetic branch fallback');
+  assert.equal(p33DecisionSource(scene,22),null,'invalid branch rejected');
+  const options=scene.alternatives.map((alternative,index)=>{
+   const choice=p33DecisionSource(scene,index);
+   assert.strictEqual(choice.option,alternative,'original authored choice/reply');
+   assert.strictEqual(choice.cue,scene.turns[0],'actual authored opening');
+   assert.ok(alternative.reply.hanzi&&alternative.reply.pinyin&&alternative.reply.english);
+   const beforeChoice=p33ScenarioTeaching(dialogue,index,act,esc,{typed:'',revealed:false});
+   assert.ok(beforeChoice.includes('data-action="p33-decision-reveal"'));
+   assert.ok(beforeChoice.includes('id="p33-decision-entry"'));
+   assert.ok(!beforeChoice.includes('class="p33-decision-reference"'),'partner continuation hidden before self-check');
+   const revealed=p33ScenarioTeaching(dialogue,index,act,esc,{typed:alternative.reply.hanzi,revealed:true});
+   assert.ok(revealed.includes('class="p33-decision-reference"'));
+   assert.ok(revealed.includes('Your written Chinese exactly matches'));
+   assert.ok(revealed.includes(alternative.reply.pinyin));
+   assert.ok(revealed.includes('Valid alternative replies are not automatically graded.')===false);
+   assert.ok(revealed.includes('data-action="p33-decision-retry"'));
+   return alternative.reply.hanzi;
+  });
+  assert.notEqual(options[0],options[1],'original alternatives lead to distinct authored partner responses');
+  for(const turn of [1,4,7]){
+   assert.ok(SENTENCE_TASKS.some(task=>task.id==='p33:'+scene.id+':turn'+turn),'reuses existing original graded writing task');
+  }
+ }
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const phrase of ["if(name==='p33-decision-reveal')","if(name==='p33-decision-retry')",
+  "p33DecisionUi.referenceSeen=true","p33DecisionUi.referenceSeen||p34TranscriptViewed",
+  "if(screen==='dialogues'&&p33Branch!==null&&!p33DecisionUi.revealed"])
+  assert.ok(app.includes(phrase),'assist/protect original grading and draft: '+phrase);
+ assert.equal(JSON.stringify(state),before,'P33 decision learning is ungraded read-only navigation');
 });
