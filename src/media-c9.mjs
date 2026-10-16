@@ -3,7 +3,7 @@
  * Visual and read-only projections of original source content. All activity
  * evaluation and storage remain in app.mjs native action dispatch.
  */
-import {STORIES,tokenizeSentence} from './stories.mjs';
+import {STORIES,tokenizeSentence,storyExercise} from './stories.mjs';
 import {findWord,wordsForWrittenForm} from './lexicon.mjs';
 import {originalStoryWordSupport} from './source-bridges-c9.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
@@ -192,35 +192,89 @@ export function renderC9ListeningWorkflow(dialogue,question,feedback,assisted,ac
 /** P67–P68: source-only continuation using original passage IDs and observed
  * independent readingEvents. A reading is never claimed as a certified HSK
  * level, or completed by opening/previewing it. */
-export function c9ReadingRecommendations(state,{limit=4}={}){
- const histories=new Map();
- for(const e of state.readingEvents||[]){
-  if(!STORIES.some(s=>s.id===e.storyId))continue;
-  const old=histories.get(e.storyId)||{last:null,independent:false};
-  histories.set(e.storyId,{last:e,independent:old.independent||Boolean(e.correct&&!e.assisted)});
+/** P67–P68 original source reader course. This read-only projection uses only
+ * historical readingEvents and source-supported original storyExercise modes.
+ * It is not a new scheduler, grader, HSK level, or content/identity store. */
+export const C9_READING_QUEUE_FILTERS=Object.freeze(['all','retry','unattempted','saved','independent']);
+export const C9_READING_QUEUE_PAGE_SIZE=6;
+const SOURCE_READING_MODES=Object.freeze(['comprehension','cloze','ordering','pronunciation']);
+const modeLabel=mode=>({comprehension:'Understand the passage',cloze:'Complete the sentence',
+ ordering:'Rebuild the original sentence',pronunciation:'Recall Pinyin with tones'})[mode]||mode;
+
+export function c9ReadingStudyCatalog(state,{filter='all',page=0}={}){
+ const byId=new Map(),saved=new Set(state.bookmarkedStories||[]);
+ for(const record of state.readingEvents||[]){
+  if(!byId.has(record.storyId))byId.set(record.storyId,[]);
+  byId.get(record.storyId).push(record);
  }
- const saved=new Set(state.bookmarkedStories||[]);
- return STORIES.map((story,index)=>{
-  const history=histories.get(story.id)||{last:null,independent:false};
-  const priority=history.independent?3:history.last?0:saved.has(story.id)?1:2;
-  return {story,history,priority,index};
- }).sort((a,b)=>a.priority-b.priority||a.index-b.index)
- .slice(0,Math.max(0,Math.min(16,Number.isInteger(limit)?limit:4)));
+ const source=STORIES.map((story,index)=>{
+  const originalModes=SOURCE_READING_MODES.filter(mode=>Boolean(storyExercise(story,mode)));
+  const recorded=byId.get(story.id)||[],last=recorded.at(-1)||null;
+  const everIndependent=recorded.some(e=>e.correct&&!e.assisted);
+  const latestIndependent=Boolean(last?.correct&&!last.assisted);
+  const stage=!last?'unattempted':latestIndependent?'independent':'retry';
+  const modeHistory=originalModes.map(mode=>{
+   const attempts=recorded.filter(e=>e.mode===mode);
+   const lastMode=attempts.at(-1)||null;
+   return {mode,attempts:attempts.length,last:lastMode,
+    independent:attempts.some(e=>e.correct&&!e.assisted)};
+  });
+  const recommended=modeHistory.find(m=>m.last&&(!m.last.correct||m.last.assisted))||
+   modeHistory.find(m=>!m.independent)||modeHistory[0]||null;
+  const priority=stage==='retry'?0:stage==='unattempted'?(saved.has(story.id)?1:2):3;
+  return {story,index,history:{last,independent:everIndependent,latestIndependent,
+     attempts:recorded.length},stage,priority,saved:saved.has(story.id),
+    recommendedMode:recommended?.mode||null,modeHistory};
+ });
+ const mode=C9_READING_QUEUE_FILTERS.includes(filter)?filter:'all';
+ const filtered=source.filter(x=>mode==='all'||(mode==='saved'?x.saved:x.stage===mode))
+  .sort((a,b)=>a.priority-b.priority||a.index-b.index);
+ const pages=Math.max(1,Math.ceil(filtered.length/C9_READING_QUEUE_PAGE_SIZE));
+ const current=Math.min(pages-1,Math.max(0,Number.isInteger(page)?page:0));
+ const counts=Object.freeze({all:source.length,retry:source.filter(x=>x.stage==='retry').length,
+  unattempted:source.filter(x=>x.stage==='unattempted').length,
+  independent:source.filter(x=>x.stage==='independent').length,
+  saved:source.filter(x=>x.saved).length});
+ return {items:filtered.slice(current*C9_READING_QUEUE_PAGE_SIZE,(current+1)*C9_READING_QUEUE_PAGE_SIZE),
+  all:filtered,counts,page:current,pages,filter:mode};
 }
-export function renderC9ReadingContinuation(state,currentId,act,esc){
- const choices=c9ReadingRecommendations(state);
+/** Preserve compatibility with older read-only recommendation callers. */
+export function c9ReadingRecommendations(state,{limit=4}={}){
+ return c9ReadingStudyCatalog(state).all.slice(0,Math.max(0,Math.min(16,Number.isInteger(limit)?limit:4)));
+}
+export function renderC9ReadingContinuation(state,currentId,act,esc,options={}){
+ const catalog=c9ReadingStudyCatalog(state,options);
+ const controls=[['all','All original readings'],['retry','Latest attempt needs retry'],
+  ['unattempted','Not yet attempted'],['saved','Saved passages'],
+  ['independent','Latest independently correct']];
  return '<section class="c9-reading-queue" aria-labelledby="c9-reading-queue-title">'+
   '<div class="c9-reading-queue-head"><div><span class="c9-eyebrow">P67–P68 · ORIGINAL READING CONTINUATION</span>'+
-  '<h2 id="c9-reading-queue-title">Read next or repair a passage</h2>'+
-  '<p>Original editorial passages are ordered by actual reading history: unresolved attempts, saved unattempted texts, then other source texts. No estimated level, proficiency claim or completion award is generated.</p></div></div>'+
-  '<div class="c9-reading-queue-items">'+choices.map(({story,history})=>
-   '<article'+(story.id===currentId?' class="is-current"':'')+'><span class="c9-eyebrow">'+esc(passageKind(story))+
-   ' · '+story.lines.length+' sentences</span><h3>'+esc(story.title)+'</h3>'+
-   '<p>'+esc(story.theme)+'</p>'+
-   '<small>'+(history.independent?'Independent correct response recorded':history.last?
-    'Recorded wrong or assisted response · revisit':'No original reading response recorded')+'</small>'+
-   act('c9-media-open-story',story.id===currentId?'Return to current passage →':'Read original passage →',
-    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"')+'</article>').join('')+'</div>'+
+  '<h2 id="c9-reading-queue-title">Continue reading, then practise</h2>'+
+  '<p>Choose a source passage and a real available exercise. Unresolved attempts come first; previously passed material is still marked for retry after a later unsuccessful response. Reading and grading remain in the original player. No estimated level, proficiency claim or completion award is generated.</p></div></div>'+
+  '<div class="c9-reading-queue-controls"><label for="c9-reading-queue-filter">Original reading history'+
+  '<select id="c9-reading-queue-filter" class="c9-select">'+controls.map(([value,label])=>
+    '<option value="'+value+'"'+(catalog.filter===value?' selected':'')+'>'+esc(label)+' · '+catalog.counts[value]+'</option>').join('')+
+  '</select></label><span role="status">'+catalog.all.length+' matching passages · page '+(catalog.page+1)+' / '+catalog.pages+'</span></div>'+
+  (catalog.items.length?'<div class="c9-reading-queue-items">'+catalog.items.map(({story,history,stage,recommendedMode,modeHistory,saved})=>
+   '<article'+(story.id===currentId?' class="is-current"':'')+'><span class="c9-eyebrow">'+esc(passageKind(story))+' · '+story.lines.length+' source sentences'+(saved?' · Saved':'')+'</span>'+
+   '<h3>'+esc(story.title)+'</h3><p>'+esc(story.theme)+'</p>'+
+   '<small>'+(stage==='retry'?'Latest attempt was incorrect or assisted; retry independently':stage==='independent'?
+    'Latest reading attempt was independently correct':'No original reading answer recorded')+
+    (history.independent&&!history.latestIndependent?' · Earlier independent correct answer also recorded':'')+'</small>'+
+   '<div class="c9-reading-queue-actions">'+
+   (recommendedMode?act('c9-reading-queue-start',modeLabel(recommendedMode)+' →','c9-button c9-button--primary c9-button--small',
+    'data-id="'+esc(story.id)+'" data-mode="'+esc(recommendedMode)+'"'):'')+
+   act('c9-media-open-story',story.id===currentId?'Return to current passage →':'Open original passage →',
+    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"')+'</div>'+
+   '<small>'+modeHistory.filter(m=>m.independent).length+' / '+modeHistory.length+
+    ' available source exercise modes with at least one independent correct answer (not mastery)</small>'+
+   '</article>').join('')+'</div>':'<p role="status">No original passage matches this filter. Choose another recorded status to continue.</p>')+
+  '<nav class="c9-reading-queue-pages" aria-label="Original reading continuation pages">'+
+   act('c9-reading-queue-page','← Previous','c9-button c9-button--secondary c9-button--small',
+     'data-delta="-1" '+(catalog.page===0?'disabled':''))+
+   '<span>Page '+(catalog.page+1)+' / '+catalog.pages+'</span>'+
+   act('c9-reading-queue-page','Next →','c9-button c9-button--secondary c9-button--small',
+     'data-delta="1" '+(catalog.page===catalog.pages-1?'disabled':''))+'</nav>'+
   '</section>';
 }
 
@@ -247,7 +301,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
- renderC9ReadingContinuation(state,story.id,act,esc)+
+ renderC9ReadingContinuation(state,story.id,act,esc,options.queue||{})+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+
  catalogControls('reading',options,act,esc)+

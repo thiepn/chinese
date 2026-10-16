@@ -93,3 +93,10 @@ The service-worker asset manifest now includes the new source module, with 316 s
 ### Latest main UX + compiled startup integration
 
 The P64–P70 branch has been reconciled with the independently advanced main UI/navigation and compiled startup build. The **source manifest** still enumerates 316 unique curriculum/development assets, including `source-bridges-c9.mjs`; the separate **runtime service-worker precache** contains **8 compiled startup/shell assets**, not 316 runtime requests. `src/app.mjs` and `src/sw.js` pair the `character-study-working-v62-source-bridge-bundled-native` revision. Main's mobile navigation, original lesson start and unified Learn/Review flows are preserved. Historical source IDs/graders and privacy records remain owned by their respective original modules.
+
+
+### P67–P68 next learner-functionality batch — source-owned graded reading continuity
+
+A new original Reading queue traverses **all existing source passages** rather than limiting continuation to four cards. It supports status filtering (latest response needs retry, never attempted, last response independently correct), saved passages, and page navigation. It preserves both ever independently correct evidence and latest-attempt evidence, including cases where an earlier pass is followed by a later assisted or incorrect response. Recommendations select one **actually available** original `storyExercise` mode per passage (comprehension, cloze, ordering or source-backed pronunciation). Actions open the unchanged native story player and its original `addReadingEvent` writer, subject to the existing unsent-response guard. Opening, searching or filtering never creates an event or claims an official HSK tier.
+
+This branch remains on the compiled startup architecture: eight runtime-precache assets and a separate inspected original source catalog. `src/app.mjs`, `src/sw.js`, original Node tests and Chromium acceptance share `character-study-working-v63-reading-continuity`. A larger approved reading corpus and linguistic source verification remain genuinely OPEN, not completed by UI extensions.
