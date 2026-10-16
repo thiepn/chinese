@@ -247,6 +247,8 @@ def main():
                     page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("First character step not visible")
+                    if page.locator(".c9-context-bar").count():
+                        raise AssertionError("Global study shortcuts clutter individual guided lessons")
                     if page.locator("#c9-lesson-grammar").is_visible():
                         raise AssertionError("New learner still sees every lesson section at once")
                     flow=page.locator("#c9-lesson-flow-label")
