@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {renderC9Home} from '../src/home-c9.mjs';
-import {renderC9LessonWorkspace} from '../src/lesson-c9.mjs';
+import {renderC9LessonWorkspace,c9LessonTransferSources} from '../src/lesson-c9.mjs';
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {freshState,addLesson} from '../src/study.mjs';
@@ -147,4 +147,40 @@ test('C9-54 original lesson identity can be linked without changing private lear
  assert.ok(app.includes("location.hash=target"),'source handoff should enter browser history');
  assert.ok(app.includes('c9OpenCatalogAfterHash'),'native catalog must be reachable by Back');
  assert.equal(JSON.stringify(state),before,'public source link may not alter learner state');
+});
+
+
+test('C9-55 original lesson transfer exposes only canonical source IDs without modifying learner state',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const cases=DEMO_LESSONS.map(lesson=>({lesson,transfer:c9LessonTransferSources(lesson,state)}));
+ let withSentence=0,withReading=0,withRelated=0;
+ for(const {lesson,transfer} of cases){
+  assert.ok(transfer.words.length<=3&&transfer.sentences.length<=2&&transfer.readings.length<=2);
+  const keys=new Set(transfer.words.map(x=>x.key));
+  assert.equal(keys.size,transfer.words.length,'avoid duplicate original canonical words');
+  for(const row of transfer.sentences){
+   assert.match(row.id,/^sent-\d{3}$/,'original sentence library identity');
+   assert.ok(transfer.words.some(word=>row.hanzi.includes(word.hanzi)),'exact written-form occurrence');
+  }
+  for(const row of transfer.readings){
+   assert.ok(row.id&&row.hanzi&&row.pinyin&&row.english,'authored story source data only');
+   assert.ok(transfer.words.some(word=>row.hanzi.includes(word.hanzi)),'passage example must include canonical word');
+  }
+  for(const row of transfer.related){
+   assert.ok(DEMO_LESSONS.some(x=>x.id===row.id),'linked original lesson exists');
+   assert.notEqual(row.id,lesson.id,'no self-loop');
+  }
+  if(transfer.sentences.length)withSentence++;
+  if(transfer.readings.length)withReading++;
+  if(transfer.related.length)withRelated++;
+ }
+ assert.ok(withSentence>20,'real source sentences must serve more than an isolated example');
+ assert.ok(withReading>5,'real passage examples must exist for several original lessons');
+ assert.ok(withRelated>5,'shared-word related lessons must exist in the original source');
+ const lesson=DEMO_LESSONS[0],rendered=renderC9LessonWorkspace({lesson,state,nativeMarkup:'',act,esc,section:'context'});
+ assert.ok(rendered.includes('id="c9-lesson-transfer"'));
+ assert.ok(rendered.includes('data-action="lookup-word"'));
+ assert.ok(rendered.includes('data-action="c9-lesson-transfer-jump"'));
+ assert.ok(rendered.includes('No auto credit')||rendered.includes('NO AUTO CREDIT'));
+ assert.equal(JSON.stringify(state),before,'transfer UI and projection are entirely read-only');
 });
