@@ -29,12 +29,18 @@ export function c9ConversationCircuit(dialogue,state={}){
   const tasks=sourceTasks.get(source.id)||[];
   const taskIds=new Set(tasks.map(t=>t.id));
   const writing=(state.sentenceEvents||[]).filter(e=>taskIds.has(e.taskId));
+  const writingTasks=Object.freeze(tasks.map(task=>{
+   const entries=writing.filter(event=>event.taskId===task.id);
+   return Object.freeze({id:task.id,turn:task.p33Turn,english:task.english,
+    attempts:entries.length,independent:entries.filter(e=>e.correct&&!e.assisted).length,
+    last:entries.length?(entries.at(-1).assisted?'assisted':entries.at(-1).correct?'independent correct':'incorrect'):null});
+  }));
   return Object.freeze({
    sceneId:source.id,dialogueId:original.id,title:source.title,theme:source.theme,goal:source.goal,
    attempts:attempts.length,independent:attempts.filter(e=>e.correct&&!e.assisted).length,
    missions:missionAttempts.length,writing:writing.length,
    independentWriting:writing.filter(e=>e.correct&&!e.assisted).length,
-   writingTaskId:tasks[0]?.id||null
+   writingTasks,writingTaskId:tasks[0]?.id||null
   });
  }).filter(Boolean);
  const index=sequence.findIndex(row=>row.dialogueId===dialogue.id);
@@ -50,6 +56,52 @@ export function c9ConversationCircuit(dialogue,state={}){
   listeningMatches:sameThemeListening.length,
   writingUnit:linkedWriting[0]||null
  };
+}
+/**
+ * Source-verified, in-tab return context for the ONE native sentence writer.
+ * Caller owns the ephemeral receipt; this only verifies original IDs and
+ * displays existing actual graded event history, never writes anything.
+ */
+export function c9WorkshopSourceContinuation(taskId,origin,state={}){
+ const task=SENTENCE_TASKS.find(item=>item.id===taskId);
+ if(!task||!origin||origin.taskId!==task.id)return null;
+ const events=(state.sentenceEvents||[]).filter(e=>e.taskId===taskId);
+ const observed={attempts:events.length,independent:events.filter(e=>e.correct&&!e.assisted).length};
+ if(origin.kind==='p33'){
+  const scene=P33_SCENARIOS.find(s=>s.id===task.p33ScenarioId);
+  const dialogue=scene&&bySceneId.get(scene.id);
+  if(!dialogue||dialogue.id!==origin.dialogueId)return null;
+  const tasks=sourceTasks.get(scene.id)||[];
+  const position=tasks.findIndex(t=>t.id===taskId);
+  if(position<0)return null;
+  return {kind:'p33',dialogueId:dialogue.id,sourceTitle:scene.title,taskId,
+   position,count:tasks.length,nextTaskId:tasks[position+1]?.id||null,...observed};
+ }
+ if(origin.kind==='p34'){
+  const audio=P34_LISTENING.find(s=>s.id===task.p34AudioId);
+  const dialogue=audio&&DIALOGUES.find(d=>d.p34?.id===audio.id);
+  if(!dialogue||dialogue.id!==origin.dialogueId||task.id!=='p34:'+audio.id+':writing')return null;
+  return {kind:'p34',dialogueId:dialogue.id,sourceTitle:audio.title,taskId,
+   position:0,count:1,nextTaskId:null,...observed};
+ }
+ return null;
+}
+export function renderC9WorkshopSourceContinuation(taskId,origin,state,act,esc){
+ const source=c9WorkshopSourceContinuation(taskId,origin,state);
+ if(!source)return '';
+ const label=source.kind==='p33'?'P33 authored conversational writing':'P34 listening-to-writing';
+ return '<section class="c9-workshop-continuation c9-unified-card" id="c9-workshop-continuation" tabindex="-1" aria-labelledby="c9-workshop-return-title">'+
+  '<div><p class="c9-eyebrow">ORIGINAL SOURCE · '+label+'</p>'+
+  '<h2 id="c9-workshop-return-title">Continue '+esc(source.sourceTitle)+'</h2>'+
+  '<p>Native Sentence Workshop task '+(source.position+1)+' / '+source.count+
+  '. '+source.attempts+' recorded attempt'+(source.attempts===1?'':'s')+' · '+source.independent+
+  ' independently correct. A link is not completion evidence; each response is checked only by the original sentence writer.</p></div>'+
+  '<div class="c9-workshop-continuation-actions">'+
+  act('c9-workshop-return','Return to exact original '+(source.kind==='p33'?'conversation':'listening')+' →',
+   'c9-button c9-button--secondary','data-id="'+esc(source.dialogueId)+'"')+
+  (source.nextTaskId?act('c9-workshop-next-source','Next original writing task →','c9-button c9-button--primary',
+   'data-id="'+esc(source.nextTaskId)+'"'):'')+'</div>'+
+  '<small>Unsubmitted writing remains protected by the native departure prompt. This tab-only source context is not a new saved journey.</small></section>';
 }
 export function renderC9ConversationCircuit(dialogue,state,act,esc){
  const circuit=c9ConversationCircuit(dialogue,state);
@@ -71,7 +123,9 @@ export function renderC9ConversationCircuit(dialogue,state,act,esc){
   '<article class="c9-circuit-extension"><span class="c9-eyebrow">P34 · SAME EXACT THEME, DIFFERENT AUTHORIAL SOURCE</span>'+
   '<strong>'+esc(circuit.listening.title)+'</strong><p>A separate original listening scene shares the theme label. It is not the next turn in this story or proof of comprehension.</p>'+
   act('p34-open-listening','Open original listening and questions →','c9-button c9-button--secondary c9-button--small',
-   'data-id="'+esc(circuit.listening.id)+'"')+'</article>':
+   'data-id="'+esc(circuit.listening.id)+'"')+
+  act('c9-circuit-p34-write','Write this distinct original listening prompt →',
+   'c9-button c9-button--secondary c9-button--small','data-id="'+esc(circuit.listening.id)+'"')+'</article>':
   '<p class="c9-circuit-no-match">No P34 listening scene has this exact editorial theme label. Other listening scenes remain accessible in the native listening catalog.</p>';
  const writing=circuit.writingUnit?
   '<p>Original P43 composition explicitly links to this conversation: <strong>'+esc(circuit.writingUnit.title)+'</strong>.</p>'+
@@ -99,7 +153,15 @@ export function renderC9ConversationCircuit(dialogue,state,act,esc){
   act('c9-media-focus-native','Original listening questions →','c9-button c9-button--secondary c9-button--small','data-target="c9-native-dialogue"')+
   (current.writingTaskId?act('c9-circuit-write','Original source writing task →','c9-button c9-button--primary c9-button--small',
    'data-id="'+esc(current.writingTaskId)+'"'):'')+
-  '</div></article>'+p34+
+  '</div><div class="c9-circuit-writing-steps" aria-label="Original situation writing tasks">'+
+  '<strong>Reconstruct all '+current.writingTasks.length+' original authored writing turns</strong>'+
+  '<p>Each task opens the existing native Sentence Workshop; previous attempts are observed, not translated into mastery.</p>'+
+  '<ol>'+current.writingTasks.map((task,i)=>'<li><span>Turn '+(Number(task.turn)+1)+'</span>'+
+   '<div><strong>'+esc(task.english)+'</strong>'+
+   '<small>'+task.attempts+' actual attempt'+(task.attempts===1?'':'s')+
+   ' · '+task.independent+' independent correct'+(task.last?' · Last: '+esc(task.last):'')+'</small></div>'+
+   act('c9-circuit-write','Write original turn '+(i+1)+' →','c9-button c9-button--secondary c9-button--small',
+    'data-id="'+esc(task.id)+'"')+'</li>').join('')+'</ol></div></article>'+p34+
   '<article class="c9-circuit-extension"><span class="c9-eyebrow">P43 · SINGLE NATIVE COMPOSITION EDITOR</span>'+
   '<strong>Extend into independent writing</strong>'+writing+'</article></div>'+
   '<p class="c9-circuit-note">Only observed native attempts are shown. Thematic sequence is an editorial grouping of separate original situations, not a continuous invented conversation, HSK curriculum or mastery estimate.</p></section>';

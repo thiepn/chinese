@@ -14,7 +14,7 @@ import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallS
 import {P33_SCENARIOS} from '../src/p33-scenarios.mjs';
 import {p33DecisionSource,p33ScenarioTeaching} from '../src/p33-screen.mjs';
 import {SENTENCE_TASKS} from '../src/sentence-workshop.mjs';
-import {c9ConversationCircuit,renderC9ConversationCircuit} from '../src/conversation-circuit-c9.mjs';
+import {c9ConversationCircuit,renderC9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from '../src/conversation-circuit-c9.mjs';
 import {P34_LISTENING} from '../src/p34-course.mjs';
 import {P43_UNITS} from '../src/p43-course.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
@@ -363,4 +363,70 @@ test('C9-59 multi-situation circuits reuse original P33/P34/P43 IDs and only obs
   assert.ok(app.includes(needle),'original source controller: '+needle);
  }
  assert.equal(JSON.stringify(state),before,'circuit is a pure read-only source/evidence view');
+});
+
+
+test('C9-60 every original P33 circuit exposes all three canonical workshop prompts with honest per-task evidence',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ for(const d of DIALOGUES.filter(x=>x.p33)){
+  const projected=c9ConversationCircuit(d,state);
+  assert.equal(projected.current.writingTasks.length,3,'exact three original P33 tasks');
+  const sourceIds=projected.current.writingTasks.map(x=>x.id);
+  assert.equal(new Set(sourceIds).size,3,'original IDs are distinct');
+  for(let i=0;i<sourceIds.length;i++){
+   const task=SENTENCE_TASKS.find(x=>x.id===sourceIds[i]);
+   assert.ok(task&&task.p33ScenarioId===d.p33.id);
+   assert.equal(projected.current.writingTasks[i].turn,task.p33Turn);
+   const origin={kind:'p33',dialogueId:d.id,taskId:task.id};
+   const continuation=c9WorkshopSourceContinuation(task.id,origin,state);
+   assert.equal(continuation.dialogueId,d.id);
+   assert.equal(continuation.position,i);
+   assert.equal(continuation.nextTaskId,sourceIds[i+1]||null);
+   assert.equal(continuation.attempts,0);
+   assert.ok(renderC9WorkshopSourceContinuation(task.id,origin,state,act,esc).includes('id="c9-workshop-continuation"'));
+   assert.equal(c9WorkshopSourceContinuation(task.id,{...origin,dialogueId:DIALOGUES[0].id==='__none'?'x':'forged-id'},state),null,'forged dialogue rejected');
+   assert.equal(c9WorkshopSourceContinuation(task.id,{...origin,taskId:'forged'},state),null,'forged task rejected');
+  }
+  const html=renderC9ConversationCircuit(d,state,act,esc);
+  assert.equal((html.match(/data-action="c9-circuit-write"/g)||[]).length,4,'existing first-task entry plus three distinct task entries');
+  for(const id of sourceIds)assert.ok(html.includes('data-id="'+id+'"'));
+ }
+ const d=DIALOGUES.find(x=>x.p33),taskId=c9ConversationCircuit(d,state).current.writingTasks[1].id;
+ const withHistory={...freshState(),sentenceEvents:[
+  {id:'c9-60-a',taskId,correct:false,assisted:true,at:100},
+  {id:'c9-60-b',taskId,correct:true,assisted:false,at:200}]};
+ const actual=c9WorkshopSourceContinuation(taskId,{kind:'p33',dialogueId:d.id,taskId},withHistory);
+ assert.equal(actual.attempts,2);
+ assert.equal(actual.independent,1);
+ assert.equal(c9ConversationCircuit(d,withHistory).current.writingTasks[1].attempts,2);
+ assert.equal(c9ConversationCircuit(d,withHistory).current.writingTasks[1].independent,1);
+ assert.equal(JSON.stringify(state),before,'source projection never writes new learner state');
+});
+
+test('C9-60 original P34 listening transfer verifies native audio writer IDs and correct source return',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ for(const audio of P34_LISTENING){
+  const dialogue=DIALOGUES.find(x=>x.p34?.id===audio.id);
+  assert.ok(dialogue,'source audio has original dialogue');
+  const task=SENTENCE_TASKS.find(x=>x.id==='p34:'+audio.id+':writing');
+  assert.ok(task&&task.p34AudioId===audio.id,'P34 prompt uses existing sentence writer');
+  const origin={kind:'p34',dialogueId:dialogue.id,taskId:task.id};
+  const receipt=c9WorkshopSourceContinuation(task.id,origin,state);
+  assert.equal(receipt.kind,'p34');
+  assert.equal(receipt.count,1);
+  assert.equal(receipt.nextTaskId,null);
+  assert.equal(c9WorkshopSourceContinuation(task.id,{...origin,dialogueId:'forged'},state),null);
+  const html=renderC9WorkshopSourceContinuation(task.id,origin,state,act,esc);
+  assert.ok(html.includes('data-action="c9-workshop-return"'));
+  assert.ok(!html.includes('data-action="c9-workshop-next-source"'));
+ }
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const phrase of [
+  "if(name==='c9-circuit-p34-write')","if(name==='c9-workshop-next-source')",
+  "if(name==='c9-workshop-return')","if(name==='c9-workshop-listen')",
+  "c9OpenMediaSource('dialogues',receipt.dialogueId)",
+  "if(task.p33ScenarioId){sentenceSupport=true;render();}",
+  "if(task.p33ScenarioId){sentenceSupport=true;render();}"
+ ])assert.ok(app.includes(phrase),'native writer and genuine source authority: '+phrase);
+ assert.equal(JSON.stringify(state),before);
 });

@@ -522,3 +522,34 @@
  .c9-circuit-extension .c9-button{width:100%}
 }
 @media(max-width:380px){.c9-conversation-circuit{padding:13px}.c9-circuit-navigation>*{width:100%;flex-basis:100%}}
+
+
+/* C9-60: source-attested native writing progression and return. No local
+   progress store; these UI projections only read original graded events. */
+.c9-circuit-writing-steps{display:grid;gap:9px;min-width:0;padding-top:15px;margin-top:14px;border-top:1px solid var(--c9-line)}
+.c9-circuit-writing-steps>strong{font:650 14px/1.4 var(--c9-ui)}
+.c9-circuit-writing-steps>p{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-circuit-writing-steps ol{padding:0;margin:0;list-style:none;display:grid;gap:7px}
+.c9-circuit-writing-steps li{display:flex;gap:10px;align-items:center;min-width:0;padding:12px;border:1px solid var(--c9-line);background:var(--c9-surface);border-radius:8px}
+.c9-circuit-writing-steps li>span{font:600 12px/1.4 var(--c9-ui);color:var(--c9-sub);flex-shrink:0}
+.c9-circuit-writing-steps li>div{display:grid;gap:4px;min-width:0;flex:1}
+.c9-circuit-writing-steps li strong{font:600 13px/1.45 var(--c9-ui);overflow-wrap:anywhere}
+.c9-circuit-writing-steps li small{font:400 11px/1.45 var(--c9-ui);color:var(--c9-sub)}
+.c9-circuit-writing-steps li button{min-height:44px;flex-shrink:0}
+.c9-workshop-continuation{display:grid;gap:14px;min-width:0;padding:clamp(16px,2.6vw,25px);border:1px solid var(--c9-line);border-left:3px solid var(--c9-accent);background:var(--c9-surface);border-radius:var(--c9-r);margin-bottom:17px}
+.c9-workshop-continuation h2{font:650 clamp(20px,2.5vw,27px)/1.3 var(--c9-display);margin:7px 0}
+.c9-workshop-continuation p{font:400 13px/1.6 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-workshop-continuation-actions{display:flex;flex-wrap:wrap;gap:9px}
+.c9-workshop-continuation-actions button{min-height:44px;flex:0 1 auto}
+.c9-workshop-continuation>small{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-workshop-continuation :is(button,a):focus-visible,.c9-circuit-writing-steps button:focus-visible{outline:3px solid var(--c9-accent);outline-offset:3px}
+@media(max-width:720px){
+ .c9-circuit-writing-steps li{flex-wrap:wrap}
+ .c9-circuit-writing-steps li>div{flex-basis:calc(100% - 75px)}
+ .c9-circuit-writing-steps li button{width:100%;flex-basis:100%}
+ .c9-workshop-continuation-actions button{flex:1 1 175px}
+}
+@media(max-width:380px){
+ .c9-workshop-continuation{padding:13px}
+ .c9-workshop-continuation-actions button{width:100%;flex-basis:100%}
+}
