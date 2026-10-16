@@ -27,13 +27,13 @@ function stageHeading(section,index,act,esc){
   (next?act('c9-lesson-jump',esc(next.name)+' →','c9-button c9-button--secondary c9-button--small','data-section="'+next.id+'"'):
   '<a href="#/review" class="c9-button c9-button--secondary c9-button--small">Scheduled review →</a>')+'</div></header>';
 }
-function composeNativeSections(markup,act,esc){
+function composeNativeSections(markup,act,esc,selected,focused){
  // Inserts within the original source-owned section openers, never duplicates
  // grading controls, source records or the single learner-state writer.
  return markup.replace(/(<section id="c9-lesson-(overview|grammar|vocabulary|context|practice|finish)" class="c9-native-section" tabindex="-1" aria-label="[^"]*">)/g,
   (opener,_full,id)=>{
    const index=C9_LESSON_SECTIONS.findIndex(s=>s.id===id);
-   return index<0?opener:opener+stageHeading(C9_LESSON_SECTIONS[index],index,act,esc);
+   return index<0?opener:opener.replace(/>$/, ' data-c9-step="'+(index+1)+'"'+(focused&&selected!==id?' hidden':'')+'>')+stageHeading(C9_LESSON_SECTIONS[index],index,act,esc);
   });
 }
 
@@ -87,7 +87,7 @@ function continuationPanel(l,state,act,esc){
   '<div class="c9-lesson-related">'+links.map(([href,label,k])=>'<a href="'+href+'"><span><small>'+k+'</small><strong>'+label+'</strong></span><span aria-hidden="true">↗</span></a>').join('')+'</div>'+
   '<p>Links open the existing native learning modes. They do not claim completion or change review scheduling.</p></section>';
 }
-export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='overview',showPinyin=true,act,esc}){
+export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='overview',focused=true,showPinyin=true,act,esc}){
  const index=DEMO_LESSONS.findIndex(l=>l.id===lesson.id);
  const groups=lessonGroups();
  const group=groups.find(g=>g.lessons.some(l=>l.id===lesson.id));
@@ -126,12 +126,30 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   '<div class="c9-progress" role="progressbar" aria-label="Lesson order, not mastery" aria-valuemin="0" aria-valuemax="'+DEMO_LESSONS.length+'" aria-valuenow="'+position+'"><span style="width:'+positionPercent+'%"></span></div>'+
   '<small>Curriculum position · not mastery or completion</small></div></div>'+
   '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
-  act('c9-character-open','Character Study →','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+act('c9-character-reader','Read original story','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
-  act('c9-lesson-jump','Start lesson ↓','c9-button c9-button--primary','data-section="overview" aria-controls="c9-lesson-overview"')+
-  act('course-lesson','Guided Daily Journey →','c9-button c9-button--quiet','data-id="'+esc(lesson.id)+'"')+
+  act('c9-lesson-jump','Start at step 1 ↓','c9-button c9-button--primary','data-section="overview" aria-controls="c9-lesson-overview"')+
+  '<details class="c9-lesson-extra"><summary>Other ways to study this lesson</summary><div class="c9-lesson-extra-actions">'+
+  act('c9-character-open','Character Study','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
+  act('c9-character-reader','Read original story','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+
+  act('course-lesson','Guided Daily Journey','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"')+'</div></details>'+
   '</div></header>';
  const tabs='<nav class="c9-lesson-sections" aria-label="Lesson sections">'+C9_LESSON_SECTIONS.map(s=>jumpButton(s,selected,act,esc)).join('')+'</nav>';
- const teaching=composeNativeSections(nativeMarkup,act,esc);
+ const teaching=composeNativeSections(nativeMarkup,act,esc,selected,focused);
+ const activeIndex=C9_LESSON_SECTIONS.findIndex(s=>s.id===selected);
+ const stagebar='<div class="c9-lesson-flow" aria-label="Teaching sequence">'+
+   '<div class="c9-lesson-flow-heading"><span class="c9-eyebrow">FOLLOW THE LESSON IN ORDER</span>'+
+   '<strong id="c9-lesson-flow-label">Step '+(activeIndex+1)+' of '+C9_LESSON_SECTIONS.length+' · '+esc(C9_LESSON_SECTIONS[activeIndex].name)+'</strong>'+
+   '<p>These are teaching steps, not completion or mastery grades.</p></div>'+
+   act('c9-lesson-mode',focused?'Show all sections':'Focus on one step','c9-button c9-button--secondary c9-button--small','aria-pressed="'+focused+'"')+
+   '<div class="c9-lesson-flow-progress" role="progressbar" aria-label="Current teaching step, not mastery" aria-valuemin="1" aria-valuemax="'+C9_LESSON_SECTIONS.length+'" aria-valuenow="'+(activeIndex+1)+'">'+
+   '<span style="width:'+((activeIndex+1)/C9_LESSON_SECTIONS.length*100)+'%"></span></div></div>';
+ const stageFooters='<nav class="c9-lesson-stage-footers" aria-label="Continue through this lesson">'+
+  C9_LESSON_SECTIONS.map((stage,i)=>'<div class="c9-lesson-step-footer" data-section="'+stage.id+'"'+(focused&&stage.id!==selected?' hidden':'')+'>'+
+   '<span>STEP '+(i+1)+' / '+C9_LESSON_SECTIONS.length+' · '+esc(stage.name)+'</span>'+
+   '<div class="c9-lesson-step-buttons">'+
+   (i?act('c9-lesson-jump','← Previous step','c9-button c9-button--quiet','data-section="'+C9_LESSON_SECTIONS[i-1].id+'"'):'')+
+   (i+1<C9_LESSON_SECTIONS.length?act('c9-lesson-jump','Next: '+esc(C9_LESSON_SECTIONS[i+1].name)+' →','c9-button c9-button--primary','data-section="'+C9_LESSON_SECTIONS[i+1].id+'"'):
+    '<a class="c9-button c9-button--secondary" href="#/review">Open scheduled review →</a>')+
+   '</div></div>').join('')+'</nav>';
  const status=renderC9NativeStatus(introduced?'success':'info',
   introduced?'Introduced · keep practising':'Learning is ready',
   introduced?'Scheduled independent recall is tracked separately from this lesson.':
@@ -139,11 +157,11 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const resources='<details class="c9-lesson-resources"><summary><span><strong>Preview original source and audio</strong>'+
   '<small>Character · indexed whole words · original sentence · device listening</small></span><span aria-hidden="true">Explore ↘</span></summary>'+
   '<div class="c9-lesson-resources-content">'+preview+sourceAudio+'</div></details>';
- return '<div class="c9-lesson-workspace">'+heading+resources+
+ return '<div class="c9-lesson-workspace" data-c9-focused="'+String(focused)+'">'+heading+resources+
   '<div class="c9-lesson-layout"><aside class="c9-lesson-left" aria-label="Lesson outline"><div class="c9-lesson-side-head">LEARNING SECTIONS</div>'+
   tabs+'<p class="c9-lesson-outline-note">Sections are study material, not completion checkboxes. The page does not mark stages as passed.</p></aside>'+
   '<div class="c9-lesson-main" id="c9-lesson-content" aria-label="Lesson learning material">'+
-  '<div class="c9-lesson-start-status">'+status+'</div>'+teaching+
+  stagebar+'<div class="c9-lesson-start-status">'+status+'</div>'+teaching+stageFooters+
   '<nav class="c9-lesson-bottom-nav" aria-label="Adjacent lessons">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</nav></div>'+
   '<aside class="c9-lesson-right" aria-label="Learning evidence and related material">'+evidencePanel(lesson,state,act,esc)+continuationPanel(lesson,state,act,esc)+'</aside></div></div>';
 }
