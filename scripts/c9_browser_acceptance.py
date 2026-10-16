@@ -227,6 +227,8 @@ def main():
                         raise AssertionError("Selecting a unit collapsed the entire lesson browser")
                     if page.locator("#c9-learn-unit").input_value()!="2":
                         raise AssertionError("Unit filter did not select exact original chapter")
+                    if not page.locator('#c9-learn-unit').evaluate('(e)=>document.activeElement===e'):
+                        raise AssertionError('Selecting a chapter did not move focus to chosen unit')
                     if not page.locator("#c9-lesson-browser .c9-lesson-row").first.is_visible():
                         raise AssertionError("The chosen unit contains no accessible lesson rows")
                     page.locator("#c9-lesson-browser [data-action='c9-lesson-open']").first.click()
