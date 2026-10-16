@@ -966,7 +966,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v62-p69-p70-private-reader-and-typing"
+                current="character-study-working-v63-p64-p68-source-bridges"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -984,13 +984,13 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v62-p69-p70-private-reader-and-typing');
+                    keys.includes('character-study-working-v63-p64-p68-source-bridges');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=315:
+                if kept!=316:
                     raise AssertionError("Updated cache lacks original source assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
@@ -998,7 +998,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 315 v60 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 316 v63 assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()

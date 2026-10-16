@@ -92,8 +92,8 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v62-p69-p70-private-reader-and-typing';
-const C9_EXPECTED_OFFLINE_ASSETS=315;
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v63-p64-p68-source-bridges';
+const C9_EXPECTED_OFFLINE_ASSETS=316;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.

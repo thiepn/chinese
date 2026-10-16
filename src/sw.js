@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v62-p69-p70-private-reader-and-typing';
+const CACHE='character-study-working-v63-p64-p68-source-bridges';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -30,6 +30,7 @@ const CONCEPT9_ASSETS=[
   './character-c9.mjs',
   './styles-c9-libraries.css',
   './libraries-c9.mjs',
+  './source-bridges-c9.mjs',
   './styles-c9-review-practice.css',
   './review-practice-c9.mjs',
   './styles-c9-media.css',
