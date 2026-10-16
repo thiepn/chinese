@@ -1648,7 +1648,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
    if(!unit)return;
    c9LearnUnit=String(unit.index);c9LearnStatus='all';c9LearnQuery='';c9LearnPage=0;c9LearnDetail=false;
-   render();$('c9-learn-unit')?.scrollIntoView({block:'center'});return;
+   render();
+   const unitPicker=$('c9-learn-unit');
+   if(unitPicker){unitPicker.scrollIntoView({block:'center'});unitPicker.focus({preventScroll:true});}
+   return;
  }
  if(name==='c9-lesson-page'){
    const delta=Number(button.dataset.dir);if(![-1,1].includes(delta))return;
