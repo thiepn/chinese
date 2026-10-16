@@ -73,7 +73,7 @@ test('P66 original dictionary-to-passage action keeps canonical unanswered-respo
  assert.ok(a>0&&b>a);
  const handler=app.slice(a,b);
  for(const required of ['findStory(id)','Number(button.dataset.index)','c9-media-open-story',
-  'storyFocusIndex=index','paragraphFor(target,index)','data-c9-story-line','No learning answer recorded'])
+  'storyFocusIndex=index','paragraphFor(target,index)','data-c9-story-line','no learning answer recorded'])
   assert.ok(handler.includes(required),required);
  assert.ok(!handler.includes('addReadingEvent('));
  assert.ok(app.includes("if(e.target.id==='c9-word-context')"));
