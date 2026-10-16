@@ -74,8 +74,8 @@ export function connectC9Shell(){
  modalSupported=typeof drawer.showModal==='function';
  const setExpanded=expanded=>toggle.setAttribute('aria-expanded',String(expanded));
  const focusCurrent=()=>(
-  drawer.querySelector('[aria-current="page"]')||
-  drawer.querySelector('a[href^="#/"]')||close)?.focus({preventScroll:true});
+  drawer.querySelector('.c9-drawer-primary [aria-current="page"]')||
+  drawer.querySelector('.c9-drawer-primary a[href^="#/"]')||close)?.focus({preventScroll:true});
  const dismiss=(restore=true)=>{
   if(!drawer.open)return;
   restoreDrawerFocus=restore;
@@ -84,6 +84,8 @@ export function connectC9Shell(){
  };
  toggle.addEventListener('click',()=>{
   if(drawer.open){dismiss(true);return;}
+  const advanced=drawer.querySelector('.c9-drawer-advanced');
+  if(advanced)advanced.open=false;
   restoreDrawerFocus=false;
   if(modalSupported)drawer.showModal();
   else drawer.setAttribute('open','');
