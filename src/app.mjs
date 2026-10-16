@@ -1483,7 +1483,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
 
  if(name==='c9-media-focus-native'){
   const target=button.dataset.target;
-  if(!['c9-native-dialogue','c9-native-reading'].includes(target))return;
+  if(!['c9-native-dialogue','c9-native-reading','c9-roleplay-studio','c9-conversation-circuit','p33-scenario-decision'].includes(target))return;
   const section=root.querySelector('#'+target);
   if(section){section.scrollIntoView({block:'start',behavior:'auto'});section.focus({preventScroll:true});}return;
  }
