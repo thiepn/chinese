@@ -87,7 +87,7 @@ test('P70 recommendations derive ONLY from original production sentenceEvents an
  const html=renderC9TypingPath(state,act,esc);
  assert.ok(html.includes('c9-typing-start'));
  assert.ok(html.includes('Type Mandarin from meaning'));
- assert.ok(html.includes('Needs independent retry'));
+ assert.ok(html.includes('Latest attempt needs an independent retry'));
  assert.ok(!html.includes('Official HSK completion'));
  assert.ok(initial.includes('"sentenceEvents":[]'));
 });

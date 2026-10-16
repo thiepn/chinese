@@ -56,22 +56,22 @@ test('P69 personal reader reveals only canonical glossary lookups; no new word I
  const html=renderC9PersonalTextReader(esc);
  for(const key of ['c9-personal-input','c9-personal-analyze','c9-personal-clear','c9-personal-results'])
   assert.ok(html.includes(key),key);
- assert.ok(html.includes('it does not save them to the learning database'));
+ assert.ok(html.includes('Nothing is sent to the server or saved to the learning database unless'));
 });
 
 test('P69 temporary personal text is never sent into approved stories, scoring or learner storage',()=>{
  const src=readFileSync(new URL('../src/media-c9.mjs',import.meta.url),'utf8');
  const section=src.slice(src.indexOf('/* P69 original-roadmap personal reading:'));
  assert.ok(section.includes('tokenizeSentence(line)'));
- assert.ok(section.includes('findWord(key)'));
+ assert.ok(section.includes('wordsForWrittenForm(token.text)'));
  assert.ok(section.includes("data-action=\"lookup-word\""));
  assert.ok(section.includes("personalReaderMined"));
  assert.ok(section.includes("navigator.clipboard?.writeText"));
  for(const forbidden of ['indexedDB','localStorage','fetch(','gradeCard(','addWordPracticeEvent('])
   assert.ok(!section.includes(forbidden),'Private reader must not use '+forbidden);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
- assert.ok(app.includes('renderC9PersonalTextReader(esc)'));
- assert.ok(app.includes('connectC9PersonalTextReader(root,esc)'));
+ assert.ok(app.includes('renderC9PersonalTextReader(esc,state)'));
+ assert.ok(app.includes('connectC9PersonalTextReader(root,esc,state)'));
  assert.ok(app.includes('disconnectC9PersonalTextReader()'));
 });
 

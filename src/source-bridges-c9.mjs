@@ -32,7 +32,10 @@ export function sourceWordUsage(key,{limit=6}={}){
    sourceType,sourceId,sourceTitle,lineIndex,
    claim:'Exact written-form occurrence; lexical sense in context is not independently verified'});
  };
- for(const record of word.examples)add(record,'word',word.key,word.source);
+ // Give source-owned sentence and passage handoffs a meaningful chance to appear
+ // even for richly annotated lexicon entries. Never overwhelm the first page
+ // with duplicate lexical examples before displaying canonical practice routes.
+ if(word.examples[0])add(word.examples[0],'word',word.key,word.source);
  for(const sentence of SENTENCE_LIBRARY){
   add(sentence,'sentence',sentence.id,sentence.topic);
   if(rows.length>=max)break;
@@ -44,6 +47,7 @@ export function sourceWordUsage(key,{limit=6}={}){
   }
   if(rows.length>=max)break;
  }
+ for(const record of word.examples.slice(1))add(record,'word',word.key,word.source);
  return freezeRows(rows);
 }
 /**
