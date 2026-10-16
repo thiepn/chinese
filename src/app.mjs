@@ -1682,6 +1682,19 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true});}
   return;
  }
+ if(name==='c9-lesson-copy-link'){
+  const lesson=findLesson(id);
+  if(!lesson||!c9LearnDetail||displayLessonId!==lesson.id)return false;
+  const url=location.origin+location.pathname+location.search+'#/learn/'+lesson.id;
+  try{
+   if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+   await navigator.clipboard.writeText(url);
+   alertUser('Public lesson link copied. No learning records were included.');
+  }catch{
+   alertUser('Copy the original lesson link from your address bar: '+url);
+  }
+  return true;
+ }
  if(name==='c9-lesson-select')return c9OpenAuthoredLesson(id);
  if(name==='c9-learn-back'){
   if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
