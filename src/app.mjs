@@ -12,6 +12,7 @@ import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingRetu
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
+import {renderC9ConversationCircuit,c9ConversationCircuit} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
@@ -243,6 +244,7 @@ function renderDialogues(){
  if(c9DialogueSourceId!==dialogue.id){c9DialogueSourceId=dialogue.id;c9DialogueTurn=0;}
  return '<div class="c9-media-workspace c9-media-dialogues">'+
   renderC9DialogueHub(state,dialogue,action,esc,{query:c9DialogueQuery,filter:c9DialogueFilter,page:c9DialoguePage})+
+  renderC9ConversationCircuit(dialogue,state,action,esc)+
   renderC9DialogueRoleplay(dialogue,c9RoleplayUi,action,esc)+
   '<div class="c9-media-native">'+renderDialoguesNative()+'</div></div>';
 }
@@ -1903,12 +1905,9 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='p34-open-listening'){
   const audio=P34_LISTENING.find(x=>x.id===id),dialogue=audio&&p34DialogueFor(audio.id);
   if(!dialogue){alertUser('Original P34 listening unavailable.','error');return false;}
-  if(route()==='dialogues'&&dialogueId===dialogue.id)return true;
-  if(route()==='dialogues'&&!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
-  if(route()!=='dialogues'&&!go('dialogues'))return false;
-  dialogueId=dialogue.id;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
-  missionActive=false;missionStep=0;missionFeedback=null;missionSupport=false;
-  p34ShadowLine=0;p34TranscriptViewed=false;p33Branch=null;render();return true;
+  // Original source identity must survive reload, history and a separate
+  // thematic circuit's cross-screen handoff without replacing the old draft.
+  return c9OpenMediaSource('dialogues',dialogue.id);
  }
  if(name==='p34-shadow-prev'||name==='p34-shadow-next'){
   if(!findDialogue(dialogueId)?.p34)return;
@@ -1921,6 +1920,21 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!item)return false;
   const index=SENTENCE_TASKS.findIndex(t=>t.id==='p34:'+item.id+':writing');
   if(index<0){alertUser('Original audio writing prompt unavailable.','error');return false;}
+  return c9OpenNativeWorkshopTask(index);
+ }
+ if(name==='c9-circuit-open'){
+  const selected=findDialogue(id),current=findDialogue(dialogueId);
+  const circuit=c9ConversationCircuit(current,state);
+  // Only source-attested episodes in this exact themed collection qualify.
+  if(!selected||!circuit?.sequence.some(row=>row.dialogueId===selected.id))return false;
+  return c9OpenMediaSource('dialogues',selected.id);
+ }
+ if(name==='c9-circuit-write'){
+  const current=findDialogue(dialogueId),circuit=c9ConversationCircuit(current,state);
+  if(!circuit||circuit.current.writingTaskId!==id)return false;
+  const index=SENTENCE_TASKS.findIndex(t=>t.id===id);
+  if(index<0)return false;
+  // This remains the sole canonical graded writing workshop.
   return c9OpenNativeWorkshopTask(index);
  }
  if(name==='p33-open-scenario'){
@@ -2583,10 +2597,15 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='dialogue-next'){
   if(!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
   const d=findDialogue(dialogueId);if(!d)return false;
-  p34ShadowLine=0;p33Branch=null;missionActive=false;missionFeedback=null;
-  if(dialogueStep+1<d.questions.length){dialogueStep++;}
-  else{dialogueId=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length].id;dialogueStep=0;p34TranscriptViewed=false;}
-  dialogueFeedback=null;dialogueSupport=false;render();return true;
+  if(dialogueStep+1<d.questions.length){
+   p34ShadowLine=0;p33Branch=null;resetP33Decision();
+   missionActive=false;missionFeedback=null;dialogueStep++;
+   dialogueFeedback=null;dialogueSupport=false;render();return true;
+  }
+  // The final question changes original sources, not just a local counter.
+  // Preserve public source identity, reset stale assistance, and support Back.
+  const next=DIALOGUES[(DIALOGUES.findIndex(x=>x.id===dialogueId)+1)%DIALOGUES.length];
+  return c9OpenMediaSource('dialogues',next.id);
  }
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
