@@ -1685,7 +1685,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-lesson-copy-link'){
   const lesson=findLesson(id);
   if(!lesson||!c9LearnDetail||displayLessonId!==lesson.id)return false;
-  const url=location.origin+location.pathname+location.search+'#/learn/'+lesson.id;
+  const url=location.origin+location.pathname+'#/learn/'+lesson.id;
   try{
    if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
    await navigator.clipboard.writeText(url);
