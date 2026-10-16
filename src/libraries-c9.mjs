@@ -1,11 +1,12 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
-import {sourceWordUsage} from './source-bridges-c9.mjs';
+import {sourceWordUsage,sourceWordCoverage} from './source-bridges-c9.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from './sentence-library.mjs';
 
 export const C9_WORD_FILTERS=Object.freeze(['all','saved','introduced','new']);
+export const C9_WORD_CONTEXT_FILTERS=Object.freeze(['all','sentence','story','lexical-only']);
 const count=(n,label)=>n+' '+label+(n===1?'':'s');
 const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(100*done/total))):0;
 const heading=(type,name,desc)=>'<div class="c9-library-heading"><p class="c9-eyebrow">'+type+' · ORIGINAL SOURCE</p><h2>'+name+'</h2><p>'+desc+'</p></div>';
@@ -14,11 +15,15 @@ const bar=(done,total,label)=>'<div class="c9-library-bar"><div><span>'+label+'<
 const paragraph=(text)=>'<p class="c9-library-disclaimer c9-unified-source-note">'+text+'</p>';
 const PAGE=12;
 
-export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act,esc){
+export function c9WordCatalogResults(state,{query='',filter='all',context='all',page=0}={},act,esc){
  const saved=new Set(state.bookmarkedWords||[]),introduced=new Set(state.vocabularyIntroduced||[]);
  const term=plain(query),mode=C9_WORD_FILTERS.includes(filter)?filter:'all';
+ const sourceContext=C9_WORD_CONTEXT_FILTERS.includes(context)?context:'all';
  const words=WORDS.filter(w=>
   (mode==='all'||(mode==='saved'?saved.has(w.key):mode==='introduced'?introduced.has(w.key):!introduced.has(w.key)))&&
+  (sourceContext==='all'||(sourceContext==='sentence'?sourceWordCoverage(w.key).sentences>0:
+    sourceContext==='story'?sourceWordCoverage(w.key).stories>0:
+    sourceWordCoverage(w.key).sentences===0&&sourceWordCoverage(w.key).stories===0))&&
   (!term||[w.hanzi,w.pinyin,...w.senses,...w.collocations,...w.notes,...w.examples.flatMap(e=>[e.hanzi,e.pinyin,e.english])].some(v=>plain(v).includes(term))));
  const last=Math.max(0,Math.ceil(words.length/PAGE)-1);
  const current=Math.max(0,Math.min(last,Number.isInteger(page)?page:0));
@@ -31,6 +36,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
   const intro=introduced.has(w.key),savedHere=saved.has(w.key);
   const comparisons=sourceWordComparisons(w.key,{limit:3});
   const usage=sourceWordUsage(w.key,{limit:5});
+  const coverage=sourceWordCoverage(w.key);
   return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
@@ -47,6 +53,9 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
    act('vocabulary-start','Learn word →','c9-button c9-button--study c9-button--small','data-id="'+esc(w.key)+'"')+
    act('word-bookmark',savedHere?'Unsave':'Save','c9-button c9-button--quiet c9-button--small','data-id="'+esc(w.key)+'"')+
    '</div>'+
+   '<p class="c9-word-coverage">Written-form evidence: '+coverage.sentences+' original sentence'+(coverage.sentences===1?'':'s')+
+   ' · '+coverage.stories+' passage line'+(coverage.stories===1?'':'s')+
+   ' · '+coverage.examples+' authored word example'+(coverage.examples===1?'':'s')+'</p>'+
    '<details class="c9-library-word-more"><summary>Original notes & more examples</summary><div>'+
    w.notes.slice(0,2).map(n=>'<p>'+esc(n)+'</p>').join('')+
    w.examples.slice(1,3).map(ex=>'<p><strong lang="zh-Hans">'+esc(ex.hanzi)+'</strong><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small></p>').join('')+
@@ -66,8 +75,12 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
      '<span class="c9-eyebrow">'+esc(e.sourceType==='word'?'Original word record':e.sourceType==='story'?'Original reading · '+e.sourceTitle:'Original sentence · '+e.sourceTitle)+'</span>'+
      '<p lang="zh-Hans">'+esc(e.hanzi)+'</p>'+
      '<span class="c9-library-pinyin">'+esc(e.pinyin)+'</span><small>'+esc(e.english)+'</small>'+
-     (e.sourceType==='sentence'?act('sentence-select','Open sentence learning →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):
-      e.sourceType==='story'?act('c9-media-open-story','Read this original passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):'')+
+     '<div class="c9-word-evidence-actions">'+e.links.map(link=>
+      link.sourceType==='sentence'?act('sentence-select','Practise source sentence →',
+       'c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'"'):
+      link.sourceType==='story'?act('c9-source-open-story-line','Read exact passage line '+(link.lineIndex+1)+' →',
+       'c9-button c9-button--secondary c9-button--small',
+       'data-id="'+esc(link.sourceId)+'" data-index="'+link.lineIndex+'"'):'').join('')+'</div>'+
      '</article>').join('')+'</div></details>':'')+
    '</article>';
  }).join('')+'</div>':renderC9EmptyState('No matching words','Try another word, Pinyin spelling or meaning, or clear the filters.',
@@ -98,7 +111,10 @@ export function renderC9VocabularyLibrary(state,ui,act,esc){
  '<input type="search" id="c9-word-query" class="c9-input" value="'+esc(ui.query)+'" placeholder="学校, xué, learn…" autocomplete="off" spellcheck="false"></label>'+
  '<label for="c9-word-status">Word status<select id="c9-word-status" class="c9-select">'+
  [['all','All indexed words'],['saved','Saved words'],['introduced','Introduced words'],['new','Not introduced']].map(([key,label])=>
-  '<option value="'+key+'"'+(ui.filter===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
+  '<option value="'+key+'"'+(ui.filter===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label>'+ 
+ '<label for="c9-word-context">Original source evidence<select id="c9-word-context" class="c9-select">'+
+ [['all','All source words'],['sentence','Occurs in original sentences'],['story','Occurs in original readings'],['lexical-only','No sentence or reading occurrence']].map(([key,label])=>
+  '<option value="'+key+'"'+(ui.context===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label>'+
  '<div id="c9-word-catalog" aria-live="polite">'+c9WordCatalogResults(state,ui,act,esc)+'</div>'+
  paragraph('Saving a word and answering supplementary word exercises never grant scheduled-review mastery or official HSK proficiency.')+'</section>';
 }
