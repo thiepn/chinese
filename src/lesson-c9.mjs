@@ -143,7 +143,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    '<div class="c9-lesson-flow-progress" role="progressbar" aria-label="Current teaching step, not mastery" aria-valuemin="1" aria-valuemax="'+C9_LESSON_SECTIONS.length+'" aria-valuenow="'+(activeIndex+1)+'">'+
    '<span style="width:'+((activeIndex+1)/C9_LESSON_SECTIONS.length*100)+'%"></span></div></div>';
  const stageFooters='<nav class="c9-lesson-stage-footers" aria-label="Continue through this lesson">'+
-  C9_LESSON_SECTIONS.map((stage,i)=>'<div class="c9-lesson-step-footer" data-section="'+stage.id+'"'+(focused&&stage.id!==selected?' hidden':'')+'>'+
+  C9_LESSON_SECTIONS.map((stage,i)=>'<div class="c9-lesson-step-footer" data-section="'+stage.id+'"'+(stage.id!==selected?' hidden':'')+'>'+
    '<span>STEP '+(i+1)+' / '+C9_LESSON_SECTIONS.length+' · '+esc(stage.name)+'</span>'+
    '<div class="c9-lesson-step-buttons">'+
    (i?act('c9-lesson-jump','← Previous step','c9-button c9-button--quiet','data-section="'+C9_LESSON_SECTIONS[i-1].id+'"'):'')+
