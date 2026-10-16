@@ -605,3 +605,35 @@
  .c9-lesson-step-buttons{grid-template-columns:1fr}
  .c9-lesson-step-buttons>:only-child{grid-column:auto}
 }
+
+
+/* Mobile lesson-first hierarchy: the learner has already started by opening
+   this view. Bring the actual character teaching above the first fold.
+   Resources stay available after the lesson; no native content is removed. */
+.c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-header-actions > [data-action="c9-lesson-jump"]{display:none!important}
+@media(max-width:767px){
+ .c9-lesson-workspace{display:flex;flex-direction:column}
+ .c9-lesson-workspace > .c9-lesson-header{order:0;margin-bottom:12px}
+ .c9-lesson-workspace > .c9-lesson-layout{order:1}
+ .c9-lesson-workspace > .c9-lesson-resources{order:2;margin-top:18px}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-heading-main > .c9-lesson-title-row + p{display:none}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-header-actions{margin-top:0}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-start-status{display:none}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow{
+   grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;
+   padding:11px 12px;margin-bottom:10px
+ }
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow-heading>.c9-eyebrow,
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow-heading>p{display:none}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow-heading>strong{font-size:14px}
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow>[data-action="c9-lesson-mode"]{
+   min-height:38px;font-size:11px;padding:7px
+ }
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-main .lesson-heading{display:none}
+}
+@media(max-width:380px){
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow{
+   grid-template-columns:minmax(0,1fr)
+ }
+ .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-flow>[data-action="c9-lesson-mode"]{justify-self:start}
+}
