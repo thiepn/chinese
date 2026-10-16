@@ -49,7 +49,7 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const shortcuts=courseShortcuts(state);
  const lesson=overview.nextLesson;
  const last=overview.lastLesson;
- const primaryLabel=primary.kind==='journey'&&!hasActivity?'Start learning':primary.kind==='resume'?'Resume saved study':'Continue learning';
+
  const storageNotice=!storageReady?'<div class="c9-home-notice c9-home-notice--warning" role="status"><strong>Local saving is unavailable</strong><span>You can browse the available material, but progress cannot be saved until browser storage works. Existing learning records have not been changed.</span></div>':'';
  const offlineNotice='<div id="c9-home-offline-notice" class="c9-home-notice" role="status"'+(offline?'':' hidden')+'><strong>Offline</strong><span>'+
  (offlineShell==='ready'?'The compiled original lessons and runtime assets are available offline according to the controlling service worker. Progress still depends on local browser storage.':
@@ -74,7 +74,15 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
   '</details><div class="c9-home-source-actions" role="group" aria-label="Continue this exact original Chinese example">'+act('hub-lesson','Open complete lesson →','c9-button c9-button--primary c9-button--small','data-id="'+esc(lesson.id)+'"')+act('c9-character-open','Explore this character','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>':'';
  const courseCaption=lesson?'LESSON '+String(lesson.order).padStart(3,'0')+' OF '+overview.total:'ORIGINAL CHARACTER COURSE';
- const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">YOUR NEXT STEP · ORIGINAL COURSE</span><h2 id="c9-home-next">'+esc(primary.label)+'</h2><p>'+esc(primary.detail)+'</p><div class="c9-home-hero-actions">'+act('hub-primary',primaryLabel+' '+icon('arrow'),'c9-button c9-button--primary')+'<a class="c9-button c9-button--secondary" href="#/plan">View study plan</a></div>'+nextSource+'</div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">'+(lesson?esc(lesson.hanzi):'学')+'</span><span class="c9-home-art-caption">'+courseCaption+'</span></div></section>';
+ const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">START HERE · CHARACTER COURSE</span>'+
+  '<h2 id="c9-home-next">'+(lesson?'Lesson '+String(lesson.order).padStart(3,'0')+' · <span lang="zh-Hans">'+esc(lesson.hanzi)+'</span> · '+esc(lesson.meaning):esc(primary.label))+'</h2>'+
+  '<p>'+(lesson?'Study the character first, then its pronunciation, vocabulary, sentences and guided practice.':esc(primary.detail))+'</p>'+
+  '<div class="c9-home-hero-actions">'+
+  (lesson?act('hub-lesson',(hasActivity?'Continue lesson ':'Start lesson ')+String(lesson.order).padStart(3,'0')+' '+icon('arrow'),'c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"'):
+   act('hub-primary','Continue studying '+icon('arrow'),'c9-button c9-button--primary'))+
+  '<a class="c9-button c9-button--secondary" href="#/review">Review · '+overview.due+' due</a>'+
+  (hub.sessions.length?act('hub-primary','Resume unfinished activity','c9-button c9-button--quiet'):'')+
+  '</div>'+nextSource+'</div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">'+(lesson?esc(lesson.hanzi):'学')+'</span><span class="c9-home-art-caption">'+courseCaption+'</span></div></section>';
  const greeting='<header class="c9-home-heading"><div><p class="c9-home-kicker">THIEPN CHINESE · TODAY</p><h1>'+(hasActivity?'Continue learning, one step at a time.':'A quiet place to begin Chinese.')+'</h1><p>Original characters, complete words and source sentences. Your next action is ready below.</p></div><span class="c9-home-date" aria-label="Local learning status">'+overview.introduced+' introduced · '+overview.due+' due</span></header>';
  const metrics='<section class="c9-home-metrics" aria-label="Your actual learning records">'+
   metric(overview.due,'Due for review','Scheduled recall prompts')+
