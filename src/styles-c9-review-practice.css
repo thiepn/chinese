@@ -377,3 +377,33 @@
 @media(max-width:390px){
  .c9-review-active .c9-assessment-actions{grid-template-columns:minmax(0,1fr);}
 }
+
+
+/* C9-53: scheduled recall opens directly, with optional per-session controls. */
+.c9-review-start{max-width:860px;margin-inline:auto;display:grid;gap:12px}
+.c9-review-start>h2{margin:0;font:600 clamp(20px,2.2vw,26px)/1.3 var(--c9-display)}
+.c9-review-start>.c9-assessment-actions{margin:2px 0 6px}
+.c9-review-options,.c9-review-priorities{
+  border-top:1px solid var(--c9-line);min-width:0;padding:10px 0 0;
+}
+.c9-review-options>summary,.c9-review-priorities>summary{
+  cursor:pointer;padding:9px 3px;min-height:44px;
+  color:var(--c9-ink);font:650 13px/1.4 var(--c9-ui);
+}
+.c9-review-options>summary>span{
+  display:block;margin:5px 0 0 18px;font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub);
+}
+.c9-review-options-body{display:grid;gap:14px;padding:9px 0 18px}
+.c9-review-options-body .c9-assessment-selects{margin:0}
+.c9-review-options-body .c9-assessment-reasons{margin:0}
+.c9-review-options:not([open])>.c9-review-options-body,
+.c9-review-priorities:not([open])>.c9-review-options-body{display:none!important}
+.c9-review-options>summary:focus-visible,.c9-review-priorities>summary:focus-visible{
+  outline:3px solid var(--c9-accent);outline-offset:3px
+}
+@media(max-width:700px){
+ .c9-review-start>.c9-assessment-actions{display:grid;grid-template-columns:1fr 1fr}
+ .c9-review-start>.c9-assessment-actions>.c9-button{width:100%;min-height:48px;line-height:1.3}
+ .c9-review-start>.c9-assessment-actions>.c9-button:first-child{grid-column:1/-1}
+}
+@media(max-width:380px){.c9-review-start>.c9-assessment-actions{grid-template-columns:1fr}}
