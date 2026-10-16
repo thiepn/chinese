@@ -205,6 +205,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    '<span>STEP '+(i+1)+' / '+C9_LESSON_SECTIONS.length+' · '+esc(stage.name)+'</span>'+
    '<div class="c9-lesson-step-buttons">'+
    (i?act('c9-lesson-jump','← Previous step','c9-button c9-button--quiet','data-section="'+C9_LESSON_SECTIONS[i-1].id+'"'):'')+
+   (i===3?act('c9-lesson-transfer-jump','Find original contextual practice ↓','c9-button c9-button--secondary','aria-controls="c9-lesson-transfer"'):'')+
    (i+1<C9_LESSON_SECTIONS.length?act('c9-lesson-jump','Next: '+esc(C9_LESSON_SECTIONS[i+1].name)+' →','c9-button c9-button--primary','data-section="'+C9_LESSON_SECTIONS[i+1].id+'"'):
     (introduced?
        '<span class="c9-lesson-finish-confirmation" role="status">Lesson introduced · original review targets registered</span>':
