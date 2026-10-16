@@ -177,10 +177,10 @@ def main():
                         raise AssertionError("Numbered lesson sequence absent above the catalog")
                     if "001" not in guided.locator(".c9-guided-step").first.inner_text():
                         raise AssertionError("Lesson one not discoverable at the course start")
-                    if page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
-                        raise AssertionError("Optional content catalog expanded by default")
-                    if page.locator(".c9-discovery-catalog-body").is_visible():
-                        raise AssertionError("Closed catalog content still painted or accessible")
+                    if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
+                        raise AssertionError("Back to all lessons stranded the learner behind a closed catalog")
+                    if not page.locator(".c9-discovery-catalog-body").is_visible():
+                        raise AssertionError("Returning from the native lesson did not show the lesson browser")
                     if page.locator("details.c9-learn-extended").evaluate("(e)=>e.open"):
                         raise AssertionError("Supplementary source atlas expanded by default")
                     if page.locator(".c9-learn-extended-inner").is_visible():
@@ -276,6 +276,47 @@ def main():
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Six authentic teaching steps, focus/full toggle and original introduction at "+str(width)+"px"
                 check("Guided original lesson UX "+str(width),guided_lesson_steps)
+                ctx.close()
+            # End-to-end C9-53 usability: specific original lesson handoff,
+            # explicit completion without forced advance, optional Review setup.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_source_completion():
+                    open_route(page,"character/demo-02")
+                    link=page.locator('[data-action="c9-character-lesson"]').first
+                    if not link.is_visible():
+                        raise AssertionError("Character → authored lesson handoff missing")
+                    link.click()
+                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    if not page.locator("#c9-lesson-title").inner_text().strip():
+                        raise AssertionError("Original character lesson not mounted")
+                    if not page.locator('.c9-lesson-workspace #c9-lesson-title [lang="zh-Hans"]').inner_text():
+                        raise AssertionError("Specific character source handoff not resolved")
+                    page.locator('.c9-lesson-sections [data-section="finish"]').click()
+                    before=page.locator('.c9-lesson-header .c9-eyebrow').first.inner_text()
+                    page.locator('[data-action="mark-studied"]').first.click()
+                    if not page.locator('.c9-lesson-finish-confirmation').is_visible():
+                        raise AssertionError("No visible completion acknowledgement at the original lesson")
+                    if page.locator('.c9-lesson-header .c9-eyebrow').first.inner_text()!=before:
+                        raise AssertionError("Introducing lesson jumped to another character without asking")
+                    if not page.locator('.c9-lesson-step-footer:not([hidden]) [data-action="c9-lesson-select"]').count():
+                        raise AssertionError("No explicit Next lesson action after successful introduction")
+                    open_route(page,"review")
+                    start=page.locator('[data-action="review-begin"]')
+                    if not start.is_visible():
+                        raise AssertionError("Scheduled recall is buried behind setup fields")
+                    options=page.locator('details.c9-review-options')
+                    if options.evaluate("(e)=>e.open"):
+                        raise AssertionError("Optional review settings overwhelm first-time learner")
+                    options.locator(':scope > summary').click()
+                    page.locator('#review-focus').select_option('pronunciation')
+                    if not options.evaluate("(e)=>e.open"):
+                        raise AssertionError("Custom review focus closed during re-render")
+                    if page.locator('#review-focus').input_value()!='pronunciation':
+                        raise AssertionError("Chosen original recall focus lost on re-render")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Source-exact lesson, recorded completion without forced advance, one-tap scheduled review and persistent optional focus at "+str(width)+"px"
+                check("C9-53 source completion and review "+str(width),original_source_completion)
                 ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
