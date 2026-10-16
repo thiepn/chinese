@@ -169,10 +169,12 @@ def main():
                         raise AssertionError("New learner cannot identify lesson one")
                     entry.click()
                     page.wait_for_function("()=>location.hash.startsWith('#/learn/demo-')")
+                    page.locator("#c9-lesson-overview").wait_for(state="visible")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Start lesson did not open the actual native teaching")
                     page.locator('[data-action="c9-learn-back"]').first.click()
                     guided=page.locator(".c9-guided-course")
+                    guided.wait_for(state="visible")
                     if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
                         raise AssertionError("Numbered lesson sequence absent above the catalog")
                     if "001" not in guided.locator(".c9-guided-step").first.inner_text():
@@ -232,6 +234,7 @@ def main():
                     if not page.locator("#c9-lesson-browser .c9-lesson-row").first.is_visible():
                         raise AssertionError("The chosen unit contains no accessible lesson rows")
                     page.locator("#c9-lesson-browser [data-action='c9-lesson-open']").first.click()
+                    page.locator("#c9-lesson-overview").wait_for(state="visible")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Selected unit lesson did not reach authored teaching")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
@@ -336,19 +339,23 @@ def main():
                         raise AssertionError("Page reload forgot canonical authored lesson identity")
                     page.locator('.c9-lesson-bottom-nav [data-action="c9-lesson-select"]').last.click()
                     page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
+                    page.wait_for_function("(original)=>document.querySelector('#c9-lesson-title')?.innerText!==original",arg=original)
                     if page.locator("#c9-lesson-title").inner_text()==original:
                         raise AssertionError("Next lesson URL left old native source visible")
                     page.go_back(wait_until="domcontentloaded")
                     page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
+                    page.wait_for_function("(original)=>document.querySelector('#c9-lesson-title')?.innerText===original",arg=original)
                     if page.locator("#c9-lesson-title").inner_text()!=original:
                         raise AssertionError("Back did not restore original lesson")
                     page.go_forward(wait_until="domcontentloaded")
                     page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
                     page.locator('[data-action="c9-learn-back"]').first.click()
                     page.wait_for_function("()=>location.hash==='#/learn'")
+                    page.locator(".c9-guided-course").wait_for(state="visible")
                     if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("All lessons left catalog closed after deep link")
                     open_route(page,"learn/demo-999")
+                    page.locator(".c9-guided-course").wait_for(state="visible")
                     if page.locator(".c9-lesson-workspace").count():
                         raise AssertionError("Unknown original ID fabricated a lesson")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
