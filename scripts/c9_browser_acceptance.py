@@ -171,7 +171,7 @@ def main():
                     page.wait_for_function("()=>location.hash==='#/learn'")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Start lesson did not open the actual native teaching")
-                    open_route(page,"learn")
+                    page.locator('[data-action="c9-learn-back"]').first.click()
                     guided=page.locator(".c9-guided-course")
                     if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
                         raise AssertionError("Numbered lesson sequence absent above the catalog")
