@@ -295,8 +295,9 @@ def main():
                     page.locator('.c9-lesson-sections [data-section="finish"]').click()
                     before=page.locator('.c9-lesson-header .c9-eyebrow').first.inner_text()
                     page.locator('[data-action="mark-studied"]').first.click()
+                    page.locator('.c9-lesson-finish-confirmation').wait_for(state="visible",timeout=12000)
                     if not page.locator('.c9-lesson-finish-confirmation').is_visible():
-                        raise AssertionError("No visible completion acknowledgement at the original lesson")
+                        raise AssertionError("No visible completion acknowledgement after saved introduction")
                     if page.locator('.c9-lesson-header .c9-eyebrow').first.inner_text()!=before:
                         raise AssertionError("Introducing lesson jumped to another character without asking")
                     if not page.locator('.c9-lesson-step-footer:not([hidden]) [data-action="c9-lesson-select"]').count():
