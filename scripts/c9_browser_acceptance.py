@@ -394,7 +394,7 @@ def main():
                     if action.count():
                         expected=action.first.get_attribute('data-id')
                         action.first.click()
-                        page.wait_for_function("(id)=>location.hash==='#/sentences/'+id,arg=expected)
+                        page.wait_for_function("(id)=>location.hash==='#/sentences/'+id",arg=expected)
                         if page.evaluate("()=>location.hash")!='#/sentences/'+expected:
                             raise AssertionError("Original sentence handoff lost canonical source identity")
                     open_route(page,"learn/demo-01")
