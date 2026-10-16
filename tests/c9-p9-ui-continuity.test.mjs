@@ -7,6 +7,8 @@ import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {freshState,addLesson} from '../src/study.mjs';
 import {renderC9Review} from '../src/review-practice-c9.mjs';
+import {findLibrarySentence} from '../src/sentence-library.mjs';
+import {findStory} from '../src/stories.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -159,11 +161,11 @@ test('C9-55 original lesson transfer exposes only canonical source IDs without m
   const keys=new Set(transfer.words.map(x=>x.key));
   assert.equal(keys.size,transfer.words.length,'avoid duplicate original canonical words');
   for(const row of transfer.sentences){
-   assert.match(row.id,/^sent-\d{3}$/,'original sentence library identity');
+   assert.ok(findLibrarySentence(row.id),'original sentence library identity, including canonical multi-digit IDs');
    assert.ok(transfer.words.some(word=>row.hanzi.includes(word.hanzi)),'exact written-form occurrence');
   }
   for(const row of transfer.readings){
-   assert.ok(row.id&&row.hanzi&&row.pinyin&&row.english,'authored story source data only');
+   assert.ok(findStory(row.id)&&row.hanzi&&row.pinyin&&row.english,'authored story source identity and data only');
    assert.ok(transfer.words.some(word=>row.hanzi.includes(word.hanzi)),'passage example must include canonical word');
   }
   for(const row of transfer.related){
