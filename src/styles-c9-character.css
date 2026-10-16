@@ -563,3 +563,12 @@
 .c9-authored-contrast-words span{font:400 12px/1.6 var(--c9-ui);overflow-wrap:anywhere}
 .c9-authored-contrast-words .c9-button{min-height:44px;white-space:normal}
 @media(max-width:490px){.c9-authored-contrast-words{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Original P65 shared whole-word examples, not radical/phonetic decomposition. */
+.c9-character-link-evidence{margin-top:10px;display:grid;gap:9px}
+.c9-character-link-evidence>div{display:grid;gap:5px;border-left:2px solid var(--c9-line-strong);padding:8px 10px;min-width:0;background:var(--c9-surface-2)}
+.c9-character-link-evidence strong{font:550 17px/1.4 var(--c9-hanzi-body)}
+.c9-character-link-evidence span{font:400 12px/1.6 var(--c9-ui);overflow-wrap:anywhere}
+.c9-character-link-evidence small{font:400 11px/1.65 var(--c9-ui);color:var(--c9-sub);overflow-wrap:anywhere}
+.c9-character-link-evidence .c9-button{justify-self:start;min-height:44px;white-space:normal}
