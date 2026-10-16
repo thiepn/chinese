@@ -12,7 +12,7 @@ import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingRetu
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
-import {renderC9ConversationCircuit,c9ConversationCircuit} from './conversation-circuit-c9.mjs';
+import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
@@ -182,6 +182,7 @@ let p34ShadowLine=0,p34TranscriptViewed=false;
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
+let c9WorkshopOrigin=null; // Validated in-tab source handoff, never a progress writer.
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
@@ -282,9 +283,9 @@ function workshopSourceLabel(task){
  if(task.pathwayId)return 'Pathway · '+esc(findPathwayMission(task.pathwayId)?.title||'Original mission');
  return 'Reading · '+esc(findStory(task.storyId||task.readingId)?.title||'Original text');
 }
-function renderWorkshop(){const task=sentenceTask(sentenceIndex),stats=sentenceStats(state);return `${title('SENTENCE WORKSHOP','Build the Chinese sentence.','Reconstruct an exact sentence using its English meaning. This checks written form, not open-ended translation fluency.')}${gated()}
+function renderWorkshop(){const task=sentenceTask(sentenceIndex),stats=sentenceStats(state);return `${title('SENTENCE WORKSHOP','Build the Chinese sentence.','Reconstruct an exact sentence using its English meaning. This checks written form, not open-ended translation fluency.')}${gated()}${renderC9WorkshopSourceContinuation(task.id,c9WorkshopOrigin,state,action,esc)}
  <section class="simple-panel learning-studio"><div class="stats-grid">${stat(SENTENCE_TASKS.length,'Sentence tasks')}${stat(stats.practiced,'Tasks attempted')}${stat(stats.independent,'Independent correct')}</div><div class="button-row"></div><div class="guided-meta"><span>Task ${sentenceIndex%SENTENCE_TASKS.length+1}/${SENTENCE_TASKS.length}</span><span>${workshopSourceLabel(task)}</span></div><p class="eyebrow">${task.p32Correction?'P32 · CORRECT THE MISTAKE':task.p33ScenarioId?'P33 · PRODUCE A CONVERSATION TURN':task.p34AudioId?'P34 · WRITE WHAT YOU HEARD':'ENGLISH-TO-CHINESE · EXACT RECONSTRUCTION'}</p><h2>${esc(task.english)}</h2>${sentenceFeedback?`<div class="reader-feedback ${sentenceFeedback.correct&&!sentenceFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${sentenceFeedback.correct?'Exact form correct':'Compare with the model sentence'}</strong><p>${esc(sentenceFeedback.message)}</p><p class="practice-hanzi" lang="zh-Hans">${esc(task.hanzi)}</p><p>${esc(task.pinyin)}</p>${task.p34AudioId?`<div class="p31-writing-feedback"><strong>Listening-first transfer</strong><p>${esc(task.explanation||'')}</p><p>Compare this authored line with the recording from your device voice; exact written reconstruction does not certify spoken fluency.</p></div>`:''}${task.p33ScenarioId?`<div class="p31-writing-feedback"><strong>Conversation context</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.teaching||'')}</p><strong>Social usage</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pragmatics||'')}</p><strong>Common confusion</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pitfall||'')}</p></div>`:''}${task.p32Correction?`<div class="p31-writing-feedback"><strong>Why the learner sentence needs repair</strong><p>${esc(task.explanation)}</p><p>One specific reference sentence is checked; other valid corrections may exist.</p></div>`:''}${task.p31LessonId?`<div class="p31-writing-feedback"><strong>Grammar and meaning</strong><p>${esc(findP31Guide(task.p31LessonId)?.grammarExplanation||'')}</p><strong>Common confusion</strong><p>${esc(findP31Guide(task.p31LessonId)?.pitfall||'')}</p><strong>Pronunciation focus</strong><p>${esc(findP31Guide(task.p31LessonId)?.pronunciation||'')}</p></div>`:''}</div>${action('workshop-next','Next sentence →','button primary')}${task.grammarId?action('grammar-select','Return to grammar teaching','button outline small',`data-id="${task.grammarId}"`):''}${task.sentenceId?action('sentence-select','Return to sentence context →','button outline small',`data-id="${task.sentenceId}"`):''}${task.readingId?action('open-story-link','Return to reading →','button outline small',`data-id="${task.readingId}"`):''}${task.pathwayId?action('pathway-select','Return to pathway mission →','button outline small',`data-id="${task.pathwayId}"`):''}${task.p31LessonId?action('p31-open-lesson','Return to character teaching →','button outline small',`data-id="${task.p31LessonId}"`):''}${task.p33ScenarioId?action('p33-open-scenario','Return to conversation →','button outline small',`data-id="${task.p33ScenarioId}"`):''}${task.p34AudioId?action('p34-open-listening','Return to listening →','button outline small',`data-id="${task.p34AudioId}"`):''}`:
- `<div class="answer-entry"><label for="workshop-entry">Type the complete Chinese sentence</label><textarea id="workshop-entry" rows="2" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write the Chinese characters">${esc(sentenceTyped)}</textarea></div><div class="button-row">${action('workshop-check','Check written sentence →','button primary',sentenceTyped.trim()?'':'disabled')}${action('workshop-support','Show pinyin · assisted','button outline')}${action('workshop-reveal','Reveal model sentence','button outline')}</div>${sentenceSupport?`<p class="lesson-guide">Model pronunciation: ${esc(task.pinyin)}. Help makes this attempt assisted.</p>`:''}`}</section>`;}
+ `<div class="answer-entry"><label for="workshop-entry">Type the complete Chinese sentence</label><textarea id="workshop-entry" rows="2" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write the Chinese characters">${esc(sentenceTyped)}</textarea></div><div class="button-row">${action('workshop-check','Check written sentence →','button primary',sentenceTyped.trim()?'':'disabled')}${action('workshop-support','Show pinyin · assisted','button outline')}${action('workshop-reveal','Reveal model sentence','button outline')}${task.p34AudioId?action('c9-workshop-listen','Listen to original spoken writing prompt','button outline small','data-id="'+esc(task.id)+'"'):task.p33ScenarioId?action('c9-workshop-listen','Hear original written model · assisted','button outline small','data-id="'+esc(task.id)+'"'):''}</div>${sentenceSupport?`<p class="lesson-guide">Model pronunciation: ${esc(task.pinyin)}. Help makes this attempt assisted.</p>`:''}`}</section>`;}
 
 function highlightVocabulary(sentence,word){
  const i=sentence.indexOf(word);if(i<0)return esc(sentence);
@@ -1045,13 +1046,17 @@ async function c9CopyMediaLink(screen,id){
 }
 /** Open an ORIGINAL sentence task; this is a navigation adapter, never a
  * duplicate sentence evaluator or a learner-state writer. */
-function c9OpenNativeWorkshopTask(index,assisted=false){
+function c9OpenNativeWorkshopTask(index,assisted=false,origin=null){
  if(!Number.isInteger(index)||index<0||index>=SENTENCE_TASKS.length)return false;
- if(route()==='workshop'&&sentenceIndex===index)return true;
+ const task=SENTENCE_TASKS[index];
+ const receipt=origin&&c9WorkshopSourceContinuation(task.id,origin,state)?{...origin}:null;
+ if(route()==='workshop'&&sentenceIndex===index){
+  c9WorkshopOrigin=receipt;render();return true;
+ }
  if(route()==='workshop'&&!c9ConfirmLeaveNativeAnswer('workshop'))return false;
  if(route()!=='workshop'&&!go('workshop'))return false;
  sentenceIndex=index;sentenceTyped='';sentenceFeedback=null;
- sentenceSupport=Boolean(assisted);
+ sentenceSupport=Boolean(assisted);c9WorkshopOrigin=receipt;
  render();return true;
 }
 async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
