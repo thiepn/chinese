@@ -114,7 +114,7 @@ export function renderC9VocabularyLibrary(state,ui,act,esc){
   '<option value="'+key+'"'+(ui.filter===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label>'+ 
  '<label for="c9-word-context">Original source evidence<select id="c9-word-context" class="c9-select">'+
  [['all','All source words'],['sentence','Occurs in original sentences'],['story','Occurs in original readings'],['lexical-only','No sentence or reading occurrence']].map(([key,label])=>
-  '<option value="'+key+'"'+(ui.context===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label>'+
+  '<option value="'+key+'"'+(ui.context===key?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
  '<div id="c9-word-catalog" aria-live="polite">'+c9WordCatalogResults(state,ui,act,esc)+'</div>'+
  paragraph('Saving a word and answering supplementary word exercises never grant scheduled-review mastery or official HSK proficiency.')+'</section>';
 }
