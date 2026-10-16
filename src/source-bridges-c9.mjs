@@ -127,3 +127,36 @@ export function originalStoryWordSupport(storyId,state,{limit=24}={}){
  }
  return Object.freeze(rows.slice(0,limitTo(limit,80)));
 }
+
+
+/** P65 documented source character comparison, *not* visual confusability,
+ * decomposition, radical origin or linguistic certification. Examples and
+ * pronunciations must come verbatim from existing original lesson records. */
+export function sourceCharacterComparisonSet(lessonId,{limit=4}={}){
+ const lesson=byLesson.get(lessonId);
+ if(!lesson)return Object.freeze([]);
+ const cleanPinyin=value=>String(value||'').normalize('NFC').trim().toLocaleLowerCase();
+ const syllable=value=>cleanPinyin(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const validSample=row=>row&&row.hanzi&&row.pinyin&&row.english;
+ const linked=new Map(sourceCharacterLinks(lessonId,{limit:20})
+   .map(x=>[x.lesson.id,x.words]));
+ const set=[];
+ for(const other of DEMO_LESSONS){
+  if(other.id===lesson.id||!validSample(lesson.sentence)||!validSample(other.sentence))continue;
+  const sourceWords=linked.get(other.id)||[];
+  const sameReading=cleanPinyin(lesson.pinyin)===cleanPinyin(other.pinyin);
+  const sameSyllable=!sameReading&&syllable(lesson.pinyin)===syllable(other.pinyin);
+  if(!sourceWords.length&&!sameReading&&!sameSyllable)continue;
+  // This ranking is source evidence strength, not an official difficulty label.
+  const relation=sameReading?'Same indexed Pinyin':sameSyllable?
+   'Same Pinyin letters, different recorded tone':'Both appear in an indexed whole word';
+  set.push({lesson:other,relation,words:sourceWords.slice(0,3),
+   sample:other.sentence,priority:sameReading?0:sameSyllable?1:2});
+ }
+ const chosen=set.sort((a,b)=>a.priority-b.priority||b.words.length-a.words.length||
+  a.lesson.id.localeCompare(b.lesson.id)).slice(0,Math.max(0,Math.min(8,Number.isInteger(limit)?limit:4)));
+ return Object.freeze(chosen.map(x=>Object.freeze({...x,
+  words:Object.freeze([...x.words]),
+  sample:Object.freeze({...x.sample})
+ })));
+}
