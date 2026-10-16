@@ -189,6 +189,7 @@ let fluencyFocus='balanced',fluencySize=8,fluencyTyped='';
 let planMistakeFilter='unresolved';
 let pendingRestore=null,restoreAcknowledgement='';
 let c9RenderedHash=null;
+let c9OpenCatalogAfterHash=false; // UI navigation only; never learner evidence.
 let c9SearchFocusPending=false;
 function alertUser(message,type='info'){const target=$('alert-banner');target.textContent=message;target.className=`alert ${type}`;if(type==='error')target.setAttribute('role','alert');else target.setAttribute('role','status');}
 function clearAlert(){const a=$('alert-banner');a.textContent='';a.className='';a.setAttribute('role','status');}
@@ -927,7 +928,14 @@ function renderFind(){const ui=c9FindContext();return '<div class="c9-search-pag
   renderC9SearchIntro(state,ui,action,esc)+
   '<div class="c9-search-native" id="c9-original-search" tabindex="-1">'+unifiedSearchPage(ui,action,esc,()=>'',()=> '')+'</div></div>';}
 
-function render(){const sameSource=c9RenderedHash===location.hash;
+function render(){
+ // A pasted or reloaded original lesson URL must resolve before first paint.
+ if(c9RenderedHash===null&&route()==='learn'){
+  const source=c9HashLearningSource('learn',location.hash);
+  c9LearnDetail=Boolean(source);
+  if(source){displayLessonId=source;c9LessonSection='overview';c9LessonFocused=true;}
+ }
+ const sameSource=c9RenderedHash===location.hash;
  const focusSnapshot=sameSource?captureC9Focus(root):null;
  // C9-41 introduced collapsible original learning sections. A native
  // same-route render rebuilds root.innerHTML, otherwise closing the active
@@ -961,23 +969,21 @@ function go(page,answerConfirmed=false){
 function c9OpenAuthoredLesson(id){
  const lesson=findLesson(id);
  if(!lesson){alertUser('Original lesson unavailable.','error');return false;}
- const previous={id:displayLessonId,detail:c9LearnDetail,section:c9LessonSection,focused:c9LessonFocused};
- if(route()==='learn'&&c9LearnDetail&&displayLessonId!==lesson.id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
- if(route()==='learn'&&c9LearnDetail&&displayLessonId===lesson.id){
-  root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
- }
- displayLessonId=lesson.id;c9LearnDetail=true;c9LessonSection='overview';c9LessonFocused=true;
- showLessonTranslation=state.settings.showPinyin;
- if(route()!=='learn'){
-  if(!go('learn')){
-   displayLessonId=previous.id;c9LearnDetail=previous.detail;c9LessonSection=previous.section;c9LessonFocused=previous.focused;
-   return false;
+ const target='#/learn/'+lesson.id;
+ if(location.hash===target){
+  if(!c9LearnDetail||displayLessonId!==lesson.id){
+   displayLessonId=lesson.id;c9LearnDetail=true;c9LessonSection='overview';c9LessonFocused=true;
+   render();
   }
- }else{
-  render();
   root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
   root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});
+  return true;
  }
+ // All source changes, including from a different app workspace, must keep
+ // the original unsent answer guard. Do not mutate an old lesson on refusal.
+ if(!c9ConfirmLeaveNativeAnswer(route()))return false;
+ c9ApprovedDeparture={from:route(),to:'learn'};
+ location.hash=target; // original public ID; browser history + reload safe
  return true;
 }
 /** Open an ORIGINAL sentence task; this is a navigation adapter, never a
@@ -1676,23 +1682,20 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(target){target.scrollIntoView({block:'start',behavior:'auto'});target.focus({preventScroll:true});}
   return;
  }
- if(name==='c9-lesson-select'){
-  const next=findLesson(id);
-  if(!next){alertUser('Lesson unavailable.','error');return false;}
-  if(c9LearnDetail&&displayLessonId!==next.id&&!c9ConfirmLeaveNativeAnswer('learn'))return false;
-  if(c9LearnDetail&&displayLessonId===next.id)return true;
-  displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';
-  showLessonTranslation=state.settings.showPinyin;
-  render();root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});
-  root.querySelector('#c9-lesson-title')?.focus({preventScroll:true});return true;
- }
+ if(name==='c9-lesson-select')return c9OpenAuthoredLesson(id);
  if(name==='c9-learn-back'){
   if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
-  c9LearnDetail=false;render();
-  const catalog=root.querySelector('details.c9-discovery-catalog');
-  if(catalog)catalog.open=true;
-  const target=root.querySelector('#c9-browse-title');
-  if(target){target.setAttribute('tabindex','-1');target.scrollIntoView({block:'start'});target.focus({preventScroll:true});}
+  c9OpenCatalogAfterHash=true;
+  if(location.hash==='#/learn'){
+   c9LearnDetail=false;render();
+   const catalog=root.querySelector('details.c9-discovery-catalog');
+   if(catalog)catalog.open=true;
+   root.querySelector('#c9-browse-title')?.scrollIntoView({block:'start'});
+   c9OpenCatalogAfterHash=false;
+  }else{
+   c9ApprovedDeparture={from:'learn',to:'learn'};
+   location.hash='#/learn';
+  }
   return true;
  }
  if(name==='c9-lesson-open')return c9OpenAuthoredLesson(id);
@@ -2581,13 +2584,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='start-next'){const next=summary(state).next;return next?c9OpenAuthoredLesson(next.id):go('review');}
  if(name==='open-lesson')return act({dataset:{action:'c9-lesson-open',id}});
  if(name==='next-lesson'){
-  const idx=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);
-  const next=DEMO_LESSONS[idx+1];
+  const index=DEMO_LESSONS.findIndex(l=>l.id===displayLessonId);
+  const next=DEMO_LESSONS[index+1];
   if(!next){alertUser('Last original lesson reached. Continue with Review or contextual study.');return false;}
-  if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
-  displayLessonId=next.id;c9LearnDetail=true;c9LessonSection='overview';
-  showLessonTranslation=state.settings.showPinyin;render();
-  root.querySelector('.c9-lesson-header')?.scrollIntoView({block:'start'});return true;
+  return c9OpenAuthoredLesson(next.id);
  }
  if(name==='mark-studied'){
   if(!findLesson(id))return false;
@@ -2794,13 +2794,15 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
 // Resolve only genuine original IDs; malformed hashes never install a new source.
 function c9HashLearningSource(screen,hash){
  const patterns={
+  learn:/^#\/learn\/(demo-\d{2,3})$/,
   grammar:/^#\/grammar\/(g\d{2})$/,
   sentences:/^#\/sentences\/(sent-\d{3})$/,
   pathway:/^#\/pathway\/(path-\d{2})$/
  };
  const id=hash?.match(patterns[screen])?.[1];
  if(!id)return null;
- return screen==='grammar'?(findGrammarLesson(id)?id:null):
+ return screen==='learn'?(findLesson(id)?id:null):
+  screen==='grammar'?(findGrammarLesson(id)?id:null):
   screen==='sentences'?(findLibrarySentence(id)?id:null):
   screen==='pathway'?(findPathwayMission(id)?id:null):null;
 }
@@ -2814,22 +2816,36 @@ window.addEventListener('hashchange',()=>{
  const previousSource=c9HashLearningSource(previous,previousHash);
  const targetSource=c9HashLearningSource(destination,currentHash);
  const sameScreenSourceChanged=destination===previous&&Boolean(targetSource)&&
-  targetSource!==(previousSource||(previous==='grammar'?grammarSelected:
+  targetSource!==(previousSource||(previous==='learn'?(c9LearnDetail?displayLessonId:null):
+   previous==='grammar'?grammarSelected:
    previous==='sentences'?librarySelected:pathwaySelected));
  // Going from a P29 mission to its band index is a source departure even
  // though the route name stays 'pathway' and the new hash has no source ID.
+ const learnLessonExit=previous==='learn'&&
+  /^#\/learn\/demo-\d{2,3}$/.test(previousHash)&&currentHash!==previousHash&&!targetSource;
  const pathwayMissionExit=previous==='pathway'&&
   /^#\/pathway\/path-\d{2}$/.test(previousHash)&&currentHash!==previousHash&&!targetSource;
  // Back/Forward and pasted deep links do not go through the original native
  // controller. Guard both route changes and same-route source changes.
- if((destination!==previous||sameScreenSourceChanged||pathwayMissionExit)&&!approved&&
+ if((destination!==previous||sameScreenSourceChanged||learnLessonExit||pathwayMissionExit)&&!approved&&
   !c9ConfirmLeaveNativeAnswer(previous)){
   history.replaceState(null,'',previousHash);
   return;
  }
- if(destination!==previous||sameScreenSourceChanged||pathwayMissionExit){stopC9Speech();if(previous==='pathway')pathwayTransferDraft='';}
+ if(destination!==previous||sameScreenSourceChanged||learnLessonExit||pathwayMissionExit){stopC9Speech();if(previous==='pathway')pathwayTransferDraft='';}
  // Following a *real* approved hash transition, synchronize source-specific
  // local input with the displayed original source, never with an old lesson.
+ if(destination==='learn'){
+  const lessonId=c9HashLearningSource('learn',currentHash);
+  const originalChanged=Boolean(lessonId)&&(!c9LearnDetail||displayLessonId!==lessonId);
+  c9LearnDetail=Boolean(lessonId);
+  if(lessonId){
+   displayLessonId=lessonId;
+   if(originalChanged){c9LessonSection='overview';c9LessonFocused=true;}
+   showLessonTranslation=state.settings.showPinyin;
+  }
+  if(!lessonId&&previous==='learn'&&previousHash!==currentHash)c9OpenCatalogAfterHash=true;
+ }
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
   grammarSelected=targetSource;
   grammarChapter=String(findGrammarLesson(targetSource).chapterNumber);
@@ -2849,6 +2865,13 @@ window.addEventListener('hashchange',()=>{
  if(sessionQueue?.length&&destination!=='review')reviewPaused=true;
  revealed=false;typedAnswer='';chosenOption='';checkResult=null;
  render();window.scrollTo(0,0);
+ if(c9OpenCatalogAfterHash&&destination==='learn'&&!c9LearnDetail){
+  c9OpenCatalogAfterHash=false;
+  const catalog=root.querySelector('details.c9-discovery-catalog');
+  if(catalog)catalog.open=true;
+  const heading=root.querySelector('#c9-browse-title');
+  if(heading){heading.setAttribute('tabindex','-1');heading.scrollIntoView({block:'start'});heading.focus({preventScroll:true});}
+ }
  announceC9Route(C9_ROUTE_LABELS[destination]||'Home',$('main'));
 if(c9ReturnFocus){
  const focus=root.querySelector('#'+c9ReturnFocus);
