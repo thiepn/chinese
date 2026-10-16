@@ -113,7 +113,7 @@ export function connectC9Shell(){
   if(!drawer.open||modalSupported)return;
   if(event.key==='Escape'){event.preventDefault();dismiss(true);return;}
   if(event.key!=='Tab')return;
-  const items=[...drawer.querySelectorAll('a[href],button:not([disabled])')];
+  const items=[...drawer.querySelectorAll('a[href],button:not([disabled]),summary')].filter(item=>item.getClientRects().length>0);
   if(!items.length)return;
   const first=items[0],last=items[items.length-1];
   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
