@@ -615,7 +615,6 @@
  .c9-lesson-workspace{display:flex;flex-direction:column}
  .c9-lesson-workspace > .c9-lesson-header{order:0;margin-bottom:12px}
  .c9-lesson-workspace > .c9-lesson-layout{order:1}
- .c9-lesson-workspace > .c9-lesson-resources{order:2;margin-top:18px}
  .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-heading-main > .c9-lesson-title-row + p{display:none}
  .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-header-actions{margin-top:0}
  .c9-lesson-workspace[data-c9-focused="true"] .c9-lesson-start-status{display:none}
