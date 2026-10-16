@@ -41,6 +41,12 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
    (w.examples.length?'<div class="c9-library-word-example"><span class="c9-eyebrow">SOURCE SENTENCE</span>'+
     '<p lang="zh-Hans">'+esc(w.examples[0].hanzi)+'</p><span class="c9-library-pinyin">'+esc(w.examples[0].pinyin)+'</span>'+
     '<small>'+esc(w.examples[0].english)+'</small></div>':'<p class="c9-library-word-fallback">No indexed bilingual example is available.</p>')+
+   '<div class="c9-library-word-actions">'+
+   act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
+   act('c9-word-open','Full details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+
+   act('vocabulary-start','Learn word →','c9-button c9-button--study c9-button--small','data-id="'+esc(w.key)+'"')+
+   act('word-bookmark',savedHere?'Unsave':'Save','c9-button c9-button--quiet c9-button--small','data-id="'+esc(w.key)+'"')+
+   '</div>'+
    '<details class="c9-library-word-more"><summary>Original notes & more examples</summary><div>'+
    w.notes.slice(0,2).map(n=>'<p>'+esc(n)+'</p>').join('')+
    w.examples.slice(1,3).map(ex=>'<p><strong lang="zh-Hans">'+esc(ex.hanzi)+'</strong><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small></p>').join('')+
@@ -63,12 +69,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',page=0}={},act
      (e.sourceType==='sentence'?act('sentence-select','Open sentence learning →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):
       e.sourceType==='story'?act('c9-media-open-story','Read this original passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(e.sourceId)+'"'):'')+
      '</article>').join('')+'</div></details>':'')+
-   '<div class="c9-library-word-actions">'+
-   act('speak','Listen','c9-button c9-button--quiet c9-button--small','data-text="'+esc(w.hanzi)+'"')+
-   act('c9-word-open','Full details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+
-   act('vocabulary-start','Learn word →','c9-button c9-button--study c9-button--small','data-id="'+esc(w.key)+'"')+
-   act('word-bookmark',savedHere?'Unsave':'Save','c9-button c9-button--quiet c9-button--small','data-id="'+esc(w.key)+'"')+
-   '</div></article>';
+   '</article>';
  }).join('')+'</div>':renderC9EmptyState('No matching words','Try another word, Pinyin spelling or meaning, or clear the filters.',
    act('c9-word-reset','Show all words','c9-button c9-button--secondary'));
  return header+cards+
