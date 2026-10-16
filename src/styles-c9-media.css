@@ -424,3 +424,14 @@
 .c9-reading-vocabulary-caveat{border-left:3px solid var(--c9-line-strong);padding:9px 11px;background:var(--c9-surface-2)}
 @media(max-width:900px){.c9-reading-vocabulary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.c9-reading-vocabulary-grid{grid-template-columns:minmax(0,1fr)}.c9-reading-vocabulary{padding:12px}}
+
+
+/* P67–P68 source-owned reader practice continuity. No scheduler or HSK claim. */
+.c9-reading-queue-controls{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.c9-reading-queue-controls label{display:grid;gap:5px;flex:1 1 250px;max-width:360px;font:600 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-reading-queue-controls select{min-height:44px;min-width:0;max-width:100%;width:100%}
+.c9-reading-queue-controls>span,.c9-reading-queue-pages span{font:500 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-reading-queue-actions{display:flex;align-items:stretch;flex-wrap:wrap;gap:8px;margin-top:9px}
+.c9-reading-queue-actions .c9-button{min-height:44px;white-space:normal}
+.c9-reading-queue-pages{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+.c9-reading-queue-pages .c9-button{min-height:44px}
