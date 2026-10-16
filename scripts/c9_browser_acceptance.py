@@ -212,6 +212,43 @@ def main():
                     return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
                 check("Direct Chinese learner journey "+str(width),learner_first_navigation)
                 ctx.close()
+            # Guided teaching mode: real six-section sequence, preserved native
+            # lesson sources, optional full-section view and independent Review.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def guided_lesson_steps():
+                    open_route(page,"learn")
+                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("First character step not visible")
+                    if page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("New learner still sees every lesson section at once")
+                    flow=page.locator("#c9-lesson-flow-label")
+                    if "Step 1 of 6" not in flow.inner_text():
+                        raise AssertionError("Teaching progress step one missing")
+                    page.locator(".c9-lesson-step-footer:not([hidden]) [data-section='grammar']").click()
+                    if not page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("Next step does not reveal original grammar")
+                    if page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Previous step not collapsed in focus view")
+                    if "Step 2 of 6" not in flow.inner_text():
+                        raise AssertionError("Focus step progress failed to advance")
+                    mode=page.locator('[data-action="c9-lesson-mode"]')
+                    mode.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Show all sections does not restore original overview")
+                    if not page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("Full view does not restore native grammar")
+                    mode.click()
+                    if page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Focus mode did not restore one-step teaching")
+                    page.locator('.c9-lesson-sections [data-section="finish"]').click()
+                    if not page.locator('[data-action="mark-studied"]').is_visible():
+                        raise AssertionError("Final step lost original explicit introduction")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Six authentic teaching steps, focus/full toggle and original introduction at "+str(width)+"px"
+                check("Guided original lesson UX "+str(width),guided_lesson_steps)
+                ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
             # This is navigation only: no synthetic grades, strokes or saves.
@@ -778,6 +815,7 @@ def main():
             def review():
                 open_route(page,"learn")
                 page.locator('[data-action="c9-lesson-open"]').first.click()
+                page.locator('.c9-lesson-sections [data-section="finish"]').click()
                 page.locator('[data-action="mark-studied"]').first.click()
                 open_route(page,"review")
                 page.locator('[data-action="review-begin"]').click()
