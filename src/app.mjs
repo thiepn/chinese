@@ -1542,7 +1542,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const target=findStory(id),index=Number(button.dataset.index);
   if(!target||!Number.isInteger(index)||index<0||index>=target.lines.length)
    return alertUser('Exact original passage source is unavailable.','error');
-  // Pass the exact authored sentence through the hash navigation controller.
+  // Pass the exact authored sentence through the hash navigation controller:
+  // no learning answer recorded. This is source navigation, not assessment.
   // Do not render the previous story or let source reset erase this focus.
   c9PendingStoryLine={id:target.id,index};
   const opened=await act({dataset:{action:'c9-media-open-story',id:target.id}});
