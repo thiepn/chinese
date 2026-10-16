@@ -5,7 +5,8 @@ import {renderC9Home} from '../src/home-c9.mjs';
 import {renderC9LessonWorkspace} from '../src/lesson-c9.mjs';
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
-import {freshState} from '../src/study.mjs';
+import {freshState,addLesson} from '../src/study.mjs';
+import {renderC9Review} from '../src/review-practice-c9.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -100,4 +101,36 @@ test('P9 native source disclosures stay visually and keyboard hidden until activ
  assert.ok(a.includes('.c9-lesson-resources:not([open]) > .c9-lesson-resources-content{display:none!important}'));
  assert.ok(b.includes('.c9-home-listening:not([open]) > .c9-listening-deck{display:none!important}'));
  assert.equal(JSON.stringify(state),previous);
+});
+
+
+test('C9-53 native review presents start first and separates optional recall configuration',()=>{
+ const first=DEMO_LESSONS[0],state=addLesson(freshState(),first.id,Date.now()-10000);
+ const before=JSON.stringify(state);
+ const args={state,action:act,esc,reviewWorkspace:()=>'',toneTeachingPanel:()=>''};
+ const html=renderC9Review(args);
+ assert.ok(html.includes('data-action="review-begin"'),'due review must start directly');
+ assert.ok(html.includes('class="c9-review-options"'),'session customization remains optional');
+ assert.ok(html.includes('<summary>Change focus or session length'));
+ assert.ok(html.includes('id="review-focus"'));
+ assert.ok(html.indexOf('data-action="review-begin"')<html.indexOf('id="review-focus"'),'primary recall precedes options');
+ assert.equal(JSON.stringify(state),before,'renderer cannot alter graded authority');
+ const fresh=renderC9Review({...args,state:freshState()});
+ assert.ok(fresh.includes('Practise without scheduling'));
+ assert.ok(!fresh.includes('data-action="review-begin"'),'cannot grade nonexistent due prompts');
+});
+
+test('C9-53 source-return helper preserves exact authored lessons and visible completion',()=>{
+ const code=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const name of ['plan-source','fluency-source','foundation-unit','context-open','placement-lesson','guided-explore','story-linked']){
+  assert.ok(code.includes(name),name+' original route was removed');
+ }
+ assert.ok(code.includes('function c9OpenAuthoredLesson(id)'), 'same original lesson source handoff is required');
+ assert.ok(code.includes('catalog.open=true'), 'return must expose the native lesson catalog');
+ assert.ok(!code.includes('displayLessonId=DEMO_LESSONS[idx+1].id;render();'), 'introduction must not silently advance the lesson');
+ const state=addLesson(freshState(),DEMO_LESSONS[0].id,Date.now()-10000);
+ const workspace=renderC9LessonWorkspace({lesson:DEMO_LESSONS[0],state,nativeMarkup:'',section:'finish',act,esc});
+ assert.ok(workspace.includes('c9-lesson-finish-confirmation'));
+ assert.ok(workspace.includes('data-action="c9-lesson-select"'));
+ assert.ok(workspace.includes('Scheduled review'));
 });
