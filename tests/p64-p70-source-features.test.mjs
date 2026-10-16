@@ -168,7 +168,7 @@ test('P69 editable private text retains mined sentences until explicit replaceme
  for(const key of [
   'next!==personalReaderAnalyzed&&personalReaderMined.length',
   "window.confirm('Replace annotated passage",
-  'if(next!==personalReaderAnalyzed)personalReaderMined=[]',
+  'if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;}',
   'panel.hidden=!(personalReaderAnalyzed&&personalReaderText.trim()===personalReaderAnalyzed)',
   'PERSONAL_READER_PAGE_SIZE=12',
   'personalReaderPage=Math.min(Math.max(0,personalReaderPage),pages-1)',
