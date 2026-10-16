@@ -212,6 +212,30 @@ def main():
                     return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
                 check("Direct Chinese learner journey "+str(width),learner_first_navigation)
                 ctx.close()
+            # A unit selection must survive the original same-route render;
+            # the lesson browser must remain visible and the filter selected.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def unit_catalog_continuity():
+                    open_route(page,"learn")
+                    disclosure=page.locator("details.c9-discovery-catalog")
+                    disclosure.locator("summary").click()
+                    if not disclosure.evaluate("(e)=>e.open"):
+                        raise AssertionError("Course catalog disclosure did not open")
+                    page.locator('.c9-unit-card [data-action="c9-unit-open"]').nth(1).click()
+                    if not disclosure.evaluate("(e)=>e.open"):
+                        raise AssertionError("Selecting a unit collapsed the entire lesson browser")
+                    if page.locator("#c9-learn-unit").input_value()!="2":
+                        raise AssertionError("Unit filter did not select exact original chapter")
+                    if not page.locator("#c9-lesson-browser .c9-lesson-row").first.is_visible():
+                        raise AssertionError("The chosen unit contains no accessible lesson rows")
+                    page.locator("#c9-lesson-browser [data-action='c9-lesson-open']").first.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Selected unit lesson did not reach authored teaching")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original unit 02 → direct authored teaching, without collapsed catalog at "+str(width)+"px"
+                check("Chinese unit-browser continuity "+str(width),unit_catalog_continuity)
+                ctx.close()
             # Guided teaching mode: real six-section sequence, preserved native
             # lesson sources, optional full-section view and independent Review.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
