@@ -8,7 +8,9 @@ import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {freshState,addLesson} from '../src/study.mjs';
 import {renderC9Review} from '../src/review-practice-c9.mjs';
 import {findLibrarySentence} from '../src/sentence-library.mjs';
-import {findStory} from '../src/stories.mjs';
+import {findStory,STORIES} from '../src/stories.mjs';
+import {findDialogue,DIALOGUES} from '../src/dialogues.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub} from '../src/media-c9.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -185,4 +187,30 @@ test('C9-55 original lesson transfer exposes only canonical source IDs without m
  assert.ok(rendered.includes('data-action="c9-lesson-transfer-jump"'));
  assert.ok(rendered.includes('No auto credit')||rendered.includes('NO AUTO CREDIT'));
  assert.equal(JSON.stringify(state),before,'transfer UI and projection are entirely read-only');
+});
+
+
+test('C9-56 original reading and conversation links use canonical source identity, never private learner evidence',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const source of STORIES)assert.strictEqual(findStory(source.id),source);
+ for(const source of DIALOGUES)assert.strictEqual(findDialogue(source.id),source);
+ for(const phrase of [
+  "stories:/^#\\/stories\\/(story-\\d{2,4})$/",
+  "dialogues:/^#\\/dialogues\\/(dialogue-\\d{2,4})$/",
+  "screen==='stories'?(findStory(id)?id:null)",
+  "screen==='dialogues'?(findDialogue(id)?id:null)",
+  "function c9OpenMediaSource(screen,id)",
+  "if(!c9ConfirmLeaveNativeAnswer(from))return false",
+  "mediaSourceExit",
+  "resetReadingNavigation()",
+  "p34TranscriptViewed=false"
+ ])assert.ok(app.includes(phrase),'source routing preserved: '+phrase);
+ const reading=renderC9ReadingHub(state,STORIES[0],act,esc);
+ const dialogue=renderC9DialogueHub(state,DIALOGUES[0],act,esc);
+ assert.ok(reading.includes('data-action="c9-media-copy-reading"'));
+ assert.ok(reading.includes('data-id="'+STORIES[0].id+'"'));
+ assert.ok(dialogue.includes('data-action="c9-media-copy-dialogue"'));
+ assert.ok(dialogue.includes('data-id="'+DIALOGUES[0].id+'"'));
+ assert.equal(JSON.stringify(state),before,'opening public sources cannot create grades');
 });

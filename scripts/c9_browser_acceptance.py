@@ -363,6 +363,59 @@ def main():
                     return "Canonical source lesson, reload, Back/Forward, catalog and invalid ID guard "+str(width)
                 check("C9-54 canonical lesson navigation "+str(width),canonical_lesson_history)
                 ctx.close()
+            # C9-56 independently addressable original reading + listening:
+            # do not confuse public source identity with private learning data.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_media_history():
+                    open_route(page,"stories/story-02")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent?.trim().length>0")
+                    title=page.locator('.c9-media-stories .c9-media-lead h2').inner_text()
+                    if not page.locator('[data-action="c9-media-copy-reading"]').is_visible():
+                        raise AssertionError("Public original reading lacks share action")
+                    page.reload(wait_until="domcontentloaded")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent===title",arg=title)
+                    if page.evaluate("()=>location.hash")!="#/stories/story-02":
+                        raise AssertionError("Reload lost selected original reading URL")
+                    page.locator('[data-action="story-next"]').first.click()
+                    page.wait_for_function("()=>location.hash==='#/stories/story-03'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent!==title",arg=title)
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/stories/story-02'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent===title",arg=title)
+                    open_route(page,"stories/story-9999")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent?.trim().length>0")
+                    if page.locator('.c9-media-stories .c9-media-lead h2').inner_text()==title:
+                        raise AssertionError("Invalid reading ID silently retained previously selected source")
+                    open_route(page,"dialogues/dialogue-02")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent?.trim().length>0")
+                    dialogue=page.locator('.c9-media-dialogues .c9-media-lead h2').inner_text()
+                    if not page.locator('[data-action="c9-media-copy-dialogue"]').is_visible():
+                        raise AssertionError("Public conversation lacks share action")
+                    page.reload(wait_until="domcontentloaded")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent===title",arg=dialogue)
+                    if page.evaluate("()=>location.hash")!="#/dialogues/dialogue-02":
+                        raise AssertionError("Conversation source lost on reload")
+                    page.locator('[data-action="dialogue-support"]').first.click()
+                    page.locator('.dialogue-pinyin').first.wait_for(state="visible")
+                    page.locator('[data-action="dialogue-next-context"]').first.click()
+                    page.wait_for_function("()=>location.hash==='#/dialogues/dialogue-03'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent!==title",arg=dialogue)
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Assisted transcript leaked into a new conversation")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/dialogues/dialogue-02'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent===title",arg=dialogue)
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Assisted transcript leaked on Back navigation")
+                    open_route(page,"dialogues/dialogue-9999")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent?.trim().length>0")
+                    if page.locator('.c9-media-dialogues .c9-media-lead h2').inner_text()==dialogue:
+                        raise AssertionError("Invalid conversation ID retained previous source")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
+                check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
+                ctx.close()
             # Original character → indexed word → native dictionary and
             # exact sentence/passage handoffs. No duplicate answer writer.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -402,7 +455,7 @@ def main():
                     reading=page.locator('#c9-lesson-transfer [data-action="c9-media-open-story"]')
                     if reading.count():
                         reading.first.click()
-                        page.wait_for_function("()=>location.hash==='#/stories'")
+                        page.wait_for_function("()=>location.hash.startsWith('#/stories/story-')")
                         page.locator(".story-paper").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Original lesson → exact dictionary, native sentence or passage and assisted-free navigation "+str(width)

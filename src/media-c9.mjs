@@ -293,9 +293,10 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<p>'+esc(story.theme)+' · '+story.lines.length+' original source sentences. '+
   (last?'Last recorded attempt: '+(last.assisted?'assisted':last.correct?'independent correct':'incorrect')+'. ':
   'No recorded reading attempt for this text. ')+
- 'Opening a reading never marks it complete.</p>'+
+ 'Opening a reading never marks it complete. The link identifies only the public source, not your private response or support settings.</p>'+
  '<div class="c9-media-lead-actions c9-unified-actions">'+
  act('c9-media-focus-native','Open passage and questions →','c9-button c9-button--primary','data-target="c9-native-reading"')+
+ act('c9-media-copy-reading','Copy reading link','c9-button c9-button--secondary','data-id="'+esc(story.id)+'"')+
  link('dialogues','Continue to listening')+'</div></div>'+
  '<div class="c9-media-lead-aside"><span>ORIGINAL P34 READING RECORDS</span>'+
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
@@ -322,9 +323,10 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  (dialogue.p34?'LISTENING-FIRST':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
  '<p>'+count(dialogue.lines.length,'speaking turn')+' · '+count(dialogue.questions.length,'source question')+'. '+
  (last?'Last recorded answer was '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect')+'.':
- 'No recorded answer yet.')+'</p>'+
+ 'No recorded answer yet.')+' Source links never include private answers or reveal the transcript.</p>'+
  '<div class="c9-media-lead-actions c9-unified-actions">'+
  act('c9-media-focus-native','Open original listening player →','c9-button c9-button--primary','data-target="c9-native-dialogue"')+
+ act('c9-media-copy-dialogue','Copy conversation link','c9-button c9-button--secondary','data-id="'+esc(dialogue.id)+'"')+
  link('stories','Read an original passage')+'</div></div>'+
  '<div class="c9-media-lead-aside"><span>ORIGINAL P34 LISTENING EVIDENCE</span>'+
  '<strong>'+listening.listening+' / '+P34_LISTENING.length+'</strong>'+
