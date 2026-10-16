@@ -633,7 +633,9 @@ function renderLearn(){
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section></details>';
   const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
-  return renderC9LearnHub(state,c9LearnUi(),action,esc)+renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra;
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+
+    '<details class="c9-learn-extended"><summary><strong>Explore additional Chinese study material</strong><span>Extended curriculum, source atlas and optional study utilities</span></summary><div class="c9-learn-extended-inner">'+
+    renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra+'</div></details>';
  }
  const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
  if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
@@ -2116,7 +2118,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
 
  if(name==='hub-go'){const target=button.dataset.route;if(LEARNING_DESTINATIONS.some(d=>d.route===target)||['progress','settings','practice','journey','block','ladder','wordbook','senses','workshop'].includes(target))return go(target);return;}
- if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)displayLessonId=item.lessonId;if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
+ if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)return act({dataset:{action:'c9-lesson-open',id:item.lessonId}});if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
  if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
  if(name==='hub-lesson')return act({dataset:{action:'c9-lesson-open',id}});

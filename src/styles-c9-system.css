@@ -461,3 +461,97 @@
  .c9-listening-deck-heading .c9-button{min-width:96px}
 }
 @media(forced-colors:active){.c9-listening-deck,.c9-listening-clip{border:1px solid CanvasText}}
+
+
+/* UX course entry: primary lesson progression first; large source catalogs remain discoverable. */
+.c9-guided-course{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+ gap:20px;padding:clamp(18px,2.4vw,28px);border:1px solid var(--c9-line);
+ border-radius:var(--c9-r);background:var(--c9-surface)}
+.c9-guided-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.c9-guided-number{margin:8px 0;color:var(--c9-accent);font:700 12px/1.45 var(--c9-ui);letter-spacing:.06em}
+.c9-guided-main h2{margin:0 0 12px;font:600 clamp(23px,2.5vw,31px)/1.28 var(--c9-display);color:var(--c9-ink)}
+.c9-guided-main h2 [lang="zh-Hans"]{font-family:var(--c9-hanzi-display);font-size:1.35em}
+.c9-guided-desc{max-width:58ch;color:var(--c9-sub);font-size:13px;line-height:1.65;margin:0 0 19px}
+.c9-guided-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%;align-items:center}
+.c9-guided-actions .c9-button{min-height:44px}
+.c9-guided-note{margin:16px 0 0;color:var(--c9-muted);font-size:11px;line-height:1.55}
+.c9-guided-sequence{min-width:0;border:1px solid var(--c9-line);
+ background:var(--c9-surface-2);border-radius:var(--c9-r-sm);padding:16px}
+.c9-guided-sequence-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 8px}
+.c9-guided-sequence-head h3{font:650 16px/1.35 var(--c9-ui);color:var(--c9-ink);margin:0}
+.c9-guided-sequence-head>span{font-size:11px;color:var(--c9-sub)}
+.c9-guided-list{display:grid;gap:5px;list-style:none;margin:0;padding:0}
+.c9-guided-lesson{display:flex;width:100%;align-items:center;gap:10px;min-width:0;
+ border:1px solid transparent;border-radius:var(--c9-r-xs);padding:10px 9px;
+ background:transparent;color:var(--c9-ink);font:inherit;text-align:left;cursor:pointer}
+.c9-guided-lesson:hover{background:var(--c9-surface);border-color:var(--c9-line)}
+.c9-guided-step{font:700 12px/1.3 var(--c9-ui);color:var(--c9-accent);min-width:28px}
+.c9-guided-step-body{display:grid;gap:3px;min-width:0;flex:1}
+.c9-guided-step-body strong{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.c9-guided-step-body strong [lang="zh-Hans"]{font:500 18px/1.4 var(--c9-hanzi-display)}
+.c9-guided-step-body small{font-size:11px;line-height:1.4;color:var(--c9-sub)}
+.c9-discovery-catalog,.c9-learn-extended{display:block;border:1px solid var(--c9-line);
+ background:var(--c9-surface);border-radius:var(--c9-r);min-width:0;overflow:hidden}
+.c9-discovery-catalog>summary,.c9-learn-extended>summary{display:flex;align-items:center;
+ justify-content:space-between;gap:14px;padding:16px 20px;cursor:pointer;color:var(--c9-ink);list-style-position:inside}
+.c9-discovery-catalog>summary strong,.c9-learn-extended>summary strong{font:650 14px/1.4 var(--c9-ui)}
+.c9-discovery-catalog>summary span,.c9-learn-extended>summary span{font-size:11px;line-height:1.5;color:var(--c9-sub)}
+.c9-discovery-catalog[open]>summary,.c9-learn-extended[open]>summary{border-bottom:1px solid var(--c9-line)}
+.c9-discovery-catalog-body,.c9-learn-extended-inner{display:grid;gap:20px;padding:20px;min-width:0}
+.c9-discovery-catalog-body>.c9-discovery-lead{margin:0}
+.c9-guided-course :focus-visible,.c9-drawer-primary :focus-visible,
+.c9-drawer-advanced>summary:focus-visible,.c9-discovery-catalog>summary:focus-visible,
+.c9-learn-extended>summary:focus-visible{outline:3px solid var(--c9-focus,var(--c9-accent));outline-offset:2px}
+
+/* Common destinations stay visible; specialist tools open only on request. */
+.c9-mobile-drawer .c9-drawer-primary{display:grid;gap:15px;padding:15px 16px 10px}
+.c9-drawer-quick-group{display:grid;gap:5px;min-width:0}
+.c9-drawer-quick-group h3{margin:0 0 3px;padding:0 5px;font-size:11px;
+ text-transform:uppercase;letter-spacing:.06em;color:var(--c9-muted)}
+.c9-drawer-quicklink{display:flex;align-items:center;gap:11px;padding:11px 12px;
+ color:var(--c9-ink);text-decoration:none;min-height:54px;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);background:var(--c9-surface)}
+.c9-drawer-quicklink:hover,.c9-drawer-quicklink[aria-current="page"]{
+ border-color:var(--c9-accent);background:var(--c9-accent-soft)}
+.c9-drawer-quicklink>.c9-icon{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7}
+.c9-drawer-quicklink>span:nth-child(2){display:grid;gap:3px;flex:1;min-width:0}
+.c9-drawer-quicklink strong{font-size:13px;line-height:1.35}
+.c9-drawer-quicklink small{font-size:11px;line-height:1.3;color:var(--c9-sub)}
+.c9-drawer-quicklink>span:last-child{font-size:14px;color:var(--c9-muted)}
+.c9-drawer-advanced{margin:2px 16px 18px;border:1px solid var(--c9-line);
+ border-radius:var(--c9-r-sm);background:var(--c9-surface)}
+.c9-drawer-advanced>summary{cursor:pointer;padding:14px 13px;font-size:12px;
+ color:var(--c9-ink);font-weight:650}
+.c9-drawer-advanced>summary span{font-size:11px;color:var(--c9-sub);margin-left:5px;font-weight:400}
+.c9-drawer-advanced .c9-drawer-groups{padding:10px 12px 14px}
+@media(max-width:800px){
+ .c9-guided-course{grid-template-columns:1fr;gap:14px}
+ .c9-guided-main{align-items:stretch}
+ .c9-guided-actions .c9-button{flex:1 1 150px}
+ .c9-discovery-catalog>summary,.c9-learn-extended>summary{align-items:flex-start;flex-direction:column;gap:4px}
+ .c9-discovery-catalog-body,.c9-learn-extended-inner{padding:12px;gap:14px}
+}
+@media(max-width:380px){
+ .c9-guided-course{padding:14px}
+ .c9-guided-actions .c9-button{width:100%;flex-basis:100%}
+}
+
+
+/* Optional skill catalog nested below the actual lesson browser. */
+.c9-catalog-optional{border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);background:var(--c9-surface)}
+.c9-catalog-optional>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;
+ cursor:pointer;padding:15px;color:var(--c9-ink)}
+.c9-catalog-optional>summary strong{font-size:13px;font-weight:650}
+.c9-catalog-optional>summary span{font-size:11px;color:var(--c9-sub)}
+.c9-catalog-optional[open]>summary{border-bottom:1px solid var(--c9-line)}
+.c9-catalog-optional-body{display:grid;gap:16px;padding:14px;min-width:0}
+.c9-catalog-optional>summary:focus-visible{outline:3px solid var(--c9-focus,var(--c9-accent));outline-offset:2px}
+@media(max-width:620px){.c9-catalog-optional>summary{flex-direction:column;align-items:flex-start}}
+
+
+/* Explicit closed-content protection: author display:grid overrides the
+   browser's UA <details> fallback in some mobile/WebView combinations. */
+.c9-discovery-catalog:not([open]) > .c9-discovery-catalog-body,
+.c9-catalog-optional:not([open]) > .c9-catalog-optional-body,
+.c9-learn-extended:not([open]) > .c9-learn-extended-inner,
+.c9-drawer-advanced:not([open]) > .c9-drawer-groups{display:none!important}

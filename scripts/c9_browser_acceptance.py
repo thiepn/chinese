@@ -155,6 +155,63 @@ def main():
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
                 ctx.close()
+            # UX path: a new learner must reach the authored first lesson in
+            # one action, independently open review, and see only essential
+            # destinations until explicitly disclosing optional source tools.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def learner_first_navigation():
+                    open_route(page,"today")
+                    entry=page.locator(".c9-home-hero-actions [data-action='hub-lesson']")
+                    if entry.count()!=1 or not entry.is_visible():
+                        raise AssertionError("Home lacks one direct lesson-start action")
+                    if "Start lesson 001" not in entry.inner_text():
+                        raise AssertionError("New learner cannot identify lesson one")
+                    entry.click()
+                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Start lesson did not open the actual native teaching")
+                    page.locator('[data-action="c9-learn-back"]').first.click()
+                    guided=page.locator(".c9-guided-course")
+                    if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
+                        raise AssertionError("Numbered lesson sequence absent above the catalog")
+                    if "001" not in guided.locator(".c9-guided-step").first.inner_text():
+                        raise AssertionError("Lesson one not discoverable at the course start")
+                    if page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
+                        raise AssertionError("Optional content catalog expanded by default")
+                    if page.locator(".c9-discovery-catalog-body").is_visible():
+                        raise AssertionError("Closed catalog content still painted or accessible")
+                    if page.locator("details.c9-learn-extended").evaluate("(e)=>e.open"):
+                        raise AssertionError("Supplementary source atlas expanded by default")
+                    if page.locator(".c9-learn-extended-inner").is_visible():
+                        raise AssertionError("Closed advanced source atlas still painted")
+                    if mobile:
+                        if args.artifacts:
+                            page.screenshot(path=str(args.artifacts/"clear-first-lesson-mobile.png"),full_page=False)
+                        page.locator("#c9-more-toggle").click()
+                        menu=page.locator("#c9-mobile-drawer")
+                        if not menu.evaluate("(e)=>e.open"):
+                            raise AssertionError("Mobile optional destinations did not open")
+                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=5:
+                            raise AssertionError("Mobile More again exposes too many first-level routes")
+                        advanced=menu.locator("details.c9-drawer-advanced")
+                        if advanced.evaluate("(e)=>e.open"):
+                            raise AssertionError("Specialist tools expanded by default")
+                        if advanced.locator(".c9-drawer-groups").is_visible():
+                            raise AssertionError("Collapsed specialist menu is still visible")
+                        advanced.locator("summary").click()
+                        if not advanced.evaluate("(e)=>e.open"):
+                            raise AssertionError("Original specialist tools cannot be disclosed")
+                        if not advanced.locator('[data-route="wordbook"]').is_visible():
+                            raise AssertionError("Original Wordbook route lost after simplification")
+                        page.locator("#c9-drawer-close").click()
+                    open_route(page,"review")
+                    if page.locator(".c9-review-setup .c9-assessment-actions a[href='#/practice']").count()!=1:
+                        raise AssertionError("Learner with no scheduled review has no free-practice route")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
+                check("Direct Chinese learner journey "+str(width),learner_first_navigation)
+                ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
             # This is navigation only: no synthetic grades, strokes or saves.
