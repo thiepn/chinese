@@ -250,7 +250,7 @@ export function renderC9ReadingContinuation(state,currentId,act,esc,options={}){
  return '<section class="c9-reading-queue" aria-labelledby="c9-reading-queue-title">'+
   '<div class="c9-reading-queue-head"><div><span class="c9-eyebrow">P67–P68 · ORIGINAL READING CONTINUATION</span>'+
   '<h2 id="c9-reading-queue-title">Continue reading, then practise</h2>'+
-  '<p>Choose a source passage and a real available exercise. Unresolved attempts come first; previously passed material is still marked for retry after a later unsuccessful response. Reading and grading remain in the original player.</p></div></div>'+
+  '<p>Choose a source passage and a real available exercise. Unresolved attempts come first; previously passed material is still marked for retry after a later unsuccessful response. Reading and grading remain in the original player. No estimated level, proficiency claim or completion award is generated.</p></div></div>'+
   '<div class="c9-reading-queue-controls"><label for="c9-reading-queue-filter">Original reading history'+
   '<select id="c9-reading-queue-filter" class="c9-select">'+controls.map(([value,label])=>
     '<option value="'+value+'"'+(catalog.filter===value?' selected':'')+'>'+esc(label)+' · '+catalog.counts[value]+'</option>').join('')+
