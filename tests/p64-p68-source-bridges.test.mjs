@@ -71,6 +71,9 @@ test('P67/P68 reading source bridge never reveals a lexical sense before assista
  assert.ok(!gated.includes('data-action="word-bookmark"'));
  assert.ok(!gated.includes('data-action="lookup-word"'));
  const revealed=renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed:true});
+ const reviewed=renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed:true,answered:true});
+ assert.ok(reviewed.includes('Your previously recorded response and its independent/assisted status are unchanged.'));
+ assert.ok(!reviewed.includes('current unsubmitted answer will be recorded as assisted.'));
  assert.ok(revealed.includes('c9-reading-vocabulary-caveat'));
  assert.ok(revealed.includes('data-action="lookup-word"'));
  assert.ok(revealed.includes('data-action="word-bookmark"')||revealed.includes('Multiple original readings'));
