@@ -10,7 +10,7 @@ import {renderC9Review} from '../src/review-practice-c9.mjs';
 import {findLibrarySentence} from '../src/sentence-library.mjs';
 import {findStory,STORIES} from '../src/stories.mjs';
 import {findDialogue,DIALOGUES} from '../src/dialogues.mjs';
-import {renderC9ReadingHub,renderC9DialogueHub} from '../src/media-c9.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallSource,renderC9DialogueRoleplay,renderC9ReadingRecall} from '../src/media-c9.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -213,4 +213,52 @@ test('C9-56 original reading and conversation links use canonical source identit
  assert.ok(dialogue.includes('data-action="c9-media-copy-dialogue"'));
  assert.ok(dialogue.includes('data-id="'+DIALOGUES[0].id+'"'));
  assert.equal(JSON.stringify(state),before,'opening public sources cannot create grades');
+});
+
+
+test('C9-57 all original conversations support ungraded role-taking with exact immutable source turns',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ for(const dialogue of DIALOGUES){
+  const source=c9RoleplaySource(dialogue,{});
+  assert.ok(source.reply,'every authored dialogue must contain a playable speaking turn');
+  assert.ok(source.roles.includes(source.role),'selected original speaker role');
+  assert.strictEqual(source.reply,dialogue.lines[source.index],'never synthesize learner dialogue');
+  assert.strictEqual(source.cue,source.index>0?dialogue.lines[source.index-1]:null);
+  const html=renderC9DialogueRoleplay(dialogue,{role:source.role,position:0,revealed:false,typed:''},act,esc);
+  for(const action of ['c9-roleplay-role','c9-roleplay-reveal','c9-roleplay-spoke','c9-roleplay-retry','c9-roleplay-move'])
+   assert.ok(html.includes('data-action="'+action+'"'),'interactive original dialog: '+action);
+  assert.ok(!html.includes('c9-rehearsal-reference'),'cannot leak hidden script before reveal');
+  const revealed=renderC9DialogueRoleplay(dialogue,{role:source.role,position:0,revealed:true,typed:source.reply.hanzi},act,esc);
+  assert.ok(revealed.includes(source.reply.hanzi));
+  assert.ok(revealed.includes('This does not assess pronunciation'));
+  assert.ok(revealed.includes('ASSISTED'));
+  assert.ok(source.indices.every(i=>dialogue.lines[i].speaker===source.role));
+ }
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const guard of ['c9RoleplayUi.referenceSeen','dialogueSupport=true','p34TranscriptViewed=true','missionSupport=true',
+  "if(screen==='dialogues'&&!c9RoleplayUi.revealed", "if(name==='c9-roleplay-hear-cue')"])
+  assert.ok(app.includes(guard),'preserve native assisted evidence and drafts: '+guard);
+ assert.equal(JSON.stringify(state),before,'roleplay is not a second progress writer');
+});
+
+test('C9-57 every original reading supports ungraded source-exact listen-to-write',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ for(const story of STORIES){
+  const source=c9ReadingRecallSource(story,{index:story.lines.length+5});
+  assert.strictEqual(source.line,story.lines[story.lines.length-1]);
+  const html=renderC9ReadingRecall(story,{index:0,revealed:false,typed:''},act,esc);
+  for(const action of ['c9-reading-recall-listen','c9-reading-recall-listen-slow',
+   'c9-reading-recall-reveal','c9-reading-recall-move','c9-reading-recall-retry'])
+   assert.ok(html.includes('data-action="'+action+'"'),'interactive source dictation: '+action);
+  assert.ok(!html.includes('c9-rehearsal-reference'),'no original line is disclosed before reference');
+  const revealed=renderC9ReadingRecall(story,{index:0,revealed:true,typed:story.lines[0].hanzi},act,esc);
+  assert.ok(revealed.includes(story.lines[0].hanzi));
+  assert.ok(revealed.includes('Typed characters match the source exactly'));
+  assert.ok(revealed.includes('no grade'));
+ }
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const guard of ['c9ReadingRecallUi.referenceSeen','storyAssist=true',
+  "if(screen==='stories'&&!c9ReadingRecallUi.revealed", "if(name==='c9-reading-recall-reveal')"])
+  assert.ok(app.includes(guard),'source-owned read/write and original grading: '+guard);
+ assert.equal(JSON.stringify(state),before,'private learner history untouched');
 });
