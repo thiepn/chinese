@@ -219,7 +219,7 @@ def main():
                 def unit_catalog_continuity():
                     open_route(page,"learn")
                     disclosure=page.locator("details.c9-discovery-catalog")
-                    disclosure.locator("summary").click()
+                    disclosure.locator(":scope > summary").click()
                     if not disclosure.evaluate("(e)=>e.open"):
                         raise AssertionError("Course catalog disclosure did not open")
                     page.locator('.c9-unit-card [data-action="c9-unit-open"]').nth(1).click()
