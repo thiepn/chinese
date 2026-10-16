@@ -11,7 +11,7 @@ import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9Wr
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
-import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
@@ -98,6 +98,8 @@ let c9OfflineShell='checking'; // UI readiness only; never a learner-data author
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
+const c9ReadingRecallUi={index:0,revealed:false,typed:''}; // Tab-only, ungraded.
+const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false}; // Tab-only, unrecorded.
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
 let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
@@ -114,6 +116,10 @@ const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  learn:['lesson-check-entry']
 });
 function c9OpenNativeAnswer(screen=c9RenderedRoute){
+ if(screen==='dialogues'&&!c9RoleplayUi.revealed&&c9RoleplayUi.typed.trim())
+  return root.querySelector('#c9-roleplay-entry')||{value:c9RoleplayUi.typed};
+ if(screen==='stories'&&!c9ReadingRecallUi.revealed&&c9ReadingRecallUi.typed.trim())
+  return root.querySelector('#c9-reading-recall-entry')||{value:c9ReadingRecallUi.typed};
  // A changed-context draft remains ungraded even after a P29 graded answer.
  if(screen==='pathway'&&String(pathwayTransferDraft||'').trim())
   return root.querySelector('#p29-transfer-draft')||{value:pathwayTransferDraft};
@@ -230,6 +236,7 @@ function renderDialogues(){
  if(c9DialogueSourceId!==dialogue.id){c9DialogueSourceId=dialogue.id;c9DialogueTurn=0;}
  return '<div class="c9-media-workspace c9-media-dialogues">'+
   renderC9DialogueHub(state,dialogue,action,esc,{query:c9DialogueQuery,filter:c9DialogueFilter,page:c9DialoguePage})+
+  renderC9DialogueRoleplay(dialogue,c9RoleplayUi,action,esc)+
   '<div class="c9-media-native">'+renderDialoguesNative()+'</div></div>';
 }
 function renderReader(){
@@ -240,7 +247,8 @@ function renderReader(){
 function renderStories(){
  const story=findStory(storyId)||STORIES[0];
  return '<div class="c9-media-workspace c9-media-stories">'+
-  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
+  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingQueuePage,queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
+  renderC9ReadingRecall(story,c9ReadingRecallUi,action,esc)+
   renderC9PersonalTextReader(esc,state)+
   '<div class="c9-media-native">'+renderStoriesNative()+'</div></div>';
 }
@@ -678,6 +686,8 @@ function renderReaderNative(){const l=readerLesson(),cloze=makeCloze(l),mode=rea
  </section></div>`;
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
+function resetC9ReadingRecall(){c9ReadingRecallUi.index=0;c9ReadingRecallUi.revealed=false;c9ReadingRecallUi.typed='';}
+function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;}
 function resetReadingNavigation(){
  storyParagraph=0;storyParagraphOnly=false;storyParagraphTranslations=[];
  beginnerPart='all';beginnerWordShown=false;beginnerPartTip='';
@@ -2911,7 +2921,7 @@ window.addEventListener('hashchange',()=>{
   if(next!==storyId){
    storyId=next;storyMode=findStory(next)?.beginner?'beginner-detail':'comprehension';
    storiesLongOnly=false;storiesBeginnerOnly=false;storiesOnlyBookmarked=false;
-   resetReadingNavigation();
+   resetReadingNavigation();resetC9ReadingRecall();
   }
  }
  if(destination==='stories'&&c9PendingStoryLine?.id===storyId){
@@ -2930,7 +2940,7 @@ window.addEventListener('hashchange',()=>{
    dialogueId=next;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
    p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
    missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
-   c9DialogueSourceId=null;c9DialogueTurn=0;
+   c9DialogueSourceId=null;c9DialogueTurn=0;resetC9Roleplay();
   }
  }
  if(destination==='learn'){
