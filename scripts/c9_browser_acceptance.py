@@ -458,6 +458,45 @@ def main():
                     return "Authentic Home/lesson/character source, slow/stop, writing and responsive layout "+str(width)+"px"
                 check("C9-48 real source listening "+str(width),original_listening_journey)
                 ctx.close()
+            # P64–P68 original source bridges: exercise actual native Wordbook
+            # and source-scored Reader without fabricated radical/HSK material.
+            ctx,page,errors=session(390,844,True)
+            def original_word_to_reading_source_bridge():
+                open_route(page,"wordbook")
+                query=page.locator("#c9-word-query")
+                query.fill("我")
+                usage=page.locator(".c9-word-usage")
+                if usage.count()<1:
+                    raise AssertionError("Original dictionary source evidence absent for indexed Chinese word")
+                usage.first.locator("summary").click()
+                if not usage.first.locator(".c9-word-usage-list article").count():
+                    raise AssertionError("Canonical Wordbook source contexts unavailable")
+                if "sense" not in usage.first.inner_text().lower():
+                    raise AssertionError("Written-form occurrence was confused with authoritative word sense")
+                open_route(page,"stories")
+                support=page.locator(".c9-reading-vocabulary")
+                support.wait_for(state="visible")
+                if page.locator(".c9-reading-vocabulary-item").count():
+                    raise AssertionError("Reader source definitions leaked before assistance")
+                page.locator('[data-action="story-mode"][data-mode="comprehension"]').first.click()
+                help=page.locator('[data-action="c9-reading-vocabulary-help"]')
+                help.click()
+                if page.locator(".c9-reading-vocabulary-item").count()<1:
+                    raise AssertionError("Original reader vocabulary failed to reveal after assistance")
+                if "current unsubmitted answer will be recorded as assisted" not in page.locator(".c9-reading-vocabulary-caveat").inner_text():
+                    raise AssertionError("Source help failed to communicate assisted grading")
+                choices=page.locator('.story-practice [data-action="story-answer"]')
+                if choices.count():
+                    choices.first.click()
+                    page.wait_for_function("()=>Boolean(document.querySelector('.story-practice .reader-feedback'))")
+                    if "Assisted practice" not in page.locator(".story-practice .reader-feedback").inner_text():
+                        raise AssertionError("Native original reading answer incorrectly gained independent credit after source help")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("Wordbook or reading source bridge overflowed 390px viewport")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "390px original dictionary provenance, gated source-word reader assistance and native grading"
+            check("P64-P68 original source word and assisted reading bridge",original_word_to_reading_source_bridge)
+            ctx.close()
             # Original P70 — the typing path must actually land inside the
             # already authoritative Sentence Library's production mode.
             ctx,page,errors=session(390,844,True)
