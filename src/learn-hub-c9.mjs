@@ -121,7 +121,7 @@ export function renderC9LearnHub(state,ui,act,esc){
  const o=courseOverview(state),hub=learningHub(state);
  const unit=lessonGroups().find(x=>String(x.index)===String(ui.unit));
  const status=ui.status||'all',kind=isKnownKind(ui.kind)?ui.kind:'all';
- const intro=title('Your learning library','A clear path through original Chinese characters, vocabulary, grammar, reading and practical communication.');
+ const intro=title('Learn Chinese','Start with your next lesson, follow the numbered course, or open a review session.');
  if(ui.view==='lesson'){
   const chosen=DEMO_LESSONS.find(l=>l.id===ui.selectedId)||DEMO_LESSONS[0];
   return '<section class="c9-lesson-heading">'+
@@ -130,7 +130,28 @@ export function renderC9LearnHub(state,ui,act,esc){
    '<h1><span lang="zh-Hans">'+esc(chosen.hanzi)+'</span> '+esc(chosen.meaning)+'</h1>'+
    '<p>'+esc(chosen.pinyin)+' · Learn through examples and native practice. Introduction is recorded only by the existing lesson workflow.</p></div></section>';
  }
- return '<div class="c9-discovery">'+intro+
+ const next=o.nextLesson||DEMO_LESSONS[0];
+ const nextIndex=DEMO_LESSONS.findIndex(l=>l.id===next.id);
+ const nextFour=DEMO_LESSONS.slice(nextIndex,nextIndex+4);
+ const first=DEMO_LESSONS[0];
+ const featured='<section class="c9-guided-course" aria-labelledby="c9-guided-title">'+
+  '<div class="c9-guided-main"><p class="c9-eyebrow">YOUR NEXT LESSON · ORIGINAL MANDARIN COURSE</p>'+
+  '<span class="c9-guided-number">LESSON '+String(next.order).padStart(3,'0')+' / '+DEMO_LESSONS.length+'</span>'+
+  '<h2 id="c9-guided-title"><span lang="zh-Hans">'+esc(next.hanzi)+'</span> · '+esc(next.meaning)+'</h2>'+
+  '<p class="c9-guided-desc">Learn this character, hear its pronunciation, use its words and understand its example sentence. Follow the teaching sections in order.</p>'+
+  '<div class="c9-guided-actions">'+
+  act('c9-lesson-open',(o.nextLesson?(nextIndex===0?'Start lesson 1':'Continue with lesson '+next.order):'Revisit lesson '+next.order)+' →','c9-button c9-button--primary','data-id="'+esc(next.id)+'"')+
+  '<a class="c9-button c9-button--secondary" href="#/review">Review · '+o.due+' due</a>'+
+  (nextIndex>0?act('c9-lesson-open','Go to lesson 1','c9-button c9-button--quiet','data-id="'+esc(first.id)+'"'):'')+
+  '</div><p class="c9-guided-note">'+o.introduced+' / '+o.total+' lessons introduced. Introduction is not a mastery grade; scheduled review is tracked separately.</p></div>'+
+  '<div class="c9-guided-sequence"><div class="c9-guided-sequence-head"><h3>Lessons in order</h3><span>Open any lesson</span></div>'+
+  '<ol class="c9-guided-list">'+nextFour.map((l,i)=>
+    '<li>'+act('c9-lesson-open','<span class="c9-guided-step">'+String(l.order).padStart(3,'0')+'</span>'+
+      '<span class="c9-guided-step-body"><strong><span lang="zh-Hans">'+esc(l.hanzi)+'</span> '+esc(l.meaning)+'</strong>'+
+      '<small>'+esc(l.pinyin)+' · '+((state.learned||[]).includes(l.id)?'Introduced':'Not yet introduced')+'</small></span>'+
+      '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
+ return '<div class="c9-discovery">'+intro+featured+
+  '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons and study tools</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
   '<section class="c9-discovery-lead"><div><span class="c9-eyebrow">CONTINUE YOUR COURSE</span><h2>'+esc(hub.primary.label)+'</h2><p>'+esc(hub.primary.detail)+'</p>'+
   '<div class="c9-inline">'+act('hub-primary','Continue learning →','c9-button c9-button--primary')+
   '<a class="c9-button c9-button--secondary" href="#/pathway">Explore nine-band pathway</a></div></div>'+
@@ -164,7 +185,7 @@ export function renderC9LearnHub(state,ui,act,esc){
    act('c9-content-kind',esc(label),'c9-discovery-chip'+(kind===id?' is-selected':''),'data-kind="'+id+'" aria-pressed="'+(kind===id)+'"')).join('')+'</div>'+
   '<label class="c9-discovery-saved"><input type="checkbox" id="c9-learn-saved"'+(ui.saved?' checked':'')+'> Saved or introduced entries (where supported)</label>'+
   '<div id="c9-learn-search-results" aria-live="polite">'+renderC9SearchResults(state,ui,act,esc)+'</div></section>'+
-  '<p class="c9-discovery-disclaimer">Original independently authored demonstration materials; not an installed or verified official HSK 3.0 corpus. Following or opening content does not confer mastery.</p></div>';
+  '<p class="c9-discovery-disclaimer">Original independently authored demonstration materials; not an installed or verified official HSK 3.0 corpus. Following or opening content does not confer mastery.</p></div></details></div>';
 }
 function pathwayMissionStatus(m,events){
  const all=new Set(events.filter(e=>e.taskId.startsWith('pathway:'+m.id+':')).map(e=>e.taskId));
