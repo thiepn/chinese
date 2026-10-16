@@ -248,6 +248,7 @@ def main():
                 def guided_lesson_steps():
                     open_route(page,"learn")
                     page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    page.locator("#c9-lesson-overview").wait_for(state="visible")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("First character step not visible")
                     if page.locator(".c9-context-bar").count():
