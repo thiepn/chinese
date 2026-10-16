@@ -67,7 +67,7 @@ test('C9-48 speech lifecycle cancels obsolete source requests and preserves orig
  assert.ok(src.includes("synthesis.addEventListener('voiceschanged'"));
  assert.ok(src.includes('if(request!==c9SpeechGeneration)return'));
  assert.ok(src.includes("if(name==='speech-stop')"));
- assert.ok(src.includes('if(destination!==previous||sameScreenSourceChanged||learnLessonExit||pathwayMissionExit){stopC9Speech()'), 'speech must stop on original lesson URL changes and other real source departures');
+ assert.ok(src.includes('if(destination!==previous||sameScreenSourceChanged||mediaSourceExit||learnLessonExit||pathwayMissionExit){stopC9Speech()'), 'speech must stop on original lesson URL changes and other real source departures');
  assert.ok(src.includes("button.dataset.rate==='slow'?0.68:demoSpeechRate"));
  assert.ok(!src.includes('webkitSpeechRecognition'));
 });
