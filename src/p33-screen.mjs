@@ -103,11 +103,6 @@ export function p33ScenarioTeaching(d,chosen,act,esc,ui={}){
  '<div class="button-row">'+act('c9-media-focus-native','Continue with the original role-taking studio →','button outline small','data-target="c9-roleplay-studio"')+
  act('c9-media-focus-native','Original comprehension questions →','button outline small','data-target="c9-native-dialogue"')+'</div></div>'+
  '</section>'+
-trong lang="zh-Hans">'+esc(chosenOption.reply.hanzi)+'</strong>'+
- '<span>'+esc(chosenOption.reply.pinyin)+'</span><p>'+esc(chosenOption.reply.english)+'</p>'+
- say(act,esc,chosenOption.reply.hanzi,'Hear partner response')+
- '<div class="button-row">'+act('p33-clear-branch','Compare another response →','button outline small')+'</div></div>':'<p class="muted">Select a response to see the partner’s authored continuation. No grade or progress is written.</p>')+
- '</section>'+
  '<section class="p33-vocab"><div class="p33-section-head"><h3>Words to reuse</h3><small>Words use the existing vocabulary search and review system.</small></div><div class="p33-vocab-grid">'+
  s.vocabulary.map(w=>{
  const record=findWord(canonicalWordKey(w.hanzi,w.pinyin));
