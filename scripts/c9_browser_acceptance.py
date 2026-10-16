@@ -179,8 +179,12 @@ def main():
                         raise AssertionError("Lesson one not discoverable at the course start")
                     if page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("Optional content catalog expanded by default")
+                    if page.locator(".c9-discovery-catalog-body").is_visible():
+                        raise AssertionError("Closed catalog content still painted or accessible")
                     if page.locator("details.c9-learn-extended").evaluate("(e)=>e.open"):
                         raise AssertionError("Supplementary source atlas expanded by default")
+                    if page.locator(".c9-learn-extended-inner").is_visible():
+                        raise AssertionError("Closed advanced source atlas still painted")
                     if mobile:
                         if args.artifacts:
                             page.screenshot(path=str(args.artifacts/"clear-first-lesson-mobile.png"),full_page=False)
@@ -193,6 +197,8 @@ def main():
                         advanced=menu.locator("details.c9-drawer-advanced")
                         if advanced.evaluate("(e)=>e.open"):
                             raise AssertionError("Specialist tools expanded by default")
+                        if advanced.locator(".c9-drawer-groups").is_visible():
+                            raise AssertionError("Collapsed specialist menu is still visible")
                         advanced.locator("summary").click()
                         if not advanced.evaluate("(e)=>e.open"):
                             raise AssertionError("Original specialist tools cannot be disclosed")
