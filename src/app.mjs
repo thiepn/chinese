@@ -92,8 +92,8 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v63-p64-p68-source-bridges';
-const C9_EXPECTED_OFFLINE_ASSETS=316;
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v62-source-bridge-bundled-native';
+const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
@@ -130,7 +130,7 @@ function c9OpenNativeAnswer(screen=c9RenderedRoute){
   (screen==='pinyin'&&pinyinFeedback!==null))return null;
  const candidates=C9_ACTIVE_ANSWER_IDS[screen]||[];
  return candidates.map(id=>root.querySelector('#'+id))
-  .find(el=>el&&!el.disabled&&el.getClientRects().length&&String(el.value||'').trim())||null;
+  .find(el=>el&&!el.disabled&&(el.getClientRects().length||(screen==='learn'&&el.id==='lesson-check-entry'))&&String(el.value||'').trim())||null;
 }
 function c9ConfirmLeaveNativeAnswer(screen=c9RenderedRoute){
  const field=c9OpenNativeAnswer(screen);
@@ -171,7 +171,7 @@ let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
-let c9LessonSection='overview',c9LastLessonId=null,c9CharacterShowTranslations=true;
+let c9LessonSection='overview',c9LessonFocused=true,c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
 let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
 let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
@@ -578,11 +578,7 @@ function renderToday(){
   '<a href="#/skills">Open Skill Paths →</a></section>'+
   renderC9LearningContinuity(state,action,esc)+onboardingPanel()+
   '<details class="c9-home-extra"><summary><strong>Additional teaching and study diagnostics</strong><span>Original guided panels, phonetics, contextual practice and evidence</span></summary>'+
-  '<div class="c9-home-extra-inner">'+gated()+
-  hubHomePanel()+pathwayHomePanel(state,action,esc)+beginnerReadingTodayPanel()+
-  connectedReadingTodayPanel()+sentenceTodayPanel()+grammarTodayPanel()+
-  pinyinTodayPanel()+vocabularyTodayPanel()+finishOverviewPanel()+
-  '</div></details>';
+  '<div class="c9-home-extra-inner" data-c9-lazy-home="pending"></div></details>';
 }
 function lessonCard(l){const learned=state.learned.includes(l.id);return `<button type="button" data-action="open-lesson" data-id="${l.id}" class="lesson-row ${displayLessonId===l.id?'selected':''} ${l.order>74?'foundation-expanded':''}"><span class="lesson-number">${String(l.order).padStart(2,'0')}</span><span class="lesson-char" lang="zh-Hans">${esc(l.hanzi)}</span><span class="lesson-label"><strong>${esc(l.pinyin)}</strong><small>${esc(l.meaning)}</small></span><span class="lesson-check ${learned?'learned':''}" aria-label="${learned?'Studied':'Not yet studied'}">${learned?'✓':'→'}</span></button>`}
 
@@ -640,11 +636,13 @@ function renderLearn(){
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p33-title"><div class="c9-original-curriculum-label"><span>03 / CONVERSATION</span><h3 id="c9-p33-title">Communicate in real situations</h3><p>Original everyday dialogue situations and response practice.</p></div>'+p33SceneShelf(state,null,action,esc,{compact:true})+'</section>'+
    '<section class="c9-original-curriculum-module" aria-labelledby="c9-p34-title"><div class="c9-original-curriculum-label"><span>04 / CONNECTED READING & LISTENING</span><h3 id="c9-p34-title">Understand continuous language</h3><p>Original connected passage and listening-first course materials.</p></div>'+p34Overview(state,action,esc,{compact:true})+'</section></div></section></details>';
   const extra='<details class="c9-learn-existing"><summary>Full original learning utilities and detailed character shelf</summary><div class="c9-learn-existing-content">'+renderLearnLegacy()+'</div></details>';
-  return renderC9LearnHub(state,c9LearnUi(),action,esc)+renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra;
+  return renderC9LearnHub(state,c9LearnUi(),action,esc)+
+    '<details class="c9-learn-extended"><summary><strong>Explore additional Chinese study material</strong><span>Extended curriculum, source atlas and optional study utilities</span></summary><div class="c9-learn-extended-inner">'+
+    renderC9InstalledSourceAtlas(state,action,esc)+curriculum+extra+'</div></details>';
  }
  const lesson=findLesson(displayLessonId)||DEMO_LESSONS[0];
- if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';}
- return renderC9LessonWorkspace({lesson,state,nativeMarkup:lessonDetails(lesson),section:c9LessonSection,showPinyin:state.settings.showPinyin,act:action,esc});
+ if(c9LastLessonId!==lesson.id){c9LastLessonId=lesson.id;c9LessonSection='overview';c9LessonFocused=true;}
+ return renderC9LessonWorkspace({lesson,state,nativeMarkup:lessonDetails(lesson),section:c9LessonSection,focused:c9LessonFocused,showPinyin:state.settings.showPinyin,act:action,esc});
 }
 function reviewMatches(id){const info=cardInfo(id);if(!info)return false;if(reviewFocus==='weak')return true;if(reviewFocus==='pronunciation')return info.kind==='pinyin';if(reviewFocus==='meanings')return info.kind==='meaning';if(reviewFocus==='sentences')return info.kind==='choice';return true;}
 function renderReview(){
@@ -938,7 +936,7 @@ function render(){const sameSource=c9RenderedHash===location.hash;
  const openDisclosures=sameSource?C9_NATIVE_DISCLOSURE_CLASSES.filter(name=>
   root.querySelector('details.'+name)?.open):[];
  c9RenderedRoute=route();
- disconnectC9Writing();disconnectC9PersonalTextReader();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting,skills:renderSkills};root.innerHTML=renderC9ContextNav(route(),esc)+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);
+ disconnectC9Writing();disconnectC9PersonalTextReader();navUpdate();applySettings();const pages={today:renderToday,learn:renderLearn,character:renderCharacter,review:renderReview,explore:renderExplore,progress:renderProgress,settings:renderSettings,reader:renderReader,stories:renderStories,practice:renderPractice,dialogues:renderDialogues,wordbook:renderWordbook,senses:renderSenses,workshop:renderWorkshop,journey:renderJourney,ladder:renderLadder,block:renderBlock,fluency:renderFluency,plan:renderPlan,pinyin:()=>renderPinyinScreen({section:pinyinSection,filter:pinyinFilter,index:pinyinIndex,typed:pinyinTyped,feedback:pinyinFeedback,selectedSound:pinyinSound,selectedSyllable:pinyinSyllable},action,esc,title,gated),grammar:renderGrammar,sentences:renderSentences,pathway:renderPathway,find:renderFind,advanced:renderAdvanced,writing:renderWriting,skills:renderSkills};root.innerHTML=(route()==='learn'&&c9LearnDetail?'':renderC9ContextNav(route(),esc))+((route()==='today')?'':hubResumeStrip())+c9SourceReturnMarkup()+c9NativeContinuationMarkup()+renderC9Secondary(route(),state,pages[route()](),action,esc);
  for(const name of openDisclosures){
   const disclosure=root.querySelector('details.'+name);
   if(disclosure)disclosure.open=true;
@@ -1058,7 +1056,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   }
   await verifyC9OfflineShell('c9-offline-repair');
   alertUser(c9OfflineShell==='ready'?
-   'The current service worker reports all original static source assets cached. Offline exercise behavior remains device-dependent.':
+   'The current service worker reports all required compiled learning and shell assets cached. Offline exercise behavior remains device-dependent.':
    c9OfflineShell==='outdated'?
    'A previous offline version still controls this tab. Save or export any private P43 writing, then reload online to finish updating. Your browser learning records were not modified.':
    'Offline source repair could not be confirmed. Reconnect and try again; progress was not changed.',
@@ -1592,10 +1590,37 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   librarySavedOnly=false;libraryPage=0;libraryPracticeFocus=false;
   return render();
  }
+ if(name==='c9-lesson-mode'){
+  if(!c9LearnDetail)return;
+  c9LessonFocused=!c9LessonFocused;
+  const workspace=root.querySelector('.c9-lesson-workspace');
+  if(workspace)workspace.dataset.c9Focused=String(c9LessonFocused);
+  button.setAttribute('aria-pressed',String(c9LessonFocused));
+  button.textContent=c9LessonFocused?'Show all sections':'Focus on one step';
+  for(const panel of root.querySelectorAll('.c9-native-section'))
+    panel.hidden=c9LessonFocused&&panel.id!=='c9-lesson-'+c9LessonSection;
+  for(const footer of root.querySelectorAll('.c9-lesson-step-footer'))
+    footer.hidden=footer.dataset.section!==c9LessonSection;
+  root.querySelector('#c9-lesson-'+c9LessonSection)?.scrollIntoView({block:'start'});
+  return;
+ }
  if(name==='c9-lesson-jump'){
   const section=button.dataset.section;
   if(!c9LearnDetail||!C9_LESSON_SECTIONS.some(s=>s.id===section))return;
   c9LessonSection=section;
+  const idx=C9_LESSON_SECTIONS.findIndex(s=>s.id===section);
+  for(const panel of root.querySelectorAll('.c9-native-section'))
+    panel.hidden=c9LessonFocused&&panel.id!=='c9-lesson-'+section;
+  for(const footer of root.querySelectorAll('.c9-lesson-step-footer'))
+    footer.hidden=footer.dataset.section!==section;
+  const flowLabel=root.querySelector('#c9-lesson-flow-label');
+  if(flowLabel)flowLabel.textContent='Step '+(idx+1)+' of '+C9_LESSON_SECTIONS.length+' · '+C9_LESSON_SECTIONS[idx].name;
+  const flowProgress=root.querySelector('.c9-lesson-flow-progress');
+  if(flowProgress){
+    flowProgress.setAttribute('aria-valuenow',String(idx+1));
+    const fill=flowProgress.querySelector('span');
+    if(fill)fill.style.width=((idx+1)/C9_LESSON_SECTIONS.length*100)+'%';
+  }
   for(const nav of root.querySelectorAll('.c9-lesson-sections [data-action="c9-lesson-jump"]')){
     const active=nav.dataset.section===section;
     nav.classList.toggle('is-current',active);
@@ -1636,7 +1661,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
    if(!unit)return;
    c9LearnUnit=String(unit.index);c9LearnStatus='all';c9LearnQuery='';c9LearnPage=0;c9LearnDetail=false;
-   render();$('c9-learn-unit')?.scrollIntoView({block:'center'});return;
+   render();
+   const unitPicker=$('c9-learn-unit');
+   if(unitPicker){unitPicker.scrollIntoView({block:'center'});unitPicker.focus({preventScroll:true});}
+   return;
  }
  if(name==='c9-lesson-page'){
    const delta=Number(button.dataset.dir);if(![-1,1].includes(delta))return;
@@ -2153,7 +2181,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
 
  if(name==='hub-go'){const target=button.dataset.route;if(LEARNING_DESTINATIONS.some(d=>d.route===target)||['progress','settings','practice','journey','block','ladder','wordbook','senses','workshop'].includes(target))return go(target);return;}
- if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)displayLessonId=item.lessonId;if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
+ if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)return act({dataset:{action:'c9-lesson-open',id:item.lessonId}});if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
  if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
  if(name==='hub-lesson')return act({dataset:{action:'c9-lesson-open',id}});
@@ -2575,6 +2603,23 @@ document.addEventListener('click',ev=>{
   else c9ApprovedDeparture={from:c9RenderedRoute,to:target};
  }
 },true);
+function renderC9OptionalHomePanels(){
+ return gated()+hubHomePanel()+pathwayHomePanel(state,action,esc)+
+  beginnerReadingTodayPanel()+connectedReadingTodayPanel()+
+  sentenceTodayPanel()+grammarTodayPanel()+pinyinTodayPanel()+
+  vocabularyTodayPanel()+finishOverviewPanel();
+}
+// The optional source-rich diagnostics are not part of first meaningful Home
+// content. Generate them only upon the learner opening their native disclosure.
+// No additional DB, state engine, navigation destination or grade is created.
+root.addEventListener('toggle',event=>{
+ const disclosure=event.target;
+ if(!disclosure.matches?.('details.c9-home-extra')||!disclosure.open)return;
+ const destination=disclosure.querySelector('[data-c9-lazy-home="pending"]');
+ if(!destination)return;
+ destination.innerHTML=renderC9OptionalHomePanels();
+ destination.removeAttribute('data-c9-lazy-home');
+},true);
 root.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(b){ev.preventDefault();void act(b);}});
 root.addEventListener('input',e=>{
  if(handleC9WritingInput(e,root))return;
@@ -2773,7 +2818,7 @@ function networkLabel(){
   homeNotice.hidden=online;
   const message=homeNotice.querySelector('span');
   if(message)message.textContent=c9OfflineShell==='ready'?
-   'All original static source URLs are cached according to this service worker. Actual offline lessons and local progress still need device verification.':
+   'All compiled learning content and required offline shell files are cached. Local learner progress still depends on browser storage.':
    c9OfflineShell==='outdated'?
    'The active offline worker belongs to an earlier version. Reconnect and reload online to finish updating the current original static sources.':
    'Offline static source coverage is incomplete or not verified. Reconnect to prepare missing material.';
@@ -2861,7 +2906,12 @@ async function setupSW(){
 }
 async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
- void setupSW();}
+ // Offline installation is never a prerequisite for drawing the current
+ // learner's dashboard. Let the first paint and interaction take priority;
+ // the existing 317-file offline contract and repair flow are unchanged.
+ if(typeof window.requestIdleCallback==='function')
+  window.requestIdleCallback(()=>void setupSW(),{timeout:3000});
+ else setTimeout(()=>void setupSW(),1000);}
 connectC9Shell();
 installC9KeyboardHelp();
 init();

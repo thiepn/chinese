@@ -12,8 +12,10 @@ const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll
 test('P9 Home exposes authored next study and actual unit roadmap without claiming mastery',()=>{
  const state=freshState(),before=JSON.stringify(state);
  const html=renderC9Home(state,act,esc);
- for(const key of ['c9-home-first-fold','c9-home-source-preview','c9-home-plan','c9-home-metrics','c9-home-roadmap','hub-primary','hub-task','hub-lesson'])assert.ok(html.includes(key),key);
+ for(const key of ['c9-home-first-fold','c9-home-source-preview','c9-home-plan','c9-home-metrics','c9-home-roadmap','hub-task','hub-lesson'])assert.ok(html.includes(key),key);
  assert.ok(html.indexOf('c9-home-roadmap')<html.indexOf('c9-home-explore-more'));
+ assert.ok(html.includes('Start lesson 001'), 'Home must reveal its first lesson directly');
+ assert.ok(html.includes('data-action="hub-lesson"'), 'Home must use original lesson authority');
  assert.ok(html.includes(esc(DEMO_LESSONS[0].sentence.hanzi)));
  assert.ok(html.includes('Introduced does not mean mastered'));
  assert.doesNotMatch(html,/HSK 1 progress|12.day streak|92% accuracy/);
@@ -81,7 +83,8 @@ test('C9-50 P9 compact surfaces retain original guided and indexed curriculum au
  assert.ok(html.includes('class="c9-lesson-preview-toolbar"'));
  assert.ok(html.includes('data-action="lookup-word"'));
  assert.ok(html.includes('data-action="c9-character-reader"'));
- assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-layout'));
+ assert.ok(html.indexOf('c9-lesson-layout')<html.indexOf('c9-lesson-resources'));
+ assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-bottom-nav'));
  assert.ok(html.includes('data-section="overview"'));
  assert.equal(JSON.stringify(state),before);
 });

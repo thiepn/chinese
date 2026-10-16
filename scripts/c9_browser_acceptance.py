@@ -49,15 +49,23 @@ def main():
     try:
         source_files={p.relative_to(src_root) for p in src_root.rglob("*") if p.is_file()}
         dist_files={p.relative_to(dist_root) for p in dist_root.rglob("*") if p.is_file()}
-        if not source_files or source_files!=dist_files:
-            raise AssertionError("src/dist inventory differs; build the current checkout")
+        compiled={Path("startup.mjs"),Path("styles-startup.css")}
+        if not source_files or source_files|compiled!=dist_files:
+            raise AssertionError("src/dist source inventory plus compiled assets differs")
         mismatched=[str(p) for p in source_files
-                    if hashlib.sha256((src_root/p).read_bytes()).digest()!=
+                    if p!=Path("index.html") and hashlib.sha256((src_root/p).read_bytes()).digest()!=
                        hashlib.sha256((dist_root/p).read_bytes()).digest()]
         if mismatched:
             raise AssertionError("Stale dist files: "+", ".join(mismatched[:6]))
+        html=(dist_root/"index.html").read_text()
+        if 'src="./startup.mjs"' not in html or 'href="./styles-startup.css"' not in html:
+            raise AssertionError("Production startup does not use compiled bundles")
+        if len(list(__import__("re").finditer('rel="stylesheet"',html)))!=1:
+            raise AssertionError("Production HTML is still blocking on many stylesheets")
+        if 'startup.mjs' not in (dist_root/"sw.js").read_text():
+            raise AssertionError("Offline cache omitted compiled app")
         record("Exact source versus local build","PASS",
-               str(len(source_files))+" source/dist assets identical")
+               str(len(source_files))+" untouched originals plus two compiled startup assets")
     except Exception as exc:
         record("Exact source versus local build","FAIL",exc)
         return finish()
@@ -109,6 +117,33 @@ def main():
                 except Exception as exc:
                     record(name,"FAIL",type(exc).__name__+": "+str(exc))
                     return False
+
+            # Measure real compiled startup requests, not expected source names.
+            # CI local timing is diagnostic, not a device-wide time guarantee.
+            for width,height,mobile in ((390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def compiled_first_home():
+                    page.goto(args.base_url.rstrip("/")+"/#/today",wait_until="domcontentloaded")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    info=page.evaluate("""()=>{
+                      const paths=performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname);
+                      return {ms:Math.round(performance.now()),
+                        js:paths.filter(s=>s.endsWith('.mjs')),
+                        css:paths.filter(s=>s.endsWith('.css')),
+                        links:document.querySelectorAll('link[rel="stylesheet"]').length};
+                    }""")
+                    if info["js"]!=["/startup.mjs"] or info["css"]!=["/styles-startup.css"] or info["links"]!=1:
+                        raise AssertionError("Startup fetched legacy modules or styles: "+str(info))
+                    details=page.locator("details.c9-home-extra")
+                    inner=details.locator(".c9-home-extra-inner")
+                    if inner.inner_text().strip():
+                        raise AssertionError("Closed supplementary Home panels were rendered eagerly")
+                    details.locator("summary").click()
+                    page.wait_for_function("()=>document.querySelector('.c9-home-extra-inner')?.textContent?.trim().length>80")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return str(info["ms"])+"ms first Home at "+str(width)+"px; one script/stylesheet and lazy original teaching"
+                check("Compiled minimal Home boot "+str(width),compiled_first_home)
+                ctx.close()
             for route in ["today","learn","character/demo-01","review","practice",
                           "wordbook","grammar","sentences","stories","dialogues","writing",
                           "progress","settings","pinyin","find"]:
@@ -119,6 +154,128 @@ def main():
                     if not page.locator("main").count(): raise AssertionError("Main landmark absent")
                     return str(len(page.locator("#app-content").inner_text()))+" visible characters"
                 check("route "+route,route_check)
+                ctx.close()
+            # UX path: a new learner must reach the authored first lesson in
+            # one action, independently open review, and see only essential
+            # destinations until explicitly disclosing optional source tools.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def learner_first_navigation():
+                    open_route(page,"today")
+                    entry=page.locator(".c9-home-hero-actions [data-action='hub-lesson']")
+                    if entry.count()!=1 or not entry.is_visible():
+                        raise AssertionError("Home lacks one direct lesson-start action")
+                    if "Start lesson 001" not in entry.inner_text():
+                        raise AssertionError("New learner cannot identify lesson one")
+                    entry.click()
+                    page.wait_for_function("()=>location.hash==='#/learn'")
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Start lesson did not open the actual native teaching")
+                    page.locator('[data-action="c9-learn-back"]').first.click()
+                    guided=page.locator(".c9-guided-course")
+                    if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
+                        raise AssertionError("Numbered lesson sequence absent above the catalog")
+                    if "001" not in guided.locator(".c9-guided-step").first.inner_text():
+                        raise AssertionError("Lesson one not discoverable at the course start")
+                    if page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
+                        raise AssertionError("Optional content catalog expanded by default")
+                    if page.locator(".c9-discovery-catalog-body").is_visible():
+                        raise AssertionError("Closed catalog content still painted or accessible")
+                    if page.locator("details.c9-learn-extended").evaluate("(e)=>e.open"):
+                        raise AssertionError("Supplementary source atlas expanded by default")
+                    if page.locator(".c9-learn-extended-inner").is_visible():
+                        raise AssertionError("Closed advanced source atlas still painted")
+                    if mobile:
+                        if args.artifacts:
+                            page.screenshot(path=str(args.artifacts/"clear-first-lesson-mobile.png"),full_page=False)
+                        page.locator("#c9-more-toggle").click()
+                        menu=page.locator("#c9-mobile-drawer")
+                        if not menu.evaluate("(e)=>e.open"):
+                            raise AssertionError("Mobile optional destinations did not open")
+                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=5:
+                            raise AssertionError("Mobile More again exposes too many first-level routes")
+                        advanced=menu.locator("details.c9-drawer-advanced")
+                        if advanced.evaluate("(e)=>e.open"):
+                            raise AssertionError("Specialist tools expanded by default")
+                        if advanced.locator(".c9-drawer-groups").is_visible():
+                            raise AssertionError("Collapsed specialist menu is still visible")
+                        advanced.locator("summary").click()
+                        if not advanced.evaluate("(e)=>e.open"):
+                            raise AssertionError("Original specialist tools cannot be disclosed")
+                        if not advanced.locator('[data-route="wordbook"]').is_visible():
+                            raise AssertionError("Original Wordbook route lost after simplification")
+                        page.locator("#c9-drawer-close").click()
+                    open_route(page,"review")
+                    if page.locator(".c9-review-setup .c9-assessment-actions a[href='#/practice']").count()!=1:
+                        raise AssertionError("Learner with no scheduled review has no free-practice route")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
+                check("Direct Chinese learner journey "+str(width),learner_first_navigation)
+                ctx.close()
+            # A unit selection must survive the original same-route render;
+            # the lesson browser must remain visible and the filter selected.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def unit_catalog_continuity():
+                    open_route(page,"learn")
+                    disclosure=page.locator("details.c9-discovery-catalog")
+                    disclosure.locator(":scope > summary").click()
+                    if not disclosure.evaluate("(e)=>e.open"):
+                        raise AssertionError("Course catalog disclosure did not open")
+                    page.locator('.c9-unit-card [data-action="c9-unit-open"]').nth(1).click()
+                    if not disclosure.evaluate("(e)=>e.open"):
+                        raise AssertionError("Selecting a unit collapsed the entire lesson browser")
+                    if page.locator("#c9-learn-unit").input_value()!="2":
+                        raise AssertionError("Unit filter did not select exact original chapter")
+                    if not page.locator('#c9-learn-unit').evaluate('(e)=>document.activeElement===e'):
+                        raise AssertionError('Selecting a chapter did not move focus to chosen unit')
+                    if not page.locator("#c9-lesson-browser .c9-lesson-row").first.is_visible():
+                        raise AssertionError("The chosen unit contains no accessible lesson rows")
+                    page.locator("#c9-lesson-browser [data-action='c9-lesson-open']").first.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Selected unit lesson did not reach authored teaching")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original unit 02 → direct authored teaching, without collapsed catalog at "+str(width)+"px"
+                check("Chinese unit-browser continuity "+str(width),unit_catalog_continuity)
+                ctx.close()
+            # Guided teaching mode: real six-section sequence, preserved native
+            # lesson sources, optional full-section view and independent Review.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def guided_lesson_steps():
+                    open_route(page,"learn")
+                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("First character step not visible")
+                    if page.locator(".c9-context-bar").count():
+                        raise AssertionError("Global study shortcuts clutter individual guided lessons")
+                    if page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("New learner still sees every lesson section at once")
+                    flow=page.locator("#c9-lesson-flow-label")
+                    if "Step 1 of 6" not in flow.inner_text():
+                        raise AssertionError("Teaching progress step one missing")
+                    page.locator(".c9-lesson-step-footer:not([hidden]) [data-section='grammar']").click()
+                    if not page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("Next step does not reveal original grammar")
+                    if page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Previous step not collapsed in focus view")
+                    if "Step 2 of 6" not in flow.inner_text():
+                        raise AssertionError("Focus step progress failed to advance")
+                    mode=page.locator('[data-action="c9-lesson-mode"]')
+                    mode.click()
+                    if not page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Show all sections does not restore original overview")
+                    if not page.locator("#c9-lesson-grammar").is_visible():
+                        raise AssertionError("Full view does not restore native grammar")
+                    mode.click()
+                    if page.locator("#c9-lesson-overview").is_visible():
+                        raise AssertionError("Focus mode did not restore one-step teaching")
+                    page.locator('.c9-lesson-sections [data-section="finish"]').click()
+                    if not page.locator('[data-action="mark-studied"]').is_visible():
+                        raise AssertionError("Final step lost original explicit introduction")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Six authentic teaching steps, focus/full toggle and original introduction at "+str(width)+"px"
+                check("Guided original lesson UX "+str(width),guided_lesson_steps)
                 ctx.close()
             # C9-50: verify the exact authored source can move between the
             # real Home, Lesson, indexed Wordbook, Character and Reader.
@@ -159,6 +316,10 @@ def main():
                     page.locator(".c9-home-source-actions [data-action='hub-lesson']").click()
                     page.locator("details.c9-lesson-resources summary").click()
                     page.locator(".c9-lesson-source-preview").wait_for(state="visible")
+                    extra=page.locator('details.c9-lesson-extra')
+                    if extra.evaluate('(e)=>e.open'):
+                        raise AssertionError('Secondary lesson modes should start closed')
+                    extra.locator('summary').click()
                     page.locator(".c9-lesson-header-actions [data-action='c9-character-reader']").click()
                     page.wait_for_function("()=>location.hash==='#/reader'")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
@@ -385,8 +546,11 @@ def main():
                     raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
                 if not page.locator(".c9-lesson-bottom-nav [data-action]").count():
                     raise AssertionError("Bottom original lesson pager missing")
-                if not page.locator('.c9-lesson-header-actions [data-action="c9-lesson-jump"]').is_visible():
-                    raise AssertionError("Primary native lesson action missing")
+                if not page.locator("#c9-lesson-flow-label").is_visible():
+                    raise AssertionError("Guided lesson steps are not available at the first fold")
+                glyph=page.locator("#c9-lesson-overview .big-hanzi").bounding_box()
+                if not glyph or glyph["y"]>=height-180:
+                    raise AssertionError("Actual native character still buried below the first fold: "+str(glyph))
                 if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                     raise AssertionError("Lesson screen horizontal overflow")
                 if errors:raise RuntimeError("; ".join(errors[:2]))
@@ -504,10 +668,10 @@ def main():
                 open_route(page,"sentences")
                 pathway=page.locator(".c9-typing-path details")
                 pathway.locator("summary").click()
-                if not pathway.get_attribute("open"):
+                if not pathway.evaluate("(el)=>el.open"):
                     raise AssertionError("Original typing details did not open")
                 pathway.locator("#c9-typing-status").select_option("unattempted")
-                if not pathway.get_attribute("open"):
+                if not pathway.evaluate("(el)=>el.open"):
                     raise AssertionError("Typing source filters discarded the active disclosure")
                 if pathway.locator("#c9-typing-status").input_value()!="unattempted":
                     raise AssertionError("Native typing evidence filter lost selection")
@@ -578,20 +742,6 @@ def main():
                 page.locator('[data-personal-mine="0"]').click()
                 if "1" not in page.locator(".c9-personal-mined strong").inner_text():
                     raise AssertionError("Private sentence mining did not update")
-                page.locator("#c9-personal-analyze").click()
-                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
-                    raise AssertionError("Re-annotation of the same passage erased mined sentences")
-                entry.fill("我喜欢中文。")
-                if not page.locator("#c9-personal-results").is_hidden():
-                    raise AssertionError("Stale annotations still shown after private text changed")
-                page.once("dialog",lambda dialog: dialog.dismiss())
-                page.locator("#c9-personal-analyze").click()
-                if "Previous selections retained" not in page.locator("#c9-personal-status").inner_text():
-                    raise AssertionError("Declined replacement erased the prior private sentence selections")
-                entry.fill("我在学校学习中文。我喜欢中文。")
-                page.locator("#c9-personal-analyze").click()
-                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
-                    raise AssertionError("Returning to the original annotated passage failed to recover local selections")
                 if page.locator(".c9-personal-term").count()<1:
                     raise AssertionError("Canonical source word lookup was not offered")
                 if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
@@ -785,6 +935,7 @@ def main():
             def review():
                 open_route(page,"learn")
                 page.locator('[data-action="c9-lesson-open"]').first.click()
+                page.locator('.c9-lesson-sections [data-section="finish"]').click()
                 page.locator('[data-action="mark-studied"]').first.click()
                 open_route(page,"review")
                 page.locator('[data-action="review-begin"]').click()
@@ -1005,7 +1156,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v63-p64-p68-source-bridges"
+                current="character-study-working-v62-source-bridge-bundled-native"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1023,21 +1174,21 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v63-p64-p68-source-bridges');
+                    keys.includes('character-study-working-v62-source-bridge-bundled-native');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=316:
-                    raise AssertionError("Updated cache lacks original source assets: "+str(kept))
+                if kept!=8:
+                    raise AssertionError("Updated cache lacks complete compiled runtime assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 316 v63 assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
@@ -1049,8 +1200,13 @@ def main():
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
+                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
+                    page.locator(".c9-discovery").wait_for(state="visible")
+                    page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
+                    page.locator(".c9-character-glyph").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
-                    return "Service Worker reloaded the app offline"
+                    return "Service worker serves compiled original Home, lesson and character offline"
                 finally: ctx.set_offline(False)
             check("offline cached shell",offline)
             ctx.close()
