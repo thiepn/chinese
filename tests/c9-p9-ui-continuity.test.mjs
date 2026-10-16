@@ -83,7 +83,8 @@ test('C9-50 P9 compact surfaces retain original guided and indexed curriculum au
  assert.ok(html.includes('class="c9-lesson-preview-toolbar"'));
  assert.ok(html.includes('data-action="lookup-word"'));
  assert.ok(html.includes('data-action="c9-character-reader"'));
- assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-layout'));
+ assert.ok(html.indexOf('c9-lesson-layout')<html.indexOf('c9-lesson-resources'));
+ assert.ok(html.indexOf('c9-lesson-resources')<html.indexOf('c9-lesson-bottom-nav'));
  assert.ok(html.includes('data-section="overview"'));
  assert.equal(JSON.stringify(state),before);
 });
