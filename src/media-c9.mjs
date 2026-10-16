@@ -363,17 +363,18 @@ export function renderC9ReaderIntro(lesson,act,esc){
 /* P69 original-roadmap personal reading: tokenize private, user-pasted text using
  * the existing canonical STORY glossary and Lexicon; never treat user text as
  * approved editorial curriculum, record a StudyEvent, or transmit it. */
-let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[];
+let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[],personalReaderPage=0;
+const PERSONAL_READER_PAGE_SIZE=12;
 let disconnectPersonalReader=null;
 const PERSONAL_READER_LIMIT=1200;
 const allPersonalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean)||[];
-const personalLines=text=>allPersonalLines(text).slice(0,32);
+const personalLines=text=>allPersonalLines(text);
 const personalHanzi=text=>/\p{Script=Han}/u.test(text);
 export function renderC9PersonalTextReader(esc,state={}){
  const text=personalReaderText;
  return '<section class="c9-personal-reader" aria-labelledby="c9-personal-reader-title"><details>'+
   '<summary><strong id="c9-personal-reader-title">Read my own Chinese text</strong><span>Private, optional · source-linked dictionary · no grading</span></summary>'+
-  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace holds text, word matches and mined sentences only in this browser tab until refresh or close. At most 32 text segments are annotated. Nothing is sent to the server or saved to the learning database unless you deliberately save an existing canonical word through the native Wordbook.</p>'+
+  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace holds text, word matches and mined sentences only in this browser tab until refresh or close. Original passage segments are annotated in browsable pages of 12, without losing text or creating study grades. Nothing is sent to the server or saved to the learning database unless you deliberately save an existing canonical word through the native Wordbook.</p>'+
   '<label for="c9-personal-input">My Chinese passage · up to '+PERSONAL_READER_LIMIT+' characters</label>'+
   '<textarea id="c9-personal-input" rows="5" maxlength="'+PERSONAL_READER_LIMIT+'" spellcheck="false" lang="zh-Hans" placeholder="Paste your own Mandarin passage here">'+esc(text)+'</textarea>'+
   '<div class="c9-personal-actions"><button type="button" id="c9-personal-analyze" class="c9-button c9-button--primary c9-button--small">Annotate with existing dictionary</button>'+
@@ -383,7 +384,11 @@ export function renderC9PersonalTextReader(esc,state={}){
 }
 function personalReaderResults(esc,state={}){
  if(!personalReaderAnalyzed)return '';
- const allLines=allPersonalLines(personalReaderAnalyzed),lines=allLines.slice(0,32);
+ const allLines=allPersonalLines(personalReaderAnalyzed);
+ const pages=Math.max(1,Math.ceil(allLines.length/PERSONAL_READER_PAGE_SIZE));
+ personalReaderPage=Math.min(Math.max(0,personalReaderPage),pages-1);
+ const offset=personalReaderPage*PERSONAL_READER_PAGE_SIZE;
+ const lines=allLines.slice(offset,offset+PERSONAL_READER_PAGE_SIZE);
  if(!lines.length)return '<p>No sentences to annotate. Try pasting Chinese text.</p>';
  const sources=new Map(),unmatched=new Set(),ambiguous=new Map();
  const view=lines.map((line,i)=>{
@@ -406,11 +411,21 @@ function personalReaderResults(esc,state={}){
    return '<span lang="zh-Hans">'+esc(token.text)+'</span>';
   }).join('');
   const original=SENTENCE_LIBRARY.find(s=>s.hanzi===line);
+  const storyMatches=[];
+  for(const story of STORIES){
+   for(let lineIndex=0;lineIndex<story.lines.length;lineIndex++){
+    if(story.lines[lineIndex].hanzi===line)storyMatches.push({story,lineIndex});
+    if(storyMatches.length>=5)break;
+   }
+   if(storyMatches.length>=5)break;
+  }
   const mined=personalReaderMined.includes(line);
   return '<article class="c9-personal-line"><div class="c9-personal-line-text">'+text+'</div>'+
    (original?'<small>Exact match: '+esc(original.id)+' · '+esc(original.topic)+'</small>'+
     '<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="sentence-select" data-id="'+esc(original.id)+'">Open original sentence task →</button>':'')+
-   '<button type="button" data-personal-mine="'+i+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
+   (storyMatches.length?'<div class="c9-personal-source-links"><small>Exact original passage source'+(storyMatches.length===1?'':'s')+':</small>'+
+    storyMatches.map(({story,lineIndex})=>'<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="c9-source-open-story-line" data-id="'+esc(story.id)+'" data-index="'+lineIndex+'">'+esc(story.title)+' · line '+(lineIndex+1)+' →</button>').join('')+'</div>':'')+
+   '<button type="button" data-personal-mine="'+(offset+i)+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
  }).join('');
  const saved=new Set(state.bookmarkedWords||[]);
  const matches=[...sources.values()].sort((a,b)=>b.count-a.count||a.word.hanzi.localeCompare(b.word.hanzi,'zh')).slice(0,24);
@@ -434,13 +449,14 @@ function personalReaderResults(esc,state={}){
    readings.map(word=>'<span><b>'+esc(word.pinyin)+'</b> · '+esc(word.senses.slice(0,2).join(' / '))+
     '<button type="button" data-action="lookup-word" class="c9-button c9-button--secondary c9-button--small" data-id="'+esc(word.key)+'">View this reading</button></span>').join('')+
    '</div></article>').join('')+'</section>':'';
- return '<div class="c9-personal-result-head"><strong>'+lines.length+' private passage segment'+(lines.length===1?'':'s')+'</strong><small>Only original indexed words become lookups; pasted text remains ungraded.</small></div>'+
-  (allLines.length>32?'<p class="c9-personal-limit" role="status">Only the first 32 of '+allLines.length+' segments are annotated or mineable. The remainder stays in the input above.</p>':'')+
+ return '<div class="c9-personal-result-head"><strong>'+allLines.length+' private passage segment'+(allLines.length===1?'':'s')+'</strong><small>Viewing '+(offset+1)+'–'+(offset+lines.length)+' · page '+(personalReaderPage+1)+' / '+pages+'. Only original indexed words become lookups; pasted text remains ungraded.</small></div>'+
+  '<nav class="c9-personal-pages" aria-label="Private passage pages"><button type="button" class="c9-button c9-button--secondary c9-button--small" data-personal-page="-1" '+(personalReaderPage===0?'disabled':'')+'>← Previous segments</button><span>Page '+(personalReaderPage+1)+' / '+pages+'</span><button type="button" class="c9-button c9-button--secondary c9-button--small" data-personal-page="1" '+(personalReaderPage>=pages-1?'disabled':'')+'>Next segments →</button></nav>'+
   '<div class="c9-personal-lines">'+view+'</div>'+indexed+alternatives+
   '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
    '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
    (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
-   '<button type="button" id="c9-personal-copy" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy my mined sentences</button></div>';
+   '<div class="c9-personal-copy-actions"><button type="button" id="c9-personal-copy" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy my mined sentences</button>'+
+   '<button type="button" id="c9-personal-copy-study" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy source-aware study notes</button></div></div>';
 }
 export function connectC9PersonalTextReader(root,esc,state={}){
  if(disconnectPersonalReader){disconnectPersonalReader();disconnectPersonalReader=null;}
@@ -469,17 +485,28 @@ export function connectC9PersonalTextReader(root,esc,state={}){
    if(status)status.textContent='Previous selections retained. Restore the earlier text or copy the list before replacing it.';
    return;
   }
-  if(next!==personalReaderAnalyzed)personalReaderMined=[];
+  if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;}
   personalReaderAnalyzed=next;update();
   if(status)status.textContent=personalReaderAnalyzed?
    (personalHanzi(personalReaderAnalyzed)?'Annotated using existing original word records. No text saved.':'No Chinese characters detected. No learning evidence changed.'):'Paste text before annotating.';
  };
  const onClear=()=>{
   if((personalReaderText||personalReaderMined.length)&&!window.confirm('Discard your private pasted passage and temporary mined sentences?'))return;
-  personalReaderText='';personalReaderAnalyzed='';personalReaderMined=[];input.value='';update();
+  personalReaderText='';personalReaderAnalyzed='';personalReaderMined=[];personalReaderPage=0;input.value='';update();
   if(status)status.textContent='Private text cleared from this tab.';
  };
  const onPanelClick=async e=>{
+  const pageControl=e.target.closest('[data-personal-page]');
+  if(pageControl){
+   const change=Number(pageControl.dataset.personalPage),length=allPersonalLines(personalReaderAnalyzed).length;
+   const last=Math.max(0,Math.ceil(length/PERSONAL_READER_PAGE_SIZE)-1);
+   if(![-1,1].includes(change))return;
+   personalReaderPage=Math.min(last,Math.max(0,personalReaderPage+change));
+   update();
+   panel?.querySelector('.c9-personal-result-head')?.scrollIntoView({block:'nearest',behavior:'auto'});
+   if(status)status.textContent='Showing private passage page '+(personalReaderPage+1)+' of '+(last+1)+'. No learning result recorded.';
+   return;
+  }
   const mine=e.target.closest('[data-personal-mine]');
   if(mine){
    const line=personalLines(personalReaderAnalyzed)[Number(mine.dataset.personalMine)];
@@ -489,11 +516,24 @@ export function connectC9PersonalTextReader(root,esc,state={}){
    update();if(status)status.textContent=personalReaderMined.length+' temporary sentences in your list.';
    return;
   }
-  if(e.target.closest('#c9-personal-copy')){
+  const sourceNotes=Boolean(e.target.closest('#c9-personal-copy-study'));
+  if(sourceNotes||e.target.closest('#c9-personal-copy')){
    try{
     if(!navigator.clipboard?.writeText)throw Error('Clipboard permission unavailable');
-    await navigator.clipboard.writeText(personalReaderMined.join('\n'));
-    if(status)status.textContent='Mined sentences copied. Check your clipboard before closing this page.';
+    const payload=sourceNotes?[
+     '# Private Chinese sentence study notes',
+     'User-selected text only · Not graded or approved curriculum',
+     ...personalReaderMined.flatMap((line,i)=>{
+      const matches=SENTENCE_LIBRARY.filter(x=>x.hanzi===line).slice(0,3);
+      const exact=STORIES.flatMap(story=>story.lines.flatMap((text,index)=>
+       text.hanzi===line?[story.title+' · original line '+(index+1)]:[])).slice(0,3);
+      return [String(i+1)+'. '+line,
+       ...(matches.length?['   Exact original sentence IDs: '+matches.map(x=>x.id).join(', ')]:[]),
+       ...(exact.length?['   Exact original reading: '+exact.join('; ')]:[]),''];
+     })
+    ].join('\n'):personalReaderMined.join('\n');
+    await navigator.clipboard.writeText(payload);
+    if(status)status.textContent=sourceNotes?'Source-aware study notes copied. Only exact original matching references were included.':'Mined sentences copied. Check your clipboard before closing this page.';
    }catch{if(status)status.textContent='Automatic clipboard copy unavailable. Select the listed text to copy it manually.';}
   }
  };
