@@ -98,8 +98,8 @@ let c9OfflineShell='checking'; // UI readiness only; never a learner-data author
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
-const c9ReadingRecallUi={index:0,revealed:false,typed:''}; // Tab-only, ungraded.
-const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false}; // Tab-only, unrecorded.
+const c9ReadingRecallUi={index:0,revealed:false,typed:'',referenceSeen:false}; // Tab-only, ungraded.
+const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false,referenceSeen:false}; // Tab-only, unrecorded.
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
 let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
@@ -686,8 +686,8 @@ function renderReaderNative(){const l=readerLesson(),cloze=makeCloze(l),mode=rea
  </section></div>`;
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
-function resetC9ReadingRecall(){c9ReadingRecallUi.index=0;c9ReadingRecallUi.revealed=false;c9ReadingRecallUi.typed='';}
-function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;}
+function resetC9ReadingRecall(){c9ReadingRecallUi.index=0;c9ReadingRecallUi.revealed=false;c9ReadingRecallUi.typed='';c9ReadingRecallUi.referenceSeen=false;}
+function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;c9RoleplayUi.referenceSeen=false;}
 function resetReadingNavigation(){
  storyParagraph=0;storyParagraphOnly=false;storyParagraphTranslations=[];
  beginnerPart='all';beginnerWordShown=false;beginnerPartTip='';
@@ -1604,7 +1604,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(!source.reply)return false;
   // Hearing or viewing the target reference contaminates pending original
   // comprehension/mission independence. Never records a roleplay grade.
-  c9RoleplayUi.revealed=true;dialogueSupport=true;
+  c9RoleplayUi.revealed=true;c9RoleplayUi.referenceSeen=true;dialogueSupport=true;
   if(findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;
   if(missionActive)missionSupport=true;
   render();
@@ -1628,7 +1628,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-reading-recall-reveal'){
   if(!c9ReadingRecallSource(findStory(storyId),c9ReadingRecallUi).line)return false;
-  c9ReadingRecallUi.revealed=true;storyAssist=true;
+  c9ReadingRecallUi.revealed=true;c9ReadingRecallUi.referenceSeen=true;storyAssist=true;
   render();announceC9Interaction('Original reading sentence revealed. Pending native reading answers are assisted.');
   return true;
  }
@@ -2539,7 +2539,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='mission-next'){if(missionStep===2){missionStep=0;missionActive=false;}else missionStep++;missionFeedback=null;missionSupport=false;missionTyped='';return render();}
  if(name==='mission-answer'||name==='mission-reveal'){
   if(!missionActive||missionFeedback)return;const q=missionQuestion(dialogueId,missionStep),response=name==='mission-reveal'?'':q.kind==='pinyin'?missionTyped:button.dataset.option||'';if(name==='mission-answer'&&!response.trim())return alertUser('Enter an answer first.','error');
-  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.revealed||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
+  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addMissionEvent(s,{id,dialogueId,step:missionStep,correct:result.correct,assisted}));if(ok){missionFeedback={...result,assisted};render();}return;
  }
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
@@ -2562,7 +2562,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
-  const assisted=dialogueSupport||c9RoleplayUi.revealed||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
+  const assisted=dialogueSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
   const eventId=globalThis.crypto?.randomUUID?.()||`dialogue-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addDialogueEvent(s,{id:eventId,dialogueId,question:dialogueStep,answer:response,assisted}));
   if(ok){dialogueFeedback={correct:response===q.answer,assisted};render();}return;
@@ -2668,7 +2668,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   let entered=name==='story-skip'?'':storyMode==='ordering'?storySequence.map(i=>ex.chunks[i]).join(''):(storyMode==='pronunciation'||ex.kind==='hanzi')?storyTyped:button.dataset.option||'';
   if(name!=='story-skip'&&!entered.trim())return alertUser('Answer before checking, or choose Reveal answer.','error');
   const evaluation=name==='story-skip'?{correct:false,message:'Answer revealed without independent recall.'}:storyMode==='pronunciation'?toneExplanation(entered,ex.answer):ex.kind==='hanzi'?checkSentence(ex.task,entered):storyMode==='ordering'?{correct:storySequence.join(',')===ex.chunks.map((_,i)=>i).join(','),message:'The expected chunk order reconstructs the sentence.'}:evaluateAnswer(entered,ex.answer,'choice');
-  const assisted=storyAssist||c9ReadingRecallUi.revealed||name==='story-skip',correct=Boolean(evaluation.correct);
+  const assisted=storyAssist||c9ReadingRecallUi.referenceSeen||name==='story-skip',correct=Boolean(evaluation.correct);
   storyResult={correct,assisted,message:evaluation.detail||evaluation.message,entered,reference:ex.answer,explanation:ex.explanation||''};
   const eid=globalThis.crypto?.randomUUID?.()||`reading-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>ex.kind==='hanzi'&&(deep||beginner)?addSentenceEvent(s,{id:eid,taskId:ex.task.id,correct,assisted}):addReadingEvent(s,story.id,storyMode,correct,assisted,eid));
