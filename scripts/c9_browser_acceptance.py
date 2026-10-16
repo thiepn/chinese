@@ -416,6 +416,53 @@ def main():
                     return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
                 check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
                 ctx.close()
+            # C9-59: genuinely connected, independently authored P33
+            # scenarios. The source URL, original question writer and exact
+            # production task must survive a multi-situation circuit.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_conversation_circuit():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    circuit=page.locator("#c9-conversation-circuit")
+                    circuit.wait_for(state="visible")
+                    first=page.evaluate("()=>location.hash")
+                    if not first.startswith("#/dialogues/dialogue-"):
+                        raise AssertionError("P33 source has no original canonical URL")
+                    if not circuit.locator('[data-action="c9-circuit-write"]').count():
+                        raise AssertionError("P33 source circuit lacks original native writing task")
+                    next=circuit.locator('.c9-circuit-navigation [data-action="c9-circuit-open"]').last
+                    if not next.count():
+                        raise AssertionError("Original scenario lacks same-theme successor")
+                    expected=next.get_attribute("data-id")
+                    next.click()
+                    page.wait_for_function("(id)=>location.hash==='#/dialogues/'+id",arg=expected)
+                    page.wait_for_function("(id)=>document.querySelector('#c9-conversation-circuit .c9-circuit-stop.is-current .c9-eyebrow')?.textContent.includes('P33')===true",arg=expected)
+                    if circuit.locator(".c9-circuit-meta").count()!=1:
+                        raise AssertionError("Original thematic navigator vanished on source switch")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("(expected)=>location.hash===expected",arg=first)
+                    circuit.wait_for(state="visible")
+                    action=circuit.locator('[data-action="c9-circuit-write"]')
+                    target=action.get_attribute("data-id")
+                    action.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    page.locator("main").wait_for(state="visible")
+                    if not page.locator('main').inner_text().strip():
+                        raise AssertionError("Canonical native writing task was not rendered")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("(expected)=>location.hash===expected",arg=first)
+                    circuit.wait_for(state="visible")
+                    if circuit.locator('[data-action="c9-circuit-write"]').get_attribute("data-id")!=target:
+                        raise AssertionError("Browser history lost original P33 writing identity")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Multi-situation circuit overflows "+str(width)+"px viewport")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original thematic episode, canonical history, native writing and zero overflow "+str(width)
+                check("C9-59 original multi-situation circuit "+str(width),original_conversation_circuit)
+                ctx.close()
             # C9-58 source-owned decision-to-production across real
             # authored P33 choices, original partner replies, and native
             # Sentence Workshop. No fake chatbot or synthetic branch grader.

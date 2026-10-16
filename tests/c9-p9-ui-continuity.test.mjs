@@ -14,6 +14,9 @@ import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallS
 import {P33_SCENARIOS} from '../src/p33-scenarios.mjs';
 import {p33DecisionSource,p33ScenarioTeaching} from '../src/p33-screen.mjs';
 import {SENTENCE_TASKS} from '../src/sentence-workshop.mjs';
+import {c9ConversationCircuit,renderC9ConversationCircuit} from '../src/conversation-circuit-c9.mjs';
+import {P34_LISTENING} from '../src/p34-course.mjs';
+import {P43_UNITS} from '../src/p43-course.mjs';
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+name+'" class="'+classes+'" '+attrs+'>'+label+'</button>';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 
@@ -304,4 +307,60 @@ test('C9-58 all 25 original P33 conversations offer two source-attested interact
   "if(screen==='dialogues'&&p33Branch!==null&&!p33DecisionUi.revealed"])
   assert.ok(app.includes(phrase),'assist/protect original grading and draft: '+phrase);
  assert.equal(JSON.stringify(state),before,'P33 decision learning is ungraded read-only navigation');
+});
+
+
+test('C9-59 multi-situation circuits reuse original P33/P34/P43 IDs and only observed independent native evidence',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const dialogues=DIALOGUES.filter(d=>d.p33);
+ assert.equal(dialogues.length,P33_SCENARIOS.length,'all 25 original scenes must map to existing native dialogues');
+ let withMulti=0,withListening=0;
+ for(const dialogue of dialogues){
+  const projection=c9ConversationCircuit(dialogue,state);
+  assert.ok(projection,'source-attested P33 circuit');
+  assert.ok(projection.count>=1);
+  assert.strictEqual(projection.current.dialogueId,dialogue.id);
+  assert.equal(projection.sequence[projection.index].sceneId,dialogue.p33.id);
+  assert.ok(projection.sequence.every(x=>P33_SCENARIOS.some(s=>s.id===x.sceneId&&s.theme===projection.theme)));
+  assert.ok(projection.sequence.every(x=>findDialogue(x.dialogueId)?.p33?.id===x.sceneId));
+  if(projection.count>1)withMulti++;
+  if(projection.listening){
+   withListening++;
+   assert.ok(P34_LISTENING.some(x=>x.id===projection.listening.id));
+   assert.equal(projection.listening.theme,projection.theme,'only EXACT P34 editorial theme label');
+  }
+  if(projection.writingUnit){
+   assert.ok(P43_UNITS.some(u=>u.id===projection.writingUnit.id&&u.dialogueId===dialogue.id));
+  }
+  assert.ok(SENTENCE_TASKS.some(t=>t.id===projection.current.writingTaskId&&t.p33ScenarioId===dialogue.p33.id));
+  assert.equal(projection.current.attempts,0);
+  assert.equal(projection.current.independent,0);
+  assert.equal(projection.current.writing,0);
+  const html=renderC9ConversationCircuit(dialogue,state,act,esc);
+  assert.ok(html.includes('id="c9-conversation-circuit"'));
+  assert.ok(html.includes('data-action="c9-circuit-write"'));
+  assert.ok(html.includes('data-id="'+projection.current.writingTaskId+'"'));
+  assert.ok(html.includes('not a continuous invented conversation'));
+  assert.ok(html.includes('original listening and questions')===false||projection.listening);
+ }
+ assert.ok(withMulti>=12,'majority of original P33 scenes must have same-theme multi-situation continuation');
+ const target=dialogues.find(d=>c9ConversationCircuit(d,state).next);
+ const projected=c9ConversationCircuit(target,state);
+ const writeId=projected.current.writingTaskId;
+ const historical={
+  ...freshState(),
+  dialogueEvents:[{id:'c9-59-q',dialogueId:target.id,question:0,correct:true,assisted:false,at:100}],
+  missionEvents:[],
+  sentenceEvents:[{id:'c9-59-w',taskId:writeId,correct:false,assisted:true,at:101}]
+ };
+ const evidence=c9ConversationCircuit(target,historical).current;
+ assert.equal(evidence.attempts,1);assert.equal(evidence.independent,1);
+ assert.equal(evidence.writing,1);assert.equal(evidence.independentWriting,0);
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const needle of ["if(name==='c9-circuit-open')","if(name==='c9-circuit-write')",
+  "c9OpenMediaSource('dialogues',selected.id)","c9OpenNativeWorkshopTask(index)",
+  "return c9OpenMediaSource('dialogues',dialogue.id);"]){
+  assert.ok(app.includes(needle),'original source controller: '+needle);
+ }
+ assert.equal(JSON.stringify(state),before,'circuit is a pure read-only source/evidence view');
 });
