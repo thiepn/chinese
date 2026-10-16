@@ -2583,7 +2583,34 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   const id=globalThis.crypto?.randomUUID?.()||`sense-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addSenseEvent(s,{id,caseId:item.id,correct:result.correct,assisted}));if(ok){senseFeedback={...result,assisted};render();}return;
  }
- if(name==='workshop-next'){if(!sentenceFeedback&&sentenceTyped.trim()&&!c9ConfirmLeaveNativeAnswer())return;sentenceIndex++;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;return render();}
+ if(name==='c9-workshop-return'){
+  const receipt=c9WorkshopSourceContinuation(sentenceTask(sentenceIndex).id,c9WorkshopOrigin,state);
+  if(!receipt||id!==receipt.dialogueId)return false;
+  if(!c9OpenMediaSource('dialogues',receipt.dialogueId))return false;
+  c9ReturnFocus=receipt.kind==='p33'?'c9-conversation-circuit':'c9-native-dialogue';
+  c9WorkshopOrigin=null;
+  return true;
+ }
+ if(name==='c9-workshop-next-source'){
+  const receipt=c9WorkshopSourceContinuation(sentenceTask(sentenceIndex).id,c9WorkshopOrigin,state);
+  if(!receipt||!receipt.nextTaskId||receipt.nextTaskId!==id)return false;
+  const index=SENTENCE_TASKS.findIndex(t=>t.id===id);
+  return c9OpenNativeWorkshopTask(index,false,{kind:'p33',dialogueId:receipt.dialogueId,taskId:id});
+ }
+ if(name==='c9-workshop-listen'){
+  const task=sentenceTask(sentenceIndex);
+  if(task.id!==id||(!task.p33ScenarioId&&!task.p34AudioId))return false;
+  // P34 explicitly asks learners to listen before transcribing; its audio
+  // is the prompt. P33 written reconstruction hears the model only with
+  // the existing assisted flag set before the native grade.
+  if(task.p33ScenarioId){sentenceSupport=true;render();}
+  return speak(task.hanzi,demoSpeechRate);
+ }
+ if(name==='workshop-next'){
+  if(!sentenceFeedback&&sentenceTyped.trim()&&!c9ConfirmLeaveNativeAnswer())return;
+  c9WorkshopOrigin=null;sentenceIndex++;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
+  return render();
+ }
  if(name==='workshop-support'){sentenceSupport=true;return render();}
  if(name==='workshop-check'||name==='workshop-reveal'){
   if(sentenceFeedback)return;const task=sentenceTask(sentenceIndex);if(name==='workshop-check'&&!sentenceTyped.trim())return alertUser('Enter your sentence first.','error');
