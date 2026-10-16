@@ -416,6 +416,58 @@ def main():
                     return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
                 check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
                 ctx.close()
+            # C9-57 two real ungraded communication activities, not a new
+            # speech grader: source-exact role replies and listen-to-write.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def source_rehearsal():
+                    open_route(page,"dialogues/dialogue-02")
+                    studio=page.locator("#c9-roleplay-studio")
+                    studio.wait_for(state="visible")
+                    if studio.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Roleplay leaked target speech before answering")
+                    if studio.locator('[data-action="c9-roleplay-hear-cue"]').count():
+                        studio.locator('[data-action="c9-roleplay-hear-cue"]').click()
+                    studio.locator("#c9-roleplay-entry").fill("我练习说中文。")
+                    studio.locator('[data-action="c9-roleplay-spoke"]').click()
+                    if studio.locator("#c9-roleplay-entry").input_value()!="我练习说中文。":
+                        raise AssertionError("Audio/roleplay control discarded typed learner draft")
+                    studio.locator('[data-action="c9-roleplay-reveal"]').click()
+                    studio.locator(".c9-rehearsal-reference").wait_for(state="visible")
+                    if not studio.locator(".c9-rehearsal-reference").inner_text().strip():
+                        raise AssertionError("No authored reply reference after self-check")
+                    if not page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("Source reveal did not engage native assisted transcript")
+                    studio.locator('[data-action="c9-roleplay-retry"]').click()
+                    if studio.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Rehearsal retry did not hide reference")
+                    if studio.locator("#c9-roleplay-entry").input_value():
+                        raise AssertionError("Rehearsal retry retained previous reply")
+                    answer=page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first
+                    answer.click()
+                    page.locator('.dialogue-quiz .reader-feedback').wait_for(state="visible")
+                    if "Assisted attempt" not in page.locator('.dialogue-quiz .reader-feedback').inner_text():
+                        raise AssertionError("Rehearsal reveal was incorrectly counted independent after retry")
+                    open_route(page,"stories/story-02")
+                    reading=page.locator("#c9-reading-recall")
+                    reading.wait_for(state="visible")
+                    if reading.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Original reading line leaked before self-check")
+                    reading.locator('[data-action="c9-reading-recall-listen"]').click()
+                    reading.locator("#c9-reading-recall-entry").fill("我在认真听。")
+                    reading.locator('[data-action="c9-reading-recall-reveal"]').click()
+                    reading.locator(".c9-rehearsal-reference").wait_for(state="visible")
+                    if not reading.locator(".c9-rehearsal-reference p[lang='zh-Hans']").inner_text():
+                        raise AssertionError("Original source line not revealed")
+                    reading.locator('[data-action="c9-reading-recall-move"][data-delta="1"]').click()
+                    if reading.locator(".c9-rehearsal-reference").count() or reading.locator("#c9-reading-recall-entry").input_value():
+                        raise AssertionError("Reading continuation did not reset ungraded writing prompt")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Rehearsal UI overflows mobile viewport")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original authored roleplay, reveal-assisted native grade and reading dictation "+str(width)
+                check("C9-57 authentic communication rehearsal "+str(width),source_rehearsal)
+                ctx.close()
             # Original character → indexed word → native dictionary and
             # exact sentence/passage handoffs. No duplicate answer writer.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
