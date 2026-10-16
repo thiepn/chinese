@@ -78,7 +78,7 @@ test('P66 original dictionary-to-passage action keeps canonical unanswered-respo
  assert.ok(!handler.includes('addReadingEvent('));
  assert.ok(app.includes("if(e.target.id==='c9-word-context')"));
  assert.ok(app.includes("c9WordContext='all'"));
- assert.ok(app.includes("const assisted=storyAssist||name==='story-skip'"));
+ assert.ok(app.includes("const assisted=storyAssist||c9ReadingRecallUi.referenceSeen||name==='story-skip'"), 'original reading must remain assisted after a source-revealing dictation session');
 });
 
 test('Original context bridge never writes grades, Account data or arbitrary text into canonical source',()=>{

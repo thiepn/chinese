@@ -11,7 +11,7 @@ import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9Wr
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
-import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
@@ -98,6 +98,8 @@ let c9OfflineShell='checking'; // UI readiness only; never a learner-data author
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
+const c9ReadingRecallUi={index:0,revealed:false,typed:'',referenceSeen:false}; // Tab-only, ungraded.
+const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false,referenceSeen:false}; // Tab-only, unrecorded.
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
 let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
@@ -114,6 +116,10 @@ const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  learn:['lesson-check-entry']
 });
 function c9OpenNativeAnswer(screen=c9RenderedRoute){
+ if(screen==='dialogues'&&!c9RoleplayUi.revealed&&c9RoleplayUi.typed.trim())
+  return root.querySelector('#c9-roleplay-entry')||{value:c9RoleplayUi.typed};
+ if(screen==='stories'&&!c9ReadingRecallUi.revealed&&c9ReadingRecallUi.typed.trim())
+  return root.querySelector('#c9-reading-recall-entry')||{value:c9ReadingRecallUi.typed};
  // A changed-context draft remains ungraded even after a P29 graded answer.
  if(screen==='pathway'&&String(pathwayTransferDraft||'').trim())
   return root.querySelector('#p29-transfer-draft')||{value:pathwayTransferDraft};
@@ -230,6 +236,7 @@ function renderDialogues(){
  if(c9DialogueSourceId!==dialogue.id){c9DialogueSourceId=dialogue.id;c9DialogueTurn=0;}
  return '<div class="c9-media-workspace c9-media-dialogues">'+
   renderC9DialogueHub(state,dialogue,action,esc,{query:c9DialogueQuery,filter:c9DialogueFilter,page:c9DialoguePage})+
+  renderC9DialogueRoleplay(dialogue,c9RoleplayUi,action,esc)+
   '<div class="c9-media-native">'+renderDialoguesNative()+'</div></div>';
 }
 function renderReader(){
@@ -241,6 +248,7 @@ function renderStories(){
  const story=findStory(storyId)||STORIES[0];
  return '<div class="c9-media-workspace c9-media-stories">'+
   renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
+  renderC9ReadingRecall(story,c9ReadingRecallUi,action,esc)+
   renderC9PersonalTextReader(esc,state)+
   '<div class="c9-media-native">'+renderStoriesNative()+'</div></div>';
 }
@@ -678,6 +686,8 @@ function renderReaderNative(){const l=readerLesson(),cloze=makeCloze(l),mode=rea
  </section></div>`;
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
+function resetC9ReadingRecall(){c9ReadingRecallUi.index=0;c9ReadingRecallUi.revealed=false;c9ReadingRecallUi.typed='';c9ReadingRecallUi.referenceSeen=false;}
+function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;c9RoleplayUi.referenceSeen=false;}
 function resetReadingNavigation(){
  storyParagraph=0;storyParagraphOnly=false;storyParagraphTranslations=[];
  beginnerPart='all';beginnerWordShown=false;beginnerPartTip='';
@@ -1563,6 +1573,65 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-media-open-dialogue')return c9OpenMediaSource('dialogues',id);
  if(name==='c9-media-copy-reading')return c9CopyMediaLink('stories',id);
  if(name==='c9-media-copy-dialogue')return c9CopyMediaLink('dialogues',id);
+ if(name==='c9-roleplay-role'){
+  const dialogue=findDialogue(dialogueId),source=dialogue&&c9RoleplaySource(dialogue,c9RoleplayUi);
+  if(!source?.roles.includes(button.dataset.role)||!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  stopC9Speech();
+  c9RoleplayUi.role=button.dataset.role;c9RoleplayUi.position=0;
+  c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;
+  render();return true;
+ }
+ if(name==='c9-roleplay-move'||name==='c9-roleplay-retry'){
+  const dialogue=findDialogue(dialogueId),source=dialogue&&c9RoleplaySource(dialogue,c9RoleplayUi);
+  const delta=Number(button.dataset.delta);
+  if(!source?.reply||(name==='c9-roleplay-move'&&(![-1,1].includes(delta)||source.position+delta<0||source.position+delta>=source.indices.length)))return false;
+  if(!c9ConfirmLeaveNativeAnswer('dialogues'))return false;
+  stopC9Speech();
+  if(name==='c9-roleplay-move')c9RoleplayUi.position=source.position+delta;
+  c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;
+  render();root.querySelector('#c9-roleplay-studio')?.scrollIntoView({block:'start'});return true;
+ }
+ if(name==='c9-roleplay-spoke'){
+  if(!c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi).reply||c9RoleplayUi.revealed)return false;
+  c9RoleplayUi.spoken=!c9RoleplayUi.spoken;render();return true;
+ }
+ if(name==='c9-roleplay-hear-cue'){
+  const cue=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi).cue;
+  return cue?speak(cue.hanzi,demoSpeechRate):false;
+ }
+ if(name==='c9-roleplay-reveal'||name==='c9-roleplay-listen-reply'){
+  const source=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi);
+  if(!source.reply)return false;
+  // Hearing or viewing the target reference contaminates pending original
+  // comprehension/mission independence. Never records a roleplay grade.
+  c9RoleplayUi.revealed=true;c9RoleplayUi.referenceSeen=true;dialogueSupport=true;
+  if(findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;
+  if(missionActive)missionSupport=true;
+  render();
+  if(name==='c9-roleplay-listen-reply')return speak(source.reply.hanzi,demoSpeechRate);
+  announceC9Interaction('Original scripted reply revealed. Native checks using this source are assisted.');
+  return true;
+ }
+ if(name==='c9-reading-recall-move'||name==='c9-reading-recall-retry'){
+  const story=findStory(storyId),source=story&&c9ReadingRecallSource(story,c9ReadingRecallUi);
+  const delta=Number(button.dataset.delta);
+  if(!source?.line||(name==='c9-reading-recall-move'&&(![-1,1].includes(delta)||source.index+delta<0||source.index+delta>=source.total)))return false;
+  if(!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  stopC9Speech();
+  if(name==='c9-reading-recall-move')c9ReadingRecallUi.index=source.index+delta;
+  c9ReadingRecallUi.typed='';c9ReadingRecallUi.revealed=false;
+  render();root.querySelector('#c9-reading-recall')?.scrollIntoView({block:'start'});return true;
+ }
+ if(name==='c9-reading-recall-listen'||name==='c9-reading-recall-listen-slow'){
+  const source=c9ReadingRecallSource(findStory(storyId),c9ReadingRecallUi);
+  return source.line?speak(source.line.hanzi,name==='c9-reading-recall-listen-slow'?0.68:demoSpeechRate):false;
+ }
+ if(name==='c9-reading-recall-reveal'){
+  if(!c9ReadingRecallSource(findStory(storyId),c9ReadingRecallUi).line)return false;
+  c9ReadingRecallUi.revealed=true;c9ReadingRecallUi.referenceSeen=true;storyAssist=true;
+  render();announceC9Interaction('Original reading sentence revealed. Pending native reading answers are assisted.');
+  return true;
+ }
  if(name==='c9-media-turn'){
   const dialogue=findDialogue(dialogueId);
   if(!dialogue)return;
@@ -2470,7 +2539,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='mission-next'){if(missionStep===2){missionStep=0;missionActive=false;}else missionStep++;missionFeedback=null;missionSupport=false;missionTyped='';return render();}
  if(name==='mission-answer'||name==='mission-reveal'){
   if(!missionActive||missionFeedback)return;const q=missionQuestion(dialogueId,missionStep),response=name==='mission-reveal'?'':q.kind==='pinyin'?missionTyped:button.dataset.option||'';if(name==='mission-answer'&&!response.trim())return alertUser('Enter an answer first.','error');
-  const result=gradeMission(q,response),assisted=missionSupport||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
+  const result=gradeMission(q,response),assisted=missionSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='mission-reveal';const id=globalThis.crypto?.randomUUID?.()||`mission-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addMissionEvent(s,{id,dialogueId,step:missionStep,correct:result.correct,assisted}));if(ok){missionFeedback={...result,assisted};render();}return;
  }
  if(name==='sense-weak'){const best=senseRepairQueue(state)[0];if(best){senseIndex=best.index;senseFeedback=null;senseSupport=false;render();}return;}
@@ -2493,7 +2562,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='dialogue-retry'){dialogueFeedback=null;return render();}
  if(name==='dialogue-answer'||name==='dialogue-reveal'){
   if(dialogueFeedback)return;const q=dialogueQuestion(dialogueId,dialogueStep);if(!q)return;
-  const assisted=dialogueSupport||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
+  const assisted=dialogueSupport||c9RoleplayUi.referenceSeen||p34TranscriptViewed||name==='dialogue-reveal',response=name==='dialogue-reveal'?'':button.dataset.option||'';
   const eventId=globalThis.crypto?.randomUUID?.()||`dialogue-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>addDialogueEvent(s,{id:eventId,dialogueId,question:dialogueStep,answer:response,assisted}));
   if(ok){dialogueFeedback={correct:response===q.answer,assisted};render();}return;
@@ -2599,7 +2668,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   let entered=name==='story-skip'?'':storyMode==='ordering'?storySequence.map(i=>ex.chunks[i]).join(''):(storyMode==='pronunciation'||ex.kind==='hanzi')?storyTyped:button.dataset.option||'';
   if(name!=='story-skip'&&!entered.trim())return alertUser('Answer before checking, or choose Reveal answer.','error');
   const evaluation=name==='story-skip'?{correct:false,message:'Answer revealed without independent recall.'}:storyMode==='pronunciation'?toneExplanation(entered,ex.answer):ex.kind==='hanzi'?checkSentence(ex.task,entered):storyMode==='ordering'?{correct:storySequence.join(',')===ex.chunks.map((_,i)=>i).join(','),message:'The expected chunk order reconstructs the sentence.'}:evaluateAnswer(entered,ex.answer,'choice');
-  const assisted=storyAssist||name==='story-skip',correct=Boolean(evaluation.correct);
+  const assisted=storyAssist||c9ReadingRecallUi.referenceSeen||name==='story-skip',correct=Boolean(evaluation.correct);
   storyResult={correct,assisted,message:evaluation.detail||evaluation.message,entered,reference:ex.answer,explanation:ex.explanation||''};
   const eid=globalThis.crypto?.randomUUID?.()||`reading-${Date.now()}-${Math.random()}`;
   const ok=await mutate(s=>ex.kind==='hanzi'&&(deep||beginner)?addSentenceEvent(s,{id:eid,taskId:ex.task.id,correct,assisted}):addReadingEvent(s,story.id,storyMode,correct,assisted,eid));
@@ -2770,7 +2839,9 @@ root.addEventListener('input',e=>{
  p30Query=e.target.value;p30Page=0;
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
  refreshC9FindWorkbench();return;
-}if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
+}if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='c9-roleplay-entry'){c9RoleplayUi.typed=e.target.value;return;}
+if(e.target.id==='c9-reading-recall-entry'){c9ReadingRecallUi.typed=e.target.value;return;}
+if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
  libraryTyped=e.target.value;
  const button=root.querySelector('[data-action="sentence-answer"]');if(button)button.disabled=!libraryTyped.trim();return;
 }
@@ -2911,7 +2982,7 @@ window.addEventListener('hashchange',()=>{
   if(next!==storyId){
    storyId=next;storyMode=findStory(next)?.beginner?'beginner-detail':'comprehension';
    storiesLongOnly=false;storiesBeginnerOnly=false;storiesOnlyBookmarked=false;
-   resetReadingNavigation();
+   resetReadingNavigation();resetC9ReadingRecall();
   }
  }
  if(destination==='stories'&&c9PendingStoryLine?.id===storyId){
@@ -2930,7 +3001,7 @@ window.addEventListener('hashchange',()=>{
    dialogueId=next;dialogueStep=0;dialogueSupport=false;dialogueFeedback=null;
    p34TranscriptViewed=false;p34ShadowLine=0;p33Branch=null;
    missionActive=false;missionFeedback=null;missionStep=0;missionSupport=false;
-   c9DialogueSourceId=null;c9DialogueTurn=0;
+   c9DialogueSourceId=null;c9DialogueTurn=0;resetC9Roleplay();
   }
  }
  if(destination==='learn'){

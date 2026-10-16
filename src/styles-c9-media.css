@@ -435,3 +435,43 @@
 .c9-reading-queue-actions .c9-button{min-height:44px;white-space:normal}
 .c9-reading-queue-pages{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:14px 0 0}
 .c9-reading-queue-pages .c9-button{min-height:44px}
+
+
+/* C9-57 · Source-authored conversation/reading rehearsal. These are ungraded,
+   single-tab interaction surfaces, not a new recording or assessment system. */
+.c9-source-rehearsal{min-width:0;display:grid;gap:15px;padding:clamp(16px,2.5vw,25px);background:var(--c9-surface);border:1px solid var(--c9-line);border-left:3px solid var(--c9-accent);border-radius:var(--c9-r)}
+.c9-source-rehearsal *{box-sizing:border-box;min-width:0}
+.c9-source-rehearsal>header{display:flex;gap:16px;justify-content:space-between;align-items:start}
+.c9-source-rehearsal>header>div{min-width:0}
+.c9-source-rehearsal h2{font:650 clamp(21px,2.4vw,29px)/1.27 var(--c9-display);margin:5px 0 8px;letter-spacing:-.02em}
+.c9-source-rehearsal>header p{font:400 13px/1.65 var(--c9-ui);color:var(--c9-sub);max-width:760px;margin:0}
+.c9-source-rehearsal .c9-badge{flex-shrink:0}
+.c9-rehearsal-roles,.c9-rehearsal-actions,.c9-rehearsal-steps,.c9-rehearsal-native{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.c9-rehearsal-roles{padding-bottom:12px;border-bottom:1px solid var(--c9-line)}
+.c9-rehearsal-context{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:15px;border:1px solid var(--c9-line);background:var(--c9-surface-2);border-radius:var(--c9-r-sm)}
+.c9-rehearsal-context>p,.c9-rehearsal-context>strong{flex-basis:100%;margin:0}
+.c9-rehearsal-context>strong{font:650 clamp(17px,2vw,21px)/1.35 var(--c9-display)}
+.c9-rehearsal-context>p:not(.c9-eyebrow){font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-rehearsal-label{font:650 13px/1.55 var(--c9-ui);color:var(--c9-ink)}
+.c9-source-rehearsal textarea{display:block;resize:vertical;min-height:86px;width:100%;padding:12px 14px;font:500 17px/1.65 var(--c9-ui);color:var(--c9-ink);border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);background:var(--c9-surface)}
+.c9-source-rehearsal textarea:disabled{opacity:.72}
+.c9-source-rehearsal :is(button,textarea):focus-visible{outline:3px solid var(--c9-accent);outline-offset:3px}
+.c9-rehearsal-reference{padding:15px 17px;border:1px solid var(--c9-line);border-left:3px solid var(--c9-accent);background:var(--c9-surface-2);border-radius:var(--c9-r-sm);overflow-wrap:anywhere}
+.c9-rehearsal-reference>p{font:400 13px/1.65 var(--c9-ui);margin:9px 0 0;color:var(--c9-sub)}
+.c9-rehearsal-reference>p[lang="zh-Hans"]{font:650 clamp(22px,2.7vw,30px)/1.5 var(--c9-display);color:var(--c9-ink)}
+.c9-rehearsal-reference>small{font:400 13px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-rehearsal-steps{padding-top:12px;border-top:1px solid var(--c9-line)}
+.c9-rehearsal-steps button{min-height:43px}
+.c9-rehearsal-native{padding-top:11px;border-top:1px solid var(--c9-line)}
+.c9-rehearsal-native p{width:100%;margin:0;font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+@media(max-width:700px){
+ .c9-source-rehearsal>header{flex-wrap:wrap}
+ .c9-rehearsal-steps>*{flex:1 1 130px}
+ .c9-rehearsal-roles>*{flex:1 1 95px}
+ .c9-rehearsal-actions>*{flex:1 1 130px}
+ .c9-rehearsal-native>button{width:100%}
+}
+@media(max-width:380px){
+ .c9-source-rehearsal{padding:13px}
+ .c9-rehearsal-steps>*{flex-basis:100%}
+}
