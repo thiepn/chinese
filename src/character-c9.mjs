@@ -8,7 +8,8 @@ import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {WORDS} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {findP31Guide} from './p31-foundations.mjs';
-import {guideFor} from './lesson-guides.mjs';
+import {guideFor,DEEP_NOTES} from './lesson-guides.mjs';
+import {sourceCharacterLinks} from './source-bridges-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
@@ -50,18 +51,6 @@ function wordLinks(lesson){
  return matched.sort((a,b)=>Number(set.has(b.hanzi))-Number(set.has(a.hanzi))
   ||a.hanzi.length-b.hanzi.length||a.hanzi.localeCompare(b.hanzi,'zh')).slice(0,18);
 }
-function relationLessons(lesson,words){
- const linked=new Map();
- for(const w of words){
-  for(const id of w.relatedLessonIds||[]){
-   if(id===lesson.id)continue;
-   const other=DEMO_LESSONS.find(x=>x.id===id);
-   if(other&&!linked.has(id))linked.set(id,{other,words:[w.hanzi]});
-   else if(other&&!linked.get(id).words.includes(w.hanzi))linked.get(id).words.push(w.hanzi);
-  }
- }
- return [...linked.values()].slice(0,9);
-}
 export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=true,showPinyin=true}){
  if(!lesson)return '<div class="c9-empty">The requested original character lesson is unavailable. <a href="#/learn">Return to learning</a>.</div>';
  const index=DEMO_LESSONS.findIndex(l=>l.id===lesson.id);
@@ -73,7 +62,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const due=new Set(dueCards(state));
  const lessonDue=ids.filter(x=>due.has(x)).length;
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
- const words=wordLinks(lesson),related=relationLessons(lesson,words),sentences=sourceSentences(lesson);
+ const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
   '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
   '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
@@ -187,13 +176,33 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
     '</article>').join('')+'</div>'+
   '<div class="c9-character-inline-actions c9-unified-actions"><a class="c9-button c9-button--secondary" href="#/sentences">Sentence library</a>'+
   act('c9-character-reader','Sentence comprehension →','c9-button c9-button--secondary','data-id="'+txt(lesson.id,esc)+'"')+'</div></section>';
+ const authoredNote=DEEP_NOTES[lesson.hanzi]?.[2]||null;
+ const authoredContrastWords=authoredNote?WORDS.filter(w=>w.hanzi.length>=2&&
+  authoredNote.includes(w.hanzi)&&w.senses.length).slice(0,5):[];
+ const authoredContrast=authoredNote?'<div class="c9-authored-contrast"><div>'+
+  '<span class="c9-eyebrow">P65 · ORIGINAL AUTHOR COMPARISON</span>'+
+  '<h3>Compare the taught forms, not imagined character structure</h3>'+
+  '<p>'+txt(authoredNote,esc)+'</p>'+
+  '<small>Original authored teaching note for '+txt(lesson.hanzi,esc)+'. This does not assert visually confusable forms, shared radicals or etymology.</small></div>'+
+  (authoredContrastWords.length?'<div class="c9-authored-contrast-words">'+authoredContrastWords.map(w=>
+   '<article><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong>'+
+   '<span>'+txt(w.pinyin,esc)+' · '+txt(w.senses.slice(0,2).join(' / '),esc)+'</span>'+
+   act('lookup-word','Open original entry →','c9-button c9-button--secondary c9-button--small',
+    'data-id="'+txt(w.key,esc)+'"')+'</article>').join('')+'</div>':'')+'</div>':'';
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
   '<p>Relationships below only indicate that both characters occur in the same indexed whole word; no radical, etymological or semantic relationship is asserted.</p>'+
-  (related.length?'<div class="c9-character-related">'+related.map(({other,words:via})=>
+  authoredContrast+
+  (related.length?'<div class="c9-character-related">'+related.map(({lesson:other,words:via})=>
     '<article><div><strong lang="zh-Hans">'+txt(other.hanzi,esc)+'</strong>'+
     '<span>'+txt(other.pinyin,esc)+' · '+txt(other.meaning,esc)+'</span>'+
-    '<small>Shared indexed word: '+via.slice(0,2).map(x=>txt(x,esc)).join(', ')+'</small></div>'+
+    '<small>Shared indexed word: '+via.slice(0,2).map(w=>txt(w.hanzi,esc)).join(', ')+'</small>'+
+    '<div class="c9-character-link-evidence">'+via.slice(0,2).map(w=>
+     '<div><strong lang="zh-Hans">'+txt(w.hanzi,esc)+'</strong>'+
+     '<span>'+txt(w.pinyin,esc)+' · '+txt(w.senses.slice(0,2).join(' / '),esc)+'</span>'+
+     (w.examples[0]?'<small>Original authored example: <span lang="zh-Hans">'+txt(w.examples[0].hanzi,esc)+'</span> · '+txt(w.examples[0].english,esc)+'</small>':'<small>No authored usage sentence recorded for this word.</small>')+
+     act('lookup-word','Study complete word →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(w.key,esc)+'"')+
+     '</div>').join('')+'</div></div>'+
     act('c9-character-open','Study character →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(other.id,esc)+'"')+'</article>').join('')+'</div>':
   '<div class="c9-empty"><strong>No source-linked character found.</strong><p>The available vocabulary index has no other demo character sharing a word with this character.</p></div>')+
   '</section>';

@@ -161,6 +161,46 @@ export function wordFamily(key,limit=12){
    .sort((a,b)=>b.score-a.score||a.word.hanzi.localeCompare(b.word.hanzi,'zh'))
    .slice(0,limit).map(x=>x.word);
 }
+/** P65/P66 — source-backed lexical contrasts. No visually confusable
+ * characters, historical radicals or meaning-equivalence are inferred.
+ * Only literal written forms and authored pinyin/indexed senses are compared.
+ */
+const sameReading=(value)=>String(value??'').normalize('NFC').trim().toLocaleLowerCase();
+const byScript=new Map(),byReading=new Map();
+for(const word of WORDS){
+ const written=byScript.get(word.hanzi)||[];
+ written.push(word);byScript.set(word.hanzi,written);
+ const pronounced=sameReading(word.pinyin),readings=byReading.get(pronounced)||[];
+ readings.push(word);byReading.set(pronounced,readings);
+}
+/** All canonical readings for the exact written surface. Never guess the
+ * intended reading/sense for an arbitrary user-pasted passage. */
+export function wordsForWrittenForm(hanzi){return Object.freeze([...(byScript.get(String(hanzi??''))||[])]);}
+export function sourceWordComparisons(key,{limit=4}={}){
+ const source=findWord(key);if(!source)return [];
+ const size=Math.max(0,Math.min(12,Number.isInteger(limit)?limit:4));
+ const contrasts=[],used=new Set([source.key]);
+ const add=(others,relation)=>{
+  for(const word of others){
+   if(contrasts.length>=size)break;
+   if(used.has(word.key))continue;
+   used.add(word.key);
+   contrasts.push(Object.freeze({word,relation,
+    sourceEvidence:source.examples[0]||null,
+    comparisonEvidence:word.examples[0]||null}));
+  }
+ };
+ add((byScript.get(source.hanzi)||[]).filter(w=>w.key!==source.key),'Same written form, different indexed reading');
+ add((byReading.get(sameReading(source.pinyin))||[]).filter(w=>w.hanzi!==source.hanzi),'Same indexed pinyin, different written word');
+ // Only comparison examples from existing authored word records count as
+ // context; a shared component alone must not be labelled confusability.
+ if(contrasts.length<size){
+  add(wordFamily(source.key,Math.max(12,size*4))
+   .filter(w=>w.examples.length&&source.examples.length),'Shared written component; different whole-word entry');
+ }
+ return contrasts;
+}
+
 export function searchCatalog(query,kind='all'){
  const q=plain(query);
  const matches=values=>!q||values.some(v=>plain(v).includes(q));

@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v61-startup-bundle-original-learning';
+const CACHE='character-study-working-v62-source-bridge-bundled-native';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -97,6 +97,7 @@ const LEARNING_ASSETS=[
   './exercises.mjs',
   './stories.mjs',
   './lexicon.mjs',
+  './source-bridges-c9.mjs',
   './reader-records.mjs',
   './practice-records.mjs',
   './drills.mjs',

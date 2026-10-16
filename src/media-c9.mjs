@@ -4,7 +4,9 @@
  * evaluation and storage remain in app.mjs native action dispatch.
  */
 import {STORIES,tokenizeSentence} from './stories.mjs';
-import {findWord} from './lexicon.mjs';
+import {findWord,wordsForWrittenForm} from './lexicon.mjs';
+import {originalStoryWordSupport} from './source-bridges-c9.mjs';
+import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
 import {p34StudyStats,p34NextReading,p34NextListening} from './p34-screen.mjs';
@@ -112,6 +114,47 @@ export function renderC9DialogueCatalog(state,currentId,options,act,esc){
  act('c9-media-reset','View all sources','c9-button c9-button--secondary','data-kind="dialogue"')+'</div>')+
  catalogPager('dialogue',page,pages,matches.length,act)+'</div>';
 }
+/**
+ * Original P67/P68 vocabulary handoff for the native reader.
+ * Source definitions are only revealed after explicit assisted action or
+ * completing the native check, so graded reading cannot silently receive hints.
+ */
+export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=false,answered=false}={}){
+ const items=originalStoryWordSupport(story?.id,state);
+ if(!items.length)return '<p class="c9-reading-vocabulary-empty">No original indexed whole words are available in this passage.</p>';
+ const heading='<div class="c9-reading-vocabulary-head"><span class="c9-eyebrow">ORIGINAL SOURCE · STUDY WORDS IN CONTEXT</span>'+
+  '<h3>Words in this reading</h3><p>'+items.length+' distinct indexed written form'+(items.length===1?'':'s')+
+  ' shown from the existing lexicon, not newly imported material. Reading these hints makes an unanswered native exercise assisted.</p></div>';
+ if(!revealed)return '<section class="c9-reading-vocabulary" aria-label="Optional reading vocabulary support">'+heading+
+  '<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
+  act('c9-reading-vocabulary-help','Study original word meanings · assisted','c9-button c9-button--secondary c9-button--small')+
+  '</div></section>';
+ const saved=new Set(state?.bookmarkedWords||[]);
+ const list=items.map(item=>{
+  const word=item.wordKey&&findWord(item.wordKey);
+  const meanings=item.ambiguous?item.readings.map(w=>
+   '<li><strong>'+esc(w.pinyin)+'</strong> · '+esc(w.senses.slice(0,2).join(' / '))+
+    act('lookup-word','Original entry →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+'</li>').join(''):null;
+  return '<article class="c9-reading-vocabulary-item"><span class="c9-eyebrow">SENTENCE '+(item.lineIndex+1)+'</span>'+
+   '<strong lang="zh-Hans">'+esc(item.hanzi)+'</strong>'+
+   (item.ambiguous?'<p>Multiple original readings; choose by context, no automatic meaning selection.</p>'+
+    '<ul>'+meanings+'</ul>':
+    '<p>'+esc(word?.pinyin||'')+' · '+esc(word?.senses.slice(0,2).join(' / ')||'')+'</p>'+
+    '<small>'+(item.introduced?'At least one linked original character lesson has been introduced':'No linked character introduction recorded; this is not a vocabulary mastery judgment')+'</small>'+
+    '<div class="c9-reading-vocabulary-actions">'+
+      act('lookup-word','Dictionary details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(word.key)+'"')+
+      act('word-bookmark',saved.has(word.key)?'Unsave original word':'Save original word',
+       'c9-button c9-button--quiet c9-button--small','data-id="'+esc(word.key)+'"')+
+      (word.relatedLessonIds[0]?act('c9-reader-character','Study original character','c9-button c9-button--quiet c9-button--small','data-id="'+esc(word.relatedLessonIds[0])+'"'):'')+
+    '</div>')+'</article>';
+ }).join('');
+ return '<section class="c9-reading-vocabulary" aria-label="Original reading vocabulary support">'+heading+
+  '<p class="c9-reading-vocabulary-caveat" role="status">'+(answered?'Source help opened after checking. Your previously recorded response and its independent/assisted status are unchanged.':'Assisted source support is visible. The current unsubmitted answer will be recorded as assisted.')+' Written-form matches do not certify the correct lexical sense.</p>'+
+  '<div class="c9-reading-vocabulary-grid">'+list+'</div>'+
+  (items.length>=24?'<small>Showing at most 24 original written forms. The passage and native exercises are unchanged.</small>':'')+
+  '</section>';
+}
+
 export function renderC9ReadingNavigator(story,focusIndex,act,esc){
  const focused=Number.isInteger(focusIndex)&&focusIndex>=0&&focusIndex<story.lines.length;
  const index=focused?focusIndex:0;
@@ -146,6 +189,41 @@ export function renderC9ListeningWorkflow(dialogue,question,feedback,assisted,ac
   'Listening and playback do not automatically submit answers. Opening translation or transcript invokes the original assistance rules.')+
  '</p></section>';
 }
+/** P67–P68: source-only continuation using original passage IDs and observed
+ * independent readingEvents. A reading is never claimed as a certified HSK
+ * level, or completed by opening/previewing it. */
+export function c9ReadingRecommendations(state,{limit=4}={}){
+ const histories=new Map();
+ for(const e of state.readingEvents||[]){
+  if(!STORIES.some(s=>s.id===e.storyId))continue;
+  const old=histories.get(e.storyId)||{last:null,independent:false};
+  histories.set(e.storyId,{last:e,independent:old.independent||Boolean(e.correct&&!e.assisted)});
+ }
+ const saved=new Set(state.bookmarkedStories||[]);
+ return STORIES.map((story,index)=>{
+  const history=histories.get(story.id)||{last:null,independent:false};
+  const priority=history.independent?3:history.last?0:saved.has(story.id)?1:2;
+  return {story,history,priority,index};
+ }).sort((a,b)=>a.priority-b.priority||a.index-b.index)
+ .slice(0,Math.max(0,Math.min(16,Number.isInteger(limit)?limit:4)));
+}
+export function renderC9ReadingContinuation(state,currentId,act,esc){
+ const choices=c9ReadingRecommendations(state);
+ return '<section class="c9-reading-queue" aria-labelledby="c9-reading-queue-title">'+
+  '<div class="c9-reading-queue-head"><div><span class="c9-eyebrow">P67–P68 · ORIGINAL READING CONTINUATION</span>'+
+  '<h2 id="c9-reading-queue-title">Read next or repair a passage</h2>'+
+  '<p>Original editorial passages are ordered by actual reading history: unresolved attempts, saved unattempted texts, then other source texts. No estimated level, proficiency claim or completion award is generated.</p></div></div>'+
+  '<div class="c9-reading-queue-items">'+choices.map(({story,history})=>
+   '<article'+(story.id===currentId?' class="is-current"':'')+'><span class="c9-eyebrow">'+esc(passageKind(story))+
+   ' · '+story.lines.length+' sentences</span><h3>'+esc(story.title)+'</h3>'+
+   '<p>'+esc(story.theme)+'</p>'+
+   '<small>'+(history.independent?'Independent correct response recorded':history.last?
+    'Recorded wrong or assisted response · revisit':'No original reading response recorded')+'</small>'+
+   act('c9-media-open-story',story.id===currentId?'Return to current passage →':'Read original passage →',
+    'c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"')+'</article>').join('')+'</div>'+
+  '</section>';
+}
+
 export function renderC9ReadingHub(state,story,act,esc,options={}){
  const histories=state.readingEvents||[],attempted=new Set(histories.map(e=>e.storyId));
  const independent=new Set(histories.filter(e=>e.correct&&!e.assisted).map(e=>e.storyId));
@@ -169,6 +247,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
+ renderC9ReadingContinuation(state,story.id,act,esc)+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+
  catalogControls('reading',options,act,esc)+
@@ -233,55 +312,111 @@ export function renderC9ReaderIntro(lesson,act,esc){
 let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[];
 let disconnectPersonalReader=null;
 const PERSONAL_READER_LIMIT=1200;
-const personalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean).slice(0,32)||[];
+const allPersonalLines=text=>String(text).match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)?.map(s=>s.trim()).filter(Boolean)||[];
+const personalLines=text=>allPersonalLines(text).slice(0,32);
 const personalHanzi=text=>/\p{Script=Han}/u.test(text);
-export function renderC9PersonalTextReader(esc){
+export function renderC9PersonalTextReader(esc,state={}){
  const text=personalReaderText;
  return '<section class="c9-personal-reader" aria-labelledby="c9-personal-reader-title"><details>'+
   '<summary><strong id="c9-personal-reader-title">Read my own Chinese text</strong><span>Private, optional · source-linked dictionary · no grading</span></summary>'+
-  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace only holds your text and mined sentences in this browser tab until a refresh or close; it does not save them to the learning database.</p>'+
+  '<div class="c9-personal-reader-body"><p>Paste a short passage to identify words already present in the original app glossary. Unknown text stays unmarked. This workspace holds text, word matches and mined sentences only in this browser tab until refresh or close. At most 32 text segments are annotated. Nothing is sent to the server or saved to the learning database unless you deliberately save an existing canonical word through the native Wordbook.</p>'+
   '<label for="c9-personal-input">My Chinese passage · up to '+PERSONAL_READER_LIMIT+' characters</label>'+
   '<textarea id="c9-personal-input" rows="5" maxlength="'+PERSONAL_READER_LIMIT+'" spellcheck="false" lang="zh-Hans" placeholder="Paste your own Mandarin passage here">'+esc(text)+'</textarea>'+
   '<div class="c9-personal-actions"><button type="button" id="c9-personal-analyze" class="c9-button c9-button--primary c9-button--small">Annotate with existing dictionary</button>'+
   '<button type="button" id="c9-personal-clear" class="c9-button c9-button--secondary c9-button--small">Clear my text</button>'+
   '<span id="c9-personal-status" role="status">Annotations are private study aids, not translations or grades.</span></div>'+
-  '<div id="c9-personal-results" aria-live="polite">'+personalReaderResults(esc)+'</div></div></details></section>';
+  '<div id="c9-personal-results" aria-live="polite">'+personalReaderResults(esc,state)+'</div></div></details></section>';
 }
-function personalReaderResults(esc){
+function personalReaderResults(esc,state={}){
  if(!personalReaderAnalyzed)return '';
- const lines=personalLines(personalReaderAnalyzed);
+ const allLines=allPersonalLines(personalReaderAnalyzed),lines=allLines.slice(0,32);
  if(!lines.length)return '<p>No sentences to annotate. Try pasting Chinese text.</p>';
+ const sources=new Map(),unmatched=new Set(),ambiguous=new Map();
  const view=lines.map((line,i)=>{
   const tokens=tokenizeSentence(line);
   const text=tokens.map(token=>{
-   const key=token.entry?.wordKey;
-   const word=key&&findWord(key);
-   return word?'<button type="button" class="c9-personal-term" data-action="lookup-word" data-id="'+esc(word.key)+'" title="'+esc(word.pinyin+' · '+word.senses.join(' / '))+'" lang="zh-Hans">'+esc(token.text)+'</button>':'<span lang="zh-Hans">'+esc(token.text)+'</span>';
+   const readings=wordsForWrittenForm(token.text);
+   // Source tokenizer may pick one entry for a multi-reading written form.
+   // Do not silently present that entry as the correct contextual sense.
+   if(readings.length>1){
+    ambiguous.set(token.text,readings);
+    return '<span class="c9-personal-ambiguous" lang="zh-Hans" title="Multiple indexed readings; interpret from context">'+esc(token.text)+'<sup aria-label="multiple readings">?</sup></span>';
+   }
+   const word=readings[0]||(token.entry?.wordKey&&findWord(token.entry.wordKey));
+   if(word){
+    const item=sources.get(word.key)||{word,count:0};
+    item.count++;sources.set(word.key,item);
+    return '<button type="button" class="c9-personal-term" data-action="lookup-word" data-id="'+esc(word.key)+'" title="'+esc(word.pinyin+' · '+word.senses.join(' / '))+'" lang="zh-Hans">'+esc(token.text)+'</button>';
+   }
+   if(personalHanzi(token.text))unmatched.add(token.text);
+   return '<span lang="zh-Hans">'+esc(token.text)+'</span>';
   }).join('');
+  const original=SENTENCE_LIBRARY.find(s=>s.hanzi===line);
   const mined=personalReaderMined.includes(line);
   return '<article class="c9-personal-line"><div class="c9-personal-line-text">'+text+'</div>'+
+   (original?'<small>Exact match: '+esc(original.id)+' · '+esc(original.topic)+'</small>'+
+    '<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="sentence-select" data-id="'+esc(original.id)+'">Open original sentence task →</button>':'')+
    '<button type="button" data-personal-mine="'+i+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
  }).join('');
- return '<div class="c9-personal-result-head"><strong>'+lines.length+' source-personal segment'+(lines.length===1?'':'s')+'</strong><small>Highlighted tokens link to existing indexed words; other tokens have no verified lookup.</small></div>'+
-  '<div class="c9-personal-lines">'+view+'</div>'+
+ const saved=new Set(state.bookmarkedWords||[]);
+ const matches=[...sources.values()].sort((a,b)=>b.count-a.count||a.word.hanzi.localeCompare(b.word.hanzi,'zh')).slice(0,24);
+ const indexed='<section class="c9-personal-index" aria-label="Indexed words in my passage"><h3>Words confirmed in existing source index</h3>'+
+  '<p>'+sources.size+' indexed whole-word record'+(sources.size===1?'':'s')+
+  ' · '+ambiguous.size+' written form'+(ambiguous.size===1?'':'s')+' with multiple readings'+
+  ' · '+unmatched.size+' unmatched Hanzi token'+(unmatched.size===1?'':'s')+
+  '. A dictionary match does not establish the intended meaning in context.</p>'+
+  (matches.length?'<div class="c9-personal-index-grid">'+matches.map(({word,count})=>
+   '<article><strong lang="zh-Hans">'+esc(word.hanzi)+'</strong><span>'+esc(word.pinyin)+'</span>'+
+   '<span>'+esc(word.senses.slice(0,2).join(' / '))+'</span><small>'+count+' indexed occurrence'+(count===1?'':'s')+'</small>'+
+   (word.examples[0]?'<small lang="zh-Hans">'+esc(word.examples[0].hanzi)+'</small>':'')+
+   '<div><button type="button" data-action="lookup-word" data-id="'+esc(word.key)+'" class="c9-button c9-button--secondary c9-button--small">Details</button>'+
+   '<button type="button" data-action="word-bookmark" data-id="'+esc(word.key)+'" class="c9-button c9-button--quiet c9-button--small">'+(saved.has(word.key)?'Unsave':'Save word')+'</button></div></article>').join('')+'</div>':'<p>No unambiguous indexed whole words detected.</p>')+
+  (sources.size>matches.length?'<p>Showing the first 24 indexed words; the passage remains unchanged.</p>':'')+
+  '</section>';
+ const alternatives=ambiguous.size?'<section class="c9-personal-ambiguities" aria-label="Multiple indexed readings"><h3>Choose a reading from context</h3>'+
+  '<p>The original dictionary records more than one reading for these written forms. Nothing is chosen automatically.</p>'+
+  [...ambiguous.entries()].map(([hanzi,readings])=>
+   '<article><strong lang="zh-Hans">'+esc(hanzi)+'</strong><div>'+
+   readings.map(word=>'<span><b>'+esc(word.pinyin)+'</b> · '+esc(word.senses.slice(0,2).join(' / '))+
+    '<button type="button" data-action="lookup-word" class="c9-button c9-button--secondary c9-button--small" data-id="'+esc(word.key)+'">View this reading</button></span>').join('')+
+   '</div></article>').join('')+'</section>':'';
+ return '<div class="c9-personal-result-head"><strong>'+lines.length+' private passage segment'+(lines.length===1?'':'s')+'</strong><small>Only original indexed words become lookups; pasted text remains ungraded.</small></div>'+
+  (allLines.length>32?'<p class="c9-personal-limit" role="status">Only the first 32 of '+allLines.length+' segments are annotated or mineable. The remainder stays in the input above.</p>':'')+
+  '<div class="c9-personal-lines">'+view+'</div>'+indexed+alternatives+
   '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
    '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
    (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
    '<button type="button" id="c9-personal-copy" class="c9-button c9-button--secondary c9-button--small" '+(personalReaderMined.length?'':'disabled')+'>Copy my mined sentences</button></div>';
 }
-export function connectC9PersonalTextReader(root,esc){
+export function connectC9PersonalTextReader(root,esc,state={}){
  if(disconnectPersonalReader){disconnectPersonalReader();disconnectPersonalReader=null;}
  const input=root.querySelector('#c9-personal-input');if(!input)return;
  const panel=root.querySelector('#c9-personal-results'),status=root.querySelector('#c9-personal-status');
  const analyze=root.querySelector('#c9-personal-analyze'),clear=root.querySelector('#c9-personal-clear');
  const details=input.closest('details');
  if(details&&(personalReaderAnalyzed||personalReaderText))details.open=true;
- const update=()=>{if(panel)panel.innerHTML=personalReaderResults(esc);};
- const onInput=()=>{personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);};
+ const update=()=>{
+  if(!panel)return;
+  panel.hidden=!(personalReaderAnalyzed&&personalReaderText.trim()===personalReaderAnalyzed);
+  if(!panel.hidden)panel.innerHTML=personalReaderResults(esc,state);
+ };
+ const onInput=()=>{
+  personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
+  update();
+  if(status&&personalReaderText.trim()!==personalReaderAnalyzed)
+   status.textContent='Text edited. Re-annotate this version; prior sentence selections remain in tab memory until replacement.';
+ };
  const onAnalyze=()=>{
   personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
-  personalReaderAnalyzed=personalReaderText.trim();
-  personalReaderMined=[];update();
+  const next=personalReaderText.trim();
+  if(next!==personalReaderAnalyzed&&personalReaderMined.length&&
+   !window.confirm('Replace annotated passage and clear '+personalReaderMined.length+' mined sentence(s)? Copy them first if needed.')){
+   update();
+   if(status)status.textContent='Previous selections retained. Restore the earlier text or copy the list before replacing it.';
+   return;
+  }
+  if(next!==personalReaderAnalyzed)personalReaderMined=[];
+  personalReaderAnalyzed=next;update();
   if(status)status.textContent=personalReaderAnalyzed?
    (personalHanzi(personalReaderAnalyzed)?'Annotated using existing original word records. No text saved.':'No Chinese characters detected. No learning evidence changed.'):'Paste text before annotating.';
  };
@@ -308,7 +443,7 @@ export function connectC9PersonalTextReader(root,esc){
    }catch{if(status)status.textContent='Automatic clipboard copy unavailable. Select the listed text to copy it manually.';}
   }
  };
- input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
+ update();input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
  clear?.addEventListener('click',onClear);panel?.addEventListener('click',onPanelClick);
  disconnectPersonalReader=()=>{
   input.removeEventListener('input',onInput);analyze?.removeEventListener('click',onAnalyze);

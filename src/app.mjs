@@ -3,7 +3,7 @@ import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
-import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,C9_WORD_FILTERS} from './libraries-c9.mjs';
+import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,renderC9TypingPath,C9_WORD_FILTERS} from './libraries-c9.mjs';
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
@@ -11,7 +11,7 @@ import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9Wr
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
-import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
@@ -92,7 +92,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v61-startup-bundle-original-learning';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v62-source-bridge-bundled-native';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -173,6 +173,7 @@ let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=fa
 let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
 let c9LessonSection='overview',c9LessonFocused=true,c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordPage=0;
+let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
 let c9ReadingQuery='',c9ReadingFilter='all',c9ReadingPage=0,c9DialogueQuery='',c9DialogueFilter='all',c9DialoguePage=0;
 let pathwayTransferDraft=''; // Session-only, no IndexedDB or StudyEvent writer.
 let pathwaySelected='path-01',pathwayMode='meaning',pathwayMinutes=20,pathwayFocus=false,pathwayAssisted=false,pathwayTyped='',pathwayFeedback=null,pathwayShowPinyin=true,pathwayShowEnglish=true;
@@ -238,7 +239,7 @@ function renderStories(){
  const story=findStory(storyId)||STORIES[0];
  return '<div class="c9-media-workspace c9-media-stories">'+
   renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage})+
-  renderC9PersonalTextReader(esc)+
+  renderC9PersonalTextReader(esc,state)+
   '<div class="c9-media-native">'+renderStoriesNative()+'</div></div>';
 }
 function renderDialogueMission(d){const q=missionQuestion(d.id,missionStep),stats=missionStats(state);
@@ -511,8 +512,10 @@ function renderSentences(){
  mode:libraryMode,typed:libraryTyped,order:libraryOrder,feedback:libraryFeedback,
  assisted:libraryAssisted,showPinyin:libraryShowPinyin,showEnglish:libraryShowEnglish,focus:libraryPracticeFocus,
  learner:state},action,esc,title,gated);
+ const independentProduction=libraryPracticeFocus&&libraryMode==='production'&&!libraryFeedback;
+ const directory=independentProduction?'<p class="c9-unified-source-note" role="note">Original sentence previews are concealed while independent Chinese typing is active. Exit focused recall to browse source sentences.</p>':renderC9SentenceDirectory(state,action,esc);
  return '<div class="c9-language-workspace c9-language-workspace--sentences">'+
-  renderC9SentenceDirectory(state,action,esc)+
+  renderC9TypingPath(state,action,esc,{topic:c9TypingTopic,status:c9TypingStatus,page:c9TypingPage})+directory+
   '<section class="c9-language-native c9-language-study" id="c9-native-sentences" aria-label="Original sentence learning">'+native+'</section></div>';
 }
 function pathwaySelection(){const id=location.hash.split('/')[2];return findPathwayMission(id)?id:pathwaySelected;}
@@ -689,7 +692,7 @@ function renderStoriesNative(){const story=findStory(storyId)||STORIES[0],isExte
  <span>Optional support · revealing either makes this exercise assisted</span>
  ${action('c9-story-pinyin',c9StoryPinyin?'Hide Pinyin':'Show Pinyin','c9-button c9-button--secondary c9-button--small',`aria-pressed="${c9StoryPinyin}"`)}
  ${action('c9-story-english',c9StoryEnglish?'Hide English':'Show English','c9-button c9-button--secondary c9-button--small',`aria-pressed="${c9StoryEnglish}"`)}
- </div>${renderC9ReadingNavigator(story,storyFocusIndex,action,esc)}<div class="stories-layout ${state.settings.readingLarge?'large-reading':''}"><article class="simple-panel story-paper" id="c9-native-reading" tabindex="-1"><p class="eyebrow">READING ${String(STORIES.indexOf(story)+1).padStart(2,'0')} · ${esc(story.theme)}</p><h2>${esc(story.title)}</h2>${beginnerReadingHeading(story,action,esc,beginnerPart,beginnerWordShown)}${readingExtendedHeader(story,action,esc,{paragraph:storyParagraph,only:storyParagraphOnly,translations:storyParagraphTranslations})}<p class="muted">${coverage.introduced}/${coverage.total} relevant demo lesson characters introduced. This does not measure total vocabulary or grammar knowledge. Tap an underlined word for a glossary hint; using hints makes the following answer assisted.</p>
+ </div>${renderC9ReadingNavigator(story,storyFocusIndex,action,esc)}${renderC9OriginalStoryWordSupport(story,state,action,esc,{revealed:storyAssist||Boolean(storyResult),answered:Boolean(storyResult)})}<div class="stories-layout ${state.settings.readingLarge?'large-reading':''}"><article class="simple-panel story-paper" id="c9-native-reading" tabindex="-1"><p class="eyebrow">READING ${String(STORIES.indexOf(story)+1).padStart(2,'0')} · ${esc(story.theme)}</p><h2>${esc(story.title)}</h2>${beginnerReadingHeading(story,action,esc,beginnerPart,beginnerWordShown)}${readingExtendedHeader(story,action,esc,{paragraph:storyParagraph,only:storyParagraphOnly,translations:storyParagraphTranslations})}<p class="muted">${coverage.introduced}/${coverage.total} relevant demo lesson characters introduced. This does not measure total vocabulary or grammar knowledge. Tap an underlined word for a glossary hint; using hints makes the following answer assisted.</p>
  ${(storyMode==='passage-writing'||storyMode==='beginner-writing')&&!storyAssist&&!storyResult?`<div class="p27-writing-hide"><strong>Recall without a visible source</strong><p>The passage is hidden for reading-to-writing production. Revealing it marks this attempt assisted.</p>${action('reading-show-writing-source','Review passage · assisted','button outline small')}</div>`:story.lines.map((line,i)=>(storyParagraphOnly&&story.extended&&paragraphFor(story,i)!==storyParagraph||story.beginner&&beginnerPart!=='all'&&Math.floor(i/3)!==Number(beginnerPart))?'':`${beginnerPartMarker(story,i,action,esc,beginnerPartTip)}${readingParagraphMarker(story,i,action,esc,storyParagraphTranslations)}<section class="story-line ${storyFocusIndex===i?'reading-line-focused':''}" data-c9-story-line="${i}" tabindex="-1" aria-current="${storyFocusIndex===i?'step':'false'}"><div class="story-line-top"><span class="eyebrow">SENTENCE ${i+1}</span><div class="story-line-actions">${action('speak','▶ Listen','button outline small',`data-text="${esc(line.hanzi)}"`)}${action('story-help-line',storyHelpIndex===i?'Hide help':'Explain','button outline small',`data-index="${i}"`)}</div></div><p lang="zh-Hans" class="story-chinese">${tokenizeSentence(line.hanzi).map(({text,entry})=>entry?`<button type="button" class="story-token" lang="zh-Hans" data-action="story-token" data-token="${esc(entry.hanzi)}" aria-label="Look up ${esc(entry.hanzi)}">${esc(text)}</button>`:esc(text)).join('')}</p>${c9StoryPinyin||c9StoryEnglish||storyShowTranslation||storyHelpIndex===i||story.extended&&storyParagraphTranslations.includes(paragraphFor(story,i))?`<div class="line-support">${c9StoryPinyin||storyShowTranslation||storyHelpIndex===i||story.extended&&storyParagraphTranslations.includes(paragraphFor(story,i))?`<p class="story-pinyin">${esc(line.pinyin)}</p>`:''}${c9StoryEnglish||storyShowTranslation||storyHelpIndex===i||story.extended&&storyParagraphTranslations.includes(paragraphFor(story,i))?`<p class="story-english">${esc(line.english)}</p>`:''}</div>`:''}</section>`).join('')}
  <div class="button-row">${action('story-focus-next',storyFocusIndex===-1?'Focus first sentence':`Focus sentence ${(storyFocusIndex+1)%story.lines.length+1} / ${story.lines.length}`,'button outline small')}${storyFocusIndex!==-1?action('speak','▶ Focused sentence','button outline small',`data-text="${esc(story.lines[storyFocusIndex].hanzi)}"`):''}${storyFocusIndex!==-1?action('story-focus-off','Show all equally','button outline small'):''}${story.extended?action('reading-next-paragraph','Next paragraph →','button outline small'):''}${action('story-reveal',storyShowTranslation?'Hide teaching support':'Show pinyin & English','button outline small')}${action('speak','▶ Hear passage','button outline small',`data-text="${esc(story.lines.map(l=>l.hanzi).join(''))}"`)}${action('speech-rate','Speed: '+demoSpeechRate+'×','button outline small')}</div>
  ${storyGlossary?`<div class="story-glossary" role="status"><strong lang="zh-Hans">${esc(storyGlossary.hanzi)}</strong> · ${esc(storyGlossary.pinyin)}<p>${esc(storyGlossary.english)}</p>${WORDS.find(w=>w.hanzi===storyGlossary.hanzi)?action('word-bookmark',(state.bookmarkedWords||[]).includes(WORDS.find(w=>w.hanzi===storyGlossary.hanzi).key)?'★ Saved word':'☆ Save word','button outline small',`data-id="${esc(WORDS.find(w=>w.hanzi===storyGlossary.hanzi).key)}"`):''}${storyGlossary.wordKey?action('vocabulary-start','Learn this word →','button primary small',`data-id="${esc(storyGlossary.wordKey)}"`):''}${action('speak','▶ Listen to word','button outline small',`data-text="${esc(storyGlossary.hanzi)}"`)}${storyGlossary.lessonIds.length?action('story-linked','View related lesson →','button outline small',`data-id="${storyGlossary.lessonIds[0]}"`):''}</div>`:''}
@@ -938,7 +941,7 @@ function render(){const sameSource=c9RenderedHash===location.hash;
   const disclosure=root.querySelector('details.'+name);
   if(disclosure)disclosure.open=true;
  }
- if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);connectC9PersonalTextReader(root,esc);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
+ if(!db){const buttons=root.querySelectorAll('[data-action="plan-minutes"],[data-action="plan-focus"],[data-action="plan-pin"],[data-action="fluency-start"],[data-action="fluency-answer"],[data-action="fluency-hint"],[data-action="fluency-reveal"],[data-action="fluency-next"],[data-action="fluency-abandon"],[data-action="trail-start"],[data-action="trail-hint"],[data-action="trail-answer"],[data-action="trail-reveal"],[data-action="trail-next"],[data-action="block-start"],[data-action="block-launch"],[data-action="block-advance"],[data-action="block-abandon"],[data-action="mark-studied"],[data-action="grade"],[data-action="reset"],[data-action="import-open"],[data-action="guided-start"],[data-action="guided-answer"],[data-action="guided-check"],[data-action="guided-reveal"],[data-action="guided-next"],[data-action="guided-end"],[data-action="guided-abandon"],[data-action="placement-start"],[data-action="placement-restart"],[data-action="placement-answer"],[data-action="placement-skip"],[data-action="course-start"],[data-action="course-hint"],[data-action="course-answer"],[data-action="course-advance"],[data-action="course-finish"],[data-action="course-abandon"],[data-action="course-repair-start"],[data-action="repair-answer"],[data-action="repair-hint"],[data-action="repair-reveal"],[data-action="repair-next"],[data-action="repair-abandon"],[data-action="lesson-check-choice"],[data-action="lesson-check-submit"],[data-action="word-bookmark"],[data-action="dialogue-answer"],[data-action="dialogue-reveal"],[data-action="wordbook-answer"],[data-action="wordbook-reveal"],[data-action="sense-answer"],[data-action="sense-reveal"],[data-action="mission-answer"],[data-action="mission-reveal"],[data-action="workshop-check"],[data-action="workshop-reveal"]');buttons.forEach(b=>{b.disabled=true;b.title='Local persistence unavailable';})}connectC9Writing(root);connectC9PersonalTextReader(root,esc,state);c9RenderedHash=location.hash;restoreC9Focus(root,focusSnapshot); }
 function go(page,answerConfirmed=false){
  const target='#/'+page;
  // Keep the existing same-route refresh behavior for legacy native
@@ -1408,6 +1411,16 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   refreshC9MediaCatalog(kind);
   root.querySelector('#c9-'+kind+'-results')?.scrollIntoView({block:'nearest',behavior:'auto'});
   return;
+ }
+ if(name==='c9-reading-vocabulary-help'){
+  if(route()!=='stories'||!findStory(storyId))return false;
+  // Explicitly classify this native reading attempt as assisted, preserving
+  // the single original story grading path and recorded source identities.
+  storyAssist=true;
+  render();
+  root.querySelector('.c9-reading-vocabulary')?.scrollIntoView({block:'nearest',behavior:'auto'});
+  announceC9Interaction('Original indexed vocabulary support revealed. This answer now counts as assisted.');
+  return true;
  }
  if(name==='c9-media-reading-line'||name==='c9-media-reading-jump'){
   const story=findStory(storyId);if(!story)return;
@@ -1983,6 +1996,26 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='sentence-grammar-filter'){if(!GRAMMAR_LESSONS.some(g=>g.id===id))return;
   libraryGrammar=id;libraryTopic='all';librarySource='all';libraryPage=0;libraryQuery='';return go('sentences');}
  
+ if(name==='c9-typing-page'){
+  const delta=Number(button.dataset.delta);
+  if(![-1,1].includes(delta))return false;
+  c9TypingPage=Math.max(0,c9TypingPage+delta);render();
+  root.querySelector('#c9-typing-path-title')?.scrollIntoView({block:'nearest',behavior:'auto'});
+  return true;
+ }
+ if(name==='c9-typing-start'){
+  if(!findLibrarySentence(id))return alertUser('Original sentence unavailable.','error');
+  // Use the existing P26–P40 native production assessment and the established
+  // unsent-response guard, not a new typing grader or grade event type.
+  if(!openLibrarySentence(id))return false;
+  libraryMode='production';libraryPracticeFocus=true;libraryAssisted=false;
+  libraryTyped='';libraryOrder=[];libraryFeedback=null;
+  libraryShowPinyin=false;libraryShowEnglish=true;
+  render();
+  root.querySelector('#c9-native-sentences')?.scrollIntoView({block:'start',behavior:'auto'});
+  root.querySelector('#sentence-library-entry')?.focus({preventScroll:true});
+  return true;
+ }
  if(name==='sentence-select')return openLibrarySentence(id);
  if(name==='sentence-prev-page'||name==='sentence-next-page'){
   const count=searchSentences({query:libraryQuery,topic:libraryTopic,area:libraryArea,
@@ -2647,6 +2680,14 @@ root.addEventListener('change',async e=>{
  }
  if(e.target.id==='c9-reading-filter'){if(!['all','unattempted','repair','saved','independent'].includes(e.target.value))return;c9ReadingFilter=e.target.value;c9ReadingPage=0;refreshC9MediaCatalog('reading');return;}
  if(e.target.id==='c9-dialogue-filter'){if(!['all','unattempted','repair','independent','listening'].includes(e.target.value))return;c9DialogueFilter=e.target.value;c9DialoguePage=0;refreshC9MediaCatalog('dialogue');return;}
+ if(e.target.id==='c9-typing-topic'){
+  if(e.target.value!=='all'&&!SENTENCE_TOPICS.some(t=>t.id===e.target.value))return;
+  c9TypingTopic=e.target.value;c9TypingPage=0;render();return;
+ }
+ if(e.target.id==='c9-typing-status'){
+  if(!['all','retry','unattempted','independent'].includes(e.target.value))return;
+  c9TypingStatus=e.target.value;c9TypingPage=0;render();return;
+ }
  if(e.target.id==='c9-word-status'){if(!C9_WORD_FILTERS.includes(e.target.value))return;c9WordFilter=e.target.value;c9WordPage=0;refreshC9Words();return;}
 
  if(e.target.id==='c9-learn-unit'||e.target.id==='c9-learn-status'){

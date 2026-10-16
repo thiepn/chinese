@@ -52,3 +52,44 @@ Status indicates learner-facing functionality evidenced in original source, not 
 ## Verification discipline
 
 Source compile checks and GitHub provenance can be performed through the authenticated connector. The current sandbox **cannot resolve github.com**, so it lacks a complete exact-head executable checkout. Node module tests, HTTP-origin Chromium, IndexedDB and service-worker checks remain **NOT_TESTED locally** until an actual checkout/CI job supplies results; never reinterpret source inspection as browser PASS. No production merge, deployment, migrations, new accounts, paid services or credentials.
+
+
+## Original P64–P70 feature-first continuation (October 16, 2026)
+
+**Git state correction:** Original draft PR #64 was merged independently on 2026-10-15 at main commit `b6f6fe0dc398f25ab24c649ac0c9a7aee3a73958`; the final parent-branch PR head was `e30b201391d0d19a7807c79e90e5e06e00ae7d50`. The exact-head original Chromium qualification on that head passed 77/77 checks, after repairing the earlier mobile lesson-fold failure. Following user instructions, this next batch uses the **same existing branch**, creates **no new PR**, and does **not** alter main or production. A merged PR cannot receive further unmerged code changes.
+
+- **P64:** no authority-backed radical/decomposition curriculum was found; do not infer or certify one from font glyphs, shared characters or vague similarity.
+- **P65 partial:** `src/character-c9.mjs` now shows existing individually **authored `DEEP_NOTES` comparison advice**, linking exact canonical whole-word entries when they are actually mentioned. `src/lexicon.mjs` enumerates distinct same-written-form readings, identical indexed pinyin of different written words, and whole-word written-component neighbors. Neither module claims visual confusability, etymology, shared meaning or phonetic-component certification.
+- **P66 extended:** the *existing* Wordbook catalog includes expandable comparisons with authored whole-word meanings, pronunciation, provenance examples and native full-entry links. All historical `word.key` identities, saved/introduced records and associated practice remain authoritative.
+- **P67–P69 extended:** the tab-private pasted-text reader now shows dictionary-indexed whole words with actual source senses and example context, flags unmatched Hanzi tokens as indexing gaps rather than learner errors, links exact matches to original Sentence Library tasks, and provides explicit native Wordbook save/unsave. Unapproved pasted passages, mined sentences and all personal text stay in tab memory; no automatic imports into source material, Grade, Review or StudyEvents. Clipboard copy remains manually invoked.
+- **P70 substantial native integration:** an expandable typing pathway in the original Sentences page selects original `sent-NNN` tasks by existing production event evidence and prioritizes independent retries. Launching sets `libraryMode='production'`, native independent focus and hides pinyin support; the unchanged native `sentence-answer` uses `checkSentence` and `addSentenceEvent`. No fabricated typing proficiency, competing scheduler or exercise database.
+- The original source/static offline asset inventory remains **315**; the app and service worker use the same revision `character-study-working-v62-source-bridge-bundled-native`. Source-only and local HTTP browser verification are different gates. Changes to the existing source branch do not constitute an update to merged PR #64.
+
+**Remaining:** a verified/licensed visual radical–phonetic decomposition set, reviewed confusable-character pairs, deeper bilingual dictionary editorial coverage, broader advanced reading corpus, personal-text token disambiguation, native typing UX refinements, and all verified HSK 4–6 curricular mapping/media licensing. Treat these as OPEN features, not completed milestone numbers.
+
+
+### P67–P68 reading-continuation addendum
+
+The existing Reading hub now shows original-source reading recommendations chosen from recorded `readingEvents` and bookmarked original story IDs. Unresolved wrong/assisted attempts appear first, followed by saved unattempted and other original passages. Links invoke the existing `c9-media-open-story` reader action; browsing cannot grade, certify a level or create a new passage. Original source identity, authored passages and the existing reader assessment remain unchanged. The still-missing graded/rights-reviewed reading corpus is **not** inferred from these recommendations.
+
+
+### Next coherent P69–P70 original learner batch — private reading and full typing discovery
+
+- **P70 now exposes all original `sent-NNN` production records through the existing Sentence Library**: topic filters, retry/unattempted/latest-independent filters, six-per-page browsing, and a real source handoff to focused typed production. Evidence/status comes only from existing `context:<sentence-id>:production` sentence events. Previously recorded independently correct attempts are counted separately from latest-attempt status. The original sentence answer checker and grading remain unchanged. Typed production references still stay hidden while focus is active, including the surrounding original sentence directory.
+- **P69 now disambiguates identical written forms with different canonical readings** via `wordsForWrittenForm` in the original Wordbook index. The personal reader shows the alternatives and source-backed senses rather than inventing a contextual disambiguation. A dictionary result does not certify that it is the appropriate translation.
+- **P69 private session safety**: repeating annotation of unchanged input preserves mined sentences; replacing annotated content with selected sentences requires explicit consent. Stale annotations are concealed after text edits; canceling replacement preserves earlier selections. More than 32 segments are disclosed as partially processed; unprocessed text remains in the input and never enters the published catalog.
+- **Disclosure continuity**: the typing filter disclosure and keyboard focus survive same-route re-renders through the existing accessibility layer.
+- The app and service worker share revision `character-study-working-v62-source-bridge-bundled-native`, with inherited offline test expectations advanced rather than weakened. Asset cardinality is unchanged.
+- **Still open:** original source-reviewed radical/component datasets (P64), verified visual confusable pairs (P65), full linguistic word-sense editorial expansion (P66), substantially larger approved graded readers (P68), arbitrary text token ambiguity resolution by real linguists (P69), and valid level-scoped HSK 4–6 curriculum (P71–P80). Browsing existing sourced records does not itself establish those products.
+
+
+### Original P64–P68 cross-source teaching implementation
+
+A new read-only `src/source-bridges-c9.mjs` projects **only** canonical original word keys, demo character IDs, sentence IDs and story IDs. Wordbook displays verified *written-form occurrences* across original word examples, sentence records and passages, each with a native source handoff. Character Study presents shared indexed whole-word examples and navigable original character/word records. The native Reader offers optional original-word teaching support; revealing definitions **explicitly marks the current reader answer assisted** and the original reading grader remains authoritative. Multiple registered readings are shown as unresolved alternatives. No radical, phonetic, historical, visual-confusable, sense-disambiguation or official HSK authority is inferred. This is meaningful P65–P68 native functionality, not a completed verified radical dataset or new approved graded corpus.
+
+The service-worker asset manifest now includes the new source module, with 316 source-inventory assets (8 runtime-precache assets) and paired `character-study-working-v62-source-bridge-bundled-native` application/worker revision. All earlier P61–P80 status claims remain partial where genuine content remains unavailable.
+
+
+### Latest main UX + compiled startup integration
+
+The P64–P70 branch has been reconciled with the independently advanced main UI/navigation and compiled startup build. The **source manifest** still enumerates 316 unique curriculum/development assets, including `source-bridges-c9.mjs`; the separate **runtime service-worker precache** contains **8 compiled startup/shell assets**, not 316 runtime requests. `src/app.mjs` and `src/sw.js` pair the `character-study-working-v62-source-bridge-bundled-native` revision. Main's mobile navigation, original lesson start and unified Learn/Review flows are preserved. Historical source IDs/graders and privacy records remain owned by their respective original modules.
