@@ -5,6 +5,7 @@
  */
 import {STORIES,tokenizeSentence} from './stories.mjs';
 import {findWord,wordsForWrittenForm} from './lexicon.mjs';
+import {originalStoryWordSupport} from './source-bridges-c9.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
@@ -113,6 +114,47 @@ export function renderC9DialogueCatalog(state,currentId,options,act,esc){
  act('c9-media-reset','View all sources','c9-button c9-button--secondary','data-kind="dialogue"')+'</div>')+
  catalogPager('dialogue',page,pages,matches.length,act)+'</div>';
 }
+/**
+ * Original P67/P68 vocabulary handoff for the native reader.
+ * Source definitions are only revealed after explicit assisted action or
+ * completing the native check, so graded reading cannot silently receive hints.
+ */
+export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=false}={}){
+ const items=originalStoryWordSupport(story?.id,state);
+ if(!items.length)return '<p class="c9-reading-vocabulary-empty">No original indexed whole words are available in this passage.</p>';
+ const heading='<div class="c9-reading-vocabulary-head"><span class="c9-eyebrow">ORIGINAL SOURCE · STUDY WORDS IN CONTEXT</span>'+
+  '<h3>Words in this reading</h3><p>'+items.length+' distinct indexed written form'+(items.length===1?'':'s')+
+  ' shown from the existing lexicon, not newly imported material. Reading these hints makes an unanswered native exercise assisted.</p></div>';
+ if(!revealed)return '<section class="c9-reading-vocabulary" aria-label="Optional reading vocabulary support">'+heading+
+  '<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
+  act('c9-reading-vocabulary-help','Study original word meanings · assisted','c9-button c9-button--secondary c9-button--small')+
+  '</div></section>';
+ const saved=new Set(state?.bookmarkedWords||[]);
+ const list=items.map(item=>{
+  const word=item.wordKey&&findWord(item.wordKey);
+  const meanings=item.ambiguous?item.readings.map(w=>
+   '<li><strong>'+esc(w.pinyin)+'</strong> · '+esc(w.senses.slice(0,2).join(' / '))+
+    act('lookup-word','Original entry →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(w.key)+'"')+'</li>').join(''):null;
+  return '<article class="c9-reading-vocabulary-item"><span class="c9-eyebrow">SENTENCE '+(item.lineIndex+1)+'</span>'+
+   '<strong lang="zh-Hans">'+esc(item.hanzi)+'</strong>'+
+   (item.ambiguous?'<p>Multiple original readings; choose by context, no automatic meaning selection.</p>'+
+    '<ul>'+meanings+'</ul>':
+    '<p>'+esc(word?.pinyin||'')+' · '+esc(word?.senses.slice(0,2).join(' / ')||'')+'</p>'+
+    '<small>'+(item.introduced?'At least one linked original character lesson has been introduced':'No linked character introduction recorded; this is not a vocabulary mastery judgment')+'</small>'+
+    '<div class="c9-reading-vocabulary-actions">'+
+      act('lookup-word','Dictionary details','c9-button c9-button--secondary c9-button--small','data-id="'+esc(word.key)+'"')+
+      act('word-bookmark',saved.has(word.key)?'Unsave original word':'Save original word',
+       'c9-button c9-button--quiet c9-button--small','data-id="'+esc(word.key)+'"')+
+      (word.relatedLessonIds[0]?act('c9-reader-character','Study original character','c9-button c9-button--quiet c9-button--small','data-id="'+esc(word.relatedLessonIds[0])+'"'):'')+
+    '</div>')+'</article>';
+ }).join('');
+ return '<section class="c9-reading-vocabulary" aria-label="Original reading vocabulary support">'+heading+
+  '<p class="c9-reading-vocabulary-caveat" role="status">Assisted source support is visible. The current answer is not eligible for independent reading credit. Written-form matches do not certify the correct lexical sense.</p>'+
+  '<div class="c9-reading-vocabulary-grid">'+list+'</div>'+
+  (items.length>=24?'<small>Showing at most 24 original written forms. The passage and native exercises are unchanged.</small>':'')+
+  '</section>';
+}
+
 export function renderC9ReadingNavigator(story,focusIndex,act,esc){
  const focused=Number.isInteger(focusIndex)&&focusIndex>=0&&focusIndex<story.lines.length;
  const index=focused?focusIndex:0;
