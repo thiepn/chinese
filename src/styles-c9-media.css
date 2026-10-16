@@ -404,3 +404,23 @@
 #c9-personal-results[hidden]{display:none!important}
 .c9-personal-limit{border-left:3px solid var(--c9-line-strong);padding:8px 12px;background:var(--c9-surface-2)}
 @media(max-width:480px){.c9-personal-ambiguities article{flex-direction:column}.c9-personal-ambiguities article>div{flex-basis:auto}}
+
+
+/* P67–P68 original reader assisted word-study panel; canonical native credit. */
+.c9-reading-vocabulary{margin:16px 0 20px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:15px;background:var(--c9-surface);min-width:0}
+.c9-reading-vocabulary-head h3{font:600 18px/1.4 var(--c9-display);margin:5px 0;color:var(--c9-ink)}
+.c9-reading-vocabulary-head p,.c9-reading-vocabulary-gate p,.c9-reading-vocabulary-caveat{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-reading-vocabulary-gate{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.c9-reading-vocabulary .c9-button{min-height:44px;white-space:normal}
+.c9-reading-vocabulary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:13px}
+.c9-reading-vocabulary-item{display:grid;align-content:start;justify-items:start;gap:7px;padding:12px;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);min-width:0}
+.c9-reading-vocabulary-item>strong{font:550 27px/1.25 var(--c9-hanzi-display);color:var(--c9-ink)}
+.c9-reading-vocabulary-item p{font:500 12px/1.5 var(--c9-ui);margin:0;color:var(--c9-ink);overflow-wrap:anywhere}
+.c9-reading-vocabulary-item small{font:400 11px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-reading-vocabulary-item ul{margin:0;padding-left:15px;font:400 12px/1.7 var(--c9-ui)}
+.c9-reading-vocabulary-item li{padding-bottom:10px}
+.c9-reading-vocabulary-item li .c9-button{display:block;margin-top:5px}
+.c9-reading-vocabulary-actions{display:flex;flex-wrap:wrap;gap:6px}
+.c9-reading-vocabulary-caveat{border-left:3px solid var(--c9-line-strong);padding:9px 11px;background:var(--c9-surface-2)}
+@media(max-width:900px){.c9-reading-vocabulary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.c9-reading-vocabulary-grid{grid-template-columns:minmax(0,1fr)}.c9-reading-vocabulary{padding:12px}}
