@@ -31,8 +31,9 @@ export function p76Cases(){
  return authored.map((brief,i)=>{
   const reading=STORIES.find(s=>s.beginner?.p71?.id==='p71-'+String(i+1).padStart(2,'0'));
   const dialogue=DIALOGUES.find(d=>d.p75?.readingId===reading?.beginner?.p71?.id);
+  const nextDialogue=DIALOGUES.find(d=>d.p77?.readingId===reading?.beginner?.p71?.id);
   if(!reading||!dialogue||!reading.lines[brief.reading]||!dialogue.lines[brief.dialogue]||!dialogue.questions[brief.question])return null;
-  return Object.freeze({id:'p76-case-'+String(i+1).padStart(2,'0'),readingId:reading.id,dialogueId:dialogue.id,
+  return Object.freeze({id:'p76-case-'+String(i+1).padStart(2,'0'),readingId:reading.id,dialogueId:dialogue.id,nextDialogueId:nextDialogue?.id||null,
    title:dialogue.title,claim:brief.claim,task:brief.task,spoken:brief.spoken,contrast:brief.contrast,
    readingEvidence:Object.freeze({...reading.lines[brief.reading],index:brief.reading}),
    dialogueEvidence:Object.freeze({...dialogue.lines[brief.dialogue],index:brief.dialogue}),
@@ -58,6 +59,7 @@ export function renderP76CaseLab(state,activeId,act,esc){
    '. Neither number establishes listening, writing or speaking proficiency.</p>'+
    '<div class="c9-p76-case-actions">'+
    act('c9-media-open-dialogue','Check the original conversation question →','c9-button c9-button--primary c9-button--small','data-id="'+esc(c.dialogueId)+'"')+
+   (c.nextDialogueId?act('c9-media-open-dialogue','Continue with an original follow-up conversation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.nextDialogueId)+'"'):'')+
    act('c9-media-open-story','Read separate P71 dossier →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
    act('c9-p71-open-composition','Compose in the original P43 editor →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
    '</div><details><summary>Reveal exact source evidence · assisted study</summary>'+
