@@ -474,6 +474,12 @@ test('C9-61 original dialogue question recovery uses every canonical question an
  assert.equal(result.questions[0].independent,1,'prior independent evidence cannot be erased');
  assert.equal(result.questions[0].status,'Latest incorrect');
  assert.equal(result.recommendedIndex,0,'most recent failed question surfaces again');
+ state.dialogueEvents.push({id:'c9-repair-revealed',dialogueId:sample.id,question:0,correct:false,assisted:true,at:5});
+ result=c9DialogueQuestionRepair(sample,state);
+ assert.equal(result.questions[0].status,'Latest assisted · not correct','reference reveal preserves BOTH assistance and accuracy');
+ assert.equal(result.questions[0].independent,1,'reference reveal never erases earlier independent evidence');
+ assert.equal(result.questions[0].assisted,1);
+ assert.equal(result.recommendedIndex,0);
  assert.equal(JSON.stringify(pristine),before,'read-only projection never alters learner records');
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  for(const fragment of ["renderC9DialogueQuestionRepair(d,state,dialogueStep,action,esc)",
