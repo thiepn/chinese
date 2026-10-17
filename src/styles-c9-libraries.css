@@ -668,3 +668,17 @@
  .c9-library-filters label:first-child{grid-column:1/-1}
 }
 @media(max-width:650px){.c9-library-filters{grid-template-columns:minmax(0,1fr)}}
+
+/* P66: read-two-context/source-evidence cards. References remain native source-owned. */
+.c9-source-context-pairs{border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:10px 12px;margin-top:12px;min-width:0}
+.c9-source-context-pairs>summary{cursor:pointer;font:600 12px/1.55 var(--c9-ui);min-height:40px}
+.c9-source-context-pairs>p{font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub);margin:6px 0 10px}
+.c9-source-context-pairs article{display:grid;gap:9px;border-top:1px solid var(--c9-line);padding:12px 0;min-width:0}
+.c9-source-pair-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.c9-source-pair-grid p{font:500 18px/1.65 var(--c9-hanzi-body);padding:12px;margin:0;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);overflow-wrap:anywhere}
+.c9-source-context-pairs article>details>summary{cursor:pointer;min-height:40px;font:550 12px/1.55 var(--c9-ui)}
+.c9-source-pair-reference{display:grid;gap:5px;margin:7px 0;padding:9px;border-left:2px solid var(--c9-line-strong)}
+.c9-source-pair-reference span,.c9-source-pair-reference small{font:400 12px/1.65 var(--c9-ui);overflow-wrap:anywhere}
+.c9-source-pair-actions{display:flex;gap:8px;flex-wrap:wrap}
+.c9-source-pair-actions .c9-button{min-height:44px;white-space:normal}
+@media(max-width:480px){.c9-source-pair-grid{grid-template-columns:minmax(0,1fr)}}

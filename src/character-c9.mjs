@@ -9,7 +9,7 @@ import {WORDS} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {findP31Guide} from './p31-foundations.mjs';
 import {guideFor,DEEP_NOTES} from './lesson-guides.mjs';
-import {sourceCharacterLinks,sourceCharacterComparisonSet} from './source-bridges-c9.mjs';
+import {sourceCharacterLinks,sourceCharacterComparisonSet,sourceCharacterContextTrails} from './source-bridges-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
@@ -62,7 +62,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const due=new Set(dueCards(state));
  const lessonDue=ids.filter(x=>due.has(x)).length;
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
- const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),contrasts=sourceCharacterComparisonSet(lesson.id),sentences=sourceSentences(lesson);
+ const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),contrasts=sourceCharacterComparisonSet(lesson.id),trails=sourceCharacterContextTrails(lesson.id),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
   '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
   '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
@@ -214,10 +214,20 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  '<p class="c9-character-provenance">Revealing or comparing examples creates no StudyEvent, scheduled review target or mastery grade. No radical, stroke or etymology claim is implied.</p></section>':
  '<p>No eligible authored character comparison exists for this original lesson; unverified pairings are not generated.</p>';
  
+ const characterTrails=trails.length?'<section class="c9-character-context-trails" aria-label="Original whole-word usage trails">'+
+  '<h3>Follow this written character into full words</h3>'+
+  '<p>Each card comes from a canonical whole-word index and a matching authored source sentence. Shared writing is not proof of radical origin, pronunciation or meaning.</p>'+
+  '<div class="c9-character-trail-grid">'+trails.map(item=>'<article><strong lang="zh-Hans">'+txt(item.wordHanzi,esc)+'</strong>'+
+   '<small>'+txt(item.pinyin,esc)+' · '+txt(item.senses.slice(0,2).join(' / '),esc)+'</small>'+
+   '<p lang="zh-Hans">'+txt(item.source.hanzi,esc)+'</p>'+
+   '<details><summary>Reveal authored sentence reference</summary><span>'+txt(item.source.pinyin,esc)+'</span><small>'+txt(item.source.english,esc)+'</small></details>'+
+   '<div class="c9-character-trail-actions">'+act('lookup-word','Open indexed word →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(item.wordKey,esc)+'"')+
+   (item.link.sourceType==='sentence'?act('sentence-select','Open source sentence →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(item.link.sourceId,esc)+'"'):
+    act('c9-source-open-story-line','Read passage source →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(item.link.sourceId,esc)+'" data-index="'+item.link.lineIndex+'"'))+'</div></article>').join('')+'</div></section>':'';
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
   '<p>Relationships below only indicate that both characters occur in the same indexed whole word; no radical, etymological or semantic relationship is asserted.</p>'+
-  authoredContrast+guidedComparisons+
+  authoredContrast+guidedComparisons+characterTrails+
   (related.length?'<div class="c9-character-related">'+related.map(({lesson:other,words:via})=>
     '<article><div><strong lang="zh-Hans">'+txt(other.hanzi,esc)+'</strong>'+
     '<span>'+txt(other.pinyin,esc)+' · '+txt(other.meaning,esc)+'</span>'+

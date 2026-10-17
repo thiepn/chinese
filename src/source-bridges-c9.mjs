@@ -159,3 +159,71 @@ export function sourceCharacterComparisonSet(lessonId,{limit=4}={}){
   sample:Object.freeze({...x.sample})
  })));
 }
+
+// P64–P68: exact-authority cross-source evidence paths. These are read-only,
+// NON-certified study scaffolds, never new sentences, lexical senses or grades.
+const bounded=n=>Number.isInteger(n)?Math.max(0,Math.min(n,8)):4;
+const nativeLink=row=>row?.links?.find(link=>link.sourceType==='sentence'||link.sourceType==='story')||null;
+export function sourceWordContextPairs(key,{limit=3}={}){
+ const word=findWord(key);if(!word)return Object.freeze([]);
+ const rows=sourceWordUsage(key,{limit:20}).filter(row=>nativeLink(row));
+ const results=[];
+ for(let i=0;i<rows.length;i++){
+  const first=rows[i],other=rows.slice(i+1).find(row=>
+    row.hanzi!==first.hanzi&&nativeLink(row)?.sourceId!==nativeLink(first)?.sourceId);
+  if(!other)continue;
+  results.push(Object.freeze({wordKey:word.key,hanzi:word.hanzi,
+   first,second:other,firstLink:nativeLink(first),secondLink:nativeLink(other),
+   claim:'Two original source lines share this exact written form; sense and reading equivalence are not verified'}));
+  if(results.length>=bounded(limit))break;
+ }
+ return Object.freeze(results);
+}
+export function sourceCharacterContextTrails(lessonId,{limit=4}={}){
+ const lesson=byLesson.get(lessonId);if(!lesson)return Object.freeze([]);
+ const rows=[];
+ for(const word of WORDS){
+  if(!word.hanzi.includes(lesson.hanzi))continue;
+  const source=sourceWordUsage(word.key,{limit:6}).find(row=>nativeLink(row));
+  if(!source)continue;
+  rows.push(Object.freeze({lessonId,character:lesson.hanzi,wordKey:word.key,
+   wordHanzi:word.hanzi,pinyin:word.pinyin,senses:Object.freeze([...word.senses]),
+   source,link:nativeLink(source)}));
+  if(rows.length>=bounded(limit))break;
+ }
+ return Object.freeze(rows);
+}
+const storyContextCache=new Map();
+export function sourceReadingCrossContexts(storyId,{limit=4}={}){
+ const story=STORIES.find(x=>x.id===storyId);
+ if(!story)return Object.freeze([]);
+ if(!storyContextCache.has(storyId)){
+  const results=[],used=new Set();
+  for(let lineIndex=0;lineIndex<story.lines.length;lineIndex++){
+   const line=story.lines[lineIndex];
+   for(const token of tokenizeSentence(line.hanzi)){
+    if(token.text.length<2||used.has(token.text))continue;
+    const alternatives=wordsForWrittenForm(token.text);
+    // A written form with multiple original readings is NOT disambiguated here.
+    if(alternatives.length!==1)continue;
+    const word=alternatives[0];
+    const counterpart=sourceWordUsage(word.key,{limit:20}).find(row=>
+      row.hanzi!==line.hanzi&&row.links.some(link=>
+        link.sourceType==='sentence'||(link.sourceType==='story'&&link.sourceId!==storyId)));
+    const link=nativeLink(counterpart);
+    if(!counterpart||!link)continue;
+    used.add(token.text);
+    results.push(Object.freeze({
+     storyId,lineIndex,sourceLine:Object.freeze({...line}),
+     wordKey:word.key,wordHanzi:word.hanzi,wordPinyin:word.pinyin,
+     indexedSenses:Object.freeze([...word.senses]),counterpart,link,
+     claim:'Exact written-form overlap across authored sources; no contextual sense certification'
+    }));
+    if(results.length>=8)break;
+   }
+   if(results.length>=8)break;
+  }
+  storyContextCache.set(storyId,Object.freeze(results));
+ }
+ return Object.freeze(storyContextCache.get(storyId).slice(0,bounded(limit)));
+}

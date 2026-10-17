@@ -5,7 +5,7 @@
  */
 import {STORIES,tokenizeSentence,storyExercise} from './stories.mjs';
 import {findWord,wordsForWrittenForm} from './lexicon.mjs';
-import {originalStoryWordSupport} from './source-bridges-c9.mjs';
+import {originalStoryWordSupport,sourceReadingCrossContexts} from './source-bridges-c9.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
@@ -278,6 +278,32 @@ export function renderC9ReadingContinuation(state,currentId,act,esc,options={}){
   '</section>';
 }
 
+export function renderC9CrossSourceReading(story,act,esc,{revealed=false}={}){
+ const paths=sourceReadingCrossContexts(story?.id,{limit:4});
+ if(!paths.length)return '';
+ return '<section class="c9-cross-source-reading" aria-labelledby="c9-cross-reading-title">'+
+  '<header><span class="c9-eyebrow">P67–P68 · ORIGINAL CROSS-SOURCE READING</span>'+
+  '<h2 id="c9-cross-reading-title">Connect this passage to other authored situations</h2>'+
+  '<p>Read the two Chinese contexts containing the same indexed written word. Think about its possible use before revealing reference translations. This is source study, not a new certified graded passage or mastery assessment.</p></header>'+
+  '<div class="c9-cross-reading-grid">'+paths.map(({sourceLine,lineIndex,wordHanzi,wordKey,counterpart,link})=>
+   '<article><span class="c9-eyebrow">SOURCE LINE '+(lineIndex+1)+' · WHOLE WORD <span lang="zh-Hans">'+esc(wordHanzi)+'</span></span>'+
+    '<div class="c9-cross-reading-pair"><p lang="zh-Hans">'+esc(sourceLine.hanzi)+'</p>'+
+    '<p lang="zh-Hans">'+esc(counterpart.hanzi)+'</p></div>'+
+    (!revealed?'<p class="c9-cross-source-warning">Bilingual evidence withheld until native reading support is deliberately marked assisted.</p>':
+     '<div class="c9-cross-reading-reference"><p>'+esc(sourceLine.pinyin)+' · '+esc(sourceLine.english)+'</p>'+
+     '<p>'+esc(counterpart.pinyin)+' · '+esc(counterpart.english)+'</p>'+
+     '<small>Source translation supports these complete sentences, not a certified meaning of the repeated word.</small></div>')+
+    '<div class="c9-cross-reading-actions">'+
+    act('c9-source-open-story-line','Focus this passage line →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'" data-index="'+lineIndex+'"')+
+    (link.sourceType==='sentence'?act('sentence-select','Practise original sentence →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'"'):
+      act('c9-source-open-story-line','Read second original passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'" data-index="'+link.lineIndex+'"'))+
+    act('lookup-word','Inspect exact indexed word →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(wordKey)+'"')+
+    '</div></article>').join('')+'</div>'+
+  (!revealed?act('c9-cross-source-reveal','Reveal bilingual source evidence · marks current reading assisted',
+   'c9-button c9-button--secondary c9-button--small'):'<p class="c9-cross-source-warning">Original source help is open. The native unanswered reader is marked assisted.</p>')+
+  '</section>';
+}
+
 export function renderC9ReadingHub(state,story,act,esc,options={}){
  const histories=state.readingEvents||[],attempted=new Set(histories.map(e=>e.storyId));
  const independent=new Set(histories.filter(e=>e.correct&&!e.assisted).map(e=>e.storyId));
@@ -302,6 +328,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
+ renderC9CrossSourceReading(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
  renderC9ReadingContinuation(state,story.id,act,esc,options.queue||{})+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+
