@@ -1,3 +1,4 @@
+import {P75_DIALOGUES} from './p75-dialogues.mjs';
 /**
  * C9-09 Clean Modular Scholar — Reading, Listening & Conversations.
  * Visual and read-only projections of original source content. All activity
@@ -103,11 +104,11 @@ export function renderC9DialogueCatalog(state,currentId,options,act,esc){
   const ev=histories.filter(e=>e.dialogueId===d.id),current=d.id===currentId;
   return '<article class="c9-media-entry'+(current?' is-current':'')+'">'+
    '<div class="c9-media-entry-meta"><span class="c9-media-entry-type">'+
-      (d.p34?'LISTENING-FIRST · TRANSCRIPT GUARDED':d.p33?'SITUATIONAL CONVERSATION':'ORIGINAL DIALOGUE')+
+      (d.p34?'LISTENING-FIRST · TRANSCRIPT GUARDED':d.p75?'ORIGINAL UPPER-INTERMEDIATE CONVERSATION':d.p33?'SITUATIONAL CONVERSATION':'ORIGINAL DIALOGUE')+
     '</span></div>'+
    '<h3>'+esc(d.title)+'</h3><p>'+count(d.lines.length,'original turn')+' · '+count(d.questions.length,'native question')+'</p>'+
    '<p class="c9-media-entry-history">'+esc(stateFor(ev))+'</p>'+
-   '<p class="c9-media-entry-guard">'+(d.p34?'Text and translations remain behind the original transcript reveal.':'Speak or listen, then check the meaning in the original player.')+'</p>'+
+   '<p class="c9-media-entry-guard">'+(d.p34||d.p75?'Text and translations remain behind the original transcript reveal.':'Speak or listen, then check the meaning in the original player.')+'</p>'+
    act('c9-media-open-dialogue',current?'Return to current conversation →':'Open original dialogue →',
     'c9-button '+(current?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
     'data-id="'+esc(d.id)+'"')+'</article>';
@@ -175,7 +176,7 @@ export function renderC9ReadingNavigator(story,focusIndex,act,esc){
  '</div><p class="c9-reading-nav-caveat">Pinyin, translation and glossary help remain explicit assisted controls in the native reader.</p></section>';
 }
 export function renderC9ListeningWorkflow(dialogue,question,feedback,assisted,act,esc){
- const last=Boolean(feedback),p34=Boolean(dialogue.p34);
+ const last=Boolean(feedback),p34=Boolean(dialogue.p34||dialogue.p75);
  return '<section class="c9-listening-journey" aria-label="Listening and comprehension workflow">'+
  '<div><p class="c9-eyebrow">'+(p34?'LISTENING-FIRST · P34':'CONVERSATION COMPREHENSION')+'</p>'+
  '<h3>Listen → interpret → check → study</h3></div>'+
@@ -354,6 +355,7 @@ export function renderC9P71LearningCourse(state,currentId,act,esc){
   const events=history.filter(e=>e.storyId===s.id),last=events.at(-1);
   const ever=events.some(e=>e.correct&&!e.assisted),focus=s.beginner.p71.listeningCue;
   const continuity=p71PracticeContinuity(s,state);
+  const companion=DIALOGUES.find(d=>d.p75?.readingId===s.beginner.p71.id);
   return '<article'+(currentId===s.id?' class="is-current"':'')+'>'+
   '<div class="c9-p71-card-title"><span class="c9-eyebrow">SOURCE '+(i+1)+' / '+readings.length+' · INTERNAL BAND '+s.beginner.level+'</span>'+
   '<h3>'+esc(s.title)+'</h3></div><p>'+esc(s.beginner.purpose)+'</p>'+
@@ -373,6 +375,7 @@ export function renderC9P71LearningCourse(state,currentId,act,esc){
    'data-id="'+esc(s.id)+'" data-mode="beginner-sequence"')+
   act('c9-reading-queue-start','Write the original conclusion →','c9-button c9-button--secondary c9-button--small',
    'data-id="'+esc(s.id)+'" data-mode="beginner-writing"')+
+  (companion?act('c9-media-open-dialogue','Practise source-linked original conversation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(companion.id)+'"'):'')+
   act('c9-p71-open-composition','Compose two Mandarin paragraphs →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+
   act('c9-media-open-story','Read full Chinese passage →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(s.id)+'"')+
   '</div><details class="c9-p71-editorial"><summary>Source and editorial evidence · unreviewed</summary>'+
@@ -456,6 +459,44 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<div id="c9-reading-results" aria-live="polite">'+renderC9ReadingCatalog(state,story.id,options,act,esc)+'</div></section>'+
  '<p class="c9-media-provenance c9-unified-source-note">Practice evidence is not reading-level certification. Source texts are original editorial learning material, not an official HSK corpus.</p></div>';
 }
+/** P75 original authorial conversation syllabus; paired readings are separately
+ * authored contexts, not verbatim evidence, and there is no listening grade.
+ */
+export function renderC9P75ConversationCourse(state,currentId,act,esc){
+ const rows=DIALOGUES.filter(d=>d.p75),history=state.dialogueEvents||[];
+ if(!rows.length)return '';
+ return '<section class="c9-p75-dialogue-course" aria-labelledby="c9-p75-conversations-title">'+
+ '<header><p class="c9-eyebrow">P75 · FIVE ORIGINAL MULTI-SPEAKER NEGOTIATIONS</p>'+
+ '<h2 id="c9-p75-conversations-title">Negotiate what the evidence supports</h2>'+
+ '<p>Five new upper-intermediate Mandarin dialogues, forty bilingual turns and fifteen source-linked questions. Hear speakers with optional device TTS, answer through the original Dialogue grader, rehearse a speaking role, then compose in the original P43 editor. P71 reading themes are related but are separate authorial manuscripts. DEMO_ONLY · UNREVIEWED · not official HSK or verified listening/speaking.</p></header>'+
+ '<div class="c9-p75-dialogue-grid">'+rows.map((d,i)=>{
+  const story=STORIES.find(s=>s.beginner?.p71?.id===d.p75.readingId);
+  const own=history.filter(e=>e.dialogueId===d.id),independent=new Set(own.filter(e=>e.correct&&!e.assisted).map(e=>e.question)),last=own.at(-1);
+  return '<article'+(d.id===currentId?' class="is-current"':'')+'>'+
+   '<span class="c9-eyebrow">ORIGINAL CASE '+(i+1)+' / '+rows.length+' · '+esc(d.p75.id)+'</span>'+
+   '<h3>'+esc(d.title)+'</h3><p>'+esc(d.p75.goal)+'</p>'+
+   '<p>'+d.lines.length+' full source turns · '+d.questions.length+' canonical questions · '+independent.size+
+    ' with recorded independent correct evidence'+(last?' · latest '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect'):' · not attempted')+
+    '. Answer evidence does not verify listening or conversational fluency.</p>'+
+   '<div class="c9-p75-dialogue-actions">'+
+   act('c9-media-open-dialogue','Practice native conversation →','c9-button c9-button--primary c9-button--small','data-id="'+esc(d.id)+'"')+
+   (story?act('c9-media-open-story','Read related P71 passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
+   (story?act('c9-p71-open-composition','Write an independent Mandarin response →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
+   '</div><small>Public authorial educational script only; related topic does not establish source identity or HSK membership.</small>'+
+   '</article>';
+ }).join('')+'</div></section>';
+}
+export function renderC9P75DialogueEvidence(dialogue,index,feedback,act,esc){
+ if(!dialogue?.p75||!feedback)return '';
+ const q=dialogue.p75.questions[index],line=dialogue.lines[q?.evidenceIndex];
+ if(!q||!line)return '';
+ return '<section class="c9-p75-dialogue-evidence" aria-label="Original P75 source evidence">'+
+ '<span class="c9-eyebrow">ORIGINAL SOURCE TURN '+(q.evidenceIndex+1)+' · '+esc(dialogue.p75.id)+'</span>'+
+ '<p lang="zh-Hans">'+esc(line.hanzi)+'</p><small>'+esc(line.pinyin)+'</small><p>'+esc(line.english)+'</p>'+
+ '<p>'+esc(q.explanation)+'</p><small>'+(feedback.assisted?'Native answer was assisted.':'Native answer recorded without source assistance.')+
+ ' These Chinese source lines and interpretations remain editorially unreviewed.</small></section>';
+}
+
 export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  const histories=state.dialogueEvents||[],attempted=new Set(histories.map(e=>e.dialogueId));
  const independent=new Set(histories.filter(e=>e.correct&&!e.assisted).map(e=>e.dialogueId));
@@ -467,7 +508,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  fact(attempted.size,'Conversations with recorded attempts')+
  fact(independent.size,'Conversations with independent correct evidence')+'</div>'+
  '<section class="c9-media-lead c9-unified-card"><div><p class="c9-eyebrow">CURRENT CONVERSATION · '+
- (dialogue.p34?'LISTENING-FIRST':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
+ (dialogue.p34?'LISTENING-FIRST':dialogue.p75?'UPPER-INTERMEDIATE ORIGINAL CONVERSATION':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
  '<p>'+count(dialogue.lines.length,'speaking turn')+' · '+count(dialogue.questions.length,'source question')+'. '+
  (last?'Last recorded answer was '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect')+'.':
  'No recorded answer yet.')+' Source links never include private answers or reveal the transcript.</p>'+
@@ -480,6 +521,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  '<p>Listening situations with independent correct answers</p>'+
  (next?act('p34-open-listening','Continue P34 listening →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
+ renderC9P75ConversationCourse(state,dialogue.id,act,esc)+
  '<section class="c9-media-discovery" aria-label="Find an original conversation">'+
  '<div class="c9-media-discovery-header"><h2>Conversation library</h2><p>Browse actual dialogues without exposing listening-first text or awarding progress.</p></div>'+
  catalogControls('dialogue',options,act,esc)+
