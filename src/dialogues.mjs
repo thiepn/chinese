@@ -10,6 +10,7 @@ import {P48_DIALOGUES} from './p48-dialogues.mjs';
 import {P49_CASES} from './p49-course.mjs';
 import {P50_DIALOGUES} from './p50-dialogues.mjs';
 import {P51_DIALOGUES} from './p51-dialogues.mjs';
+import {P75_DIALOGUES,P75_DIALOGUE_ROWS} from './p75-dialogues.mjs';
 /** Independent demo conversations. Editorial samples; no official HSK membership or audio qualification. */
 const data=[
  ['At the library',[['A','你想看什么书？','Nǐ xiǎng kàn shénme shū?','What book would you like to read?'],['B','我想看一本中文书。','Wǒ xiǎng kàn yì běn Zhōngwén shū.','I want to read a Chinese-language book.'],['A','我们一起找吧。','Wǒmen yìqǐ zhǎo ba.','Let’s look for it together.']],[['What kind of book does B want?','A Chinese-language book.','A book about trains.','A math textbook.'],['What does A suggest doing together?','Looking for the book.','Going home.','Taking a train.']]],
@@ -295,6 +296,8 @@ data.push(...P49_CASES.map(c=>[c.title,c.turns.map(t=>[t.speaker,t.hanzi,t.pinyi
 data.push(...P50_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),d.questions.map(q=>[q.prompt,...q.options])]));
 // P51 original source- and register-aware listening appends after earlier dialogue identities.
 data.push(...P51_DIALOGUES.map(d=>[d.title,d.turns.map(t=>[t.speaker,t.hanzi,t.pinyin,t.english]),d.questions.map(q=>[q.prompt,...q.options])]));
+// Five P75 original conversation scripts follow every historical dialogue ID.
+data.push(...P75_DIALOGUE_ROWS);
 export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const id=`dialogue-${String(i+1).padStart(2,'0')}`;
  const p33=P33_SCENARIOS.find(s=>s.title===title)||null;
@@ -309,7 +312,8 @@ export const DIALOGUES=Object.freeze(data.map(([title,lines,questions],i)=>{
  const p49=P49_CASES.find(s=>s.title===title)||null;
  const p50=P50_DIALOGUES.find(s=>s.title===title)||null;
  const p51=P51_DIALOGUES.find(s=>s.title===title)||null;
- return Object.freeze({id,title,p33,p34,p37,p42,p44,p45,p46,p47,p48,p49,p50,p51,
+ const p75=P75_DIALOGUES.find(s=>s.title===title)||null;
+ return Object.freeze({id,title,p33,p34,p37,p42,p44,p45,p46,p47,p48,p49,p50,p51,p75,
   lines:Object.freeze(lines.map(([speaker,hanzi,pinyin,english])=>Object.freeze({speaker,hanzi,pinyin,english}))),
   questions:Object.freeze(questions.map(([prompt,answer,...wrong],j)=>Object.freeze({
    id:`${id}:q${j}`,prompt,answer,options:Object.freeze([answer,...wrong].sort((a,b)=>a.localeCompare(b)))

@@ -707,3 +707,21 @@
 .c9-p71-writing-anchors li>span,.c9-p71-writing-anchors small{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
 .c9-p71-writing-anchors [lang="zh-Hans"]{font:500 17px/1.6 var(--c9-hanzi-body)}
 @media(max-width:390px){.c9-p71-production-bridge,.c9-p71-writing-brief{padding:11px}}
+
+/* P75 substantive source-authored Mandarin conversation curriculum. */
+.c9-p75-dialogue-course{margin:18px 0;padding:18px;min-width:0;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm)}
+.c9-p75-dialogue-course header{display:grid;gap:8px;margin-bottom:16px}
+.c9-p75-dialogue-course h2{font:600 clamp(19px,2vw,25px)/1.4 var(--c9-display);margin:0}
+.c9-p75-dialogue-course header p,.c9-p75-dialogue-grid p{font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-p75-dialogue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.c9-p75-dialogue-grid article{display:grid;align-content:start;gap:9px;padding:14px;min-width:0;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)}
+.c9-p75-dialogue-grid article.is-current{border-color:var(--c9-accent)}
+.c9-p75-dialogue-grid h3{font:600 16px/1.45 var(--c9-display);margin:0;overflow-wrap:anywhere}
+.c9-p75-dialogue-grid small{font:400 11px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-p75-dialogue-actions{display:grid;gap:7px}
+.c9-p75-dialogue-actions .c9-button{min-height:44px;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.c9-p75-dialogue-evidence{margin:12px 0;padding:15px;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);min-width:0}
+.c9-p75-dialogue-evidence [lang="zh-Hans"]{font:500 18px/1.6 var(--c9-hanzi-body);overflow-wrap:anywhere}
+.c9-p75-dialogue-evidence p,.c9-p75-dialogue-evidence small{font:400 12px/1.6 var(--c9-ui);overflow-wrap:anywhere}
+@media(max-width:800px){.c9-p75-dialogue-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p75-dialogue-course{padding:10px}.c9-p75-dialogue-grid article{padding:10px}}
