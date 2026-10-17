@@ -88,6 +88,16 @@ test('five source-owned P77 consequence journeys present native TTS-safe handoff
  assert.ok(caseHTML.includes('Continue with an original follow-up conversation'));
  assert.equal((caseHTML.match(/Continue with an original follow-up conversation/g)||[]).length,5);
 });
+test('P77 authored source Pinyin matches Chinese demonstrative and contains no extra unscripted role',()=>{
+ const ferry=P77_DIALOGUES[1].turns[4];
+ assert.ok(ferry.hanzi.startsWith('现在还没有'));
+ assert.ok(ferry.pinyin.startsWith('Xiànzài hái méiyǒu'));
+ assert.doesNotMatch(ferry.pinyin,/Zǔzhīzhě shuō/);
+ assert.ok(ferry.english.startsWith("We don't yet have"));
+ const school=P77_DIALOGUES[2].turns[1];
+ assert.ok(school.hanzi.startsWith('这些笔记'));
+ assert.ok(school.pinyin.startsWith('Zhèxiē bǐjì'));
+});
 test('no added grader, storage, audio recording or claimed official proficiency in P77 source module',()=>{
  const module=readFileSync(new URL('../src/p77-dialogues.mjs',import.meta.url),'utf8');
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
