@@ -87,7 +87,7 @@ test('pronunciation guidance has contour explanation for all lexical tones witho
 test('UI practice controls, context bridge, CSS and offline manifest include new local modules',()=>{
  const read=n=>readFileSync(new URL(`../src/${n}`,import.meta.url),'utf8');const app=read('app.mjs'),sw=read('sw.js'),css=read('styles.css');
  for(const s of ['connected-session','open-connected-item','guided-pause','toneTeachingPanel','contextBridgePanel','assistanceUsed'])assert.ok(app.includes(s),s);
- for(const s of ['connected-practice.mjs','pronunciation-path.mjs','working-v72'])assert.ok(sw.includes(s),s);
+ for(const s of ['connected-practice.mjs','pronunciation-path.mjs','working-v73'])assert.ok(sw.includes(s),s);
  for(const s of ['.connection-bridge','.tone-teaching','.connected-analytics'])assert.ok(css.includes(s),s);
 });
 import {dialogueWordLinks,storyWordLinks,writtenWordMatches} from '../src/context-links.mjs';
