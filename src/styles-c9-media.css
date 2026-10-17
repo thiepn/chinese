@@ -620,3 +620,20 @@
 .c9-cross-reading-actions .c9-button,.c9-cross-source-reading>.c9-button{min-height:44px;white-space:normal}
 @media(max-width:720px){.c9-cross-reading-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-cross-source-reading{padding:12px}.c9-cross-reading-grid article{padding:10px}}
+
+/* P68 new authorial DEMO_ONLY reading catalog, source-owned continuation. */
+.c9-p68-course{margin:18px 0;padding:18px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);min-width:0;background:var(--c9-surface)}
+.c9-p68-course header{display:grid;gap:7px;margin-bottom:14px}
+.c9-p68-course h2{font:600 clamp(19px,2vw,24px)/1.4 var(--c9-display);margin:0}
+.c9-p68-course header p,.c9-p68-course>.c9-media-provenance{font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-p68-course-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.c9-p68-course-grid article{display:grid;align-content:start;gap:8px;padding:14px;min-width:0;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)}
+.c9-p68-course-grid article.is-current{border-color:var(--c9-accent)}
+.c9-p68-course-grid h3{font:600 16px/1.45 var(--c9-display);margin:0;overflow-wrap:anywhere}
+.c9-p68-course-grid p,.c9-p68-course-grid small{font:400 12px/1.6 var(--c9-ui);margin:0;overflow-wrap:anywhere}
+.c9-p68-course-grid small{color:var(--c9-sub)}
+.c9-p68-course-actions{display:flex;align-items:flex-start;flex-wrap:wrap;gap:7px}
+.c9-p68-course-actions .c9-button{min-height:44px;white-space:normal}
+.c9-p68-course>.c9-media-provenance{margin-top:12px}
+@media(max-width:700px){.c9-p68-course-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p68-course{padding:11px}.c9-p68-course-grid article{padding:11px}.c9-p68-course-actions{display:grid;grid-template-columns:minmax(0,1fr)}}

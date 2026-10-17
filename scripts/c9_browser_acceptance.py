@@ -1332,6 +1332,41 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P68 six newly authored DEMO_ONLY evidence readers, existing source ID
+            # continuity, original question writer and responsive route handoff.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p68_new_source_readings():
+                    open_route(page,"stories")
+                    section=page.locator(".c9-p68-course")
+                    section.wait_for(state="visible")
+                    entries=section.locator(".c9-p68-course-grid article")
+                    if entries.count()!=6:
+                        raise AssertionError("P68 source authoring is not six native reading entries")
+                    if "DEMO_ONLY" not in section.inner_text():
+                        raise AssertionError("Unreviewed P68 material lacks an explicit demo-only disclosure")
+                    section.locator('[data-action="c9-reading-queue-start"]').first.click()
+                    story=page.locator("#story-choice")
+                    if story.count()==0 or story.input_value()=="":
+                        raise AssertionError("P68 native comprehension handoff was not mounted")
+                    if "A request is not a reservation" not in story.locator('option:checked').inner_text():
+                        raise AssertionError("P68 source did not open its original canonical story")
+                    tabs=page.locator('.p28-reading-modes [data-action="story-mode"]')
+                    if tabs.count()<4:
+                        raise AssertionError("New source did not inherit three reading questions plus native writing")
+                    page.locator('.p28-reading-modes [data-mode="beginner-reason"]').click()
+                    if page.locator('.story-practice [data-action="story-answer"]').count()==0:
+                        raise AssertionError("Native evidence question is not answerable")
+                    page.locator('.story-practice [data-action="story-answer"]').first.click()
+                    page.locator('.p28-evidence').wait_for(state="visible")
+                    if not page.locator('.p28-evidence').inner_text().strip():
+                        raise AssertionError("Original authored source evidence was not presented after answer")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P68 reading course overflows "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Six authored source cards, canonical native reasoning question/evidence, "+str(width)+"px responsive"
+                check("P68 six original evidence readers "+str(width),p68_new_source_readings)
+                ctx.close()
             # P65 + P69 exact original learner interactions, no invented grades.
             ctx,page,errors=session(390,844,True)
             def p65_p69_original_source_contrasts_and_private_pages():
@@ -1805,7 +1840,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v67-p64-p68-source-context-trails"
+                current="character-study-working-v68-original-source-reading-content"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1823,7 +1858,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v67-p64-p68-source-context-trails');
+                    keys.includes('character-study-working-v68-original-source-reading-content');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
