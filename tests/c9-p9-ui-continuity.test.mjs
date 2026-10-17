@@ -10,7 +10,7 @@ import {renderC9Review} from '../src/review-practice-c9.mjs';
 import {findLibrarySentence} from '../src/sentence-library.mjs';
 import {findStory,STORIES} from '../src/stories.mjs';
 import {findDialogue,DIALOGUES} from '../src/dialogues.mjs';
-import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallSource,renderC9DialogueRoleplay,renderC9ReadingRecall} from '../src/media-c9.mjs';
+import {renderC9ReadingHub,renderC9DialogueHub,c9RoleplaySource,c9ReadingRecallSource,renderC9DialogueRoleplay,renderC9ReadingRecall,c9DialogueQuestionRepair,renderC9DialogueQuestionRepair} from '../src/media-c9.mjs';
 import {P33_SCENARIOS} from '../src/p33-scenarios.mjs';
 import {p33DecisionSource,p33ScenarioTeaching} from '../src/p33-screen.mjs';
 import {SENTENCE_TASKS} from '../src/sentence-workshop.mjs';
@@ -429,4 +429,57 @@ test('C9-60 original P34 listening transfer verifies native audio writer IDs and
   "if(task.p33ScenarioId){sentenceSupport=true;render();}"
  ])assert.ok(app.includes(phrase),'native writer and genuine source authority: '+phrase);
  assert.equal(JSON.stringify(state),before);
+});
+
+
+test('C9-61 original dialogue question recovery uses every canonical question and immutable observed events',()=>{
+ const pristine=freshState(),before=JSON.stringify(pristine);
+ for(const dialogue of DIALOGUES){
+  const model=c9DialogueQuestionRepair(dialogue,pristine);
+  assert.equal(model.dialogueId,dialogue.id);
+  assert.equal(model.questions.length,dialogue.questions.length);
+  assert.equal(model.recommendedIndex,0,'unattempted original questions start with first');
+  for(let i=0;i<dialogue.questions.length;i++){
+   const q=model.questions[i];
+   assert.equal(q.id,dialogue.questions[i].id);
+   assert.equal(q.prompt,dialogue.questions[i].prompt);
+   assert.equal(q.attempts,0);
+   assert.equal(q.independent,0);
+   assert.equal(q.status,'Unattempted');
+  }
+  const html=renderC9DialogueQuestionRepair(dialogue,pristine,0,
+   (action,label,classes='',attrs='')=>'<button data-action="'+action+'" '+attrs+'>'+label+'</button>',esc);
+  assert.ok(html.includes('id="c9-dialogue-question-repair"'));
+  assert.ok(html.includes('data-action="c9-dialogue-repair-play"'));
+  assert.equal(html.split('data-action="c9-dialogue-repair-select"').length-1,dialogue.questions.length+1);
+  assert.ok(!html.includes('class="dialogue-pinyin"'),'the repair list cannot reveal P34 transcript');
+ }
+ const sample=DIALOGUES.find(d=>d.questions.length>=2);
+ const state=freshState();
+ state.dialogueEvents=[
+  {id:'c9-repair-incorrect',dialogueId:sample.id,question:0,correct:false,assisted:false,at:1},
+  {id:'c9-repair-assisted',dialogueId:sample.id,question:1,correct:true,assisted:true,at:2}
+ ];
+ let result=c9DialogueQuestionRepair(sample,state);
+ assert.equal(result.questions[0].status,'Latest incorrect');
+ assert.equal(result.questions[1].status,'Latest assisted');
+ assert.equal(result.questions[1].independent,0);
+ assert.equal(result.recommendedIndex,0,'incorrect needs priority over assisted');
+ state.dialogueEvents.push({id:'c9-repair-independent',dialogueId:sample.id,question:0,correct:true,assisted:false,at:3});
+ result=c9DialogueQuestionRepair(sample,state);
+ assert.equal(result.questions[0].independent,1);
+ assert.equal(result.recommendedIndex,1,'assisted answer requires independent practice');
+ state.dialogueEvents.push({id:'c9-repair-later-miss',dialogueId:sample.id,question:0,correct:false,assisted:false,at:4});
+ result=c9DialogueQuestionRepair(sample,state);
+ assert.equal(result.questions[0].independent,1,'prior independent evidence cannot be erased');
+ assert.equal(result.questions[0].status,'Latest incorrect');
+ assert.equal(result.recommendedIndex,0,'most recent failed question surfaces again');
+ assert.equal(JSON.stringify(pristine),before,'read-only projection never alters learner records');
+ const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ for(const fragment of ["renderC9DialogueQuestionRepair(d,state,dialogueStep,action,esc)",
+  "if(name==='c9-dialogue-repair-select')","model.questions.some(row=>row.index===index&&row.id===button.dataset.id)",
+  "c9ConfirmLeaveNativeAnswer('dialogues')","dialogueStep=index;dialogueFeedback=null",
+  "if(name==='c9-dialogue-repair-play')"])
+  assert.ok(app.includes(fragment),'original guarded assessment handoff: '+fragment);
+ assert.ok(!app.includes('addC9DialogueRepairEvent('),'no second native event writer');
 });
