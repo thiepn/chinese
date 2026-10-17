@@ -1332,6 +1332,47 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P75 source-owned multi-speaker upper-intermediate conversation.
+            # Listen without leaking Hanzi via transcript nodes or data-text,
+            # submit via the native dialogue writer, then inspect exact evidence.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p75_native_conversations():
+                    open_route(page,"stories")
+                    paired=page.locator(".c9-p71-native-grid article").first
+                    paired.locator('[data-action="c9-media-open-dialogue"]').click()
+                    section=page.locator(".c9-p75-dialogue-course")
+                    section.wait_for(state="visible")
+                    cards=section.locator(".c9-p75-dialogue-grid article")
+                    if cards.count()!=5:raise AssertionError("Five source-owned P75 conversation cases absent")
+                    if "DEMO_ONLY" not in section.inner_text() or "UNREVIEWED" not in section.inner_text():
+                        raise AssertionError("P75 unreviewed authorial disclosure missing")
+                    turns=page.locator("#c9-native-dialogue .dialogue-turn")
+                    if turns.count()!=8:raise AssertionError("Native P75 eight-turn source not installed")
+                    if any("Audio turn" not in item.inner_text() for item in turns.all()):
+                        raise AssertionError("P75 transcript visible before native reveal")
+                    if page.locator("#c9-native-dialogue [data-text]").count()!=0:
+                        raise AssertionError("P75 transcript leaked into a source playback attribute")
+                    quiz=page.locator("#c9-native-dialogue-question")
+                    if quiz.locator('[data-action="dialogue-answer"]').count()!=4:
+                        raise AssertionError("P75 questions not handled by original dialogue writer")
+                    quiz.locator('[data-action="dialogue-answer"]').first.click()
+                    page.locator(".c9-p75-dialogue-evidence").wait_for(state="visible")
+                    if "目前没有署名" not in page.locator(".c9-p75-dialogue-evidence").inner_text():
+                        raise AssertionError("Post-answer Chinese evidence not from indexed dialogue turn")
+                    page.locator('[data-action="dialogue-support"]').first.click()
+                    if "两张地图画出的河道" not in turns.first.inner_text():
+                        raise AssertionError("Explicit original P75 transcript support did not reveal source")
+                    cards.first.locator('[data-action="c9-p71-open-composition"]').click()
+                    page.locator(".c9-p71-writing-brief").wait_for(state="visible")
+                    if "archival exhibition" not in page.locator(".c9-p71-writing-brief").inner_text():
+                        raise AssertionError("P75 dialogue to canonical P71 writing source did not connect")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P75 original dialogues or writing overflow "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "P75 original eight-turn dialogue, native answer, source help and P71 writer "+str(width)+"px"
+                check("P75 original paired multi-speaker conversation "+str(width),p75_native_conversations)
+                ctx.close()
             # P75: authentic P71 dossier -> original P43 two-paragraph editor,
             # native snapshots, assisted source anchors and guarded source switch.
             for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
@@ -1996,7 +2037,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v72-p75-source-writing-bridge"
+                current="character-study-working-v73-p75-original-conversation-native"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2014,7 +2055,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v72-p75-source-writing-bridge');
+                    keys.includes('character-study-working-v73-p75-original-conversation-native');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
