@@ -7,6 +7,7 @@ import {STORIES,tokenizeSentence,storyExercise} from './stories.mjs';
 import {findWord,wordsForWrittenForm} from './lexicon.mjs';
 import {originalStoryWordSupport,sourceReadingCrossContexts} from './source-bridges-c9.mjs';
 import {auditReadingSource,auditReadingInventory,p68NativeTransfer} from './reading-editorial-c9.mjs';
+import {p71PracticeContinuity} from './p71-listening-c9.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
@@ -352,16 +353,20 @@ export function renderC9P71LearningCourse(state,currentId,act,esc){
  '<div class="c9-p71-native-grid">'+readings.map((s,i)=>{
   const events=history.filter(e=>e.storyId===s.id),last=events.at(-1);
   const ever=events.some(e=>e.correct&&!e.assisted),focus=s.beginner.p71.listeningCue;
+  const continuity=p71PracticeContinuity(s,state);
   return '<article'+(currentId===s.id?' class="is-current"':'')+'>'+
   '<div class="c9-p71-card-title"><span class="c9-eyebrow">SOURCE '+(i+1)+' / '+readings.length+' · INTERNAL BAND '+s.beginner.level+'</span>'+
   '<h3>'+esc(s.title)+'</h3></div><p>'+esc(s.beginner.purpose)+'</p>'+
   '<p class="c9-p71-evidence-state">'+(last?(last.assisted?'Latest native practice: assisted':last.correct?'Latest native practice: independently correct':'Latest native practice: incorrect'):'Not yet attempted')+
    (ever?' · An independently correct answer exists':'')+'</p>'+
+  '<p class="c9-p71-continuity">Original mode evidence: '+continuity.modes.map(x=>x.label+': '+(x.independentRecorded?'independently answered':'no independent correct response')).join(' · ')+' · Source writing: '+(continuity.writingRecorded?'exact native sentence recorded':'not independently reconstructed')+'. This does not verify listening, speech or mastery.</p>'+
   '<div class="c9-p71-listening"><strong>Listening-first source cue · sentence '+(focus.lineIndex+1)+'</strong>'+
   '<p>Hear an original Mandarin line using your device voice before opening the source and answering. Spoken synthesis and your listening are not graded or recorded.</p>'+
   act('speak','Listen to Chinese cue · device TTS','c9-button c9-button--secondary c9-button--small',
     'data-text="'+esc(focus.hanzi)+'"')+'</div>'+
   '<div class="c9-p71-actions">'+
+  act('c9-p71-blind-start','Listen without transcript →','c9-button c9-button--primary c9-button--small','data-id="'+esc(s.id)+'"')+
+  act('c9-p71-workshop-writing','Original Sentence Workshop →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+
   act('c9-reading-queue-start','Interpret source evidence →','c9-button c9-button--primary c9-button--small',
    'data-id="'+esc(s.id)+'" data-mode="beginner-reason"')+
   act('c9-reading-queue-start','Sequence the argument →','c9-button c9-button--secondary c9-button--small',

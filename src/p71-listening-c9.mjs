@@ -68,3 +68,16 @@ export function renderP71BlindListening(story,mode,result,act,esc){
  '<p>Evidence reference is shown only after the original question was answered. Spoken output remains self-assessed.</p></section>':'')+
  '</section>';
 }
+
+/** Source-owned study route, never a mastery or listening-verification status. */
+export function p71PracticeContinuity(story,state){
+ if(story?.beginner?.source!=='original-p71')return null;
+ const modes=P71_BLIND_MODES.map(([mode,label])=>Object.freeze({mode,label,
+  independentRecorded:(state.readingEvents||[]).some(e=>e.storyId===story.id&&e.mode===mode&&e.correct&&!e.assisted)}));
+ const task=beginnerWritingTask(story.id);
+ const writingRecorded=Boolean(task&&(state.sentenceEvents||[]).some(e=>e.taskId===task.id&&e.correct&&!e.assisted));
+ const next=modes.find(s=>!s.independentRecorded);
+ return Object.freeze({storyId:story.id,modes:Object.freeze(modes),writingRecorded,
+  nextMode:next?.mode||(!writingRecorded?'beginner-writing':null),
+  note:'Historical original reader and sentence evidence only; no verified listening, speech, mastery or editorial approval'});
+}

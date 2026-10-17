@@ -12,6 +12,7 @@ import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingRetu
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {readingReviewPacket} from './reading-editorial-c9.mjs';
+import {renderP71BlindListening,p71ListeningPart,p71BlindStudyPrompt,P71_BLIND_MODES} from './p71-listening-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueQuestionRepair,c9DialogueQuestionRepair,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
@@ -94,7 +95,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v70-p71-p74-original-advanced-reader';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v71-p71-p75-blind-listening-native';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -167,6 +168,7 @@ function selectC9SkillSource(phase,id){
  return true;
 }
 let drillLessonId=DEMO_LESSONS[0].id,drillMode='recognition',drillResult=null,drillPicked='',drillTyped='',drillOrder=[],drillAssisted=false;
+let c9P71BlindStoryId=null; // Tab-only presentation; the original reading engine owns every answer.
 let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,beginnerLevel='all',beginnerPart='all',beginnerWordShown=false,beginnerPartTip='',storyFocusIndex=-1,storyHelpIndex=-1,exploreSavedOnly=false;
 let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAssisted=false;
 let demoSpeechRate=0.86;
@@ -258,6 +260,8 @@ function renderReader(){
 }
 function renderStories(){
  const story=findStory(storyId)||STORIES[0];
+ if(c9P71BlindStoryId===story.id&&story.beginner?.source==='original-p71')
+  return '<div class="c9-media-workspace c9-p71-blind-workspace">'+renderP71BlindListening(story,storyMode,storyResult,action,esc)+'</div>';
  return '<div class="c9-media-workspace c9-media-stories">'+
   renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,sourceHelpRevealed:storyAssist||Boolean(storyResult),queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
   renderC9ReadingRecall(story,c9ReadingRecallUi,action,esc)+
@@ -1549,6 +1553,50 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   root.querySelector('#c9-reading-queue-title')?.scrollIntoView({block:'nearest',behavior:'auto'});
   return true;
  }
+ if(name==='c9-p71-blind-start'){
+  const source=findStory(id);
+  if(source?.beginner?.source!=='original-p71')return false;
+  if(route()==='stories'&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  if(route()!=='stories'&&!go('stories'))return false;
+  storyId=source.id;
+  resetReadingNavigation();
+  storyMode='beginner-detail';
+  c9P71BlindStoryId=source.id;
+  storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
+  render();
+  root.querySelector('#c9-p71-blind-title')?.focus({preventScroll:true});
+  announceC9Interaction('Transcript hidden. Play both parts with device speech, then use the original reading question.');
+  return true;
+ }
+ if(name==='c9-p71-blind-play'){
+  const story=findStory(storyId),part=Number(button.dataset.part);
+  if(route()!=='stories'||c9P71BlindStoryId!==story?.id)return false;
+  const phrase=part===2&&storyResult?p71BlindStudyPrompt(story,storyMode)?.evidenceLine?.hanzi:p71ListeningPart(story,part);
+  return phrase?speak(phrase,demoSpeechRate):false;
+ }
+ if(name==='c9-p71-blind-mode'){
+  const mode=button.dataset.mode;
+  if(route()!=='stories'||!P71_BLIND_MODES.some(([key])=>key===mode)||c9P71BlindStoryId!==storyId)return false;
+  if(!c9ConfirmLeaveNativeAnswer('stories'))return false;
+  storyMode=mode;resetStoryExercise();render();return true;
+ }
+ if(name==='c9-p71-blind-reveal'){
+  if(route()!=='stories'||c9P71BlindStoryId!==storyId)return false;
+  if(!storyResult)storyAssist=true; // Every unsubmitted source-reveal remains assisted.
+  c9P71BlindStoryId=null;
+  render();root.querySelector('#c9-native-reading')?.scrollIntoView({block:'start'});
+  return true;
+ }
+ if(name==='c9-p71-workshop-writing'){
+  const source=findStory(id);
+  if(source?.beginner?.source!=='original-p71')return false;
+  const task=beginnerWritingTask(source.id);
+  const index=SENTENCE_TASKS.findIndex(t=>t.id===task?.id);
+  if(index<0)return alertUser('Original authorial sentence-writing source unavailable.','error');
+  const opened=c9OpenNativeWorkshopTask(index,Boolean(storyAssist));
+  if(opened)c9P71BlindStoryId=null;
+  return opened;
+ }
  if(name==='c9-reading-queue-start'){
   const story=findStory(id),mode=button.dataset.mode;
   if(!story||!(['comprehension','cloze','ordering','pronunciation'].includes(mode)?storyExercise(story,mode):
@@ -1560,6 +1608,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   resetReadingNavigation();
   resetStoryExercise();
   storyMode=mode;
+  c9P71BlindStoryId=null;
   storiesBeginnerOnly=false;storiesLongOnly=false;storiesOnlyBookmarked=false;
   render();
   root.querySelector('.story-practice')?.scrollIntoView({block:'start',behavior:'auto'});
@@ -1587,7 +1636,11 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   }
   return true;
  }
- if(name==='c9-media-open-story')return c9OpenMediaSource('stories',id);
+ if(name==='c9-media-open-story'){
+  const opened=c9OpenMediaSource('stories',id);
+  if(opened){c9P71BlindStoryId=null;render();}
+  return opened;
+ }
  if(name==='c9-media-open-dialogue')return c9OpenMediaSource('dialogues',id);
  if(name==='c9-reading-review-copy'){
   const review=readingReviewPacket(id);
