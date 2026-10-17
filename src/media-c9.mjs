@@ -654,10 +654,10 @@ export function connectC9PersonalTextReader(root,esc,state={}){
  const onAnalyze=()=>{
   personalReaderText=input.value.slice(0,PERSONAL_READER_LIMIT);
   const next=personalReaderText.trim();
-  if(next!==personalReaderAnalyzed&&personalReaderMined.length&&
-   !window.confirm('Replace annotated passage and clear '+personalReaderMined.length+' mined sentence(s)? Copy them first if needed.')){
+  if(next!==personalReaderAnalyzed&&(personalReaderMined.length||personalRecallDraft.trim())&&
+   !window.confirm('Replace annotated passage and clear '+personalReaderMined.length+' mined sentence(s) and any unfinished private typing response? Copy your work first if needed.')){
    update();
-   if(status)status.textContent='Previous selections retained. Restore the earlier text or copy the list before replacing it.';
+   if(status)status.textContent='Private sentence selections and unfinished typing retained. Restore the earlier text or copy your work before replacing it.';
    return;
   }
   if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;personalRecallIndex=-1;personalRecallDraft='';personalRecallRevealed=false;}

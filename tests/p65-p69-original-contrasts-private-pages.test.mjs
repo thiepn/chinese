@@ -52,7 +52,7 @@ test('P69 source-linked private reader offers page browsing and exact authored r
   "text.hanzi===line", "data-action=\"c9-source-open-story-line\"",
   'id="c9-personal-copy-study"','sourceNotes',
   'Exact original sentence IDs:', 'Exact original reading:',
-  'if(next!==personalReaderAnalyzed&&personalReaderMined.length',
+  'if(next!==personalReaderAnalyzed&&(personalReaderMined.length||personalRecallDraft.trim())',
   "if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;personalRecallIndex=-1;"
  ])assert.ok(src.includes(marker),marker);
  assert.ok(STORIES.some(story=>story.lines.some(line=>line.hanzi)));

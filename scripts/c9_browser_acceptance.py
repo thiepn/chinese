@@ -1326,6 +1326,17 @@ def main():
                 page.locator('[data-personal-recall="0"]').click()
                 answer=page.locator("#c9-personal-recall-input")
                 answer.fill("我喜欢中文。")
+                # Remove the mined selection so only the unsent typing response
+                # can trigger replacement consent. Declining must keep that answer.
+                page.locator('[data-personal-page="1"]').click()
+                page.locator('[data-personal-mine="12"]').click()
+                page.locator('[data-personal-page="-1"]').click()
+                entry.fill("我学习中文。")
+                page.once("dialog",lambda dialog:dialog.dismiss())
+                page.locator("#c9-personal-analyze").click()
+                entry.fill("我喜欢中文。"*20)
+                if page.locator("#c9-personal-recall-input").input_value()!="我喜欢中文。":
+                    raise AssertionError("P70 unmined unsent typing draft discarded despite declined source replacement")
                 page.locator("#c9-personal-recall-reveal").click()
                 if not page.locator(".c9-personal-recall-reference").is_visible():
                     raise AssertionError("P70 original private sentence not revealed")
