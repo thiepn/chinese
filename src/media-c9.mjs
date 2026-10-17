@@ -527,6 +527,7 @@ export function renderC9ReaderIntro(lesson,act,esc){
  * the existing canonical STORY glossary and Lexicon; never treat user text as
  * approved editorial curriculum, record a StudyEvent, or transmit it. */
 let personalReaderText='',personalReaderAnalyzed='',personalReaderMined=[],personalReaderPage=0;
+let personalRecallIndex=-1,personalRecallDraft='',personalRecallRevealed=false;
 const PERSONAL_READER_PAGE_SIZE=12;
 let disconnectPersonalReader=null;
 const PERSONAL_READER_LIMIT=1200;
@@ -588,7 +589,7 @@ function personalReaderResults(esc,state={}){
     '<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="sentence-select" data-id="'+esc(original.id)+'">Open original sentence task →</button>':'')+
    (storyMatches.length?'<div class="c9-personal-source-links"><small>Exact original passage source'+(storyMatches.length===1?'':'s')+':</small>'+
     storyMatches.map(({story,lineIndex})=>'<button type="button" class="c9-button c9-button--secondary c9-button--small" data-action="c9-source-open-story-line" data-id="'+esc(story.id)+'" data-index="'+lineIndex+'">'+esc(story.title)+' · line '+(lineIndex+1)+' →</button>').join('')+'</div>':'')+
-   '<button type="button" data-personal-mine="'+(offset+i)+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button></article>';
+   '<button type="button" data-personal-mine="'+(offset+i)+'" aria-pressed="'+mined+'" class="c9-button c9-button--secondary c9-button--small">'+(mined?'Remove from list':'Mine this sentence')+'</button><button type="button" data-personal-recall="'+(offset+i)+'" class="c9-button c9-button--secondary c9-button--small">Practice typing from memory</button></article>';
  }).join('');
  const saved=new Set(state.bookmarkedWords||[]);
  const matches=[...sources.values()].sort((a,b)=>b.count-a.count||a.word.hanzi.localeCompare(b.word.hanzi,'zh')).slice(0,24);
@@ -612,9 +613,20 @@ function personalReaderResults(esc,state={}){
    readings.map(word=>'<span><b>'+esc(word.pinyin)+'</b> · '+esc(word.senses.slice(0,2).join(' / '))+
     '<button type="button" data-action="lookup-word" class="c9-button c9-button--secondary c9-button--small" data-id="'+esc(word.key)+'">View this reading</button></span>').join('')+
    '</div></article>').join('')+'</section>':'';
+ const recallLine=Number.isInteger(personalRecallIndex)?allLines[personalRecallIndex]:null;
+ const recallSection=recallLine?'<section class="c9-personal-recall" aria-labelledby="c9-personal-recall-title">'+
+  '<h3 id="c9-personal-recall-title">P70 · Private Chinese typing rehearsal</h3>'+
+  '<p>Reproduce the selected sentence from memory without reading the source above. User-pasted text is not approved curriculum. No grades or learning events are saved.</p>'+
+  '<label for="c9-personal-recall-input">My temporary Chinese response</label>'+
+  '<textarea id="c9-personal-recall-input" rows="3" lang="zh-Hans" maxlength="1200" spellcheck="false">'+esc(personalRecallDraft)+'</textarea>'+
+  '<div class="c9-personal-recall-actions"><button type="button" id="c9-personal-recall-reveal" class="c9-button c9-button--secondary c9-button--small">Reveal original pasted sentence</button>'+
+  '<button type="button" id="c9-personal-recall-retry" class="c9-button c9-button--secondary c9-button--small">Clear / retry</button>'+
+  '<button type="button" id="c9-personal-recall-close" class="c9-button c9-button--quiet c9-button--small">End rehearsal</button></div>'+
+  (personalRecallRevealed?'<div class="c9-personal-recall-reference"><strong>Original private sentence</strong><p lang="zh-Hans">'+esc(recallLine)+'</p><small>Compare manually; no correctness or proficiency is assessed.</small></div>':
+  '<small>The original is hidden in this practice panel until you reveal it, but remains visible in the private passage above.</small>')+'</section>':'';
  return '<div class="c9-personal-result-head"><strong>'+allLines.length+' private passage segment'+(allLines.length===1?'':'s')+'</strong><small>Viewing '+(offset+1)+'–'+(offset+lines.length)+' · page '+(personalReaderPage+1)+' / '+pages+'. Only original indexed words become lookups; pasted text remains ungraded.</small></div>'+
   '<nav class="c9-personal-pages" aria-label="Private passage pages"><button type="button" class="c9-button c9-button--secondary c9-button--small" data-personal-page="-1" '+(personalReaderPage===0?'disabled':'')+'>← Previous segments</button><span>Page '+(personalReaderPage+1)+' / '+pages+'</span><button type="button" class="c9-button c9-button--secondary c9-button--small" data-personal-page="1" '+(personalReaderPage>=pages-1?'disabled':'')+'>Next segments →</button></nav>'+
-  '<div class="c9-personal-lines">'+view+'</div>'+indexed+alternatives+
+  '<div class="c9-personal-lines">'+view+'</div>'+recallSection+indexed+alternatives+
   '<div class="c9-personal-mined"><strong>My temporary sentence list · '+personalReaderMined.length+'</strong>'+
    '<p>Not part of the original sentence curriculum or learning scores. Copy the list before refreshing this page if you want to keep it.</p>'+
    (personalReaderMined.length?'<ol>'+personalReaderMined.map(s=>'<li lang="zh-Hans">'+esc(s)+'</li>').join('')+'</ol>':'')+
@@ -648,17 +660,41 @@ export function connectC9PersonalTextReader(root,esc,state={}){
    if(status)status.textContent='Previous selections retained. Restore the earlier text or copy the list before replacing it.';
    return;
   }
-  if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;}
+  if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;personalRecallIndex=-1;personalRecallDraft='';personalRecallRevealed=false;}
   personalReaderAnalyzed=next;update();
   if(status)status.textContent=personalReaderAnalyzed?
    (personalHanzi(personalReaderAnalyzed)?'Annotated using existing original word records. No text saved.':'No Chinese characters detected. No learning evidence changed.'):'Paste text before annotating.';
  };
  const onClear=()=>{
   if((personalReaderText||personalReaderMined.length)&&!window.confirm('Discard your private pasted passage and temporary mined sentences?'))return;
-  personalReaderText='';personalReaderAnalyzed='';personalReaderMined=[];personalReaderPage=0;input.value='';update();
+  personalReaderText='';personalReaderAnalyzed='';personalReaderMined=[];personalReaderPage=0;personalRecallIndex=-1;personalRecallDraft='';personalRecallRevealed=false;input.value='';update();
   if(status)status.textContent='Private text cleared from this tab.';
  };
+ const onPanelInput=e=>{
+  if(e.target?.id==='c9-personal-recall-input')personalRecallDraft=e.target.value.slice(0,PERSONAL_READER_LIMIT);
+ };
  const onPanelClick=async e=>{
+  const recall=e.target.closest('[data-personal-recall]');
+  if(recall){
+   const index=Number(recall.dataset.personalRecall);
+   if(!Number.isInteger(index)||index<0||index>=allPersonalLines(personalReaderAnalyzed).length)return;
+   personalRecallIndex=index;personalRecallDraft='';personalRecallRevealed=false;
+   update();panel?.querySelector('#c9-personal-recall-input')?.focus();
+   if(status)status.textContent='Private typing opened. No grade or progress is recorded.';
+   return;
+  }
+  if(e.target.closest('#c9-personal-recall-reveal')){
+   personalRecallRevealed=true;update();
+   if(status)status.textContent='Source sentence revealed for manual comparison; no assessment recorded.';
+   return;
+  }
+  if(e.target.closest('#c9-personal-recall-retry')){
+   personalRecallDraft='';personalRecallRevealed=false;update();
+   panel?.querySelector('#c9-personal-recall-input')?.focus();return;
+  }
+  if(e.target.closest('#c9-personal-recall-close')){
+   personalRecallIndex=-1;personalRecallDraft='';personalRecallRevealed=false;update();return;
+  }
   const pageControl=e.target.closest('[data-personal-page]');
   if(pageControl){
    const change=Number(pageControl.dataset.personalPage),length=allPersonalLines(personalReaderAnalyzed).length;
@@ -701,10 +737,10 @@ export function connectC9PersonalTextReader(root,esc,state={}){
   }
  };
  update();input.addEventListener('input',onInput);analyze?.addEventListener('click',onAnalyze);
- clear?.addEventListener('click',onClear);panel?.addEventListener('click',onPanelClick);
+ clear?.addEventListener('click',onClear);panel?.addEventListener('click',onPanelClick);panel?.addEventListener('input',onPanelInput);
  disconnectPersonalReader=()=>{
   input.removeEventListener('input',onInput);analyze?.removeEventListener('click',onAnalyze);
-  clear?.removeEventListener('click',onClear);panel?.removeEventListener('click',onPanelClick);
+  clear?.removeEventListener('click',onClear);panel?.removeEventListener('click',onPanelClick);panel?.removeEventListener('input',onPanelInput);
  };
 }
 export function disconnectC9PersonalTextReader(){
