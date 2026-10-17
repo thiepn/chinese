@@ -33,19 +33,19 @@ export function p43Overview(act,esc,{compact=false,selected='',filter='all',quer
 }
 export function p43ProductionStudio(u,act,esc,{draft='',revisions=[],compare=-1,reveal=false,step='compose',rubric=[],pending='',showEvidence=false}={}){
  if(!u)return '<p class="muted">Select an authored production unit.</p>';
- const applied=P44_SCENARIOS.find(s=>s.writingId===u.id);
- const cumulative=P45_TRANSFERS.find(s=>s.sourceCase?.writingId===u.id);
- const passage=P41_PASSAGES.find(p=>p.id===u.readingId);
- const dialogue=P42_SCENES.find(d=>d.id===u.dialogueId);
+ const applied=u.p71Source?null:P44_SCENARIOS.find(s=>s.writingId===u.id);
+ const cumulative=u.p71Source?null:P45_TRANSFERS.find(s=>s.sourceCase?.writingId===u.id);
+ const passage=u.p71Source?null:P41_PASSAGES.find(p=>p.id===u.readingId);
+ const dialogue=u.p71Source?null:P42_SCENES.find(d=>d.id===u.dialogueId);
  const patterns=u.grammarIds.map(id=>GRAMMAR_LESSONS.find(g=>g.id===id)).filter(Boolean);
  const words=WORDS.filter(w=>w.hanzi.length>1&&u.lines.some(l=>l.hanzi.includes(w.hanzi))).slice(0,6);
  const selected=Number(compare);
  const selectedDraft=revisions[selected];
  const count=Array.from(draft).filter(ch=>/\p{Script=Han}/u.test(ch)).length;
  return '<section class="p43-studio" aria-label="Independent paragraph writing and oral preparation">'+
- '<div class="p43-studio-top"><div><p class="eyebrow">P43 · UNIT '+u.sequence+' / '+P43_UNITS.length+' · '+esc(stageLabel(u.stage))+'</p>'+
+ '<div class="p43-studio-top"><div><p class="eyebrow">'+(u.p71Source?'P71–P75 · ORIGINAL SOURCE COMPOSITION '+u.sequence+' / 5 · DEMO_ONLY': 'P43 · UNIT '+u.sequence+' / '+P43_UNITS.length+' · '+esc(stageLabel(u.stage)))+'</p>'+
  '<h2>'+esc(u.title)+'</h2><p>'+esc(u.goal)+'</p></div>'+
- act('p43-next','Next topic →','button outline')+'</div>'+
+ (u.p71Source?'':act('p43-next','Next topic →','button outline'))+'</div>'+
  (pending?'<div class="p43-warning" role="status"><strong>'+
  (pending==='discard'?'Discard this session?':pending.startsWith('restore:')?'Replace the current unsaved text?':'Unsaved work in this tab')+'</strong><p>'+
  (pending==='discard'?'The current composition and all in-tab snapshots will be cleared. This does not change saved practice records.':
@@ -98,9 +98,10 @@ export function p43ProductionStudio(u,act,esc,{draft='',revisions=[],compare=-1,
  '<article><h4>Model paragraph '+(i+1)+' · '+esc(sect.title)+'</h4>'+
  u.lines.slice(sect.start,sect.end+1).map(line=>'<div class="p43-model-line"><p lang="zh-Hans">'+esc(line.hanzi)+'</p>'+
  '<small>'+esc(line.pinyin)+'</small><span>'+esc(line.english)+'</span></div>').join('')+'</article>').join('')+'</div>':'')+'</div>'+
- '<div class="p43-native"><h4>Optional native exact-form practice</h4><p>These two fixed sentences are assessed only as exact reconstruction by the original Sentence Workshop. They are not an evaluation of your essay.</p>'+
+ '<div class="p43-native"><h4>Optional native exact-form practice</h4><p>'+(u.p71Source?'Use the exact original P71 conclusion in the existing Sentence Workshop. It does not grade this open-ended essay.':'These two fixed sentences are assessed only as exact reconstruction by the original Sentence Workshop. They are not an evaluation of your essay.')+'</p>'+
+ (u.p71Source?act('c9-p71-workshop-writing','Reconstruct original P71 conclusion →','button outline small','data-id="'+esc(u.sourceRefStoryId)+'"'):
  act('p43-workshop','Reconstruct the key sentence →','button outline small','data-line="4"')+
- act('p43-workshop','Reconstruct the conclusion →','button outline small','data-line="9"')+
+ act('p43-workshop','Reconstruct the conclusion →','button outline small','data-line="9"'))+
  (applied?act('p44-open','Apply this writing in an integrated scenario →','button outline small','data-id="'+applied.id+'"'):'')+
  (cumulative?act('p45-open','Independent evidence transfer →','button outline small','data-id="'+cumulative.id+'"'):'')+'</div>'+
  '<div class="p43-crosslinks"><h4>Source-backed language links</h4>'+

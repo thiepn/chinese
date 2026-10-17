@@ -696,3 +696,14 @@
 .c9-p71-blind-oral{padding:14px;margin-top:17px;border:1px solid var(--c9-line)}
 @media(max-width:600px){.c9-p71-blind{padding:12px}.c9-p71-blind-player,.c9-p71-blind-footer{display:grid;grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-p71-blind{padding:10px}.c9-p71-blind-exercise{padding:10px}.c9-p71-blind-tabs{display:grid;grid-template-columns:minmax(0,1fr)}}
+
+/* P75: P71 evidence-grounded production in the existing P43 writing studio. */
+.c9-p71-production-bridge,.c9-p71-writing-brief{border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:18px;margin:16px 0;min-width:0}
+.c9-p71-production-bridge h2,.c9-p71-writing-brief h2{font:600 clamp(18px,2vw,23px)/1.45 var(--c9-display);margin:6px 0 11px}
+.c9-p71-production-bridge p,.c9-p71-writing-brief p{font:400 13px/1.7 var(--c9-ui);overflow-wrap:anywhere}
+.c9-p71-production-bridge .c9-button,.c9-p71-writing-brief .c9-button{min-height:44px;white-space:normal;margin:4px 8px 4px 0}
+.c9-p71-writing-anchors{padding-left:21px;display:grid;gap:12px}
+.c9-p71-writing-anchors li{border-bottom:1px solid var(--c9-line);padding-bottom:8px;overflow-wrap:anywhere}
+.c9-p71-writing-anchors li>span,.c9-p71-writing-anchors small{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-p71-writing-anchors [lang="zh-Hans"]{font:500 17px/1.6 var(--c9-hanzi-body)}
+@media(max-width:390px){.c9-p71-production-bridge,.c9-p71-writing-brief{padding:11px}}

@@ -7,7 +7,7 @@ import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,
 import {renderC9Review,renderC9PracticeHeader,renderC9PracticePaths,renderC9GuidedStep} from './review-practice-c9.mjs';
 import {renderC9LearningContinuity,renderC9InstalledSourceAtlas,renderC9SourceReturn,c9LookupSource,C9_SOURCE_ROUTES} from './integration-c9.mjs';
 import {renderC9AdvancedWorkspace,findC9AdvancedPhase,c9AdvancedFiltered,c9AdvancedNativeLinks,c9AdvancedSourceLines} from './advanced-c9.mjs';
-import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting,cancelC9WritingFileRead} from './writing-c9.mjs';
+import {renderC9WritingWorkspace,c9WritingState,openC9P71WritingSource,handleC9WritingAction,handleC9WritingInput,handleC9WritingBackupFile,hasC9UncopiedWriting,cancelC9WritingFileRead} from './writing-c9.mjs';
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
@@ -95,7 +95,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v71-p71-p75-blind-listening-native';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v72-p75-source-writing-bridge';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -1587,13 +1587,25 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   render();root.querySelector('#c9-native-reading')?.scrollIntoView({block:'start'});
   return true;
  }
+ if(name==='c9-p71-open-composition'){
+  const source=findStory(id);
+  if(source?.beginner?.source!=='original-p71')
+   return alertUser('Original P71 composition source unavailable.','error');
+  const opened=openC9P71WritingSource(source.id,{go,currentRoute:route,render,alertUser});
+  return opened;
+ }
+ if(name==='c9-p71-writing-open-source'){
+  if(route()!=='writing'||c9WritingState.p71StoryId!==id)return false;
+  return act({dataset:{action:'c9-media-open-story',id}});
+ }
  if(name==='c9-p71-workshop-writing'){
   const source=findStory(id);
   if(source?.beginner?.source!=='original-p71')return false;
   const task=beginnerWritingTask(source.id);
   const index=SENTENCE_TASKS.findIndex(t=>t.id===task?.id);
   if(index<0)return alertUser('Original authorial sentence-writing source unavailable.','error');
-  const opened=c9OpenNativeWorkshopTask(index,Boolean(storyAssist));
+  const opened=c9OpenNativeWorkshopTask(index,Boolean(route()==='writing'?
+   (c9WritingState.reveal||c9WritingState.showEvidence):storyAssist));
   if(opened)c9P71BlindStoryId=null;
   return opened;
  }
