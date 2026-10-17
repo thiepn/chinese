@@ -66,7 +66,7 @@ test('native dialogue owns P77 answer events, without inventing listening skill 
  assert.equal(helped.dialogueEvents.at(-1).correct,true);
  const shown=renderC9P75DialogueEvidence(d,0,{correct:true,assisted:true},act,esc);
  assert.ok(shown.includes(d.lines[d.p77.questions[0].evidenceIndex].hanzi));
- assert.ok(shown.includes(d.p77.questions[0].explanation));
+ assert.ok(shown.includes(esc(d.p77.questions[0].explanation)));
  assert.match(shown,/assisted/);
  assert.equal(renderC9P75DialogueEvidence(d,0,null,act,esc),'');
 });

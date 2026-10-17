@@ -26,7 +26,8 @@ test('P76 five distinct original paired-source cases preserve exact canonical so
 test('P76 native owner projections are read-only and expose the original conversation and P43 handoffs',()=>{
  const state=freshState(),before=JSON.stringify(state);
  const html=renderP76CaseLab(state,'',act,esc);
- assert.equal((html.match(/data-action="c9-media-open-dialogue"/g)||[]).length,5);
+ assert.equal((html.match(/data-action="c9-media-open-dialogue"/g)||[]).length,10);
+ assert.equal((html.match(/Continue with an original follow-up conversation/g)||[]).length,5);
  assert.equal((html.match(/data-action="c9-p71-open-composition"/g)||[]).length,5);
  assert.equal((html.match(/data-action="c9-media-open-story"/g)||[]).length,5);
  assert.equal((html.match(/<details>/g)||[]).length,5);
