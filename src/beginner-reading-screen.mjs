@@ -1,13 +1,13 @@
 import {BEGINNER_STORIES,BEGINNER_MODES,beginnerReadingStats,beginnerStoryLinks} from './beginner-reading.mjs';
 export function beginnerReadingShelf(state,story,act,esc,level='all'){
- const stats=beginnerReadingStats(state),items=BEGINNER_STORIES.filter(s=>!['original-p38','original-p41','original-p68'].includes(s.beginner.source)&&(level==='all'||String(s.beginner.level)===String(level)));
+ const stats=beginnerReadingStats(state),items=BEGINNER_STORIES.filter(s=>!['original-p38','original-p41','original-p68','original-p71'].includes(s.beginner.source)&&(level==='all'||String(s.beginner.level)===String(level)));
  return `<section class="simple-panel p28-shelf"><div class="panel-heading"><div><p class="eyebrow">BEGINNER READING PATH</p><h2>Short Chinese stories</h2></div><span class="muted">${items.length} P28/P34 passages · ${stats.attempted} attempted · ${stats.correctIndependent} with independent correct answers</span></div>
  <p>Read six connected sentences in the original beginner path. P34 adds 25 source-linked reading and listening pairs; P38 has a separate longer elementary reading catalogue; questions still use the original reading and writing event writers. Learn a useful expression, answer from evidence and rebuild a Chinese sentence. Internal difficulty bands do not represent official HSK levels.</p>
  <div class="p28-levels" role="group">${[['all','All beginners'],['1','First steps'],['2','Building confidence']].map(([id,label])=>act('beginner-level',esc(label),'p28-level '+(level===id?'active':''),`data-level="${id}"`)).join('')}</div>
  <div class="p28-shelf-list">${items.map((s,i)=>act('open-story-link',`<span>${String(i+1).padStart(2,'0')}</span><strong>${esc(s.title)}</strong><small>${esc(s.theme)} · ${esc(s.beginner.grade)}</small>`,'p28-shelf-item '+(s.id===story?.id?'selected':''),`data-id="${s.id}"`)).join('')}</div></section>`;
 }
 export function beginnerReadingHeading(story,act,esc,part='all',wordShown=false){
- if(!story?.beginner||story.beginner.p38||story.beginner.p41)return '';
+ if(!story?.beginner||story.beginner.p38||story.beginner.p41||story.beginner.p71)return '';
  const b=story.beginner;
  return `<section class="p28-intro"><p class="eyebrow">${esc(b.grade)} · ${story.lines.length}-sentence reading</p><p><strong>Communicative purpose:</strong> ${esc(b.purpose)}. ${esc(b.bridge)}</p>
  <div class="p28-learning-steps"><span>01 · Understand the situation</span><span>02 · Follow the outcome</span><span>03 · Find evidence</span><span>04 · Rebuild Chinese</span></div>
@@ -18,7 +18,7 @@ export function beginnerReadingHeading(story,act,esc,part='all',wordShown=false)
  </div></div></section>`;
 }
 export function beginnerPartMarker(story,i,act,esc,explained=''){
- if(!story?.beginner||story.beginner.p38||story.beginner.p41||i!==0&&i!==3)return '';
+ if(!story?.beginner||story.beginner.p38||story.beginner.p41||story.beginner.p71||i!==0&&i!==3)return '';
  const part=i===0?0:1;
  return `<div class="p28-part-heading"><div><span class="eyebrow">PART ${part+1} / 2</span><h3>${part===0?'Who, where and when?':'What happens next?'}</h3></div>
  ${act('beginner-explain-part',explained===String(part)?'Hide strategy':'Reading strategy','button outline small',`data-part="${part}"`)}

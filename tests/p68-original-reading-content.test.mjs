@@ -43,7 +43,9 @@ test('All P68 source rows append after historical canonical story IDs and reuse 
  const newStories=STORIES.filter(s=>s.beginner?.source==='original-p68');
  assert.equal(newStories.length,6);
  assert.deepEqual(newStories.map(s=>s.title),P68_SOURCE_READINGS.map(r=>r.title));
- assert.deepEqual(STORIES.slice(-6).map(s=>s.id),newStories.map(s=>s.id));
+ assert.deepEqual(STORIES.slice(-11,-5).map(s=>s.id),newStories.map(s=>s.id));
+ assert.equal(STORIES.slice(-5).every(s=>s.beginner?.source==='original-p71'),true);
+ assert.deepEqual(newStories.map(s=>s.id),[...newStories].map(s=>s.id));
  assert.equal(BEGINNER_READING_ROWS.length,BEGINNER_STORIES.length);
  for(const [i,story] of newStories.entries()){
   assert.ok(validateStory(story));
@@ -81,7 +83,7 @@ test('P68 original curriculum content and app/worker remain offline; no fabricat
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const manifest=readFileSync(new URL('../src/p68-source-readings.mjs',import.meta.url),'utf8');
- assert.match(sw,/character-study-working-v69-source-editorial-grammar-evidence/);
- assert.match(app,/character-study-working-v69-source-editorial-grammar-evidence/);
+ assert.match(sw,/character-study-working-v70-p71-p74-original-advanced-reader/);
+ assert.match(app,/character-study-working-v70-p71-p74-original-advanced-reader/);
  assert.doesNotMatch(manifest,/localStorage|indexedDB|fetch\(|addReadingEvent\(|gradeCard\(|officialHskLevel:[1-9]/);
 });

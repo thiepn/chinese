@@ -94,7 +94,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v69-source-editorial-grammar-evidence';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v70-p71-p74-original-advanced-reader';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -1551,7 +1551,8 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-reading-queue-start'){
   const story=findStory(id),mode=button.dataset.mode;
-  if(!story||!['comprehension','cloze','ordering','pronunciation'].includes(mode)||!storyExercise(story,mode))
+  if(!story||!(['comprehension','cloze','ordering','pronunciation'].includes(mode)?storyExercise(story,mode):
+   ['beginner-detail','beginner-reason','beginner-sequence','beginner-writing'].includes(mode)?beginnerQuestion(story,mode):null))
    return alertUser('Original source reading exercise unavailable.','error');
   if(route()==='stories'&&!c9ConfirmLeaveNativeAnswer('stories'))return false;
   if(route()!=='stories'&&!go('stories'))return false;
