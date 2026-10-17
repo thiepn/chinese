@@ -416,6 +416,63 @@ def main():
                     return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
                 check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
                 ctx.close()
+            # C9-61: genuinely user-owned question repair across all original
+            # P33/P34/native dialogues. An unchanged source ID, no new grades,
+            # no pre-revealed transcripts, and guarded unsent drafts.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_dialogue_question_repair():
+                    open_route(page,"dialogues/dialogue-02")
+                    repair=page.locator("#c9-dialogue-question-repair")
+                    repair.wait_for(state="visible")
+                    entries=repair.locator(".c9-dialogue-repair-list li")
+                    if entries.count()<2:
+                        raise AssertionError("Source questions missing from original retry chooser")
+                    if "Unattempted" not in entries.first.inner_text():
+                        raise AssertionError("Original question history was invented before any attempt")
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    page.locator("#c9-native-dialogue-question").wait_for(state="visible")
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Native dialogue did not open exact original question 2")
+                    if page.evaluate("()=>document.activeElement?.id")!="c9-native-dialogue-question":
+                        raise AssertionError("Original question target did not receive keyboard focus")
+                    repair.locator('[data-action="c9-dialogue-repair-play"]').click()
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Listening replay silently revealed transcript support")
+                    page.locator(".dialogue-quiz [data-action='dialogue-reveal']").click()
+                    page.locator(".dialogue-quiz .reader-feedback").wait_for(state="visible")
+                    page.wait_for_function("()=>document.querySelector('#c9-dialogue-question-repair')?.textContent?.includes('Latest assisted')")
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    if page.locator(".dialogue-quiz .reader-feedback").count():
+                        raise AssertionError("Reopening original question kept old answer feedback")
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Question retry switched to unrelated original ID")
+                    roleplay=page.locator("#c9-roleplay-entry")
+                    roleplay.fill("我不想丢失这个答案。")
+                    page.once("dialog",lambda dialog:dialog.dismiss())
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="0"]').click()
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Native question jump ignored rejected draft-leave warning")
+                    if roleplay.input_value()!="我不想丢失这个答案。":
+                        raise AssertionError("Declined departure erased private unsent roleplay")
+                    roleplay.fill("")
+                    # Fresh P34 source: audio retry must not reveal transcript.
+                    open_route(page,"dialogues")
+                    panel=page.locator("details.p34-catalog")
+                    panel.locator("summary").click()
+                    panel.locator('[data-action="p34-open-listening"]').first.click()
+                    page.locator(".p34-listening-panel").wait_for(state="visible")
+                    if page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("Original listening-first source prematurely showed transcript")
+                    page.locator("#c9-dialogue-question-repair [data-action='c9-dialogue-repair-play']").click()
+                    if page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("P34 retry audio exposed transcript or graded answer")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Native question recovery overflows "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Exact original question retry, assistance, guard, P34 hidden transcript "+str(width)
+                check("C9-61 original dialogue question repair "+str(width),original_dialogue_question_repair)
+                ctx.close()
             # C9-60: genuine source-grade continuity through all native
             # P33 writing turns and P34 listening-to-writing, with in-tab
             # return context and mobile source-safe draft guards.

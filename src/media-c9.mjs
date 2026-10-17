@@ -431,6 +431,75 @@ export function renderC9ReadingRecall(story,ui,act,esc){
   '</div></section>';
 }
 
+/**
+ * C9-61: inspect the native immutable dialogueEvents by ORIGINAL question
+ * number. This is never a review scheduler, source writer, mastery estimate,
+ * simulated dialogue, or new evidence ledger. Assisted/incorrect evidence is
+ * not conflated with an independent correct response.
+ */
+export function c9DialogueQuestionRepair(dialogue,state={}){
+ if(!dialogue?.id||!Array.isArray(dialogue.questions))return null;
+ const events=(state.dialogueEvents||[]).filter(e=>e.dialogueId===dialogue.id);
+ const questions=dialogue.questions.map((q,index)=>{
+  const attempts=events.filter(e=>e.question===index);
+  const last=attempts.at(-1)||null;
+  const independent=attempts.filter(e=>e.correct&&!e.assisted).length;
+  const incorrect=attempts.filter(e=>!e.correct).length;
+  const assisted=attempts.filter(e=>e.assisted).length;
+  // A reference reveal is recorded by the original native writer as
+  // assisted AND not correct. Preserve BOTH facts, rather than silently
+  // relabeling a revealed reference as an ordinary incorrect free attempt.
+  const status=!attempts.length?'Unattempted':
+   last?.assisted?'Latest assisted'+(!last.correct?' · not correct':''):
+   last&&!last.correct?'Latest incorrect':
+   'Latest independently correct';
+  // Prior correct evidence remains visible even after a subsequent error.
+  const priority=!attempts.length?2:
+   last?.assisted?1:
+   last&&!last.correct?0:
+   independent?3:1;
+  return Object.freeze({id:q.id,index,prompt:q.prompt,attempts:attempts.length,
+   independent,incorrect,assisted,status,priority,
+   lastAt:last?.at??null});
+ });
+ const ordered=[...questions].sort((a,b)=>a.priority-b.priority||a.index-b.index);
+ const recommended=ordered[0]||null;
+ return Object.freeze({dialogueId:dialogue.id,questions,
+  recommendedIndex:recommended?.index??null,
+  attempted:questions.filter(q=>q.attempts>0).length,
+  independent:questions.filter(q=>q.independent>0).length,
+  needingFreshAnswer:questions.filter(q=>q.priority!==3).length});
+}
+export function renderC9DialogueQuestionRepair(dialogue,state,currentIndex,act,esc){
+ const source=c9DialogueQuestionRepair(dialogue,state);
+ if(!source)return '';
+ const active=Math.max(0,Math.min(source.questions.length-1,Number.isInteger(currentIndex)?currentIndex:0));
+ const recommended=source.questions[source.recommendedIndex];
+ return '<section class="c9-dialogue-question-repair c9-unified-card" id="c9-dialogue-question-repair" aria-labelledby="c9-question-repair-title">'+
+  '<header><div><span class="c9-eyebrow">ORIGINAL QUESTION CONTINUITY · P33 / P34 / ALL SOURCE DIALOGUES</span>'+
+  '<h2 id="c9-question-repair-title">Return to a question that needs practice</h2>'+
+  '<p>Every entry is an existing original dialogue question. Recorded answers are shown separately from independent correct evidence. Reopening a question never changes your history, schedules review, or reveals its answer.</p></div>'+
+  '<span class="c9-badge">'+source.independent+' / '+source.questions.length+' with independent correct evidence</span></header>'+
+  '<div class="c9-dialogue-repair-actions">'+
+  act('c9-dialogue-repair-play','Hear original conversation again','c9-button c9-button--secondary c9-button--small')+
+  (recommended?act('c9-dialogue-repair-select','Study '+(recommended.priority===3?'an original question again':'the next question needing attention')+' →',
+   'c9-button c9-button--primary c9-button--small',
+   'data-index="'+recommended.index+'" data-id="'+esc(recommended.id)+'"'):'')+
+  '</div>'+
+  '<ol class="c9-dialogue-repair-list" aria-label="Original questions and recorded evidence">'+
+  source.questions.map(q=>'<li class="'+(q.index===active?'is-current':'')+'">'+
+   '<div><span class="c9-eyebrow">QUESTION '+(q.index+1)+' / '+source.questions.length+'</span>'+
+   '<strong>'+esc(q.prompt)+'</strong>'+
+   '<small>'+esc(q.status)+' · '+q.attempts+' recorded attempt'+(q.attempts===1?'':'s')+
+    ' · '+q.independent+' independent correct'+(q.incorrect?' · '+q.incorrect+' incorrect':'')+
+    (q.assisted?' · '+q.assisted+' assisted':'')+'</small></div>'+
+   act('c9-dialogue-repair-select',q.index===active?'Repeat current question':'Open exact question →',
+    'c9-button '+(q.index===active?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
+    'data-index="'+q.index+'" data-id="'+esc(q.id)+'"'+(q.index===active?' aria-current="step"':''))+
+   '</li>').join('')+'</ol>'+
+  '<p class="c9-dialogue-repair-footnote">Question status is source-specific recorded evidence, not mastery. Original P34 audio remains device speech synthesis; transcript and translation are not shown here. Only the native answer controls below save a response.</p>'+
+  '</section>';
+}
 export function renderC9TurnNavigator(d,active,act,esc){
  const current=Math.max(0,Math.min(active,d.lines.length-1)),line=d.lines[current];
  return '<nav class="c9-media-turn-nav" aria-label="Conversation turn navigation">'+

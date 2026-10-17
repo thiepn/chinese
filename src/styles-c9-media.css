@@ -553,3 +553,34 @@
  .c9-workshop-continuation{padding:13px}
  .c9-workshop-continuation-actions button{width:100%;flex-basis:100%}
 }
+
+
+/* C9-61: original dialogue question-by-question recovery; statuses are
+   projections of native dialogueEvents, not new mastery or review records. */
+.c9-dialogue-question-repair{display:grid;gap:15px;min-width:0;padding:clamp(16px,2.5vw,25px);background:var(--c9-surface);border:1px solid var(--c9-line);border-radius:var(--c9-r)}
+.c9-dialogue-question-repair *{box-sizing:border-box;min-width:0}
+.c9-dialogue-question-repair>header{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap}
+.c9-dialogue-question-repair>header h2{font:650 clamp(20px,2.4vw,28px)/1.25 var(--c9-display);letter-spacing:-.02em;margin:7px 0}
+.c9-dialogue-question-repair>header p{font:400 13px/1.65 var(--c9-ui);color:var(--c9-sub);margin:0;max-width:750px}
+.c9-dialogue-question-repair .c9-badge{flex:0 1 auto;white-space:normal}
+.c9-dialogue-repair-actions{display:flex;gap:9px;flex-wrap:wrap}
+.c9-dialogue-repair-actions>.c9-button{min-height:44px;white-space:normal}
+.c9-dialogue-repair-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.c9-dialogue-repair-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);padding:13px 15px;background:var(--c9-surface)}
+.c9-dialogue-repair-list li.is-current{border-color:var(--c9-accent);background:var(--c9-surface-2)}
+.c9-dialogue-repair-list li>div{display:grid;gap:5px}
+.c9-dialogue-repair-list li strong{font:650 14px/1.5 var(--c9-ui);overflow-wrap:anywhere}
+.c9-dialogue-repair-list li small{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub);overflow-wrap:anywhere}
+.c9-dialogue-repair-list li>.c9-button{min-height:42px;white-space:normal}
+.c9-dialogue-repair-footnote{font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub);margin:0}
+.c9-dialogue-question-repair :is(button):focus-visible{outline:3px solid var(--c9-accent);outline-offset:3px}
+@media(max-width:700px){
+ .c9-dialogue-repair-list li{grid-template-columns:minmax(0,1fr)}
+ .c9-dialogue-repair-list li>.c9-button{width:100%}
+ .c9-dialogue-repair-actions>.c9-button{flex:1 1 180px}
+}
+@media(max-width:380px){
+ .c9-dialogue-question-repair{padding:13px}
+ .c9-dialogue-repair-actions>.c9-button{flex-basis:100%}
+ .c9-dialogue-repair-list li{padding:11px}
+}
