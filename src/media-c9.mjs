@@ -446,14 +446,17 @@ export function c9DialogueQuestionRepair(dialogue,state={}){
   const independent=attempts.filter(e=>e.correct&&!e.assisted).length;
   const incorrect=attempts.filter(e=>!e.correct).length;
   const assisted=attempts.filter(e=>e.assisted).length;
+  // A reference reveal is recorded by the original native writer as
+  // assisted AND not correct. Preserve BOTH facts, rather than silently
+  // relabeling a revealed reference as an ordinary incorrect free attempt.
   const status=!attempts.length?'Unattempted':
+   last?.assisted?'Latest assisted'+(!last.correct?' · not correct':''):
    last&&!last.correct?'Latest incorrect':
-   last?.assisted?'Latest assisted':
    'Latest independently correct';
-  // Prior correct evidence is retained even when a later answer is wrong.
+  // Prior correct evidence remains visible even after a subsequent error.
   const priority=!attempts.length?2:
-   last&&!last.correct?0:
    last?.assisted?1:
+   last&&!last.correct?0:
    independent?3:1;
   return Object.freeze({id:q.id,index,prompt:q.prompt,attempts:attempts.length,
    independent,incorrect,assisted,status,priority,
