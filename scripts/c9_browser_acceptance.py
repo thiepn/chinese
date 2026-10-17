@@ -1332,6 +1332,47 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P71-P75: original source-owned blind listening/reader handoff.
+            # Validate actual hidden transcript DOM, source-only device TTS,
+            # original answer writer, evidence and exact native writing handoff.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p71_blind_reader_and_writer():
+                    open_route(page,"stories")
+                    course=page.locator(".c9-p71-native-course")
+                    course.wait_for(state="visible")
+                    cards=course.locator(".c9-p71-native-grid article")
+                    if cards.count()!=5:raise AssertionError("Source-driven P71 curriculum missing")
+                    first=cards.first
+                    first.locator('[data-action="c9-p71-blind-start"]').click()
+                    blind=page.locator(".c9-p71-blind")
+                    blind.wait_for(state="visible")
+                    if page.locator(".story-paper").count()!=0:
+                        raise AssertionError("Full original Chinese source remains in blind listening DOM")
+                    if blind.locator('[data-action="c9-p71-blind-play"]').count()!=2:
+                        raise AssertionError("Two original source playback segments missing")
+                    if blind.locator('[data-text]').count():
+                        raise AssertionError("Blind player leaks source text in playback attributes")
+                    if blind.locator('[data-action="story-answer"]').count()!=4:
+                        raise AssertionError("Original reader answer options not present")
+                    if page.locator(".c9-p71-native-course").count():
+                        raise AssertionError("Catalog embeds sources in blind listening view")
+                    blind.locator('[data-action="story-answer"]').first.click()
+                    result=page.locator(".c9-p71-blind .reader-feedback")
+                    result.wait_for(state="visible")
+                    if not page.locator(".c9-p71-blind-evidence [lang='zh-Hans']").inner_text().strip():
+                        raise AssertionError("Original cited Chinese evidence missing after answer")
+                    if blind.locator('[data-action="c9-p71-workshop-writing"]').count()!=1:
+                        raise AssertionError("Native original writing task missing")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Blind listening overflow at "+str(width)+"px")
+                    blind.locator('[data-action="c9-p71-workshop-writing"]').click()
+                    if not page.locator("#app-content").inner_text().strip():
+                        raise AssertionError("Original Sentence Workshop did not load")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "P71 blind source, native answered evidence, exact Sentence Workshop handoff "+str(width)+"px"
+                check("P71-P75 transcript-hidden listening and native writing "+str(width),p71_blind_reader_and_writer)
+                ctx.close()
             # P71-P74: genuinely new original 10-line upper-intermediate study.
             # Browser synthetic speech is not treated as an audio recording or grade.
             for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
@@ -1908,7 +1949,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v70-p71-p74-original-advanced-reader"
+                current="character-study-working-v71-p71-p75-blind-listening-native"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1926,7 +1967,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v70-p71-p74-original-advanced-reader');
+                    keys.includes('character-study-working-v71-p71-p75-blind-listening-native');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

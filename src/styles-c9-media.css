@@ -677,3 +677,22 @@
 .c9-p71-editorial summary{cursor:pointer;min-height:44px;font:500 12px/1.5 var(--c9-ui)}
 @media(max-width:800px){.c9-p71-native-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-p71-native-course{padding:10px}.c9-p71-native-grid article{padding:10px}.c9-p71-actions{grid-template-columns:minmax(0,1fr)}}
+
+/* P71–P75 listening-first transcript withheld in rendered DOM until original
+ * answer / deliberate assisted source reveal. No browser storage or new grader. */
+.c9-p71-blind{max-width:920px;margin:0 auto;padding:24px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);min-width:0}
+.c9-p71-blind h1{font:600 clamp(22px,3vw,32px)/1.3 var(--c9-display);margin:10px 0}
+.c9-p71-blind>p,.c9-p71-blind-warning,.c9-p71-blind-oral p,.c9-p71-continuity{font:400 12px/1.65 var(--c9-ui);color:var(--c9-sub);overflow-wrap:anywhere}
+.c9-p71-blind-player{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.c9-p71-blind-player .c9-button{flex:1 1 190px}
+.c9-p71-blind-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}
+.c9-p71-blind-tabs .c9-button{flex:1 1 145px}
+.c9-p71-blind-exercise{padding:18px;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs);min-width:0}
+.c9-p71-blind-exercise h2,.c9-p71-blind-oral h2{font:600 18px/1.5 var(--c9-display);margin:8px 0 16px}
+.c9-p71-blind-evidence{border-top:1px solid var(--c9-line);margin-top:14px;padding-top:12px}
+.c9-p71-blind-evidence p[lang="zh-Hans"]{font:500 18px/1.65 var(--c9-hanzi-body);overflow-wrap:anywhere}
+.c9-p71-blind-footer{display:flex;flex-wrap:wrap;gap:8px;margin:17px 0}
+.c9-p71-blind .c9-button,.c9-p71-native-course .c9-p71-actions .c9-button{min-height:44px;white-space:normal}
+.c9-p71-blind-oral{padding:14px;margin-top:17px;border:1px solid var(--c9-line)}
+@media(max-width:600px){.c9-p71-blind{padding:12px}.c9-p71-blind-player,.c9-p71-blind-footer{display:grid;grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p71-blind{padding:10px}.c9-p71-blind-exercise{padding:10px}.c9-p71-blind-tabs{display:grid;grid-template-columns:minmax(0,1fr)}}
