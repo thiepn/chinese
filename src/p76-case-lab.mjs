@@ -57,13 +57,13 @@ export function renderP76CaseLab(state,activeId,act,esc){
    ' original answer attempts · Target dialogue question: '+(checked?'independently correct observed':'not independently confirmed')+
    '. Neither number establishes listening, writing or speaking proficiency.</p>'+
    '<div class="c9-p76-case-actions">'+
-   act('c9-p76-native-question','Check the original conversation question →','c9-button c9-button--primary c9-button--small','data-id="'+esc(c.dialogueId)+'" data-question="'+c.nativeQuestion+'"')+
+   act('c9-media-open-dialogue','Check the original conversation question →','c9-button c9-button--primary c9-button--small','data-id="'+esc(c.dialogueId)+'"')+
    act('c9-media-open-story','Read separate P71 dossier →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
    act('c9-p71-open-composition','Compose in the original P43 editor →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
    '</div><details><summary>Reveal exact source evidence · assisted study</summary>'+
    '<p>Reading sentence '+(c.readingEvidence.index+1)+'</p><p lang="zh-Hans">'+esc(c.readingEvidence.hanzi)+'</p><small>'+esc(c.readingEvidence.pinyin)+'</small><p>'+esc(c.readingEvidence.english)+'</p>'+
    '<p>Separate conversation turn '+(c.dialogueEvidence.index+1)+'</p><p lang="zh-Hans">'+esc(c.dialogueEvidence.hanzi)+'</p><small>'+esc(c.dialogueEvidence.pinyin)+'</small><p>'+esc(c.dialogueEvidence.english)+'</p>'+
-   '<p>Source help is for study, not independent assessment. Opening the original conversation starts its own source-owned assessment.</p></details>'+
+   '<p>Revealing this help is assisted study; use the original dialogue transcript support control before answering. This panel never records a grade.</p></details>'+
    '</article>';
  }).join('')+'</div></section>';
 }

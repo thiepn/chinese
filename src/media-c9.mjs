@@ -1,4 +1,5 @@
 import {P75_DIALOGUES} from './p75-dialogues.mjs';
+import {renderP76CaseLab} from './p76-case-lab.mjs';
 /**
  * C9-09 Clean Modular Scholar — Reading, Listening & Conversations.
  * Visual and read-only projections of original source content. All activity
@@ -522,6 +523,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  (next?act('p34-open-listening','Continue P34 listening →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
  renderC9P75ConversationCourse(state,dialogue.id,act,esc)+
+ renderP76CaseLab(state,dialogue.id,act,esc)+
  '<section class="c9-media-discovery" aria-label="Find an original conversation">'+
  '<div class="c9-media-discovery-header"><h2>Conversation library</h2><p>Browse actual dialogues without exposing listening-first text or awarding progress.</p></div>'+
  catalogControls('dialogue',options,act,esc)+
