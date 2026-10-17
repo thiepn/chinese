@@ -1287,6 +1287,51 @@ def main():
             check("P61-P63/P69 original writing and private reading mobile integration",
                   original_handwriting_and_personal_reading)
             ctx.close()
+            # P64–P68: cross-source comparisons use real authored IDs and the
+            # native reading assistance boundary at desktop and narrow mobile.
+            for width,height,mobile in ((1440,960,False),(390,844,True),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_cross_source_evidence():
+                    open_route(page,"stories/story-01")
+                    panel=page.locator(".c9-cross-source-reading")
+                    panel.wait_for(state="visible")
+                    pair=panel.locator(".c9-cross-reading-grid article").first
+                    if not pair.locator(".c9-cross-reading-pair p").count()==2:
+                        raise AssertionError("Missing paired original Chinese reading contexts")
+                    if pair.locator(".c9-cross-reading-reference").count():
+                        raise AssertionError("Source translation revealed before original assisted-reading action")
+                    panel.locator('[data-action="c9-reading-vocabulary-help"]').click()
+                    pair=page.locator(".c9-cross-reading-grid article").first
+                    pair.locator(".c9-cross-reading-reference").wait_for(state="visible")
+                    if pair.locator('[data-action="c9-source-open-story-line"]').count()==0:
+                        raise AssertionError("Source evidence cannot navigate to its canonical reading line")
+                    if pair.locator('[data-action="lookup-word"]').count()==0:
+                        raise AssertionError("Source evidence cannot hand off to the original Wordbook")
+                    open_route(page,"wordbook")
+                    query=page.locator("#c9-word-query")
+                    query.fill("学校")
+                    pairs=page.locator(".c9-source-context-pairs")
+                    pairs.first.wait_for(state="attached")
+                    summary=pairs.first.locator("summary").first
+                    summary.click()
+                    if pairs.first.locator(".c9-source-pair-grid p").count()<2:
+                        raise AssertionError("Original dictionary did not offer two distinct Chinese source contexts")
+                    if pairs.first.locator(".c9-source-pair-actions [data-action]").count()<2:
+                        raise AssertionError("Dictionary evidence handoffs are not native")
+                    open_route(page,"character/demo-08")
+                    if page.locator(".c9-character-context-trails").count():
+                        trail=page.locator(".c9-character-trail-grid article").first
+                        trail.locator("details summary").click()
+                        if trail.locator("details small").count()==0:
+                            raise AssertionError("Character whole-word trail has no authored evidence reveal")
+                        if trail.locator(".c9-character-trail-actions [data-action]").count()<2:
+                            raise AssertionError("Character whole-word trail cannot open source")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P64-P68 source-study panels overflow "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
+                check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
+                ctx.close()
             # P65 + P69 exact original learner interactions, no invented grades.
             ctx,page,errors=session(390,844,True)
             def p65_p69_original_source_contrasts_and_private_pages():
