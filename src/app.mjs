@@ -93,7 +93,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v66-p65-p70-original-private-continuity';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v67-p64-p68-source-context-trails';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -258,7 +258,7 @@ function renderReader(){
 function renderStories(){
  const story=findStory(storyId)||STORIES[0];
  return '<div class="c9-media-workspace c9-media-stories">'+
-  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
+  renderC9ReadingHub(state,story,action,esc,{query:c9ReadingQuery,filter:c9ReadingFilter,page:c9ReadingPage,sourceHelpRevealed:storyAssist||Boolean(storyResult),queue:{filter:c9ReadingQueueFilter,page:c9ReadingQueuePage}})+
   renderC9ReadingRecall(story,c9ReadingRecallUi,action,esc)+
   renderC9PersonalTextReader(esc,state)+
   '<div class="c9-media-native">'+renderStoriesNative()+'</div></div>';

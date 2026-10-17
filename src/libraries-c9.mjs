@@ -1,7 +1,7 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
-import {sourceWordUsage,sourceWordCoverage} from './source-bridges-c9.mjs';
+import {sourceWordUsage,sourceWordCoverage,sourceWordContextPairs} from './source-bridges-c9.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from './sentence-library.mjs';
 
@@ -37,6 +37,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',context='all',
   const comparisons=sourceWordComparisons(w.key,{limit:3});
   const usage=sourceWordUsage(w.key,{limit:5});
   const coverage=sourceWordCoverage(w.key);
+  const contextPairs=sourceWordContextPairs(w.key,{limit:2});
   return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
@@ -56,6 +57,17 @@ export function c9WordCatalogResults(state,{query='',filter='all',context='all',
    '<p class="c9-word-coverage">Written-form evidence: '+coverage.sentences+' original sentence'+(coverage.sentences===1?'':'s')+
    ' · '+coverage.stories+' passage line'+(coverage.stories===1?'':'s')+
    ' · '+coverage.examples+' authored word example'+(coverage.examples===1?'':'s')+'</p>'+
+   (contextPairs.length?'<details class="c9-source-context-pairs"><summary>Study two original source contexts · '+contextPairs.length+' comparison'+(contextPairs.length===1?'':'s')+'</summary>'+
+    '<p>First compare the two original Chinese sentences yourself, then reveal their authored readings and full-sentence meanings. A matching written word does not establish an identical lexical sense.</p>'+
+    contextPairs.map(({first,second,firstLink,secondLink})=>
+     '<article><div class="c9-source-pair-grid">'+[first,second].map(row=>
+      '<p lang="zh-Hans">'+esc(row.hanzi)+'</p>').join('')+'</div>'+
+     '<details><summary>Reveal original Pinyin and bilingual context · ungraded</summary>'+
+     [first,second].map(row=>'<div class="c9-source-pair-reference"><span>'+esc(row.pinyin)+'</span><small>'+esc(row.english)+'</small></div>').join('')+
+     '</details><div class="c9-source-pair-actions">'+[firstLink,secondLink].map(link=>
+      link?.sourceType==='sentence'?act('sentence-select','Open original sentence →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'"'):
+      link?.sourceType==='story'?act('c9-source-open-story-line','Open original passage line →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'" data-index="'+link.lineIndex+'"'):'').join('')+
+     '</div></article>').join('')+'</details>':'')+
    '<details class="c9-library-word-more"><summary>Original notes & more examples</summary><div>'+
    w.notes.slice(0,2).map(n=>'<p>'+esc(n)+'</p>').join('')+
    w.examples.slice(1,3).map(ex=>'<p><strong lang="zh-Hans">'+esc(ex.hanzi)+'</strong><small>'+esc(ex.pinyin)+' · '+esc(ex.english)+'</small></p>').join('')+
