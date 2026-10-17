@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v64-context-source-handoffs';
+const CACHE='character-study-working-v66-p65-p70-original-private-continuity';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',

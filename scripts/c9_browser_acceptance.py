@@ -1287,6 +1287,74 @@ def main():
             check("P61-P63/P69 original writing and private reading mobile integration",
                   original_handwriting_and_personal_reading)
             ctx.close()
+            # P65 + P69 exact original learner interactions, no invented grades.
+            ctx,page,errors=session(390,844,True)
+            def p65_p69_original_source_contrasts_and_private_pages():
+                open_route(page,"character/demo-08")
+                contrast=page.locator(".c9-character-source-comparisons")
+                contrast.wait_for(state="visible")
+                card=contrast.locator(".c9-character-compare-grid article").first
+                if card.count()==0:
+                    raise AssertionError("Original shared-word character comparison unavailable")
+                disclosure=card.locator("details")
+                if disclosure.locator(".c9-character-compare-reveal").is_visible():
+                    raise AssertionError("Source meanings revealed before self-check")
+                disclosure.locator("summary").click()
+                if not disclosure.locator(".c9-character-compare-reveal").is_visible():
+                    raise AssertionError("Original side-by-side meanings cannot be revealed")
+                if not card.locator('[data-action="c9-character-open"]').count():
+                    raise AssertionError("Source comparison cannot open original character lesson")
+                open_route(page,"stories")
+                disclosure=page.locator(".c9-personal-reader details")
+                if not disclosure.evaluate("(el)=>el.open"): disclosure.locator("summary").click()
+                entry=page.locator("#c9-personal-input")
+                entry.fill("我喜欢中文。"*20)
+                page.locator("#c9-personal-analyze").click()
+                if page.locator(".c9-personal-line").count()!=12:
+                    raise AssertionError("Private passage first 12 segments not annotated")
+                page.locator('[data-personal-page="1"]').click()
+                if page.locator(".c9-personal-line").count()!=8:
+                    raise AssertionError("Private passage remainder was truncated rather than paged")
+                page.locator('[data-personal-mine="12"]').click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Private sentence selected from next page not retained")
+                if not page.locator("#c9-personal-copy-study").is_enabled():
+                    raise AssertionError("Source-aware private notes export unavailable")
+                page.locator('[data-personal-page="-1"]').click()
+                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
+                    raise AssertionError("Cross-page mined sentence vanished")
+                page.locator('[data-personal-recall="0"]').click()
+                answer=page.locator("#c9-personal-recall-input")
+                answer.fill("我喜欢中文。")
+                # Remove the mined selection so only the unsent typing response
+                # can trigger replacement consent. Declining must keep that answer.
+                page.locator('[data-personal-page="1"]').click()
+                page.locator('[data-personal-mine="12"]').click()
+                page.locator('[data-personal-page="-1"]').click()
+                entry.fill("我学习中文。")
+                page.once("dialog",lambda dialog:dialog.dismiss())
+                page.locator("#c9-personal-analyze").click()
+                entry.fill("我喜欢中文。"*20)
+                if page.locator("#c9-personal-recall-input").input_value()!="我喜欢中文。":
+                    raise AssertionError("P70 unmined unsent typing draft discarded despite declined source replacement")
+                page.locator("#c9-personal-recall-reveal").click()
+                if not page.locator(".c9-personal-recall-reference").is_visible():
+                    raise AssertionError("P70 original private sentence not revealed")
+                page.locator('[data-personal-page="1"]').click()
+                if page.locator("#c9-personal-recall-input").input_value()!="我喜欢中文。":
+                    raise AssertionError("P70 private draft lost on pagination")
+                page.locator("#c9-personal-recall-retry").click()
+                if page.locator("#c9-personal-recall-input").input_value():
+                    raise AssertionError("P70 private retry did not clear response")
+                page.locator("#c9-personal-recall-close").click()
+                if page.locator(".c9-personal-recall").count():
+                    raise AssertionError("P70 private rehearsal did not close")
+                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                    raise AssertionError("P65/P69 original mobile panels overflow 390px")
+                if errors:raise RuntimeError("; ".join(errors[:2]))
+                return "Original character self-check and 20-segment private source study with cross-page mining on 390px"
+            check("P65/P69 source character comparisons and paged private reader",p65_p69_original_source_contrasts_and_private_pages)
+            ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
@@ -1692,7 +1760,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v64-context-source-handoffs"
+                current="character-study-working-v66-p65-p70-original-private-continuity"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1710,7 +1778,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v64-context-source-handoffs');
+                    keys.includes('character-study-working-v66-p65-p70-original-private-continuity');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

@@ -9,7 +9,7 @@ import {WORDS} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {findP31Guide} from './p31-foundations.mjs';
 import {guideFor,DEEP_NOTES} from './lesson-guides.mjs';
-import {sourceCharacterLinks} from './source-bridges-c9.mjs';
+import {sourceCharacterLinks,sourceCharacterComparisonSet} from './source-bridges-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
@@ -62,7 +62,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const due=new Set(dueCards(state));
  const lessonDue=ids.filter(x=>due.has(x)).length;
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
- const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),sentences=sourceSentences(lesson);
+ const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),contrasts=sourceCharacterComparisonSet(lesson.id),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
   '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
   '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
@@ -189,10 +189,35 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
    '<span>'+txt(w.pinyin,esc)+' · '+txt(w.senses.slice(0,2).join(' / '),esc)+'</span>'+
    act('lookup-word','Open original entry →','c9-button c9-button--secondary c9-button--small',
     'data-id="'+txt(w.key,esc)+'"')+'</article>').join('')+'</div>':'')+'</div>':'';
+ const guidedComparisons=contrasts.length?'<section class="c9-character-source-comparisons" aria-labelledby="c9-character-comparisons-title">'+
+ '<div class="c9-character-compare-header"><span class="c9-eyebrow">P65 · ORIGINAL LESSON CONTRASTS</span>'+
+ '<h3 id="c9-character-comparisons-title">Compare these two authored uses</h3>'+
+ '<p>Read two source lesson sentences first. Predict how each character is used, then reveal their original meaning and Pinyin. These are teaching comparisons, not validated visual confusables or a scored test.</p></div>'+
+ '<div class="c9-character-compare-grid">'+contrasts.map(({lesson:other,relation,words:via,sample})=>
+ '<article><span class="c9-eyebrow">'+txt(relation,esc)+'</span>'+
+ '<div class="c9-character-compare-pair"><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span aria-hidden="true">↔</span><span lang="zh-Hans">'+txt(other.hanzi,esc)+'</span></div>'+
+ '<div class="c9-character-compare-context"><p lang="zh-Hans">'+txt(lesson.sentence.hanzi,esc)+'</p>'+
+ '<p lang="zh-Hans">'+txt(sample.hanzi,esc)+'</p></div>'+
+ '<details><summary>Reveal original source meanings and readings</summary>'+
+ '<div class="c9-character-compare-reveal"><div><strong lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</strong>'+
+ '<span>'+txt(lesson.pinyin,esc)+' · '+txt(lesson.meaning,esc)+'</span>'+
+ '<small>'+txt(lesson.sentence.english,esc)+'</small></div>'+
+ '<div><strong lang="zh-Hans">'+txt(other.hanzi,esc)+'</strong>'+
+ '<span>'+txt(other.pinyin,esc)+' · '+txt(other.meaning,esc)+'</span>'+
+ '<small>'+txt(sample.english,esc)+'</small></div></div></details>'+
+ (via.length?'<small>Shared existing whole word: '+via.map(w=>txt(w.hanzi,esc)).join(' · ')+'</small>':'')+
+ '<div class="c9-character-compare-actions">'+
+ act('c9-character-open','Study other original lesson →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(other.id,esc)+'"')+
+ act('lookup-word','Explore a source word →','c9-button c9-button--quiet c9-button--small',
+  'data-id="'+txt(via[0]?.key||words[0]?.key||'',esc)+'"'+((via[0]||words[0])?'':' disabled'))+
+ '</div></article>').join('')+'</div>'+
+ '<p class="c9-character-provenance">Revealing or comparing examples creates no StudyEvent, scheduled review target or mastery grade. No radical, stroke or etymology claim is implied.</p></section>':
+ '<p>No eligible authored character comparison exists for this original lesson; unverified pairings are not generated.</p>';
+ 
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
   '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
   '<p>Relationships below only indicate that both characters occur in the same indexed whole word; no radical, etymological or semantic relationship is asserted.</p>'+
-  authoredContrast+
+  authoredContrast+guidedComparisons+
   (related.length?'<div class="c9-character-related">'+related.map(({lesson:other,words:via})=>
     '<article><div><strong lang="zh-Hans">'+txt(other.hanzi,esc)+'</strong>'+
     '<span>'+txt(other.pinyin,esc)+' · '+txt(other.meaning,esc)+'</span>'+

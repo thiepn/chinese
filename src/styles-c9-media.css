@@ -584,3 +584,24 @@
  .c9-dialogue-repair-actions>.c9-button{flex-basis:100%}
  .c9-dialogue-repair-list li{padding:11px}
 }
+
+/* P69: paginate private user text without persisting or grading its contents. */
+.c9-personal-pages,.c9-personal-copy-actions,.c9-personal-source-links{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.c9-personal-pages{justify-content:space-between;border-block:1px solid var(--c9-line);padding:12px 0}
+.c9-personal-pages span{font:500 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-personal-pages .c9-button,.c9-personal-copy-actions .c9-button,.c9-personal-source-links .c9-button{min-height:44px;white-space:normal}
+.c9-personal-source-links{padding:8px 0;border-top:1px solid var(--c9-line);margin-top:7px}
+.c9-personal-source-links small{flex-basis:100%;font:400 12px/1.5 var(--c9-ui);color:var(--c9-sub)}
+.c9-personal-copy-actions{margin-top:3px}
+@media(max-width:480px){.c9-personal-pages{justify-content:center}.c9-personal-pages span{flex-basis:100%;text-align:center;order:-1}}
+
+/* P70 private in-tab Chinese rehearsal, no grading or persistence. */
+.c9-personal-recall{display:grid;gap:12px;min-width:0;margin:17px 0;padding:16px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm)}
+.c9-personal-recall h3{font:600 18px/1.4 var(--c9-display);margin:0}
+.c9-personal-recall p,.c9-personal-recall small{margin:0;line-height:1.65;overflow-wrap:anywhere}
+.c9-personal-recall textarea{display:block;width:100%;min-width:0;box-sizing:border-box;line-height:1.8;font:500 17px/1.8 var(--c9-hanzi-body)}
+.c9-personal-recall-actions{display:flex;gap:9px;flex-wrap:wrap}
+.c9-personal-recall-actions .c9-button{min-height:44px;white-space:normal}
+.c9-personal-recall-reference{border-left:2px solid var(--c9-line-strong);padding:10px 13px;display:grid;gap:5px}
+.c9-personal-recall-reference p{font:500 20px/1.6 var(--c9-hanzi-body)}
+@media(max-width:480px){.c9-personal-recall{padding:12px}}
