@@ -1332,6 +1332,53 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P75: authentic P71 dossier -> original P43 two-paragraph editor,
+            # native snapshots, assisted source anchors and guarded source switch.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p75_original_composition():
+                    open_route(page,"stories")
+                    first=page.locator(".c9-p71-native-grid article").first
+                    first.locator('[data-action="c9-p71-open-composition"]').click()
+                    brief=page.locator(".c9-p71-writing-brief")
+                    brief.wait_for(state="visible")
+                    if "UNREVIEWED" not in brief.inner_text() or "P71–P75" not in brief.inner_text():
+                        raise AssertionError("Original authorial writing provenance missing")
+                    if "archival exhibition" not in brief.inner_text() and "archival" not in brief.inner_text():
+                        raise AssertionError("Wrong P71 authorial writing prompt selected")
+                    page.locator('[data-action="p43-step"][data-step="compose"]').first.click()
+                    editor=page.locator("#p43-draft")
+                    editor.wait_for(state="visible")
+                    draft="我认为两张地图相似，但是作者还没有得到确认。"
+                    editor.fill(draft)
+                    page.locator('[data-action="p43-save"]').click()
+                    if "1 explicitly saved session revision" not in page.locator(".p43-draft-status").inner_text():
+                        raise AssertionError("P71 writing does not use original P43 revision ownership")
+                    page.locator('.c9-p71-writing-brief [data-action="p43-evidence"]').click()
+                    anchors=page.locator(".c9-p71-writing-anchors li")
+                    if anchors.count()!=5:raise AssertionError("Original source review anchors missing")
+                    if "两张" not in anchors.first.inner_text():
+                        raise AssertionError("P71 evidence not sourced from canonical Chinese lines")
+                    if page.locator(".p43-model-line").count():
+                        raise AssertionError("Authored bilingual model was visible before explicit reveal")
+                    page.locator('.c9-p71-writing-brief [data-action="c9-p71-writing-open-source"]').click()
+                    course=page.locator(".c9-p71-native-course")
+                    course.wait_for(state="visible")
+                    course.locator(".c9-p71-native-grid article").nth(1).locator(
+                        '[data-action="c9-p71-open-composition"]').click()
+                    pending=page.locator("#c9-writing-pending")
+                    pending.wait_for(state="visible")
+                    if "Switching source contexts" not in pending.inner_text():
+                        raise AssertionError("Private P43 source switch lost its draft guard")
+                    page.locator('[data-action="p43-stay"]').click()
+                    if draft not in page.locator("#p43-draft").input_value():
+                        raise AssertionError("Cancel source change discarded learner writing")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P71/P43 source editor horizontal overflow at "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Native P71 composition, reviewer evidence, revision and protected switch "+str(width)+"px"
+                check("P75 original P71-to-P43 composition continuity "+str(width),p75_original_composition)
+                ctx.close()
             # P71-P75: original source-owned blind listening/reader handoff.
             # Validate actual hidden transcript DOM, source-only device TTS,
             # original answer writer, evidence and exact native writing handoff.
@@ -1949,7 +1996,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v71-p71-p75-blind-listening-native"
+                current="character-study-working-v72-p75-source-writing-bridge"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1967,7 +2014,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v71-p71-p75-blind-listening-native');
+                    keys.includes('character-study-working-v72-p75-source-writing-bridge');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
