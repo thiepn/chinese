@@ -8,7 +8,7 @@ import {WORDS,wordsForWrittenForm} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 const grammarById=new Map(GRAMMAR_LESSONS.map(x=>[x.id,x]));
 const readOnly=rows=>Object.freeze(rows.map(row=>Object.freeze(row)));
-const sourcePath=story=>story.beginner?.source==='original-p68'?
+const sourcePath=story=>story.beginner?.source==='original-p71'?'src/p71-manuscripts.mjs':story.beginner?.source==='original-p68'?
  'src/p68-source-readings.mjs':'Original module associated with '+story.origin;
 export function auditReadingSource(story){
  if(!story||findStory(story.id)!==story)return null;
@@ -25,8 +25,8 @@ export function auditReadingSource(story){
    issues.push('Question '+(i+1)+' has invalid or repeated answer options');
   if(!q.explanation?.trim())issues.push('Question '+(i+1)+' lacks source explanation');
  }
- if(story.beginner?.p68){
-  const manuscript=story.beginner.p68;
+ if(story.beginner?.p68||story.beginner?.p71){
+  const manuscript=story.beginner.p68||story.beginner.p71;
   for(const link of manuscript.grammarEvidence||[]){
    const lesson=grammarById.get(link.grammarId);
    if(!lesson||!story.lines[link.lineIndex]?.hanzi.includes(link.token))
@@ -49,6 +49,7 @@ export function auditReadingSource(story){
 export function auditReadingInventory(){
  const audits=STORIES.map(auditReadingSource);
  return Object.freeze({total:audits.length,p68:audits.filter(x=>x.origin==='original-p68-evidence-reading').length,
+  p71:audits.filter(x=>x.origin==='original-p71-upper-intermediate-original-reading').length,
   flagged:audits.filter(x=>x.issues.length).length,
   unreviewed:audits.length,
   statuses:readOnly(audits.map(x=>({storyId:x.storyId,issueCount:x.issues.length,editorialStatus:x.editorialStatus})))});
