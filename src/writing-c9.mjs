@@ -216,7 +216,7 @@ function requestC9Writing(target,{go,currentRoute,render}){
  }else if(changed){++c9WritingFileReadToken;resetWriting(target);}
  else{w.pending='';w.pendingTarget=null;}
  // Same-route go() renders immediately; update the controller first instead.
- if(alreadyHere)render();
+ render(); // The source context must be visible after first route entry too.
  return true;
 }
 

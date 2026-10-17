@@ -4,6 +4,7 @@
  */
 import {beginnerQuestion} from './beginner-reading.mjs';
 import {beginnerWritingTask} from './beginner-reading.mjs';
+import {p71ProductionSource} from './p71-production-c9.mjs';
 export const P71_BLIND_MODES=Object.freeze([
  ['beginner-detail','Identify the stated fact'],
  ['beginner-reason','Explain the reason'],
@@ -24,6 +25,7 @@ export function renderP71BlindListening(story,mode,result,act,esc){
  const q=p71BlindStudyPrompt(story,mode);
  if(!q)return '';
  const completed=Boolean(result);
+ const originalBrief=p71ProductionSource(story);
  return '<section class="c9-p71-blind" aria-labelledby="c9-p71-blind-title">'+
  '<p class="c9-eyebrow">P71–P75 · ORIGINAL LISTENING-FIRST READER</p>'+
  '<h1 id="c9-p71-blind-title">Listen before looking at the Chinese</h1>'+
@@ -61,6 +63,13 @@ export function renderP71BlindListening(story,mode,result,act,esc){
  (completed?act('c9-p71-workshop-writing','Rebuild the exact source conclusion in Sentence Workshop →',
   'c9-button c9-button--primary','data-id="'+esc(story.id)+'"'):'')+
  '</div></div>'+
+ (completed&&originalBrief?'<section class="c9-p71-production-bridge" aria-label="Original written and oral source transfer">'+
+ '<h2>Next: compose an independent Mandarin response</h2>'+ 
+ '<p><strong>For '+esc(originalBrief.audience)+':</strong> '+esc(originalBrief.writing)+'</p>'+ 
+ '<p><strong>Oral response:</strong> '+esc(originalBrief.oral)+'</p>'+ 
+ '<p><strong>Do not claim:</strong> '+esc(originalBrief.misconception)+'</p>'+ 
+ act('c9-p71-open-composition','Open the original two-paragraph editor →','c9-button c9-button--primary','data-id="'+esc(story.id)+'"')+
+ '<p>No writing or speaking score is inferred. The existing P43 editor owns drafts, revisions and explicit private backups.</p></section>':'')+
  (completed?'<section class="c9-p71-blind-oral">'+
  '<h2>Speak your reason aloud, then compare it with the source</h2>'+
  '<p>In Mandarin, explain what was first assumed, which evidence changed the conclusion and what remains uncertain. Use sentences from the original source as a reference after your attempt. The browser does not listen, record, check, score or attest your speech.</p>'+

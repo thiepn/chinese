@@ -373,6 +373,7 @@ export function renderC9P71LearningCourse(state,currentId,act,esc){
    'data-id="'+esc(s.id)+'" data-mode="beginner-sequence"')+
   act('c9-reading-queue-start','Write the original conclusion →','c9-button c9-button--secondary c9-button--small',
    'data-id="'+esc(s.id)+'" data-mode="beginner-writing"')+
+  act('c9-p71-open-composition','Compose two Mandarin paragraphs →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+
   act('c9-media-open-story','Read full Chinese passage →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(s.id)+'"')+
   '</div><details class="c9-p71-editorial"><summary>Source and editorial evidence · unreviewed</summary>'+
   '<p>Canonical original ID '+esc(s.id)+'; '+s.lines.length+' authored bilingual sentences; '+
