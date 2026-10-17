@@ -455,6 +455,7 @@ def main():
                         raise AssertionError("Native question jump ignored rejected draft-leave warning")
                     if roleplay.input_value()!="我不想丢失这个答案。":
                         raise AssertionError("Declined departure erased private unsent roleplay")
+                    roleplay.fill("")
                     # Fresh P34 source: audio retry must not reveal transcript.
                     open_route(page,"dialogues")
                     panel=page.locator("details.p34-catalog")
