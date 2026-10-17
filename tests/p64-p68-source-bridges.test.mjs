@@ -81,7 +81,7 @@ test('P67/P68 reading source bridge never reveals a lexical sense before assista
  assert.ok(app.includes("if(name==='c9-reading-vocabulary-help')"));
  assert.ok(app.includes("storyAssist=true;"));
  assert.ok(app.includes("revealed:storyAssist||Boolean(storyResult)"));
- assert.ok(app.includes("const assisted=storyAssist||name==='story-skip'"));
+ assert.ok(app.includes("const assisted=storyAssist||c9ReadingRecallUi.referenceSeen||name==='story-skip'"), 'original reading must remain assisted after a source-revealing dictation session');
  assert.equal(JSON.stringify(state),old);
 });
 

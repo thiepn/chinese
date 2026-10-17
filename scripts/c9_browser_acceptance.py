@@ -363,6 +363,343 @@ def main():
                     return "Canonical source lesson, reload, Back/Forward, catalog and invalid ID guard "+str(width)
                 check("C9-54 canonical lesson navigation "+str(width),canonical_lesson_history)
                 ctx.close()
+            # C9-56 independently addressable original reading + listening:
+            # do not confuse public source identity with private learning data.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_media_history():
+                    open_route(page,"stories/story-02")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent?.trim().length>0")
+                    title=page.locator('.c9-media-stories .c9-media-lead h2').inner_text()
+                    if not page.locator('[data-action="c9-media-copy-reading"]').is_visible():
+                        raise AssertionError("Public original reading lacks share action")
+                    page.reload(wait_until="domcontentloaded")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent===title",arg=title)
+                    if page.evaluate("()=>location.hash")!="#/stories/story-02":
+                        raise AssertionError("Reload lost selected original reading URL")
+                    page.locator('[data-action="story-next"]').first.click()
+                    page.wait_for_function("()=>location.hash==='#/stories/story-03'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent!==title",arg=title)
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/stories/story-02'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent===title",arg=title)
+                    open_route(page,"stories/story-9999")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-stories .c9-media-lead h2')?.textContent?.trim().length>0")
+                    if page.locator('.c9-media-stories .c9-media-lead h2').inner_text()==title:
+                        raise AssertionError("Invalid reading ID silently retained previously selected source")
+                    open_route(page,"dialogues/dialogue-02")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent?.trim().length>0")
+                    dialogue=page.locator('.c9-media-dialogues .c9-media-lead h2').inner_text()
+                    if not page.locator('[data-action="c9-media-copy-dialogue"]').is_visible():
+                        raise AssertionError("Public conversation lacks share action")
+                    page.reload(wait_until="domcontentloaded")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent===title",arg=dialogue)
+                    if page.evaluate("()=>location.hash")!="#/dialogues/dialogue-02":
+                        raise AssertionError("Conversation source lost on reload")
+                    page.locator('[data-action="dialogue-support"]').first.click()
+                    page.locator('.dialogue-pinyin').first.wait_for(state="visible")
+                    page.locator('[data-action="dialogue-next-context"]').first.click()
+                    page.wait_for_function("()=>location.hash==='#/dialogues/dialogue-03'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent!==title",arg=dialogue)
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Assisted transcript leaked into a new conversation")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("()=>location.hash==='#/dialogues/dialogue-02'")
+                    page.wait_for_function("(title)=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent===title",arg=dialogue)
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Assisted transcript leaked on Back navigation")
+                    open_route(page,"dialogues/dialogue-9999")
+                    page.wait_for_function("()=>document.querySelector('.c9-media-dialogues .c9-media-lead h2')?.textContent?.trim().length>0")
+                    if page.locator('.c9-media-dialogues .c9-media-lead h2').inner_text()==dialogue:
+                        raise AssertionError("Invalid conversation ID retained previous source")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Exact source reading + conversation reload, history and assisted reset at "+str(width)+"px"
+                check("C9-56 canonical reading/dialogue continuity "+str(width),original_media_history)
+                ctx.close()
+            # C9-61: genuinely user-owned question repair across all original
+            # P33/P34/native dialogues. An unchanged source ID, no new grades,
+            # no pre-revealed transcripts, and guarded unsent drafts.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_dialogue_question_repair():
+                    open_route(page,"dialogues/dialogue-02")
+                    repair=page.locator("#c9-dialogue-question-repair")
+                    repair.wait_for(state="visible")
+                    entries=repair.locator(".c9-dialogue-repair-list li")
+                    if entries.count()<2:
+                        raise AssertionError("Source questions missing from original retry chooser")
+                    if "Unattempted" not in entries.first.inner_text():
+                        raise AssertionError("Original question history was invented before any attempt")
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    page.locator("#c9-native-dialogue-question").wait_for(state="visible")
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Native dialogue did not open exact original question 2")
+                    if page.evaluate("()=>document.activeElement?.id")!="c9-native-dialogue-question":
+                        raise AssertionError("Original question target did not receive keyboard focus")
+                    repair.locator('[data-action="c9-dialogue-repair-play"]').click()
+                    if page.locator('.dialogue-pinyin').count():
+                        raise AssertionError("Listening replay silently revealed transcript support")
+                    page.locator(".dialogue-quiz [data-action='dialogue-reveal']").click()
+                    page.locator(".dialogue-quiz .reader-feedback").wait_for(state="visible")
+                    page.wait_for_function("()=>document.querySelector('#c9-dialogue-question-repair')?.textContent?.includes('Latest assisted')")
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    if page.locator(".dialogue-quiz .reader-feedback").count():
+                        raise AssertionError("Reopening original question kept old answer feedback")
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Question retry switched to unrelated original ID")
+                    roleplay=page.locator("#c9-roleplay-entry")
+                    roleplay.fill("我不想丢失这个答案。")
+                    page.once("dialog",lambda dialog:dialog.dismiss())
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="0"]').click()
+                    if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
+                        raise AssertionError("Native question jump ignored rejected draft-leave warning")
+                    if roleplay.input_value()!="我不想丢失这个答案。":
+                        raise AssertionError("Declined departure erased private unsent roleplay")
+                    roleplay.fill("")
+                    # Fresh P34 source: audio retry must not reveal transcript.
+                    open_route(page,"dialogues")
+                    panel=page.locator("details.p34-catalog")
+                    panel.locator("summary").click()
+                    panel.locator('[data-action="p34-open-listening"]').first.click()
+                    page.locator(".p34-listening-panel").wait_for(state="visible")
+                    if page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("Original listening-first source prematurely showed transcript")
+                    page.locator("#c9-dialogue-question-repair [data-action='c9-dialogue-repair-play']").click()
+                    if page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("P34 retry audio exposed transcript or graded answer")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Native question recovery overflows "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Exact original question retry, assistance, guard, P34 hidden transcript "+str(width)
+                check("C9-61 original dialogue question repair "+str(width),original_dialogue_question_repair)
+                ctx.close()
+            # C9-60: genuine source-grade continuity through all native
+            # P33 writing turns and P34 listening-to-writing, with in-tab
+            # return context and mobile source-safe draft guards.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_workshop_source_continuation():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    circuit=page.locator("#c9-conversation-circuit")
+                    circuit.wait_for(state="visible")
+                    source=page.evaluate("()=>location.hash")
+                    tasks=circuit.locator(".c9-circuit-writing-steps [data-action='c9-circuit-write']")
+                    if tasks.count()!=3:
+                        raise AssertionError("Not all three original P33 writing tasks are available")
+                    second=tasks.nth(1).get_attribute("data-id")
+                    third=tasks.nth(2).get_attribute("data-id")
+                    tasks.nth(1).click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel=page.locator("#c9-workshop-continuation")
+                    panel.wait_for(state="visible")
+                    if panel.locator('[data-action="c9-workshop-next-source"]').get_attribute("data-id")!=third:
+                        raise AssertionError("Source-owned next writing task was not resolved")
+                    listening=page.locator('[data-action="c9-workshop-listen"]')
+                    listening.wait_for(state="visible")
+                    listening.click()
+                    page.locator(".lesson-guide").wait_for(state="visible")
+                    if "Help makes this attempt assisted" not in page.locator(".lesson-guide").inner_text():
+                        raise AssertionError("P33 model playback failed to mark original writing assisted")
+                    panel.locator('[data-action="c9-workshop-next-source"]').click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel.wait_for(state="visible")
+                    if panel.locator('[data-action="c9-workshop-next-source"]').count():
+                        raise AssertionError("Final authored source task still advertises a next task")
+                    entry=page.locator("#workshop-entry")
+                    entry.fill("请帮我练习中文。")
+                    page.once("dialog",lambda dialog: dialog.dismiss())
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    if page.evaluate("()=>location.hash")!="#/workshop":
+                        raise AssertionError("Declined native unsent writing guard lost original draft")
+                    if entry.input_value()!="请帮我练习中文。":
+                        raise AssertionError("Declined source handoff cleared actual native writing")
+                    page.once("dialog",lambda dialog: dialog.accept())
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    page.wait_for_function("(source)=>location.hash===source",arg=source)
+                    circuit.wait_for(state="visible")
+                    if circuit.locator(".c9-circuit-writing-steps [data-action='c9-circuit-write']").count()!=3:
+                        raise AssertionError("Original P33 source task list did not survive round trip")
+                    open_route(page,"dialogues")
+                    audio_catalog=page.locator("details.p34-catalog")
+                    audio_catalog.locator("summary").click()
+                    audio_catalog.locator('[data-action="p34-open-listening"]').first.click()
+                    page.wait_for_function("()=>location.hash.startsWith('#/dialogues/dialogue-')")
+                    p34_source=page.evaluate("()=>location.hash")
+                    p34_write=page.locator(".p34-listening-panel [data-action='p34-write-listening']")
+                    p34_write.wait_for(state="visible")
+                    p34_write.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    panel=page.locator("#c9-workshop-continuation")
+                    panel.wait_for(state="visible")
+                    if "P34" not in panel.inner_text() or panel.locator('[data-action="c9-workshop-next-source"]').count():
+                        raise AssertionError("P34 transfer did not use original listening-source ownership")
+                    listen=page.locator('[data-action="c9-workshop-listen"]')
+                    listen.wait_for(state="visible")
+                    listen.click()
+                    if page.locator(".lesson-guide").count():
+                        raise AssertionError("Original P34 listening prompt was incorrectly marked as assisted")
+                    panel.locator('[data-action="c9-workshop-return"]').click()
+                    page.wait_for_function("(source)=>location.hash===source",arg=p34_source)
+                    page.locator("#c9-native-dialogue").wait_for(state="visible")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Source writing continuity overflow at "+str(width)+"px")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Three original P33 writing turns, assisted model, guarded return, P34 audio prompt "+str(width)
+                check("C9-60 original writing recovery and listening transfer "+str(width),original_workshop_source_continuation)
+                ctx.close()
+            # C9-59: genuinely connected, independently authored P33
+            # scenarios. The source URL, original question writer and exact
+            # production task must survive a multi-situation circuit.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def original_conversation_circuit():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    circuit=page.locator("#c9-conversation-circuit")
+                    circuit.wait_for(state="visible")
+                    first=page.evaluate("()=>location.hash")
+                    if not first.startswith("#/dialogues/dialogue-"):
+                        raise AssertionError("P33 source has no original canonical URL")
+                    if not circuit.locator('[data-action="c9-circuit-write"]').count():
+                        raise AssertionError("P33 source circuit lacks original native writing task")
+                    next=circuit.locator('.c9-circuit-navigation [data-action="c9-circuit-open"]').last
+                    if not next.count():
+                        raise AssertionError("Original scenario lacks same-theme successor")
+                    expected=next.get_attribute("data-id")
+                    next.click()
+                    page.wait_for_function("(id)=>location.hash==='#/dialogues/'+id",arg=expected)
+                    page.wait_for_function("(id)=>document.querySelector('#c9-conversation-circuit .c9-circuit-stop.is-current .c9-eyebrow')?.textContent.includes('P33')===true",arg=expected)
+                    if circuit.locator(".c9-circuit-meta").count()!=1:
+                        raise AssertionError("Original thematic navigator vanished on source switch")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("(expected)=>location.hash===expected",arg=first)
+                    circuit.wait_for(state="visible")
+                    action=circuit.locator('[data-action="c9-circuit-write"]').first
+                    target=action.get_attribute("data-id")
+                    action.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    page.locator("main").wait_for(state="visible")
+                    if not page.locator('main').inner_text().strip():
+                        raise AssertionError("Canonical native writing task was not rendered")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.wait_for_function("(expected)=>location.hash===expected",arg=first)
+                    circuit.wait_for(state="visible")
+                    if circuit.locator('[data-action="c9-circuit-write"]').first.get_attribute("data-id")!=target:
+                        raise AssertionError("Browser history lost original P33 writing identity")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Multi-situation circuit overflows "+str(width)+"px viewport")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original thematic episode, canonical history, native writing and zero overflow "+str(width)
+                check("C9-59 original multi-situation circuit "+str(width),original_conversation_circuit)
+                ctx.close()
+            # C9-58 source-owned decision-to-production across real
+            # authored P33 choices, original partner replies, and native
+            # Sentence Workshop. No fake chatbot or synthetic branch grader.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def p33_original_decision_practice():
+                    open_route(page,"dialogues")
+                    browser=page.locator("details.p33-browser")
+                    browser.locator("summary").click()
+                    browser.locator('[data-action="p33-open-scenario"]').first.click()
+                    decision=page.locator("#p33-scenario-decision")
+                    decision.wait_for(state="visible")
+                    if decision.locator(".p33-decision-reference").count():
+                        raise AssertionError("Partner continuation leaked before learner choice")
+                    if not decision.locator('.p33-decision-cue [data-action="speak"]').count():
+                        raise AssertionError("Original first-turn audio cue unavailable")
+                    decision.locator('[data-action="p33-branch"][data-index="0"]').click()
+                    decision.locator("#p33-decision-entry").wait_for(state="visible")
+                    decision.locator("#p33-decision-entry").fill("我想用中文回答。")
+                    decision.locator('[data-action="p33-decision-reveal"]').click()
+                    decision.locator(".p33-decision-reference").wait_for(state="visible")
+                    source_a=decision.locator(".p33-decision-reference strong").inner_text()
+                    if not source_a.strip():
+                        raise AssertionError("Original partner reply absent after reveal")
+                    decision.locator('[data-action="p33-decision-retry"]').click()
+                    if decision.locator(".p33-decision-reference").count():
+                        raise AssertionError("Retry did not hide source partner line")
+                    if decision.locator("#p33-decision-entry").input_value():
+                        raise AssertionError("Retry retained prior private draft")
+                    decision.locator('[data-action="p33-branch"][data-index="1"]').click()
+                    decision.locator('[data-action="p33-decision-reveal"]').click()
+                    decision.locator(".p33-decision-reference").wait_for(state="visible")
+                    if decision.locator(".p33-decision-reference strong").inner_text()==source_a:
+                        raise AssertionError("Two authorial alternatives did not produce distinct continuations")
+                    page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first.click()
+                    page.locator('.dialogue-quiz .reader-feedback').wait_for(state="visible")
+                    if "Assisted attempt" not in page.locator(".dialogue-quiz .reader-feedback").inner_text():
+                        raise AssertionError("Previously revealed branch improperly yielded independent dialogue evidence")
+                    source=page.locator('.p33-transfer [data-action="p33-write"]').first
+                    source.wait_for(state="visible")
+                    source.click()
+                    page.wait_for_function("()=>location.hash==='#/workshop'")
+                    page.locator("#app-content").wait_for(state="visible")
+                    if not page.locator("main").count():
+                        raise AssertionError("Original native writing task handoff failed")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P33 mobile decision/writing workflow overflows viewport")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Two real authored alternatives, non-independent source reveal, original graded writing "+str(width)
+                check("C9-58 P33 authentic decision-to-writing "+str(width),p33_original_decision_practice)
+                ctx.close()
+            # C9-57 two real ungraded communication activities, not a new
+            # speech grader: source-exact role replies and listen-to-write.
+            for width,height,mobile in ((390,844,True),(1440,900,False),(320,700,True)):
+                ctx,page,errors=session(width,height,mobile)
+                def source_rehearsal():
+                    open_route(page,"dialogues/dialogue-02")
+                    studio=page.locator("#c9-roleplay-studio")
+                    studio.wait_for(state="visible")
+                    if studio.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Roleplay leaked target speech before answering")
+                    if studio.locator('[data-action="c9-roleplay-hear-cue"]').count():
+                        studio.locator('[data-action="c9-roleplay-hear-cue"]').click()
+                    studio.locator("#c9-roleplay-entry").fill("我练习说中文。")
+                    studio.locator('[data-action="c9-roleplay-spoke"]').click()
+                    if studio.locator("#c9-roleplay-entry").input_value()!="我练习说中文。":
+                        raise AssertionError("Audio/roleplay control discarded typed learner draft")
+                    studio.locator('[data-action="c9-roleplay-reveal"]').click()
+                    studio.locator(".c9-rehearsal-reference").wait_for(state="visible")
+                    if not studio.locator(".c9-rehearsal-reference").inner_text().strip():
+                        raise AssertionError("No authored reply reference after self-check")
+                    if not page.locator(".dialogue-pinyin").count():
+                        raise AssertionError("Source reveal did not engage native assisted transcript")
+                    studio.locator('[data-action="c9-roleplay-retry"]').click()
+                    if studio.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Rehearsal retry did not hide reference")
+                    if studio.locator("#c9-roleplay-entry").input_value():
+                        raise AssertionError("Rehearsal retry retained previous reply")
+                    answer=page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first
+                    answer.click()
+                    page.locator('.dialogue-quiz .reader-feedback').wait_for(state="visible")
+                    if "Assisted attempt" not in page.locator('.dialogue-quiz .reader-feedback').inner_text():
+                        raise AssertionError("Rehearsal reveal was incorrectly counted independent after retry")
+                    open_route(page,"stories/story-02")
+                    reading=page.locator("#c9-reading-recall")
+                    reading.wait_for(state="visible")
+                    if reading.locator(".c9-rehearsal-reference").count():
+                        raise AssertionError("Original reading line leaked before self-check")
+                    reading.locator('[data-action="c9-reading-recall-listen"]').click()
+                    reading.locator("#c9-reading-recall-entry").fill("我在认真听。")
+                    reading.locator('[data-action="c9-reading-recall-reveal"]').click()
+                    reading.locator(".c9-rehearsal-reference").wait_for(state="visible")
+                    if not reading.locator(".c9-rehearsal-reference p[lang='zh-Hans']").inner_text():
+                        raise AssertionError("Original source line not revealed")
+                    reading.locator('[data-action="c9-reading-recall-move"][data-delta="1"]').click()
+                    if reading.locator(".c9-rehearsal-reference").count() or reading.locator("#c9-reading-recall-entry").input_value():
+                        raise AssertionError("Reading continuation did not reset ungraded writing prompt")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Rehearsal UI overflows mobile viewport")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original authored roleplay, reveal-assisted native grade and reading dictation "+str(width)
+                check("C9-57 authentic communication rehearsal "+str(width),source_rehearsal)
+                ctx.close()
             # Original character → indexed word → native dictionary and
             # exact sentence/passage handoffs. No duplicate answer writer.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -402,7 +739,7 @@ def main():
                     reading=page.locator('#c9-lesson-transfer [data-action="c9-media-open-story"]')
                     if reading.count():
                         reading.first.click()
-                        page.wait_for_function("()=>location.hash==='#/stories'")
+                        page.wait_for_function("()=>location.hash.startsWith('#/stories/story-')")
                         page.locator(".story-paper").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Original lesson → exact dictionary, native sentence or passage and assisted-free navigation "+str(width)
@@ -950,48 +1287,6 @@ def main():
             check("P61-P63/P69 original writing and private reading mobile integration",
                   original_handwriting_and_personal_reading)
             ctx.close()
-            # P65 + P69 exact original learner interactions, no invented grades.
-            ctx,page,errors=session(390,844,True)
-            def p65_p69_original_source_contrasts_and_private_pages():
-                open_route(page,"character/demo-08")
-                contrast=page.locator(".c9-character-source-comparisons")
-                contrast.wait_for(state="visible")
-                card=contrast.locator(".c9-character-compare-grid article").first
-                if card.count()==0:
-                    raise AssertionError("Original shared-word character comparison unavailable")
-                disclosure=card.locator("details")
-                if disclosure.locator(".c9-character-compare-reveal").is_visible():
-                    raise AssertionError("Source meanings revealed before self-check")
-                disclosure.locator("summary").click()
-                if not disclosure.locator(".c9-character-compare-reveal").is_visible():
-                    raise AssertionError("Original side-by-side meanings cannot be revealed")
-                if not card.locator('[data-action="c9-character-open"]').count():
-                    raise AssertionError("Source comparison cannot open original character lesson")
-                open_route(page,"stories")
-                disclosure=page.locator(".c9-personal-reader details")
-                if not disclosure.evaluate("(el)=>el.open"): disclosure.locator("summary").click()
-                entry=page.locator("#c9-personal-input")
-                entry.fill("我喜欢中文。"*20)
-                page.locator("#c9-personal-analyze").click()
-                if page.locator(".c9-personal-line").count()!=12:
-                    raise AssertionError("Private passage first 12 segments not annotated")
-                page.locator('[data-personal-page="1"]').click()
-                if page.locator(".c9-personal-line").count()!=8:
-                    raise AssertionError("Private passage remainder was truncated rather than paged")
-                page.locator('[data-personal-mine="12"]').click()
-                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
-                    raise AssertionError("Private sentence selected from next page not retained")
-                if not page.locator("#c9-personal-copy-study").is_enabled():
-                    raise AssertionError("Source-aware private notes export unavailable")
-                page.locator('[data-personal-page="-1"]').click()
-                if "1" not in page.locator(".c9-personal-mined strong").inner_text():
-                    raise AssertionError("Cross-page mined sentence vanished")
-                if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
-                    raise AssertionError("P65/P69 original mobile panels overflow 390px")
-                if errors:raise RuntimeError("; ".join(errors[:2]))
-                return "Original character self-check and 20-segment private source study with cross-page mining on 390px"
-            check("P65/P69 source character comparisons and paged private reader",p65_p69_original_source_contrasts_and_private_pages)
-            ctx.close()
             # C9-47 — exercise the actual integrated P9 first-fold, source
             # previews, native section routing and dark visual hierarchy.
             for width,height,mobile in [(1440,960,False),(390,844,True),(320,700,True)]:
@@ -1397,7 +1692,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v65-p65-p69-original-private-study"
+                current="character-study-working-v64-context-source-handoffs"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1415,7 +1710,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v65-p65-p69-original-private-study');
+                    keys.includes('character-study-working-v64-context-source-handoffs');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

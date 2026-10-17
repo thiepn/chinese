@@ -168,11 +168,10 @@ test('P69 editable private text retains mined sentences until explicit replaceme
  for(const key of [
   'next!==personalReaderAnalyzed&&personalReaderMined.length',
   "window.confirm('Replace annotated passage",
-  'if(next!==personalReaderAnalyzed){personalReaderMined=[];personalReaderPage=0;}',
+  'if(next!==personalReaderAnalyzed)personalReaderMined=[]',
   'panel.hidden=!(personalReaderAnalyzed&&personalReaderText.trim()===personalReaderAnalyzed)',
-  'PERSONAL_READER_PAGE_SIZE=12',
-  'personalReaderPage=Math.min(Math.max(0,personalReaderPage),pages-1)',
-  "const line=personalLines(personalReaderAnalyzed)[Number(mine.dataset.personalMine)]",
+  'allLines.length>32',
+  'Only the first 32 of'
  ])assert.ok(source.includes(key),key);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  for(const key of [

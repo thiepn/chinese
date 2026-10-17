@@ -293,9 +293,10 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '<p>'+esc(story.theme)+' · '+story.lines.length+' original source sentences. '+
   (last?'Last recorded attempt: '+(last.assisted?'assisted':last.correct?'independent correct':'incorrect')+'. ':
   'No recorded reading attempt for this text. ')+
- 'Opening a reading never marks it complete.</p>'+
+ 'Opening a reading never marks it complete. The link identifies only the public source, not your private response or support settings.</p>'+
  '<div class="c9-media-lead-actions c9-unified-actions">'+
  act('c9-media-focus-native','Open passage and questions →','c9-button c9-button--primary','data-target="c9-native-reading"')+
+ act('c9-media-copy-reading','Copy reading link','c9-button c9-button--secondary','data-id="'+esc(story.id)+'"')+
  link('dialogues','Continue to listening')+'</div></div>'+
  '<div class="c9-media-lead-aside"><span>ORIGINAL P34 READING RECORDS</span>'+
  '<strong>'+p34.readings+' / 25</strong><p>Texts with at least one independent correct recorded answer</p>'+
@@ -322,9 +323,10 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  (dialogue.p34?'LISTENING-FIRST':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
  '<p>'+count(dialogue.lines.length,'speaking turn')+' · '+count(dialogue.questions.length,'source question')+'. '+
  (last?'Last recorded answer was '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect')+'.':
- 'No recorded answer yet.')+'</p>'+
+ 'No recorded answer yet.')+' Source links never include private answers or reveal the transcript.</p>'+
  '<div class="c9-media-lead-actions c9-unified-actions">'+
  act('c9-media-focus-native','Open original listening player →','c9-button c9-button--primary','data-target="c9-native-dialogue"')+
+ act('c9-media-copy-dialogue','Copy conversation link','c9-button c9-button--secondary','data-id="'+esc(dialogue.id)+'"')+
  link('stories','Read an original passage')+'</div></div>'+
  '<div class="c9-media-lead-aside"><span>ORIGINAL P34 LISTENING EVIDENCE</span>'+
  '<strong>'+listening.listening+' / '+P34_LISTENING.length+'</strong>'+
@@ -336,6 +338,167 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  catalogControls('dialogue',options,act,esc)+
  '<div id="c9-dialogue-results" aria-live="polite">'+renderC9DialogueCatalog(state,dialogue.id,options,act,esc)+'</div></section>'+
  '<p class="c9-media-provenance c9-unified-source-note">Audio is device speech synthesis, not human-recorded or pronunciation-assessed audio. Transcript reveals remain explicitly assisted.</p></div>';
+}
+/**
+ * C9-57 public-source communication rehearsal.
+ * Read-only, ephemeral view over the existing authored dialogue and story.
+ * No speech recognition, fluency grade, shadow StudyEvent or saved progress.
+ */
+export function c9RoleplaySource(d,ui={}){
+ const roles=[...new Set((d?.lines||[]).map(line=>line.speaker))];
+ const role=roles.includes(ui.role)?ui.role:(roles[1]||roles[0]||null);
+ const indices=(d?.lines||[]).flatMap((line,i)=>line.speaker===role?[i]:[]);
+ const position=Math.max(0,Math.min(indices.length-1,Number.isInteger(ui.position)?ui.position:0));
+ const index=indices[position];
+ return {roles,role,indices,position,index,reply:d?.lines?.[index]||null,
+  cue:index>0?d.lines[index-1]:null};
+}
+export function renderC9DialogueRoleplay(d,ui,act,esc){
+ const source=c9RoleplaySource(d,ui);
+ if(!source.reply)return '';
+ const displayed=Boolean(ui.revealed),entry=String(ui.typed||''),hasDraft=Boolean(entry.trim());
+ const exact=displayed&&hasDraft&&entry.normalize('NFC').trim()===source.reply.hanzi.normalize('NFC').trim();
+ const buttons=source.roles.map(role=>act('c9-roleplay-role','Speaker '+esc(role),
+  'c9-button '+(role===source.role?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
+  'data-role="'+esc(role)+'" aria-pressed="'+String(role===source.role)+'"')).join('');
+ return '<section class="c9-source-rehearsal c9-unified-card" id="c9-roleplay-studio" tabindex="-1" aria-labelledby="c9-roleplay-title">'+
+  '<header><div><span class="c9-eyebrow">ORIGINAL CONVERSATION · UNGRADED REHEARSAL</span>'+
+  '<h2 id="c9-roleplay-title">Take a speaking role</h2><p>Hear the previous turn, answer aloud as a speaker, then compare with the original script. You may also type your reply. No microphone recording, speech recognition or automatic pronunciation grade is used.</p></div>'+
+  '<span class="c9-badge">Turn '+(source.position+1)+' / '+source.indices.length+'</span></header>'+
+  '<div class="c9-rehearsal-roles" role="group" aria-label="Choose your original speaking role">'+buttons+'</div>'+
+  '<div class="c9-rehearsal-context"><p class="c9-eyebrow">YOUR CUE · SOURCE TURN '+(source.index+1)+'</p>'+
+  '<strong>Reply as Speaker '+esc(source.role)+'</strong>'+
+  (source.cue?'<p>Speaker '+esc(source.cue.speaker)+' speaks first. Listen to the authored cue, then respond without looking at the target line.</p>':
+   '<p>You open this conversation. Say your first line before checking the original source.</p>')+
+  (source.cue?act('c9-roleplay-hear-cue','Hear preceding turn','c9-button c9-button--primary c9-button--small'):'')+
+  '<p class="c9-rehearsal-caveat">Audio uses optional device Mandarin TTS, not a verified native-speaker recording.</p></div>'+
+  '<label class="c9-rehearsal-label" for="c9-roleplay-entry">Optional: type your Mandarin reply before revealing the reference</label>'+
+  '<textarea id="c9-roleplay-entry" rows="2" maxlength="500" lang="zh-Hans" spellcheck="false" placeholder="Speak aloud, or type the Chinese sentence from memory"'+(displayed?' disabled':'')+'>'+esc(entry)+'</textarea>'+
+  '<div class="c9-rehearsal-actions">'+
+  (!displayed?act('c9-roleplay-spoke',ui.spoken?'Spoken aloud · self-reported':'I spoke the line aloud','c9-button c9-button--secondary c9-button--small','aria-pressed="'+Boolean(ui.spoken)+'"')+
+   act('c9-roleplay-reveal','Compare with original script','c9-button c9-button--primary c9-button--small'):
+   act('c9-roleplay-listen-reply','Hear original reply','c9-button c9-button--secondary c9-button--small'))+
+  '</div>'+
+  (displayed?'<div class="c9-rehearsal-reference" role="status"><span class="c9-eyebrow">SOURCE-EXACT REFERENCE · ASSISTED</span>'+
+   '<p lang="zh-Hans">'+esc(source.reply.hanzi)+'</p><small>'+esc(source.reply.pinyin)+'</small>'+
+   '<p>'+esc(source.reply.english)+'</p>'+
+   (hasDraft?'<p>'+(exact?'Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.':
+    'Compare your typed wording with the original. No correctness grade was assigned.')+'</p>':'')+
+   '<p>Opening this reference makes pending native comprehension or mission answers assisted.</p></div>':'')+
+  '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
+  act('c9-roleplay-move','← Previous reply','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(!source.position?'disabled':''))+
+  act('c9-roleplay-retry','Try this reply again','c9-button c9-button--secondary c9-button--small')+
+  act('c9-roleplay-move','Next reply →','c9-button c9-button--primary c9-button--small','data-delta="1" '+(source.position===source.indices.length-1?'disabled':''))+
+  '</nav>'+
+  '<div class="c9-rehearsal-native"><p>To record actual question evidence, use the original contextual listening assessment. This rehearsal never writes a grade.</p>'+
+  act('c9-media-focus-native','Open native listening assessment →','c9-button c9-button--secondary c9-button--small','data-target="c9-native-dialogue"')+
+  (d.p34?act('p34-write-listening','Original listening-to-writing task →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(d.p34.id)+'"'):'')+
+  '</div></section>';
+}
+export function c9ReadingRecallSource(story,ui={}){
+ const index=Math.max(0,Math.min((story?.lines?.length||1)-1,Number.isInteger(ui.index)?ui.index:0));
+ return {index,line:story?.lines?.[index]||null,total:story?.lines?.length||0};
+}
+export function renderC9ReadingRecall(story,ui,act,esc){
+ const source=c9ReadingRecallSource(story,ui);
+ if(!source.line)return '';
+ const revealed=Boolean(ui.revealed),draft=String(ui.typed||'');
+ const exact=revealed&&draft.trim()&&draft.normalize('NFC').trim()===source.line.hanzi.normalize('NFC').trim();
+ return '<section class="c9-source-rehearsal c9-unified-card" id="c9-reading-recall" tabindex="-1" aria-labelledby="c9-reading-recall-title">'+
+  '<header><div><span class="c9-eyebrow">ORIGINAL READING · UNGRADED LISTEN & WRITE</span>'+
+  '<h2 id="c9-reading-recall-title">Listen, cover and rewrite</h2>'+
+  '<p>Play an original passage sentence, try reproducing it in Chinese, then compare the exact source. This is a private, temporary writing drill—not a graded dictation or reading-comprehension result.</p></div>'+
+  '<span class="c9-badge">Sentence '+(source.index+1)+' / '+source.total+'</span></header>'+
+  '<div class="c9-rehearsal-context"><strong>Original passage: '+esc(story.title)+'</strong>'+
+  '<p>The sentence is hidden in this drill until you reveal the reference. The full reader below is still available for ordinary study.</p>'+
+  act('c9-reading-recall-listen','Hear original sentence','c9-button c9-button--primary c9-button--small')+
+  act('c9-reading-recall-listen-slow','Play slowly','c9-button c9-button--secondary c9-button--small')+
+  '</div>'+
+  '<label class="c9-rehearsal-label" for="c9-reading-recall-entry">Type the original Chinese sentence from listening or memory</label>'+
+  '<textarea id="c9-reading-recall-entry" rows="2" maxlength="500" lang="zh-Hans" spellcheck="false"'+(revealed?' disabled':'')+' placeholder="Write the sentence before comparing">'+esc(draft)+'</textarea>'+
+  (!revealed?'<div class="c9-rehearsal-actions">'+act('c9-reading-recall-reveal','Compare with source','c9-button c9-button--primary c9-button--small')+'</div>':
+   '<div class="c9-rehearsal-reference" role="status"><span class="c9-eyebrow">ORIGINAL SOURCE REVEALED · ASSISTED</span>'+
+   '<p lang="zh-Hans">'+esc(source.line.hanzi)+'</p><small>'+esc(source.line.pinyin)+'</small><p>'+esc(source.line.english)+'</p>'+
+   '<p>'+(draft.trim()?(exact?'Typed characters match the source exactly; no grade is recorded.':
+    'Compare your writing directly with the original sentence. No grade is recorded.'):'No written attempt was submitted; this is reference study.')+'</p>'+
+   '<p>Showing this source reference also marks an unanswered original reading check assisted.</p></div>')+
+  '<nav class="c9-rehearsal-steps" aria-label="Next original reading sentence">'+
+  act('c9-reading-recall-move','← Previous','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(!source.index?'disabled':''))+
+  act('c9-reading-recall-retry','Try again','c9-button c9-button--secondary c9-button--small')+
+  act('c9-reading-recall-move','Next sentence →','c9-button c9-button--primary c9-button--small','data-delta="1" '+(source.index===source.total-1?'disabled':''))+'</nav>'+
+  '<div class="c9-rehearsal-native"><p>Independent reading evidence still comes only from the original passage question and grader below.</p>'+
+  act('c9-media-focus-native','Open native reading questions →','c9-button c9-button--secondary c9-button--small','data-target="c9-native-reading"')+
+  '</div></section>';
+}
+
+/**
+ * C9-61: inspect the native immutable dialogueEvents by ORIGINAL question
+ * number. This is never a review scheduler, source writer, mastery estimate,
+ * simulated dialogue, or new evidence ledger. Assisted/incorrect evidence is
+ * not conflated with an independent correct response.
+ */
+export function c9DialogueQuestionRepair(dialogue,state={}){
+ if(!dialogue?.id||!Array.isArray(dialogue.questions))return null;
+ const events=(state.dialogueEvents||[]).filter(e=>e.dialogueId===dialogue.id);
+ const questions=dialogue.questions.map((q,index)=>{
+  const attempts=events.filter(e=>e.question===index);
+  const last=attempts.at(-1)||null;
+  const independent=attempts.filter(e=>e.correct&&!e.assisted).length;
+  const incorrect=attempts.filter(e=>!e.correct).length;
+  const assisted=attempts.filter(e=>e.assisted).length;
+  // A reference reveal is recorded by the original native writer as
+  // assisted AND not correct. Preserve BOTH facts, rather than silently
+  // relabeling a revealed reference as an ordinary incorrect free attempt.
+  const status=!attempts.length?'Unattempted':
+   last?.assisted?'Latest assisted'+(!last.correct?' · not correct':''):
+   last&&!last.correct?'Latest incorrect':
+   'Latest independently correct';
+  // Prior correct evidence remains visible even after a subsequent error.
+  const priority=!attempts.length?2:
+   last?.assisted?1:
+   last&&!last.correct?0:
+   independent?3:1;
+  return Object.freeze({id:q.id,index,prompt:q.prompt,attempts:attempts.length,
+   independent,incorrect,assisted,status,priority,
+   lastAt:last?.at??null});
+ });
+ const ordered=[...questions].sort((a,b)=>a.priority-b.priority||a.index-b.index);
+ const recommended=ordered[0]||null;
+ return Object.freeze({dialogueId:dialogue.id,questions,
+  recommendedIndex:recommended?.index??null,
+  attempted:questions.filter(q=>q.attempts>0).length,
+  independent:questions.filter(q=>q.independent>0).length,
+  needingFreshAnswer:questions.filter(q=>q.priority!==3).length});
+}
+export function renderC9DialogueQuestionRepair(dialogue,state,currentIndex,act,esc){
+ const source=c9DialogueQuestionRepair(dialogue,state);
+ if(!source)return '';
+ const active=Math.max(0,Math.min(source.questions.length-1,Number.isInteger(currentIndex)?currentIndex:0));
+ const recommended=source.questions[source.recommendedIndex];
+ return '<section class="c9-dialogue-question-repair c9-unified-card" id="c9-dialogue-question-repair" aria-labelledby="c9-question-repair-title">'+
+  '<header><div><span class="c9-eyebrow">ORIGINAL QUESTION CONTINUITY · P33 / P34 / ALL SOURCE DIALOGUES</span>'+
+  '<h2 id="c9-question-repair-title">Return to a question that needs practice</h2>'+
+  '<p>Every entry is an existing original dialogue question. Recorded answers are shown separately from independent correct evidence. Reopening a question never changes your history, schedules review, or reveals its answer.</p></div>'+
+  '<span class="c9-badge">'+source.independent+' / '+source.questions.length+' with independent correct evidence</span></header>'+
+  '<div class="c9-dialogue-repair-actions">'+
+  act('c9-dialogue-repair-play','Hear original conversation again','c9-button c9-button--secondary c9-button--small')+
+  (recommended?act('c9-dialogue-repair-select','Study '+(recommended.priority===3?'an original question again':'the next question needing attention')+' →',
+   'c9-button c9-button--primary c9-button--small',
+   'data-index="'+recommended.index+'" data-id="'+esc(recommended.id)+'"'):'')+
+  '</div>'+
+  '<ol class="c9-dialogue-repair-list" aria-label="Original questions and recorded evidence">'+
+  source.questions.map(q=>'<li class="'+(q.index===active?'is-current':'')+'">'+
+   '<div><span class="c9-eyebrow">QUESTION '+(q.index+1)+' / '+source.questions.length+'</span>'+
+   '<strong>'+esc(q.prompt)+'</strong>'+
+   '<small>'+esc(q.status)+' · '+q.attempts+' recorded attempt'+(q.attempts===1?'':'s')+
+    ' · '+q.independent+' independent correct'+(q.incorrect?' · '+q.incorrect+' incorrect':'')+
+    (q.assisted?' · '+q.assisted+' assisted':'')+'</small></div>'+
+   act('c9-dialogue-repair-select',q.index===active?'Repeat current question':'Open exact question →',
+    'c9-button '+(q.index===active?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
+    'data-index="'+q.index+'" data-id="'+esc(q.id)+'"'+(q.index===active?' aria-current="step"':''))+
+   '</li>').join('')+'</ol>'+
+  '<p class="c9-dialogue-repair-footnote">Question status is source-specific recorded evidence, not mastery. Original P34 audio remains device speech synthesis; transcript and translation are not shown here. Only the native answer controls below save a response.</p>'+
+  '</section>';
 }
 export function renderC9TurnNavigator(d,active,act,esc){
  const current=Math.max(0,Math.min(active,d.lines.length-1)),line=d.lines[current];
