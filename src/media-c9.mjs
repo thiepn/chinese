@@ -6,6 +6,7 @@
 import {STORIES,tokenizeSentence,storyExercise} from './stories.mjs';
 import {findWord,wordsForWrittenForm} from './lexicon.mjs';
 import {originalStoryWordSupport,sourceReadingCrossContexts} from './source-bridges-c9.mjs';
+import {auditReadingSource,auditReadingInventory,p68NativeTransfer} from './reading-editorial-c9.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {DIALOGUES} from './dialogues.mjs';
 import {P34_LISTENING} from './p34-course.mjs';
@@ -304,25 +305,58 @@ export function renderC9CrossSourceReading(story,act,esc,{revealed=false}={}){
   '</section>';
 }
 
+/** P68 source-line-aligned learning transfer; the original reader is the
+ * ONLY writer and its assistance gate is the only way to show bilingual hints. */
+export function renderC9P68NativeTransfer(story,act,esc,{revealed=false}={}){
+ const trail=p68NativeTransfer(story);if(!trail)return '';
+ return '<section class="c9-p68-native-transfer" aria-label="Source-anchored grammar and vocabulary transfer">'+
+  '<header><span class="c9-eyebrow">P68–P74 · SOURCE → GRAMMAR → WORD → PRACTICE</span>'+
+  '<h2>Learn from the exact Chinese sentence</h2><p>Every suggested grammar pattern has a cited line and exact Chinese marker from this original passage. Grammar explanations, indexed words and other source sentences come from existing courses. No HSK membership or comprehension credit is inferred.</p></header>'+
+  '<div class="c9-p68-transfer-grid">'+trail.grammar.map(g=>'<article>'+
+   '<span class="c9-eyebrow">ORIGINAL LINE '+(g.lineIndex+1)+' · '+esc(g.id)+'</span>'+
+   '<h3>'+esc(g.title)+'</h3><p lang="zh-Hans">'+esc(g.hanzi)+'</p>'+
+   '<small>Attested written marker: <span lang="zh-Hans">'+esc(g.token)+'</span></small>'+
+   (revealed?'<p>'+esc(g.pinyin)+'</p><p>'+esc(g.english)+'</p>':'<p class="c9-p68-support-note">Bilingual explanation withheld until source help is explicitly opened.</p>')+
+   act('grammar-select','Study original grammar lesson →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(g.id)+'"')+
+   '</article>').join('')+'</div>'+
+  '<div class="c9-p68-transfer-links"><div><strong>Authored focus written form: <span lang="zh-Hans">'+esc(trail.focusWord.hanzi)+'</span></strong>'+
+   '<p>'+(!trail.focusWord.wordKey?(trail.focusWord.ambiguous?'Several original indexed readings; no automatic sense selection.':'Not uniquely indexed in the native Wordbook. Do not invent a dictionary entry.'):'Native indexed word available; contextual meaning remains unverified.')+'</p>'+
+   (trail.focusWord.wordKey?act('lookup-word','Open canonical Wordbook entry →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(trail.focusWord.wordKey)+'"'):'')+'</div>'+
+  (trail.sentences.length?'<div><strong>Related original sentences with the same written word</strong>'+
+    trail.sentences.map(s=>'<div class="c9-p68-transfer-sentence"><p lang="zh-Hans">'+esc(s.hanzi)+'</p>'+
+     act('sentence-select','Use the original sentence lesson →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+
+     '</div>').join('')+'</div>':'')+'</div>'+
+  (!revealed?act('c9-cross-source-reveal','Reveal source explanations · current reading assisted','c9-button c9-button--secondary c9-button--small'):'<p class="c9-p68-support-note">Original source support is open; native unanswered reading is assisted.</p>')+
+  '</section>';
+}
+
 /** P68: genuinely new authored source, browsed and assessed only through STORIES. */
 export function renderC9P68SourceCourse(state,currentId,act,esc){
  const items=STORIES.filter(story=>story.beginner?.source==='original-p68');
  if(!items.length)return '';
  const saved=new Set(state.bookmarkedStories||[]),events=state.readingEvents||[];
+ const editorial=auditReadingInventory();
  return '<section class="c9-p68-course" aria-labelledby="c9-p68-course-title">'+
   '<header><span class="c9-eyebrow">P68 · ORIGINAL SOURCE EVIDENCE READINGS</span>'+
    '<h2 id="c9-p68-course-title">Six new readings: claims, checks and outcomes</h2>'+
    '<p>Six original six-sentence educational narratives. Each has three authored, evidence-linked comprehension questions, one independent writing model, native cloze/ordering, and existing vocabulary/grammar routes. These are DEMO_ONLY authorial drafts, not reviewed, licensed external corpora or official HSK 4 content.</p></header>'+
+  '<p class="c9-p68-editorial-summary">Whole original reading inventory: '+editorial.total+' source passages · '+editorial.flagged+' with machine-detectable structural issues · '+editorial.unreviewed+' not human-reviewed. Structural checks do not certify linguistic quality or rights.</p>'+
   '<div class="c9-p68-course-grid">'+items.map((story,index)=>{
    const own=events.filter(e=>e.storyId===story.id);
    const last=own.at(-1)||null;
    const hasIndependent=own.some(e=>e.correct&&!e.assisted);
+   const review=auditReadingSource(story);
    return '<article'+(story.id===currentId?' class="is-current"':'')+'>'+
     '<span class="c9-eyebrow">READING '+(index+1)+' / '+items.length+' · '+esc(story.beginner.grade)+'</span>'+
     '<h3>'+esc(story.title)+'</h3><p>'+esc(story.beginner.purpose)+'</p>'+
     '<small>'+(last?(last.assisted?'Latest reading attempt assisted':last.correct?'Latest reading answer independently correct':'Latest reading answer incorrect'):'Not attempted')+
     (hasIndependent?' · previous independent correct evidence':'')+
     (saved.has(story.id)?' · Saved':'')+'</small>'+
+    '<details class="c9-p68-editorial"><summary>Source audit · UNREVIEWED · '+review.issues.length+' structural issue'+(review.issues.length===1?'':'s')+'</summary>'+
+      '<p>Source: '+esc(review.sourcePath)+' · '+review.lines+' bilingual lines · '+review.questionCount+' authored questions. Structural inspection cannot verify Pinyin, naturalness, answer fairness, copyright or HSK level.</p>'+
+      (review.issues.length?'<ul>'+review.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>Automated structure found no problems; qualified human review is still required.</p>')+
+      act('c9-reading-review-copy','Copy original editorial review packet','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"')+
+    '</details>'+
     '<div class="c9-p68-course-actions">'+
       act('c9-media-open-story','Read source and practise →','c9-button c9-button--primary c9-button--small','data-id="'+esc(story.id)+'"')+
       act('c9-reading-queue-start','Start native comprehension →','c9-button c9-button--secondary c9-button--small',
@@ -359,6 +393,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  '</div></section>'+
  renderC9CrossSourceReading(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
  renderC9P68SourceCourse(state,story.id,act,esc)+
+ renderC9P68NativeTransfer(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
  renderC9ReadingContinuation(state,story.id,act,esc,options.queue||{})+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+

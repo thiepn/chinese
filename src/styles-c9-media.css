@@ -637,3 +637,23 @@
 .c9-p68-course>.c9-media-provenance{margin-top:12px}
 @media(max-width:700px){.c9-p68-course-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-p68-course{padding:11px}.c9-p68-course-grid article{padding:11px}.c9-p68-course-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
+
+/* P68–P74: reviewer-visible source status and exact native grammar handoffs. */
+.c9-p68-editorial-summary{font:400 12px/1.65 var(--c9-ui);margin:0 0 15px;color:var(--c9-sub)}
+.c9-p68-editorial{border-top:1px solid var(--c9-line);padding-top:9px;margin-top:5px}
+.c9-p68-editorial>summary{min-height:44px;cursor:pointer;font:550 12px/1.6 var(--c9-ui)}
+.c9-p68-editorial>p,.c9-p68-editorial li{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-p68-editorial>.c9-button{min-height:44px;white-space:normal}
+.c9-p68-native-transfer{padding:17px;margin:16px 0;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);min-width:0}
+.c9-p68-native-transfer h2{font:600 clamp(19px,2vw,23px)/1.45 var(--c9-display);margin:5px 0}
+.c9-p68-native-transfer header p,.c9-p68-native-transfer .c9-p68-support-note{font:400 12px/1.6 var(--c9-ui);color:var(--c9-sub)}
+.c9-p68-transfer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:12px 0}
+.c9-p68-transfer-grid article{display:grid;align-content:start;gap:7px;border:1px solid var(--c9-line);padding:13px;border-radius:var(--c9-r-xs);min-width:0}
+.c9-p68-transfer-grid h3{font:600 15px/1.4 var(--c9-display);margin:0}
+.c9-p68-transfer-grid article>p[lang="zh-Hans"],.c9-p68-transfer-sentence>p{font:500 17px/1.6 var(--c9-hanzi-body);margin:0;overflow-wrap:anywhere}
+.c9-p68-transfer-grid small,.c9-p68-transfer-links p{font:400 12px/1.55 var(--c9-ui);color:var(--c9-sub);margin:0;overflow-wrap:anywhere}
+.c9-p68-transfer-grid .c9-button,.c9-p68-transfer-links .c9-button{min-height:44px;white-space:normal}
+.c9-p68-transfer-links{display:grid;gap:10px;margin:13px 0}
+.c9-p68-transfer-sentence{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:700px){.c9-p68-transfer-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p68-native-transfer{padding:11px}.c9-p68-transfer-grid article{padding:10px}}
