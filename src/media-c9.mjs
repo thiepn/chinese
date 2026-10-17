@@ -304,6 +304,35 @@ export function renderC9CrossSourceReading(story,act,esc,{revealed=false}={}){
   '</section>';
 }
 
+/** P68: genuinely new authored source, browsed and assessed only through STORIES. */
+export function renderC9P68SourceCourse(state,currentId,act,esc){
+ const items=STORIES.filter(story=>story.beginner?.source==='original-p68');
+ if(!items.length)return '';
+ const saved=new Set(state.bookmarkedStories||[]),events=state.readingEvents||[];
+ return '<section class="c9-p68-course" aria-labelledby="c9-p68-course-title">'+
+  '<header><span class="c9-eyebrow">P68 · ORIGINAL SOURCE EVIDENCE READINGS</span>'+
+   '<h2 id="c9-p68-course-title">Six new readings: claims, checks and outcomes</h2>'+
+   '<p>Six original six-sentence educational narratives. Each has three authored, evidence-linked comprehension questions, one independent writing model, native cloze/ordering, and existing vocabulary/grammar routes. These are DEMO_ONLY authorial drafts, not reviewed, licensed external corpora or official HSK 4 content.</p></header>'+
+  '<div class="c9-p68-course-grid">'+items.map((story,index)=>{
+   const own=events.filter(e=>e.storyId===story.id);
+   const last=own.at(-1)||null;
+   const hasIndependent=own.some(e=>e.correct&&!e.assisted);
+   return '<article'+(story.id===currentId?' class="is-current"':'')+'>'+
+    '<span class="c9-eyebrow">READING '+(index+1)+' / '+items.length+' · '+esc(story.beginner.grade)+'</span>'+
+    '<h3>'+esc(story.title)+'</h3><p>'+esc(story.beginner.purpose)+'</p>'+
+    '<small>'+(last?(last.assisted?'Latest reading attempt assisted':last.correct?'Latest reading answer independently correct':'Latest reading answer incorrect'):'Not attempted')+
+    (hasIndependent?' · previous independent correct evidence':'')+
+    (saved.has(story.id)?' · Saved':'')+'</small>'+
+    '<div class="c9-p68-course-actions">'+
+      act('c9-media-open-story','Read source and practise →','c9-button c9-button--primary c9-button--small','data-id="'+esc(story.id)+'"')+
+      act('c9-reading-queue-start','Start native comprehension →','c9-button c9-button--secondary c9-button--small',
+       'data-id="'+esc(story.id)+'" data-mode="comprehension"')+
+    '</div></article>';
+  }).join('')+'</div>'+
+  '<p class="c9-media-provenance">Difficulty bands are internal authorial study ordering only. New reading attempts go exclusively to the existing readerEvents writer; browsing does not grant progress.</p>'+
+ '</section>';
+}
+
 export function renderC9ReadingHub(state,story,act,esc,options={}){
  const histories=state.readingEvents||[],attempted=new Set(histories.map(e=>e.storyId));
  const independent=new Set(histories.filter(e=>e.correct&&!e.assisted).map(e=>e.storyId));
@@ -329,6 +358,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
  renderC9CrossSourceReading(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
+ renderC9P68SourceCourse(state,story.id,act,esc)+
  renderC9ReadingContinuation(state,story.id,act,esc,options.queue||{})+
  '<section class="c9-media-discovery" aria-label="Find an original reading">'+
  '<div class="c9-media-discovery-header"><h2>Reading library</h2><p>Find a published original text or revisit a recorded difficulty. Search is source-only and changes no progress.</p></div>'+
