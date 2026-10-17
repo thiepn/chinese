@@ -1402,7 +1402,14 @@ def main():
                     first.locator("details summary").click()
                     if first.locator('details [lang="zh-Hans"]').count()!=2:
                         raise AssertionError("Both independently authored source anchors missing")
-                    first.locator('[data-action="c9-media-open-dialogue"]').click()
+                    dialogue_links=first.locator('[data-action="c9-media-open-dialogue"]')
+                    if dialogue_links.count()!=2:
+                        raise AssertionError("P76 previous and new original dialogue links are not both present")
+                    prior_id=dialogue_links.nth(0).get_attribute("data-id")
+                    follow_id=dialogue_links.nth(1).get_attribute("data-id")
+                    if not prior_id or not follow_id or prior_id==follow_id:
+                        raise AssertionError("P76 previous and follow-up canonical IDs must differ")
+                    dialogue_links.first.click()
                     page.locator("#c9-native-dialogue").wait_for(state="visible")
                     if "Editing a cautious museum label" not in page.locator("#c9-native-dialogue").inner_text():
                         raise AssertionError("P76 linked to incorrect canonical P75 dialogue")
