@@ -121,5 +121,5 @@ test('new features have reachable UI, local-only service worker entries, and v9 
  for(const text of ['renderDialogues','renderWordbook','studyPathPanel','renderDiagnosticPanel','dialogue-answer','wordbook-answer','reviewPlan','open-dialogues'])assert.ok(app.includes(text),text);
  assert.ok(html.includes('#/dialogues')&&html.includes('#/wordbook'));
  for(const f of ['dialogues.mjs','wordbook-lab.mjs','pathways.mjs','review-strategy.mjs','progress-diagnostics.mjs'])assert.ok(sw.includes(f));
- assert.ok(sw.includes('working-v68'));assert.ok(!sw.includes('hsk-2025-data'));
+ assert.ok(sw.includes('working-v69'));assert.ok(!sw.includes('hsk-2025-data'));
 });
