@@ -72,7 +72,7 @@ test('native conversation shelf and P71 continuation render correctly with origi
  assert.ok(hub.includes('data-action="c9-media-open-story"'));
  assert.ok(hub.includes('data-action="c9-p71-open-composition"'));
  const read=renderC9ReadingHub(state,story,act,esc,{sourceHelpRevealed:false});
- assert.match(read,/Practice source-linked original conversation/);
+ assert.match(read,/Practise source-linked original conversation/);
  assert.ok(read.includes('data-id="'+d.id+'"'));
  assert.equal(JSON.stringify(state),before);
 });
@@ -81,7 +81,8 @@ test('new source evidence is withheld until original dialogue submission and cit
  assert.equal(renderC9P75DialogueEvidence(d,0,null,act,esc),'');
  const shown=renderC9P75DialogueEvidence(d,0,{correct:true,assisted:false},act,esc);
  assert.ok(shown.includes(d.lines[q.evidenceIndex].hanzi));
- assert.ok(shown.includes(d.lines[q.evidenceIndex].pinyin));
+ assert.ok(shown.includes(esc(d.lines[q.evidenceIndex].pinyin)));
+ assert.ok(!shown.includes('<script>'),'Source evidence remains HTML-escaped');
  assert.ok(shown.includes(q.explanation));
  assert.match(shown,/Native answer recorded without source assistance/);
  assert.match(renderC9P75DialogueEvidence(d,0,{correct:true,assisted:true},act,esc),/assisted/);
