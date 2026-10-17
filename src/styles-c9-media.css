@@ -738,3 +738,20 @@
 .c9-p76-case-grid details summary{cursor:pointer;min-height:44px}
 .c9-p76-case-grid [lang="zh-Hans"]{font-size:17px;line-height:1.7}
 @media(max-width:390px){.c9-p76-case-grid article{padding:11px}}
+
+/* P77 original consequence episodes: responsive, source-first, no decorative score. */
+.c9-p77-consequence-course{padding:18px 0;margin:21px 0;border-top:1px solid var(--c9-line);min-width:0}
+.c9-p77-consequence-course header{display:grid;gap:9px;margin-bottom:14px}
+.c9-p77-consequence-course h2{font:600 clamp(21px,2vw,26px)/1.4 var(--c9-display);margin:0}
+.c9-p77-consequence-course header p{font:400 13px/1.65 var(--c9-ui);margin:0;color:var(--c9-sub)}
+.c9-p77-consequence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.c9-p77-consequence-grid article{padding:15px;border:1px solid var(--c9-line);min-width:0;display:grid;align-content:start;gap:9px}
+.c9-p77-consequence-grid h3{font:600 17px/1.4 var(--c9-display);margin:0;overflow-wrap:anywhere}
+.c9-p77-consequence-grid p{font:400 13px/1.65 var(--c9-ui);margin:0;overflow-wrap:anywhere}
+.c9-p77-progress{color:var(--c9-sub)}
+.c9-p77-consequence-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:5px 0}
+.c9-p77-consequence-actions .c9-button{min-height:44px;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.c9-p77-consequence-grid details{padding-top:11px;border-top:1px solid var(--c9-line)}
+.c9-p77-consequence-grid summary{min-height:44px;cursor:pointer}
+@media(max-width:760px){.c9-p77-consequence-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p77-consequence-grid article{padding:11px}.c9-p77-consequence-actions{grid-template-columns:minmax(0,1fr)}}

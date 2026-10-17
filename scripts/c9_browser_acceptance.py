@@ -1332,6 +1332,57 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P77: new original evidence consequences, source-guarded local TTS,
+            # native dialogue grader and return to earlier authored negotiation.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p77_consequence_dialogues():
+                    open_route(page,"dialogues")
+                    course=page.locator(".c9-p77-consequence-course")
+                    course.wait_for(state="visible")
+                    cards=course.locator(".c9-p77-consequence-grid article")
+                    if cards.count()!=5:raise AssertionError("Five new original P77 conversations absent")
+                    if "DEMO_ONLY" not in course.inner_text() or "UNREVIEWED" not in course.inner_text():
+                        raise AssertionError("P77 source review and provenance withheld")
+                    first=cards.first
+                    if first.locator('[data-action="c9-media-open-dialogue"]').count()!=2:
+                        raise AssertionError("Missing new dialogue or previous native source link")
+                    first.locator('[data-action="c9-media-open-dialogue"]').first.click()
+                    turns=page.locator("#c9-native-dialogue .dialogue-turn")
+                    if turns.count()!=8:raise AssertionError("New P77 source not installed as original dialogue")
+                    if any("Audio turn" not in row.inner_text() for row in turns.all()):
+                        raise AssertionError("P77 source transcript was revealed before assistance")
+                    if page.locator("#c9-native-dialogue [data-text]").count():
+                        raise AssertionError("P77 source text leaked via playback attributes")
+                    native=page.locator("#c9-native-dialogue-question")
+                    if native.locator('[data-action="dialogue-answer"]').count()!=4:
+                        raise AssertionError("P77 source question bypasses native dialogue writer")
+                    native.locator('[data-action="dialogue-answer"]').first.click()
+                    evidence=page.locator(".c9-p75-dialogue-evidence")
+                    evidence.wait_for(state="visible")
+                    if "这张纸是什么时候印出来的" not in evidence.inner_text():
+                        raise AssertionError("Wrong P77 Chinese evidence anchored after answer")
+                    page.locator('[data-action="dialogue-support"]').first.click()
+                    if "新扫描的地图" not in turns.first.inner_text():
+                        raise AssertionError("Source transcript does not reveal after support")
+                    previous=page.locator(".c9-p77-consequence-grid article").first.locator(
+                        '[data-action="c9-media-open-dialogue"]').nth(1)
+                    prior_id=previous.get_attribute("data-id")
+                    if not prior_id:raise AssertionError("No original P75 canonical predecessor ID")
+                    previous.click()
+                    page.wait_for_function("(id)=>location.hash==='#/dialogues/'+id",arg=prior_id)
+                    page.wait_for_function("""()=>document.querySelector(
+                        '#c9-native-dialogue .panel-heading h2')?.textContent?.includes(
+                        'Editing a cautious museum label')""")
+                    if "Editing a cautious museum label" not in page.locator(
+                        "#c9-native-dialogue .panel-heading h2").inner_text():
+                        raise AssertionError("P77 previous original P75 source was not rendered")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P77 source course overflows at "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original P77 transcript guard, native answer, evidence and P75 source continuity "+str(width)+"px"
+                check("P77 original consequence conversation "+str(width),p77_consequence_dialogues)
+                ctx.close()
             # P76: five authored paired-source argument cases, native owner handoffs.
             for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
                 ctx,page,errors=session(width,height,mobile)
@@ -1343,15 +1394,22 @@ def main():
                     if cards.count()!=5:raise AssertionError("Five P76 original source comparisons absent")
                     if "DEMO_ONLY" not in lab.inner_text() or "UNREVIEWED" not in lab.inner_text():
                         raise AssertionError("P76 review provenance hidden")
-                    if cards.locator('[data-action="c9-media-open-dialogue"]').count()!=5:
-                        raise AssertionError("Original dialogue source writer not linked")
+                    if cards.locator('[data-action="c9-media-open-dialogue"]').count()!=10:
+                        raise AssertionError("P76 five original source and five follow-up dialogue links missing")
                     if cards.locator('[data-action="c9-p71-open-composition"]').count()!=5:
                         raise AssertionError("Original P43 Mandarin editor not linked")
                     first=cards.first
                     first.locator("details summary").click()
                     if first.locator('details [lang="zh-Hans"]').count()!=2:
                         raise AssertionError("Both independently authored source anchors missing")
-                    first.locator('[data-action="c9-media-open-dialogue"]').click()
+                    dialogue_links=first.locator('[data-action="c9-media-open-dialogue"]')
+                    if dialogue_links.count()!=2:
+                        raise AssertionError("P76 previous and new original dialogue links are not both present")
+                    prior_id=dialogue_links.nth(0).get_attribute("data-id")
+                    follow_id=dialogue_links.nth(1).get_attribute("data-id")
+                    if not prior_id or not follow_id or prior_id==follow_id:
+                        raise AssertionError("P76 previous and follow-up canonical IDs must differ")
+                    dialogue_links.first.click()
                     page.locator("#c9-native-dialogue").wait_for(state="visible")
                     if "Editing a cautious museum label" not in page.locator("#c9-native-dialogue").inner_text():
                         raise AssertionError("P76 linked to incorrect canonical P75 dialogue")
@@ -2070,7 +2128,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v74-p76-original-case-argument-lab"
+                current="character-study-working-v75-p77-consequence-dialogues"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2088,7 +2146,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v74-p76-original-case-argument-lab');
+                    keys.includes('character-study-working-v75-p77-consequence-dialogues');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

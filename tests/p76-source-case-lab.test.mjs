@@ -26,7 +26,8 @@ test('P76 five distinct original paired-source cases preserve exact canonical so
 test('P76 native owner projections are read-only and expose the original conversation and P43 handoffs',()=>{
  const state=freshState(),before=JSON.stringify(state);
  const html=renderP76CaseLab(state,'',act,esc);
- assert.equal((html.match(/data-action="c9-media-open-dialogue"/g)||[]).length,5);
+ assert.equal((html.match(/data-action="c9-media-open-dialogue"/g)||[]).length,10);
+ assert.equal((html.match(/Continue with an original follow-up conversation/g)||[]).length,5);
  assert.equal((html.match(/data-action="c9-p71-open-composition"/g)||[]).length,5);
  assert.equal((html.match(/data-action="c9-media-open-story"/g)||[]).length,5);
  assert.equal((html.match(/<details>/g)||[]).length,5);
@@ -43,6 +44,6 @@ test('P76 introduces no new assessment, persistence or certified language author
  assert.doesNotMatch(s,/\b(addDialogueEvent|addReadingEvent|addSentenceEvent|indexedDB|localStorage|fetch)\s*\(/);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v74-p76-original-case-argument-lab/);
- assert.match(sw,/character-study-working-v74-p76-original-case-argument-lab/);
+ assert.match(app,/character-study-working-v75-p77-consequence-dialogues/);
+ assert.match(sw,/character-study-working-v75-p77-consequence-dialogues/);
 });

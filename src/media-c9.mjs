@@ -487,12 +487,47 @@ export function renderC9P75ConversationCourse(state,currentId,act,esc){
    '</article>';
  }).join('')+'</div></section>';
 }
+/** P77: new original upper-intermediate response conversations. Each is an
+ * independent teaching source, not a transcript or a new assessment authority.
+ */
+export function renderC9P77ConsequenceCourse(state,currentId,act,esc){
+ const rows=DIALOGUES.filter(d=>d.p77),events=state.dialogueEvents||[];
+ if(!rows.length)return '';
+ return '<section class="c9-p77-consequence-course" aria-labelledby="c9-p77-course-title">'+
+ '<header><span class="c9-eyebrow">P77 · NEW EVIDENCE / SECOND EPISODE</span>'+
+ '<h2 id="c9-p77-course-title">What changes when new evidence arrives?</h2>'+
+ '<p>Five newly authored eight-turn Mandarin follow-ups: 40 complete Chinese, Pinyin and English turns and 15 source-indexed questions. A new fact changes the next action without automatically proving an earlier assumption. Device TTS previews are optional; answer through the one original dialogue grader, review the previous negotiation and compose in the original P43 editor. DEMO_ONLY · UNREVIEWED · not official HSK, recorded audio or speech scoring.</p></header>'+
+ '<div class="c9-p77-consequence-grid">'+rows.map((d,i)=>{
+  const x=d.p77,prior=DIALOGUES.find(p=>p.p75?.id===x.previous),
+   story=STORIES.find(s=>s.beginner?.p71?.id===x.readingId),
+   own=events.filter(e=>e.dialogueId===d.id),last=own.at(-1),
+   independent=new Set(own.filter(e=>e.correct&&!e.assisted).map(e=>e.question));
+  return '<article'+(currentId===d.id?' class="is-current"':'')+'>'+
+   '<span class="c9-eyebrow">FOLLOW-UP '+(i+1)+' / '+rows.length+' · '+esc(x.id)+'</span>'+
+   '<h3>'+esc(x.title)+'</h3><p>'+esc(x.goal)+'</p>'+
+   '<p class="c9-p77-progress">'+own.length+' native answer attempts · '+independent.size+'/'+d.questions.length+
+   ' questions with independently correct evidence'+(last?' · latest '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect'):' · not attempted')+
+   '. No listening, writing or oral proficiency is inferred.</p>'+
+   '<div class="c9-p77-consequence-actions">'+
+   act('c9-media-open-dialogue','Listen and answer the next evidence →','c9-button c9-button--primary c9-button--small','data-id="'+esc(d.id)+'"')+
+   (prior?act('c9-media-open-dialogue','Revisit previous negotiation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(prior.id)+'"'):'')+
+   (story?act('c9-media-open-story','Read separate background source →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
+   (story?act('c9-p71-open-composition','Compose an independent Mandarin response →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
+   '</div><details><summary>Source provenance and editorial status</summary>'+
+   '<p>Original follow-up '+esc(x.id)+' / canonical dialogue '+esc(d.id)+
+   '. Previous independent negotiation '+esc(x.previous)+
+   '. Related separately authored reading '+esc(x.readingId)+
+   '. These scripts do not constitute one verified real-world record; Mandarin and Pinyin require qualified review.</p></details>'+
+   '</article>';
+ }).join('')+'</div></section>';
+}
+
 export function renderC9P75DialogueEvidence(dialogue,index,feedback,act,esc){
- if(!dialogue?.p75||!feedback)return '';
- const q=dialogue.p75.questions[index],line=dialogue.lines[q?.evidenceIndex];
+ if(!(dialogue?.p75||dialogue?.p77)||!feedback)return '';
+ const q=(dialogue.p75||dialogue.p77).questions[index],line=dialogue.lines[q?.evidenceIndex];
  if(!q||!line)return '';
  return '<section class="c9-p75-dialogue-evidence" aria-label="Original P75 source evidence">'+
- '<span class="c9-eyebrow">ORIGINAL SOURCE TURN '+(q.evidenceIndex+1)+' · '+esc(dialogue.p75.id)+'</span>'+
+ '<span class="c9-eyebrow">ORIGINAL SOURCE TURN '+(q.evidenceIndex+1)+' · '+esc((dialogue.p75||dialogue.p77).id)+'</span>'+
  '<p lang="zh-Hans">'+esc(line.hanzi)+'</p><small>'+esc(line.pinyin)+'</small><p>'+esc(line.english)+'</p>'+
  '<p>'+esc(q.explanation)+'</p><small>'+(feedback.assisted?'Native answer was assisted.':'Native answer recorded without source assistance.')+
  ' These Chinese source lines and interpretations remain editorially unreviewed.</small></section>';
@@ -509,7 +544,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  fact(attempted.size,'Conversations with recorded attempts')+
  fact(independent.size,'Conversations with independent correct evidence')+'</div>'+
  '<section class="c9-media-lead c9-unified-card"><div><p class="c9-eyebrow">CURRENT CONVERSATION · '+
- (dialogue.p34?'LISTENING-FIRST':dialogue.p75?'UPPER-INTERMEDIATE ORIGINAL CONVERSATION':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
+ (dialogue.p34?'LISTENING-FIRST':(dialogue.p75||dialogue.p77)?'UPPER-INTERMEDIATE ORIGINAL CONVERSATION':'SOURCE DIALOGUE')+'</p><h2>'+esc(dialogue.title)+'</h2>'+
  '<p>'+count(dialogue.lines.length,'speaking turn')+' · '+count(dialogue.questions.length,'source question')+'. '+
  (last?'Last recorded answer was '+(last.assisted?'assisted':last.correct?'independently correct':'incorrect')+'.':
  'No recorded answer yet.')+' Source links never include private answers or reveal the transcript.</p>'+
@@ -523,6 +558,7 @@ export function renderC9DialogueHub(state,dialogue,act,esc,options={}){
  (next?act('p34-open-listening','Continue P34 listening →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
  renderC9P75ConversationCourse(state,dialogue.id,act,esc)+
+ renderC9P77ConsequenceCourse(state,dialogue.id,act,esc)+
  renderP76CaseLab(state,dialogue.id,act,esc)+
  '<section class="c9-media-discovery" aria-label="Find an original conversation">'+
  '<div class="c9-media-discovery-header"><h2>Conversation library</h2><p>Browse actual dialogues without exposing listening-first text or awarding progress.</p></div>'+

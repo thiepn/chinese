@@ -13,7 +13,8 @@ test('five new authorial dialogues append after historical dialogue IDs and expo
  assert.equal(P75_DIALOGUES.length,5);
  assert.equal(P75_DIALOGUE_ROWS.length,5);
  assert.equal(native.length,5);
- assert.deepEqual(DIALOGUES.slice(-5),native);
+ assert.deepEqual(DIALOGUES.slice(-10,-5),native);
+ assert.equal(DIALOGUES.slice(-5).every(d=>Boolean(d.p77)),true);
  const old=DIALOGUES.slice(0,-5);
  for(let i=0;i<old.length;i++)assert.equal(old[i].id,'dialogue-'+String(i+1).padStart(2,'0'));
  const titles=new Set(),turns=new Set(),sourceIds=new Set();
@@ -95,7 +96,7 @@ test('P75 authorial data includes no new audio/grader/official HSK values and re
  assert.doesNotMatch(source,/\b(fetch|indexedDB|localStorage|addDialogueEvent|addReadingEvent|gradeCard)\s*\(/);
  assert.doesNotMatch(source,/officialHskLevel:[1-9]/);
  assert.match(source,/DEMO_ONLY/);
- assert.match(app,/character-study-working-v74-p76-original-case-argument-lab/);
- assert.match(sw,/character-study-working-v74-p76-original-case-argument-lab/);
- assert.match(app,/if\(dialogueSupport&&\(findDialogue\(dialogueId\)\?\.p34\|\|findDialogue\(dialogueId\)\?\.p75\)\)p34TranscriptViewed=true/);
+ assert.match(app,/character-study-working-v75-p77-consequence-dialogues/);
+ assert.match(sw,/character-study-working-v75-p77-consequence-dialogues/);
+ assert.match(app,/if\(dialogueSupport&&\(findDialogue\(dialogueId\)\?\.p34\|\|findDialogue\(dialogueId\)\?\.p75\|\|findDialogue\(dialogueId\)\?\.p77\)\)p34TranscriptViewed=true/);
 });
