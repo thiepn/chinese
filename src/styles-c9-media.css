@@ -657,3 +657,23 @@
 .c9-p68-transfer-sentence{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
 @media(max-width:700px){.c9-p68-transfer-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-p68-native-transfer{padding:11px}.c9-p68-transfer-grid article{padding:10px}}
+
+/* P71–P74 source-owned reading, listening preview and production. */
+.c9-p71-native-course{margin:18px 0;padding:18px;min-width:0;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm)}
+.c9-p71-native-course header{display:grid;gap:8px;margin-bottom:16px}
+.c9-p71-native-course h2{font:600 clamp(20px,2.3vw,25px)/1.4 var(--c9-display);margin:0}
+.c9-p71-native-course header p{font:400 12px/1.65 var(--c9-ui);margin:0;color:var(--c9-sub)}
+.c9-p71-native-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.c9-p71-native-grid article{display:grid;align-content:start;gap:12px;min-width:0;padding:15px;border:1px solid var(--c9-line);border-radius:var(--c9-r-xs)}
+.c9-p71-native-grid article.is-current{border-color:var(--c9-accent)}
+.c9-p71-card-title h3{font:600 16px/1.4 var(--c9-display);margin:6px 0 0;overflow-wrap:anywhere}
+.c9-p71-native-grid article>p,.c9-p71-listening p,.c9-p71-editorial p{font:400 12px/1.6 var(--c9-ui);margin:0;overflow-wrap:anywhere}
+.c9-p71-evidence-state{color:var(--c9-sub)}
+.c9-p71-listening{display:grid;gap:8px;padding:11px;border:1px solid var(--c9-line);min-width:0}
+.c9-p71-listening strong{font:600 12px/1.5 var(--c9-ui)}
+.c9-p71-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.c9-p71-native-course .c9-button{min-height:44px;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.c9-p71-editorial{border-top:1px solid var(--c9-line);padding-top:9px}
+.c9-p71-editorial summary{cursor:pointer;min-height:44px;font:500 12px/1.5 var(--c9-ui)}
+@media(max-width:800px){.c9-p71-native-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:390px){.c9-p71-native-course{padding:10px}.c9-p71-native-grid article{padding:10px}.c9-p71-actions{grid-template-columns:minmax(0,1fr)}}

@@ -330,6 +330,54 @@ export function renderC9P68NativeTransfer(story,act,esc,{revealed=false}={}){
   '</section>';
 }
 
+/** P71–P74 original source-owned upper-intermediate study path.
+ * Listening is device speech synthesis of an authored source line, not an
+ * audio recording, grade or recognition engine. The original reader owns
+ * every exercise and persists any actual result under the canonical ID.
+ */
+export function renderC9P71LearningCourse(state,currentId,act,esc){
+ const readings=STORIES.filter(s=>s.beginner?.source==='original-p71');
+ if(!readings.length)return '';
+ const history=state.readingEvents||[],editorial=auditReadingInventory();
+ const firstNeeded=readings.find(s=>!history.some(e=>e.storyId===s.id&&e.correct&&!e.assisted))||null;
+ return '<section class="c9-p71-native-course" aria-labelledby="c9-p71-heading">'+
+ '<header><span class="c9-eyebrow">P71–P74 · ORIGINAL UPPER-INTERMEDIATE READING + LISTENING + WRITING</span>'+
+ '<h2 id="c9-p71-heading">Investigate, qualify and respond</h2>'+
+ '<p>Five newly authored ten-sentence Mandarin dossiers. Follow claims, conditions and confirmed outcomes; practise three evidence questions, cloze, ordering and an original Chinese writing model. Listening previews use optional device-generated Chinese speech (no recordings, voice grading or synthetic mastery). Educational draft only: DEMO_ONLY, editorial UNREVIEWED, no official HSK mapping.</p>'+
+ '<p class="c9-p71-counts">'+readings.length+' original dossiers · '+readings.reduce((n,s)=>n+s.lines.length,0)+
+ ' full bilingual source lines · '+readings.reduce((n,s)=>n+s.beginner.questions.length,0)+' distinct source-evidence questions'+
+ (firstNeeded?' · Next without recorded independent correct evidence: '+esc(firstNeeded.title):
+ ' · Every dossier has at least one previously independent correct answer; no mastery inferred.')+
+ ' · '+editorial.unreviewed+' source records pending linguistic editorial review.</p></header>'+
+ '<div class="c9-p71-native-grid">'+readings.map((s,i)=>{
+  const events=history.filter(e=>e.storyId===s.id),last=events.at(-1);
+  const ever=events.some(e=>e.correct&&!e.assisted),focus=s.beginner.p71.listeningCue;
+  return '<article'+(currentId===s.id?' class="is-current"':'')+'>'+
+  '<div class="c9-p71-card-title"><span class="c9-eyebrow">SOURCE '+(i+1)+' / '+readings.length+' · INTERNAL BAND '+s.beginner.level+'</span>'+
+  '<h3>'+esc(s.title)+'</h3></div><p>'+esc(s.beginner.purpose)+'</p>'+
+  '<p class="c9-p71-evidence-state">'+(last?(last.assisted?'Latest native practice: assisted':last.correct?'Latest native practice: independently correct':'Latest native practice: incorrect'):'Not yet attempted')+
+   (ever?' · An independently correct answer exists':'')+'</p>'+
+  '<div class="c9-p71-listening"><strong>Listening-first source cue · sentence '+(focus.lineIndex+1)+'</strong>'+
+  '<p>Hear an original Mandarin line using your device voice before opening the source and answering. Spoken synthesis and your listening are not graded or recorded.</p>'+
+  act('speak','Listen to Chinese cue · device TTS','c9-button c9-button--secondary c9-button--small',
+    'data-text="'+esc(focus.hanzi)+'"')+'</div>'+
+  '<div class="c9-p71-actions">'+
+  act('c9-reading-queue-start','Interpret source evidence →','c9-button c9-button--primary c9-button--small',
+   'data-id="'+esc(s.id)+'" data-mode="beginner-reason"')+
+  act('c9-reading-queue-start','Sequence the argument →','c9-button c9-button--secondary c9-button--small',
+   'data-id="'+esc(s.id)+'" data-mode="beginner-sequence"')+
+  act('c9-reading-queue-start','Write the original conclusion →','c9-button c9-button--secondary c9-button--small',
+   'data-id="'+esc(s.id)+'" data-mode="beginner-writing"')+
+  act('c9-media-open-story','Read full Chinese passage →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(s.id)+'"')+
+  '</div><details class="c9-p71-editorial"><summary>Source and editorial evidence · unreviewed</summary>'+
+  '<p>Canonical original ID '+esc(s.id)+'; '+s.lines.length+' authored bilingual sentences; '+
+  s.beginner.questions.length+' evidence-indexed questions. No official HSK assignment or independent Mandarin editorial approval.</p>'+
+  act('c9-reading-review-copy','Copy complete review packet','c9-button c9-button--secondary c9-button--small','data-id="'+esc(s.id)+'"')+
+  '</details></article>';
+ }).join('')+'</div>'+
+ '</section>';
+}
+
 /** P68: genuinely new authored source, browsed and assessed only through STORIES. */
 export function renderC9P68SourceCourse(state,currentId,act,esc){
  const items=STORIES.filter(story=>story.beginner?.source==='original-p68');
@@ -392,6 +440,7 @@ export function renderC9ReadingHub(state,story,act,esc,options={}){
  (next?act('p34-open-reading','Continue original P34 →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"'):'')+
  '</div></section>'+
  renderC9CrossSourceReading(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
+ renderC9P71LearningCourse(state,story.id,act,esc)+
  renderC9P68SourceCourse(state,story.id,act,esc)+
  renderC9P68NativeTransfer(story,act,esc,{revealed:Boolean(options.sourceHelpRevealed)})+
  renderC9ReadingContinuation(state,story.id,act,esc,options.queue||{})+

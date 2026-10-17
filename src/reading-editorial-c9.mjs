@@ -55,8 +55,8 @@ export function auditReadingInventory(){
   statuses:readOnly(audits.map(x=>({storyId:x.storyId,issueCount:x.issues.length,editorialStatus:x.editorialStatus})))});
 }
 export function p68NativeTransfer(story){
- if(story?.beginner?.source!=='original-p68')return null;
- const p=story.beginner.p68,grammar=readOnly(p.grammarEvidence.map(ref=>{
+ if(!['original-p68','original-p71'].includes(story?.beginner?.source))return null;
+ const p=story.beginner.p68||story.beginner.p71,grammar=readOnly(p.grammarEvidence.map(ref=>{
   const lesson=grammarById.get(ref.grammarId),line=story.lines[ref.lineIndex];
   return {id:ref.grammarId,title:lesson?.title||'Unindexed grammar',
    token:ref.token,lineIndex:ref.lineIndex,
