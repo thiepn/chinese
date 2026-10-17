@@ -11,7 +11,7 @@ const readOnly=rows=>Object.freeze(rows.map(row=>Object.freeze(row)));
 const sourcePath=story=>story.beginner?.source==='original-p68'?
  'src/p68-source-readings.mjs':'Original module associated with '+story.origin;
 export function auditReadingSource(story){
- if(!story||!STORIES.some(s=>s.id===story.id))return null;
+ if(!story||findStory(story.id)!==story)return null;
  const issues=[],questions=story.beginner?.questions||story.extended?.questions||[];
  if(!validateStory(story))issues.push('Native story schema or answer mode invariant failed');
  for(const [i,line] of story.lines.entries()){
