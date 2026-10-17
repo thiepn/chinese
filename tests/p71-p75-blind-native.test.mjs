@@ -35,7 +35,7 @@ test('P71–P75 playback parts are genuine original ten-line sources without tra
    assert.ok(!hidden.includes('data-text='));
    const answered=renderP71BlindListening(source,mode,{correct:true,assisted:false,message:'original grader',reference:q.answer},act,esc);
    assert.ok(answered.includes(q.evidenceLine.hanzi));
-   assert.ok(answered.includes(q.evidenceLine.english));
+   assert.ok(answered.includes(esc(q.evidenceLine.english)));
    assert.match(answered,/data-action="c9-p71-workshop-writing"/);
    assert.match(answered,/NOT measured/);
   }
