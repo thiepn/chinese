@@ -1332,6 +1332,49 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P77: new original evidence consequences, source-guarded local TTS,
+            # native dialogue grader and return to earlier authored negotiation.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p77_consequence_dialogues():
+                    open_route(page,"dialogues")
+                    course=page.locator(".c9-p77-consequence-course")
+                    course.wait_for(state="visible")
+                    cards=course.locator(".c9-p77-consequence-grid article")
+                    if cards.count()!=5:raise AssertionError("Five new original P77 conversations absent")
+                    if "DEMO_ONLY" not in course.inner_text() or "UNREVIEWED" not in course.inner_text():
+                        raise AssertionError("P77 source review and provenance withheld")
+                    first=cards.first
+                    if first.locator('[data-action="c9-media-open-dialogue"]').count()!=2:
+                        raise AssertionError("Missing new dialogue or previous native source link")
+                    first.locator('[data-action="c9-media-open-dialogue"]').first.click()
+                    turns=page.locator("#c9-native-dialogue .dialogue-turn")
+                    if turns.count()!=8:raise AssertionError("New P77 source not installed as original dialogue")
+                    if any("Audio turn" not in row.inner_text() for row in turns.all()):
+                        raise AssertionError("P77 source transcript was revealed before assistance")
+                    if page.locator("#c9-native-dialogue [data-text]").count():
+                        raise AssertionError("P77 source text leaked via playback attributes")
+                    native=page.locator("#c9-native-dialogue-question")
+                    if native.locator('[data-action="dialogue-answer"]').count()!=4:
+                        raise AssertionError("P77 source question bypasses native dialogue writer")
+                    native.locator('[data-action="dialogue-answer"]').first.click()
+                    evidence=page.locator(".c9-p75-dialogue-evidence")
+                    evidence.wait_for(state="visible")
+                    if "这张纸是什么时候印出来的" not in evidence.inner_text():
+                        raise AssertionError("Wrong P77 Chinese evidence anchored after answer")
+                    page.locator('[data-action="dialogue-support"]').first.click()
+                    if "新扫描的地图" not in turns.first.inner_text():
+                        raise AssertionError("Source transcript does not reveal after support")
+                    page.locator(".c9-p77-consequence-grid article").first.locator(
+                        '[data-action="c9-media-open-dialogue"]').nth(1).click()
+                    if "Editing a cautious museum label" not in page.locator("#c9-native-dialogue").inner_text():
+                        raise AssertionError("P77 history link did not open the original P75 source")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P77 source course overflows at "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original P77 transcript guard, native answer, evidence and P75 source continuity "+str(width)+"px"
+                check("P77 original consequence conversation "+str(width),p77_consequence_dialogues)
+                ctx.close()
             # P76: five authored paired-source argument cases, native owner handoffs.
             for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
                 ctx,page,errors=session(width,height,mobile)

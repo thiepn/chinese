@@ -13,7 +13,8 @@ test('five new authorial dialogues append after historical dialogue IDs and expo
  assert.equal(P75_DIALOGUES.length,5);
  assert.equal(P75_DIALOGUE_ROWS.length,5);
  assert.equal(native.length,5);
- assert.deepEqual(DIALOGUES.slice(-5),native);
+ assert.deepEqual(DIALOGUES.slice(-10,-5),native);
+ assert.equal(DIALOGUES.slice(-5).every(d=>Boolean(d.p77)),true);
  const old=DIALOGUES.slice(0,-5);
  for(let i=0;i<old.length;i++)assert.equal(old[i].id,'dialogue-'+String(i+1).padStart(2,'0'));
  const titles=new Set(),turns=new Set(),sourceIds=new Set();
