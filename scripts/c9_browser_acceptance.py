@@ -430,7 +430,7 @@ def main():
                         raise AssertionError("Source questions missing from original retry chooser")
                     if "Unattempted" not in entries.first.inner_text():
                         raise AssertionError("Original question history was invented before any attempt")
-                    repair.locator('[data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
                     page.locator("#c9-native-dialogue-question").wait_for(state="visible")
                     if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
                         raise AssertionError("Native dialogue did not open exact original question 2")
@@ -442,7 +442,7 @@ def main():
                     page.locator(".dialogue-quiz [data-action='dialogue-reveal']").click()
                     page.locator(".dialogue-quiz .reader-feedback").wait_for(state="visible")
                     page.wait_for_function("()=>document.querySelector('#c9-dialogue-question-repair')?.textContent?.includes('Latest assisted')")
-                    repair.locator('[data-action="c9-dialogue-repair-select"][data-index="1"]').click()
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="1"]').click()
                     if page.locator(".dialogue-quiz .reader-feedback").count():
                         raise AssertionError("Reopening original question kept old answer feedback")
                     if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
@@ -450,7 +450,7 @@ def main():
                     roleplay=page.locator("#c9-roleplay-entry")
                     roleplay.fill("我不想丢失这个答案。")
                     page.once("dialog",lambda dialog:dialog.dismiss())
-                    repair.locator('[data-action="c9-dialogue-repair-select"][data-index="0"]').click()
+                    repair.locator('.c9-dialogue-repair-list [data-action="c9-dialogue-repair-select"][data-index="0"]').click()
                     if "2 /" not in page.locator(".dialogue-quiz .eyebrow").inner_text():
                         raise AssertionError("Native question jump ignored rejected draft-leave warning")
                     if roleplay.input_value()!="我不想丢失这个答案。":
