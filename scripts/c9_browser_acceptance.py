@@ -1365,10 +1365,18 @@ def main():
                     page.locator('[data-action="dialogue-support"]').first.click()
                     if "新扫描的地图" not in turns.first.inner_text():
                         raise AssertionError("Source transcript does not reveal after support")
-                    page.locator(".c9-p77-consequence-grid article").first.locator(
-                        '[data-action="c9-media-open-dialogue"]').nth(1).click()
-                    if "Editing a cautious museum label" not in page.locator("#c9-native-dialogue").inner_text():
-                        raise AssertionError("P77 history link did not open the original P75 source")
+                    previous=page.locator(".c9-p77-consequence-grid article").first.locator(
+                        '[data-action="c9-media-open-dialogue"]').nth(1)
+                    prior_id=previous.get_attribute("data-id")
+                    if not prior_id:raise AssertionError("No original P75 canonical predecessor ID")
+                    previous.click()
+                    page.wait_for_function("(id)=>location.hash==='#/dialogues/'+id",arg=prior_id)
+                    page.wait_for_function("""()=>document.querySelector(
+                        '#c9-native-dialogue .panel-heading h2')?.textContent?.includes(
+                        'Editing a cautious museum label')""")
+                    if "Editing a cautious museum label" not in page.locator(
+                        "#c9-native-dialogue .panel-heading h2").inner_text():
+                        raise AssertionError("P77 previous original P75 source was not rendered")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("P77 source course overflows at "+str(width))
                     if errors:raise RuntimeError("; ".join(errors[:2]))
@@ -1386,8 +1394,8 @@ def main():
                     if cards.count()!=5:raise AssertionError("Five P76 original source comparisons absent")
                     if "DEMO_ONLY" not in lab.inner_text() or "UNREVIEWED" not in lab.inner_text():
                         raise AssertionError("P76 review provenance hidden")
-                    if cards.locator('[data-action="c9-media-open-dialogue"]').count()!=5:
-                        raise AssertionError("Original dialogue source writer not linked")
+                    if cards.locator('[data-action="c9-media-open-dialogue"]').count()!=10:
+                        raise AssertionError("P76 five original source and five follow-up dialogue links missing")
                     if cards.locator('[data-action="c9-p71-open-composition"]').count()!=5:
                         raise AssertionError("Original P43 Mandarin editor not linked")
                     first=cards.first
