@@ -1332,6 +1332,39 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P76: five authored paired-source argument cases, native owner handoffs.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p76_paired_source_lab():
+                    open_route(page,"dialogues")
+                    lab=page.locator(".c9-p76-case-lab")
+                    lab.wait_for(state="visible")
+                    cards=lab.locator(".c9-p76-case-grid article")
+                    if cards.count()!=5:raise AssertionError("Five P76 original source comparisons absent")
+                    if "DEMO_ONLY" not in lab.inner_text() or "UNREVIEWED" not in lab.inner_text():
+                        raise AssertionError("P76 review provenance hidden")
+                    if cards.locator('[data-action="c9-media-open-dialogue"]').count()!=5:
+                        raise AssertionError("Original dialogue source writer not linked")
+                    if cards.locator('[data-action="c9-p71-open-composition"]').count()!=5:
+                        raise AssertionError("Original P43 Mandarin editor not linked")
+                    first=cards.first
+                    first.locator("details summary").click()
+                    if first.locator('details [lang="zh-Hans"]').count()!=2:
+                        raise AssertionError("Both independently authored source anchors missing")
+                    first.locator('[data-action="c9-media-open-dialogue"]').click()
+                    page.locator("#c9-native-dialogue").wait_for(state="visible")
+                    if "Editing a cautious museum label" not in page.locator("#c9-native-dialogue").inner_text():
+                        raise AssertionError("P76 linked to incorrect canonical P75 dialogue")
+                    if page.locator(".dialogue-quiz [data-action='dialogue-answer']").count()!=4:
+                        raise AssertionError("Original dialogue question writer missing")
+                    page.locator(".dialogue-quiz [data-action='dialogue-answer']").first.click()
+                    page.locator(".c9-p75-dialogue-evidence").wait_for(state="visible")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("P76 paired-source argument lab overflow "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Five P76 cases, evidence, native dialogue answer and no overflow "+str(width)+"px"
+                check("P76 original paired-source argument transfer "+str(width),p76_paired_source_lab)
+                ctx.close()
             # P75 source-owned multi-speaker upper-intermediate conversation.
             # Listen without leaking Hanzi via transcript nodes or data-text,
             # submit via the native dialogue writer, then inspect exact evidence.
