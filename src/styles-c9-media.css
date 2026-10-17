@@ -725,3 +725,16 @@
 .c9-p75-dialogue-evidence p,.c9-p75-dialogue-evidence small{font:400 12px/1.6 var(--c9-ui);overflow-wrap:anywhere}
 @media(max-width:800px){.c9-p75-dialogue-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:390px){.c9-p75-dialogue-course{padding:10px}.c9-p75-dialogue-grid article{padding:10px}}
+
+/* P76: responsive paired-source argument labs, no new writer. */
+.c9-p76-case-lab{margin:22px 0;padding:18px 0;border-top:1px solid var(--c9-line)}
+.c9-p76-case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-top:16px}
+.c9-p76-case-grid article{border:1px solid var(--c9-line);padding:16px;min-width:0;overflow-wrap:anywhere}
+.c9-p76-case-grid h3{margin:8px 0;font-size:17px;line-height:1.4}
+.c9-p76-case-grid p{font-size:13px;line-height:1.65}
+.c9-p76-case-actions{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0}
+.c9-p76-case-actions .c9-button{min-height:44px;white-space:normal}
+.c9-p76-case-grid details{border-top:1px solid var(--c9-line);padding-top:10px;margin-top:14px}
+.c9-p76-case-grid details summary{cursor:pointer;min-height:44px}
+.c9-p76-case-grid [lang="zh-Hans"]{font-size:17px;line-height:1.7}
+@media(max-width:390px){.c9-p76-case-grid article{padding:11px}}

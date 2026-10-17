@@ -82,8 +82,8 @@ test('source modules preserve demo status and exact paired offline revision, no 
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  const src=readFileSync(new URL('../src/p71-manuscripts.mjs',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v73-p75-original-conversation-native/);
- assert.match(sw,/character-study-working-v73-p75-original-conversation-native/);
+ assert.match(app,/character-study-working-v74-p76-original-case-argument-lab/);
+ assert.match(sw,/character-study-working-v74-p76-original-case-argument-lab/);
  assert.doesNotMatch(src,/\b(fetch|localStorage|indexedDB|addReadingEvent|addSentenceEvent)\s*\(/);
  assert.doesNotMatch(src,/officialHskLevel:[1-9]/);
 });
