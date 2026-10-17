@@ -11,6 +11,7 @@ import {renderC9WritingWorkspace,c9WritingState,handleC9WritingAction,handleC9Wr
 import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingReturn} from './navigation-c9.mjs';
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
+import {readingReviewPacket} from './reading-editorial-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueQuestionRepair,c9DialogueQuestionRepair,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
@@ -93,7 +94,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v68-original-source-reading-content';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v69-source-editorial-grammar-evidence';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
@@ -1587,6 +1588,16 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-media-open-story')return c9OpenMediaSource('stories',id);
  if(name==='c9-media-open-dialogue')return c9OpenMediaSource('dialogues',id);
+ if(name==='c9-reading-review-copy'){
+  const review=readingReviewPacket(id);
+  if(!review||route()!=='stories')return alertUser('Original reading source was not found.','error');
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('No browser clipboard');
+   await navigator.clipboard.writeText(review);
+   alertUser('Public original source-review packet copied. Human editorial approval is still outstanding.');
+  }catch{alertUser('Clipboard unavailable. Open this public reading source to review its lines manually.','error');}
+  return true;
+ }
  if(name==='c9-media-copy-reading')return c9CopyMediaLink('stories',id);
  if(name==='c9-media-copy-dialogue')return c9CopyMediaLink('dialogues',id);
  if(name==='c9-roleplay-role'){

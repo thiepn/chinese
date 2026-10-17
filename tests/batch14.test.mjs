@@ -117,6 +117,6 @@ test('scheduled-review grades and original event history are unchanged by ladder
 test('UI and offline list incorporate Sentence Ladder',async()=>{
  const [app,sw,html,css]=await Promise.all(['app.mjs','sw.js','index.html','styles.css'].map(x=>readFile(`src/${x}`,'utf8')));
  assert.match(html,/data-route="ladder"/);assert.match(app,/renderLadder/);assert.match(app,/ladder-select/);
- assert.match(app,/ladderSuggestionsPanel/);assert.match(sw,/sentence-ladder\.mjs/);assert.match(sw,/character-study-working-v68/);
+ assert.match(app,/ladderSuggestionsPanel/);assert.match(sw,/sentence-ladder\.mjs/);assert.match(sw,/character-study-working-v69/);
  assert.match(css,/ladder-suggestion-grid/);
 });

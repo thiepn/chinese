@@ -1332,6 +1332,42 @@ def main():
                     return "Original reader-assisted source comparison, Wordbook paired usage and character trail at "+str(width)+"px"
                 check("P64–P68 original cross-source study "+str(width),original_cross_source_evidence)
                 ctx.close()
+            # P68–P74: source-wide editorial work packet, original grammar line
+            # anchoring and safe native assist/recovery on real mobile/desktop.
+            for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def source_editor_and_native_transfer():
+                    open_route(page,"stories")
+                    course=page.locator(".c9-p68-course")
+                    course.wait_for(state="visible")
+                    if "Whole original reading inventory" not in course.inner_text():
+                        raise AssertionError("Original corpus audit is not exposed")
+                    items=course.locator(".c9-p68-course-grid article")
+                    if items.count()!=6:raise AssertionError("Missing source-editorial entry")
+                    review=items.first.locator(".c9-p68-editorial")
+                    review.locator("summary").click()
+                    if "UNREVIEWED" not in review.inner_text():
+                        raise AssertionError("Source review incorrectly implies editorial approval")
+                    if not review.locator('[data-action="c9-reading-review-copy"]').count():
+                        raise AssertionError("No source review export for a qualified reviewer")
+                    items.first.locator('[data-action="c9-media-open-story"]').click()
+                    transfer=page.locator(".c9-p68-native-transfer")
+                    transfer.wait_for(state="visible")
+                    original=transfer.locator(".c9-p68-transfer-grid article")
+                    if original.count()<2:raise AssertionError("P68 native grammar links do not cite original evidence")
+                    if not original.first.locator('[data-action="grammar-select"]').count():
+                        raise AssertionError("Original grammar course handoff missing")
+                    if "Bilingual explanation withheld" not in transfer.inner_text():
+                        raise AssertionError("Source grammar explanation revealed before assisted action")
+                    transfer.locator('[data-action="c9-cross-source-reveal"]').click()
+                    if "Original source support is open" not in page.locator(".c9-p68-native-transfer").inner_text():
+                        raise AssertionError("Source help failed to mark original reading assisted")
+                    if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
+                        raise AssertionError("Source/editor/grammar panels overflow viewport "+str(width))
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original source review, exact Chinese grammar evidence and assistance "+str(width)+"px"
+                check("P68-P74 editorial provenance and native source transfer "+str(width),source_editor_and_native_transfer)
+                ctx.close()
             # P68 six newly authored DEMO_ONLY evidence readers, existing source ID
             # continuity, original question writer and responsive route handoff.
             for width,height,mobile in ((320,700,True),(390,844,True),(1440,960,False)):
@@ -1840,7 +1876,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v68-original-source-reading-content"
+                current="character-study-working-v69-source-editorial-grammar-evidence"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -1858,7 +1894,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v68-original-source-reading-content');
+                    keys.includes('character-study-working-v69-source-editorial-grammar-evidence');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
