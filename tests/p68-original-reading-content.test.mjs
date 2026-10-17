@@ -43,7 +43,9 @@ test('All P68 source rows append after historical canonical story IDs and reuse 
  const newStories=STORIES.filter(s=>s.beginner?.source==='original-p68');
  assert.equal(newStories.length,6);
  assert.deepEqual(newStories.map(s=>s.title),P68_SOURCE_READINGS.map(r=>r.title));
- assert.deepEqual(STORIES.slice(-6).map(s=>s.id),newStories.map(s=>s.id));
+ assert.deepEqual(STORIES.slice(-11,-5).map(s=>s.id),newStories.map(s=>s.id));
+ assert.equal(STORIES.slice(-5).every(s=>s.beginner?.source==='original-p71'),true);
+ assert.deepEqual(newStories.map(s=>s.id),[...newStories].map(s=>s.id));
  assert.equal(BEGINNER_READING_ROWS.length,BEGINNER_STORIES.length);
  for(const [i,story] of newStories.entries()){
   assert.ok(validateStory(story));
