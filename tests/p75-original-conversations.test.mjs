@@ -96,7 +96,7 @@ test('P75 authorial data includes no new audio/grader/official HSK values and re
  assert.doesNotMatch(source,/\b(fetch|indexedDB|localStorage|addDialogueEvent|addReadingEvent|gradeCard)\s*\(/);
  assert.doesNotMatch(source,/officialHskLevel:[1-9]/);
  assert.match(source,/DEMO_ONLY/);
- assert.match(app,/character-study-working-v74-p76-original-case-argument-lab/);
- assert.match(sw,/character-study-working-v74-p76-original-case-argument-lab/);
+ assert.match(app,/character-study-working-v75-p77-consequence-dialogues/);
+ assert.match(sw,/character-study-working-v75-p77-consequence-dialogues/);
  assert.match(app,/if\(dialogueSupport&&\(findDialogue\(dialogueId\)\?\.p34\|\|findDialogue\(dialogueId\)\?\.p75\)\)p34TranscriptViewed=true/);
 });
