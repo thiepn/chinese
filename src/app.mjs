@@ -1508,7 +1508,7 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   root.querySelector('#c9-'+kind+'-results')?.scrollIntoView({block:'nearest',behavior:'auto'});
   return;
  }
- if(name==='c9-reading-vocabulary-help'){
+ if(name==='c9-reading-vocabulary-help'||name==='c9-cross-source-reveal'){
   if(route()!=='stories'||!findStory(storyId))return false;
   // Explicitly classify this native reading attempt as assisted, preserving
   // the single original story grading path and recorded source identities.

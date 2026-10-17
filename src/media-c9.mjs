@@ -299,7 +299,7 @@ export function renderC9CrossSourceReading(story,act,esc,{revealed=false}={}){
       act('c9-source-open-story-line','Read second original passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(link.sourceId)+'" data-index="'+link.lineIndex+'"'))+
     act('lookup-word','Inspect exact indexed word →','c9-button c9-button--quiet c9-button--small','data-id="'+esc(wordKey)+'"')+
     '</div></article>').join('')+'</div>'+
-  (!revealed?act('c9-reading-vocabulary-help','Reveal bilingual source evidence · marks current reading assisted',
+  (!revealed?act('c9-cross-source-reveal','Reveal bilingual source evidence · marks current reading assisted',
    'c9-button c9-button--secondary c9-button--small'):'<p class="c9-cross-source-warning">Original source help is open. The native unanswered reader is marked assisted.</p>')+
   '</section>';
 }

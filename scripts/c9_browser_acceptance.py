@@ -1300,7 +1300,7 @@ def main():
                         raise AssertionError("Missing paired original Chinese reading contexts")
                     if pair.locator(".c9-cross-reading-reference").count():
                         raise AssertionError("Source translation revealed before original assisted-reading action")
-                    panel.locator('[data-action="c9-reading-vocabulary-help"]').click()
+                    panel.locator('[data-action="c9-cross-source-reveal"]').click()
                     pair=page.locator(".c9-cross-reading-grid article").first
                     pair.locator(".c9-cross-reading-reference").wait_for(state="visible")
                     if pair.locator('[data-action="c9-source-open-story-line"]').count()==0:
