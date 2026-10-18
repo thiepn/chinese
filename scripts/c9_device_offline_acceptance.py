@@ -28,13 +28,13 @@ with sync_playwright() as playwright:
     check('read-only IndexedDB record readback', True)
 
     # A saved native setting is used as a disposable original learner-state write.
-    revision_before=page.locator('#c9-settings-data .muted').inner_text()
+    revision_before=page.locator('#c9-settings-data .muted').first.inner_text()
     original = page.locator('input[data-setting="dark"]').is_checked()
     if original:
         page.locator('input[data-setting="dark"]').uncheck()
     else:
         page.locator('input[data-setting="dark"]').check()
-    expect(page.locator('#c9-settings-data .muted')).not_to_have_text(
+    expect(page.locator('#c9-settings-data .muted').first).not_to_have_text(
         revision_before,timeout=15000)
     page.reload(wait_until='domcontentloaded')
     page.locator('#c9-device-readiness').wait_for()
