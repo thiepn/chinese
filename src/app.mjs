@@ -12,6 +12,7 @@ import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingRetu
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {readingReviewPacket} from './reading-editorial-c9.mjs';
+import {dialogueReviewPacket} from './dialogue-editorial-c9.mjs';
 import {renderP71BlindListening,p71ListeningPart,p71BlindStudyPrompt,P71_BLIND_MODES} from './p71-listening-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueQuestionRepair,c9DialogueQuestionRepair,renderC9P75DialogueEvidence,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
@@ -1672,7 +1673,22 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return opened;
  }
  if(name==='c9-media-open-dialogue')return c9OpenMediaSource('dialogues',id);
- if(name==='c9-reading-review-copy'){
+ if(name==='c9-dialogue-review-copy'){
+   // Public authored source and source-owned answer keys only. No private
+   // P43 writing, learner history, account or device state is copied.
+   const packet=route()==='dialogues'?dialogueReviewPacket(id):null;
+   if(!packet)return alertUser('Original dialogue source was not found.','error');
+   try{
+    if(!navigator.clipboard?.writeText)throw Error('No browser clipboard');
+    await navigator.clipboard.writeText(packet);
+    alertUser('Public original dialogue manuscript copied with answer keys. Qualified human editorial approval remains outstanding.');
+    announceC9Interaction('Original dialogue editorial packet copied. Editorial approval remains outstanding.');
+   }catch{
+    alertUser('Clipboard unavailable. Review the public dialogue and its authorial evidence manually.','error');
+   }
+   return true;
+  }
+  if(name==='c9-reading-review-copy'){
   const review=readingReviewPacket(id);
   if(!review||route()!=='stories')return alertUser('Original reading source was not found.','error');
   try{

@@ -95,6 +95,7 @@ const LEARNING_ASSETS=[
   './study.mjs',
   './study-storage.mjs',
   './device-readiness-c9.mjs',
+  './dialogue-editorial-c9.mjs',
   './exercises.mjs',
   './stories.mjs',
   './lexicon.mjs',
