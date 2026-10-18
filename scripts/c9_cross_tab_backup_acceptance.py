@@ -31,13 +31,18 @@ with sync_playwright() as pw:
         {value:SilentChannel,configurable:true});
     """)
     first.goto(ORIGIN+'#/settings',wait_until='domcontentloaded')
-    first.locator('#c9-settings-data').wait_for()
-    stale_revision=first.locator('#c9-settings-data .muted').first.inner_text()
-    original=first.locator('input[data-setting="dark"]').is_checked()
-
+    expect(first.locator('#storage-detail')).to_contain_text(
+        'IndexedDB connected',timeout=15000)
+    check('test isolates first tab broadcast receiver',
+          first.evaluate("() => window.BroadcastChannel.name==='SilentChannel'"))
     second=context.new_page()
     second.goto(ORIGIN+'#/settings',wait_until='domcontentloaded')
-    second.locator('#c9-settings-data').wait_for()
+    expect(second.locator('#storage-detail')).to_contain_text(
+        'IndexedDB connected',timeout=15000)
+    # Capture the stale-view baseline only after BOTH startup migrations
+    # and initial renders have completed.
+    stale_revision=first.locator('#c9-settings-data .muted').first.inner_text()
+    original=first.locator('input[data-setting="dark"]').is_checked()
     dark=second.locator('input[data-setting="dark"]')
     dark.set_checked(not original)
     expect(second.locator('#c9-settings-data .muted').first).not_to_have_text(stale_revision,timeout=15000)
