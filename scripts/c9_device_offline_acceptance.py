@@ -36,6 +36,13 @@ with sync_playwright() as playwright:
         page.locator('input[data-setting="dark"]').check()
     expect(page.locator('#c9-settings-data .muted').first).not_to_have_text(
         revision_before,timeout=15000)
+    expect(page.locator('#c9-device-storage-result')).to_contain_text(
+        'Not checked on this device',timeout=15000)
+    check('native data change invalidates previous device readback success',True)
+    page.locator('[data-action="c9-device-check"]').click()
+    expect(page.locator('#c9-device-storage-result')).to_contain_text(
+        'complete displayed learner record matched',timeout=15000)
+    check('native content matches on explicit reread',True)
     page.reload(wait_until='domcontentloaded')
     page.locator('#c9-device-readiness').wait_for()
     check('native learner state survives online reload',
@@ -43,7 +50,7 @@ with sync_playwright() as playwright:
 
     # Present URL, unusable cached 404: must not report a complete shell.
     page.evaluate("""async () => {
-      const name=(await caches.keys()).find(x=>x==='character-study-working-v78-guarded-turn-playback');
+      const name=(await caches.keys()).find(x=>x==='character-study-working-v79-readback-content-integrity');
       if(!name)throw Error('current compiled cache absent');
       const cache=await caches.open(name);
       await cache.put(new URL('./startup.mjs',location.href),

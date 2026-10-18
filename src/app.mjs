@@ -97,7 +97,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v78-guarded-turn-playback';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v79-readback-content-integrity';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -1069,7 +1069,7 @@ function c9OpenNativeWorkshopTask(index,assisted=false,origin=null){
  sentenceSupport=Boolean(assisted);c9WorkshopOrigin=receipt;
  render();return true;
 }
-async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
+async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);c9DeviceReadback=null;channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 /* C9-48: one cancellable controller for the original device voice actions.
  * No network TTS, recordings, transcription, listening grades or new state. */
 let c9SpeechGeneration=0;
@@ -1184,7 +1184,9 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
 
  if(name==='c9-device-check'){
   // Read only: never create dummy learner data or independent grading.
-  c9DeviceReadback=await inspectLocalReadback(db,state.revision,readState);
+  const snapshot=state;
+   const checked=await inspectLocalReadback(db,snapshot.revision,readState,snapshot);
+   c9DeviceReadback=state===snapshot?checked:Object.freeze({...checked,status:'stale'});
   if(navigator.serviceWorker?.controller)await verifyC9OfflineShell();
   const panel=$('c9-device-readiness');
   if(panel)panel.outerHTML=renderDeviceReadiness({
@@ -3430,7 +3432,7 @@ async function setupSW(){
   console.warn('Offline shell unavailable',error);
  }
 }
-async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
+async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);c9DeviceReadback=null;render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
  // Offline installation is never a prerequisite for drawing the current
  // learner's dashboard. Let the first paint and interaction take priority;

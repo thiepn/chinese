@@ -22,7 +22,7 @@ test('offline cache status discloses uncertainty and stale versions',()=>{
  assert.match(offlineDeviceStatus('outdated',null).message,/previous version/);
 });
 test('device settings are responsive, accessible, and never silently count manual steps as passed',()=>{
- const html=renderDeviceReadiness({storageReady:true,revision:8,online:false,offlineShell:'incomplete',coverage:{cached:7,total:8},
+ const html=renderDeviceReadiness({storageReady:true,revision:7,online:false,offlineShell:'incomplete',coverage:{cached:7,total:8},
   readback:{status:'changed',expectedRevision:7,actualRevision:8}},act,esc);
  assert.match(html,/role="status"/);
  assert.match(html,/Physical-device acceptance steps \(not automatically passed\)/);
@@ -32,4 +32,23 @@ test('device settings are responsive, accessible, and never silently count manua
  assert.match(html,/7 \/ 8 readable compiled assets/);
  assert.match(html,/Saved revision 8 differs/);
  assert.doesNotMatch(html,/private-id/);
+});
+
+test('a same-revision but different original learner record fails content integrity',async()=>{
+ const displayed={revision:19,learned:['demo-001'],events:[{id:'private-lesson-answer'}]};
+ const stored={revision:19,learned:[],events:[]};
+ const result=await inspectLocalReadback({},19,async()=>stored,displayed);
+ assert.deepEqual(result,{status:'content-mismatch',expectedRevision:19,actualRevision:19});
+ assert.doesNotMatch(JSON.stringify(result),/private-lesson-answer|demo-001/);
+ const html=renderDeviceReadiness({storageReady:true,revision:19,online:true,
+  offlineShell:'ready',coverage:{cached:8,total:8},readback:result},act,esc);
+ assert.match(html,/content differs from the displayed learner record/);
+ assert.doesNotMatch(html,/private-lesson-answer|demo-001/);
+});
+test('older matched readback is never presented as certifying the current revision',()=>{
+ const html=renderDeviceReadiness({storageReady:true,revision:20,online:true,
+  offlineShell:'ready',coverage:{cached:8,total:8},
+  readback:{status:'match',expectedRevision:19,actualRevision:19}},act,esc);
+ assert.match(html,/previous check belongs to an earlier displayed revision/);
+ assert.doesNotMatch(html,/Read-only IndexedDB check matched revision/);
 });

@@ -2,17 +2,19 @@
  * User-triggered, read-only device checks. This is not a migration, sync layer
  * or a claim that browser storage will survive device cleanup.
  */
-export async function inspectLocalReadback(db, expectedRevision, readState) {
+export async function inspectLocalReadback(db, expectedRevision, readState, expectedState=null) {
  if (!db) return Object.freeze({status:'unavailable', expectedRevision, actualRevision:null});
  try {
   const saved=await readState(db);
   const actualRevision=saved?.revision;
   if (!Number.isSafeInteger(actualRevision)||actualRevision<0)
    return Object.freeze({status:'error',expectedRevision,actualRevision:null});
-  return Object.freeze({
-   status:actualRevision===expectedRevision?'match':'changed',
-   expectedRevision,actualRevision
-  });
+  // Matching revision alone cannot certify that the source-owned learner
+  // evidence survived. Compare the complete native record in memory only.
+  const status=actualRevision!==expectedRevision?'changed':
+   expectedState!==null&&JSON.stringify(saved)!==JSON.stringify(expectedState)?
+   'content-mismatch':'match';
+  return Object.freeze({status,expectedRevision,actualRevision});
  } catch {
   // Never include learner records, error payloads or private source text here.
   return Object.freeze({status:'error',expectedRevision,actualRevision:null});
@@ -34,13 +36,20 @@ export function offlineDeviceStatus(shell,coverage) {
 }
 export function renderDeviceReadiness({storageReady,revision,online,offlineShell,coverage,readback},action,esc) {
  const offline=offlineDeviceStatus(offlineShell,coverage);
- const storage=readback?.status==='match'?
-  'Read-only IndexedDB check matched revision '+readback.actualRevision+'. No learner data was changed.':
-  readback?.status==='changed'?
-  'Saved revision '+readback.actualRevision+' differs from the displayed revision '+readback.expectedRevision+'. Another tab or a recent update may have changed the record. Reload before relying on this view.':
-  readback?.status==='error'?
+ // A past success never certifies a later displayed learner revision.
+ const currentReadback=readback&&readback.expectedRevision!==revision?
+  {...readback,status:'stale'}:readback;
+ const storage=currentReadback?.status==='match'?
+  'Read-only IndexedDB check matched revision '+currentReadback.actualRevision+'. The complete displayed learner record matched this read-back in memory. No learner data was changed.':
+  currentReadback?.status==='changed'?
+  'Saved revision '+currentReadback.actualRevision+' differs from the displayed revision '+currentReadback.expectedRevision+'. Another tab or a recent update may have changed the record. Reload before relying on this view.':
+  currentReadback?.status==='content-mismatch'?
+  'Local record content differs from the displayed learner record despite matching revision numbers. Do not rely on this view. Reopen the app and check or export a backup before continuing.':
+  currentReadback?.status==='stale'?
+  'The previous check belongs to an earlier displayed revision. Recheck this learner record after the latest change.':
+  currentReadback?.status==='error'?
   'Local read-back failed. Do not assume learning progress was saved. Export a backup if possible.':
-  readback?.status==='unavailable'?
+  currentReadback?.status==='unavailable'?
   'Local IndexedDB is unavailable. Progress cannot be verified.':
   'Not checked on this device. A connected database alone does not prove a stored record can be read back.';
  return '<section id="c9-device-readiness" class="simple-panel c9-device-readiness" tabindex="-1" aria-labelledby="c9-device-readiness-title">'+
