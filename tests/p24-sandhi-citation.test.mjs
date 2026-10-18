@@ -43,7 +43,7 @@ test('P24 learner-facing screen labels citation and contextual tone separately w
  const action=(name,label,cls='',attr='')=>'<button data-action="'+name+'" '+attr+'>'+label+'</button>';
  const esc=x=>String(x).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
  const state=freshState(),before=JSON.stringify(state);
- const html=renderPinyinScreen({section:'sandhi'},action,esc,()=>'','');
+ const html=renderPinyinScreen({section:'sandhi'},action,esc,()=>'',()=>'');
  assert.match(html,/Citation\/base tones: bù shì/);
  assert.match(html,/Contextual spoken guide: bú shì/);
  assert.match(html,/Citation\/base tones: yī gè/);
