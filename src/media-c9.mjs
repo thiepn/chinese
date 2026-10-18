@@ -1,4 +1,5 @@
 import {P75_DIALOGUES} from './p75-dialogues.mjs';
+import {c9DialogueTurnLabel} from './accessibility-c9.mjs';
 import {auditDialogueSource,auditDialogueInventory} from './dialogue-editorial-c9.mjs';
 import {renderP76CaseLab} from './p76-case-lab.mjs';
 /**
@@ -742,8 +743,8 @@ export function renderC9TurnNavigator(d,active,act,esc){
  '<span>Speaker '+esc(line?.speaker||'A')+' · moving between turns does not reveal the source transcript or record an answer</span></div>'+
  '<div class="c9-media-turn-actions">'+
  act('c9-media-turn','← Previous','c9-button c9-button--secondary c9-button--small','data-dir="-1" '+(current===0?'disabled':''))+
- act('c9-media-listen-turn','Play focused turn','c9-button c9-button--primary c9-button--small')+
- act('c9-media-listen-turn-slow','Slower · focused turn','c9-button c9-button--secondary c9-button--small')+
+ act('c9-media-listen-turn','Play '+c9DialogueTurnLabel(d,current),'c9-button c9-button--primary c9-button--small')+
+ act('c9-media-listen-turn-slow','Play '+c9DialogueTurnLabel(d,current)+' slowly','c9-button c9-button--secondary c9-button--small')+
  act('c9-media-turn','Next turn →','c9-button c9-button--secondary c9-button--small','data-dir="1" '+(current===d.lines.length-1?'disabled':''))+
  '</div></nav>';
 }
