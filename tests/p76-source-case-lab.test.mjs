@@ -44,6 +44,6 @@ test('P76 introduces no new assessment, persistence or certified language author
  assert.doesNotMatch(s,/\b(addDialogueEvent|addReadingEvent|addSentenceEvent|indexedDB|localStorage|fetch)\s*\(/);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v77-dialogue-editorial-evidence/);
- assert.match(sw,/character-study-working-v77-dialogue-editorial-evidence/);
+ assert.match(app,/character-study-working-v78-guarded-turn-playback/);
+ assert.match(sw,/character-study-working-v78-guarded-turn-playback/);
 });

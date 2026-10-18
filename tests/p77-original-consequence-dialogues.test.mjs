@@ -104,7 +104,7 @@ test('no added grader, storage, audio recording or claimed official proficiency 
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  assert.doesNotMatch(module,/\b(fetch|indexedDB|localStorage|addDialogueEvent|addReadingEvent|gradeCard|MediaRecorder)\s*\(/);
  assert.match(module,/DEMO_ONLY/);
- assert.match(app,/character-study-working-v77-dialogue-editorial-evidence/);
- assert.match(sw,/character-study-working-v77-dialogue-editorial-evidence/);
+ assert.match(app,/character-study-working-v78-guarded-turn-playback/);
+ assert.match(sw,/character-study-working-v78-guarded-turn-playback/);
  assert.match(app,/findDialogue\(dialogueId\)\?\.p77/);
 });
