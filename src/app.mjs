@@ -97,7 +97,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v80-learner-next-action-placement';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v81-placement-route-focus';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -3355,16 +3355,19 @@ window.addEventListener('hashchange',()=>{
   const heading=root.querySelector('#c9-browse-title');
   if(heading){heading.setAttribute('tabindex','-1');heading.scrollIntoView({block:'start'});heading.focus({preventScroll:true});}
  }
- if(c9PendingPlacementFocus&&destination==='today'){
-   c9PendingPlacementFocus=false;
-   focusC9Placement();
-  }
-  announceC9Route(C9_ROUTE_LABELS[destination]||'Home',$('main'));
+ announceC9Route(C9_ROUTE_LABELS[destination]||'Home',$('main'));
 if(c9ReturnFocus){
  const focus=root.querySelector('#'+c9ReturnFocus);
  c9ReturnFocus=null;
  if(focus){focus.scrollIntoView({block:'start',behavior:'auto'});focus.focus({preventScroll:true});}
 }
+// Route accessibility focuses the page heading; restore the saved placement
+// question afterwards so resume is accessible from every workspace.
+if(c9PendingPlacementFocus&&destination==='today'){
+   c9PendingPlacementFocus=false;
+   focusC9Placement();
+  }
+  
 if(c9SearchFocusPending&&route()==='find'){root.querySelector('#p30-query')?.focus({preventScroll:true});c9SearchFocusPending=false;}});
 window.addEventListener('online',networkLabel);window.addEventListener('offline',networkLabel);
 function networkLabel(){

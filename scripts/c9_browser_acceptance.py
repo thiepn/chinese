@@ -247,6 +247,7 @@ def main():
                     if resume.count()!=1: raise AssertionError("Native cross-route placement resume missing")
                     resume.click()
                     page.wait_for_function("()=>location.hash==='#/today'")
+                    page.wait_for_function("()=>document.activeElement?.id==='c9-placement-question'",timeout=10000)
                     if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
                         raise AssertionError("Cross-route placement resume did not focus the saved question")
                     page.locator("#c9-placement-anchor [data-action='placement-skip']").click()
@@ -2186,7 +2187,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v80-learner-next-action-placement"
+                current="character-study-working-v81-placement-route-focus"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2209,7 +2210,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v80-learner-next-action-placement');
+                    keys.includes('character-study-working-v81-placement-route-focus');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
