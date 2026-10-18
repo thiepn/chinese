@@ -421,7 +421,8 @@ self.addEventListener('fetch',event=>{
   const cache=await caches.open(CACHE);
   // Do not accidentally serve stale assets from another cache revision.
   const cached=await cache.match(event.request,{ignoreSearch:true});
-  if(cached)return cached;
+  // Never serve a corrupt cached shell response; allow online recovery.
+  if(cached?.ok&&cached.type!=='opaque'&&cached.type!=='opaqueredirect')return cached;
   try{
    const response=await fetch(event.request);
    return response;
