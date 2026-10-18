@@ -2,8 +2,8 @@
 """Isolated physical-device rehearsal proxy: real Chromium, real local HTTP,
 IndexedDB readback, cache corruption/repair, and offline reload. No user data."""
 import json
-import sys
-from playwright.sync_api import sync_playwright
+import time
+from playwright.sync_api import sync_playwright, expect
 
 BASE = 'http://127.0.0.1:4173/'
 result = {'environment':'local Chromium only','checks':[]}
@@ -18,24 +18,24 @@ with sync_playwright() as playwright:
     page = context.new_page()
     page.goto(BASE + '#/settings', wait_until='domcontentloaded')
     page.locator('#c9-device-readiness').wait_for(timeout=20000)
-    page.wait_for_function("!!navigator.serviceWorker?.controller", timeout=30000)
+    deadline=time.monotonic()+30
+    while not page.evaluate("() => Boolean(navigator.serviceWorker?.controller)"):
+        if time.monotonic()>deadline: raise AssertionError('service worker not controlling local page')
+        time.sleep(0.2)
     page.locator('[data-action="c9-device-check"]').click()
-    page.wait_for_function("document.querySelector('#c9-device-storage-result')?.textContent.includes('Read-only IndexedDB check matched')",timeout=15000)
+    expect(page.locator('#c9-device-storage-result')).to_contain_text(
+        'Read-only IndexedDB check matched',timeout=15000)
     check('read-only IndexedDB record readback', True)
 
     # A saved native setting is used as a disposable original learner-state write.
-    revision_before = page.evaluate(
-        """() => Number(document.querySelector('#c9-settings-data .muted')
-        ?.textContent.match(/revision:\\s*(\\d+)/)?.[1] ?? -1)""")
+    revision_before=page.locator('#c9-settings-data .muted').inner_text()
     original = page.locator('input[data-setting="dark"]').is_checked()
     if original:
         page.locator('input[data-setting="dark"]').uncheck()
     else:
         page.locator('input[data-setting="dark"]').check()
-    page.wait_for_function(
-        """previous => Number(document.querySelector('#c9-settings-data .muted')
-        ?.textContent.match(/revision:\\s*(\\d+)/)?.[1] ?? -1) > previous""",
-        arg=revision_before,timeout=15000)
+    expect(page.locator('#c9-settings-data .muted')).not_to_have_text(
+        revision_before,timeout=15000)
     page.reload(wait_until='domcontentloaded')
     page.locator('#c9-device-readiness').wait_for()
     check('native learner state survives online reload',
@@ -50,10 +50,10 @@ with sync_playwright() as playwright:
         new Response('unusable',{status:404,headers:{'Content-Type':'text/javascript'}}));
     }""")
     page.locator('[data-action="c9-device-check"]').click()
-    page.wait_for_function("document.querySelector('#c9-device-cache-count')?.textContent.includes('7 / 8')",timeout=15000)
+    expect(page.locator('#c9-device-cache-count')).to_contain_text('7 / 8',timeout=15000)
     check('URL-present unusable response rejected',True)
     page.locator('#c9-device-readiness [data-action="c9-offline-repair"]').click()
-    page.wait_for_function("document.querySelector('#c9-device-cache-count')?.textContent.includes('8 / 8')",timeout=30000)
+    expect(page.locator('#c9-device-cache-count')).to_contain_text('8 / 8',timeout=30000)
     check('repaired compiled offline assets',True)
 
     context.set_offline(True)
@@ -63,7 +63,8 @@ with sync_playwright() as playwright:
     check('saved native preference survives offline reload',
           page.locator('input[data-setting="dark"]').is_checked() != original)
     page.locator('[data-action="c9-device-check"]').click()
-    page.wait_for_function("document.querySelector('#c9-device-storage-result')?.textContent.includes('Read-only IndexedDB check matched')",timeout=15000)
+    expect(page.locator('#c9-device-storage-result')).to_contain_text(
+        'Read-only IndexedDB check matched',timeout=15000)
     check('offline IndexedDB readback after reload',True)
     context.set_offline(False)
     context.close()
