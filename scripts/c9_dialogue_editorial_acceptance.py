@@ -25,8 +25,11 @@ with sync_playwright() as pw:
     for phase in ['p75','p77']:
         card=page.locator('.c9-'+phase+('-dialogue-course' if phase=='p75' else '-consequence-course')+' article').first
         card.locator('details summary').first.click()
+        summary=card.locator('details summary').first
+        assert summary.bounding_box()['height']>=44, phase+' review disclosure target below 44px'
         button=card.locator('[data-action="c9-dialogue-review-copy"]')
         expect(button).to_be_visible()
+        assert button.bounding_box()['height']>=44, phase+' review button below 44px'
         button.click()
         expect(page.locator('#alert-banner')).to_contain_text(
             'editorial approval remains outstanding',timeout=15000)

@@ -518,7 +518,7 @@ export function renderC9P77ConsequenceCourse(state,currentId,act,esc){
    (prior?act('c9-media-open-dialogue','Revisit previous negotiation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(prior.id)+'"'):'')+
    (story?act('c9-media-open-story','Read separate background source →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
    (story?act('c9-p71-open-composition','Compose an independent Mandarin response →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
-   '</div><details><summary>Source provenance and editorial status</summary>'+
+   '</div><details class="c9-dialogue-editorial"><summary>Source provenance and editorial status</summary>'+
    '<p>Original follow-up '+esc(x.id)+' / canonical dialogue '+esc(d.id)+
    '. Previous independent negotiation '+esc(x.previous)+
    '. Related separately authored reading '+esc(x.readingId)+
