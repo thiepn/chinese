@@ -21,7 +21,7 @@ with sync_playwright() as pw:
     # Simulate a missed BroadcastChannel notification in the exporting tab.
     # Native IndexedDB is shared and every write in the second tab uses the
     # unchanged application transaction path.
-    first.add_init_script("""() => {
+    first.add_init_script("""
       class SilentChannel {
         constructor() {}
         postMessage() {}
@@ -29,7 +29,7 @@ with sync_playwright() as pw:
       }
       Object.defineProperty(window,'BroadcastChannel',
         {value:SilentChannel,configurable:true});
-    }""")
+    """)
     first.goto(ORIGIN+'#/settings',wait_until='domcontentloaded')
     first.locator('#c9-settings-data').wait_for()
     stale_revision=first.locator('#c9-settings-data .muted').first.inner_text()
@@ -58,7 +58,10 @@ with sync_playwright() as pw:
     expect(first.locator('#alert-banner')).to_contain_text('Saved revision',timeout=10000)
 
     # Advance stored revision before preview while the importing tab remains stale.
+    before_second=second.locator('#c9-settings-data .muted').first.inner_text()
     second.locator('input[data-setting="dark"]').set_checked(original)
+    expect(second.locator('#c9-settings-data .muted').first).not_to_have_text(
+        before_second,timeout=15000)
     preview_rev=second.locator('#c9-settings-data .muted').first.inner_text()
     first.locator('#import-file').set_input_files({
         'name':'local-test-backup.json',
