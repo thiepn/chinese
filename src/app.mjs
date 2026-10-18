@@ -16,6 +16,7 @@ import {renderP71BlindListening,p71ListeningPart,p71BlindStudyPrompt,P71_BLIND_M
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueQuestionRepair,c9DialogueQuestionRepair,renderC9P75DialogueEvidence,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
+import {inspectLocalReadback,offlineDeviceStatus,renderDeviceReadiness} from './device-readiness-c9.mjs';
 import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import {renderC9NativeAction,renderC9PageHeading,renderC9ContextNav} from './ui-c9.mjs';
@@ -95,10 +96,11 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v75-p77-consequence-dialogues';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v76-device-offline-readiness';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
-let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
+let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
+let c9DeviceReadback=null; // Transient read-only result; never a grade or learner record.
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 const c9ReadingRecallUi={index:0,revealed:false,typed:'',referenceSeen:false}; // Tab-only, ungraded.
@@ -866,7 +868,7 @@ function renderSettingsNative(){const s=state.settings;return `${title('PREFEREN
  <section id="c9-settings-study" class="simple-panel" tabindex="-1"><h2>Study preferences</h2><div class="setting-row"><div><strong>Pinyin during teaching</strong><p>Show pronunciation while studying. It stays hidden during independent review.</p></div><label class="toggle"><input type="checkbox" data-setting="showPinyin" ${s.showPinyin?'checked':''}><span>Show</span></label></div><div class="setting-row"><div><strong>Dark appearance</strong><p>Use a darker, high-contrast learning workspace.</p></div><label class="toggle"><input type="checkbox" data-setting="dark" ${s.dark?'checked':''}><span>Dark</span></label></div><div class="setting-row"><div><strong>Target new lessons per day</strong><p>Preference for future learning recommendations, not a strict limit.</p></div><select data-setting="dailyNew" aria-label="Target new lessons per day">${[2,3,5,8,10,15].map(n=>`<option value="${n}" ${n===s.dailyNew?'selected':''}>${n} lessons</option>`).join('')}</select></div></section>
  <section class="simple-panel"><h2>Optional placement check</h2><p>A six-question demo recognition check can suggest where to begin. It does not create mastery credit, mark lessons learned, or claim an official HSK level.</p><p>${state.placement?.status==='completed'?'Completed · '+state.placement.answers.filter(a=>a.correct).length+'/6 correct':state.placement?.status==='active'?'In progress · '+state.placement.answers.length+'/6 answered':'Not completed'}</p>${action('placement-restart','Restart placement check','button outline')}</section>
  <section id="c9-settings-reading" class="simple-panel" tabindex="-1"><h2>Reading preferences</h2><div class="setting-row"><div><strong>Larger Chinese characters throughout</strong><p>Increase Hanzi sizes in lessons, reviews and reading without exposing answers.</p></div><label class="toggle"><input type="checkbox" data-setting="hanziLarge" ${s.hanziLarge?'checked':''}><span>Large</span></label></div><div class="setting-row"><div><strong>Larger Chinese text in readings</strong><p>Adjust story reading without changing the assessment answer.</p></div><label class="toggle"><input type="checkbox" data-setting="readingLarge" ${s.readingLarge?'checked':''}><span>Large</span></label></div></section><section class="simple-panel"><h2>Session recovery</h2><p>Your saved vocabulary wordbook contains ${(state.bookmarkedWords||[]).length} entries. ${(state.dialogueEvents||[]).length} dialogue and ${(state.wordPracticeEvents||[]).length} wordbook attempts, plus ${(state.senseEvents||[]).length} contextual-sense, ${(state.sentenceEvents||[]).length} sentence-building, and ${(state.missionEvents||[]).length} conversation-mission attempts are included in JSON backups. Each completed mixed-practice answer is saved transactionally together with the current session position. Backups include an unfinished guided session, and older backups with no session remain valid.</p><p>${state.practiceSession?`Guided practice checkpoint: ${state.practiceSession.cursor} of ${state.practiceSession.limit} answered.`:'No unfinished guided session.'}</p>${state.practiceSession?action('open-practice','Resume saved session →','button outline'):''}</section>
- <div id="c9-settings-recovery" tabindex="-1">${recoveryCenterPanel()}</div><section id="c9-settings-data" class="simple-panel" tabindex="-1"><h2>Your learning data</h2><p>Export a JSON backup before switching browsers or clearing site storage. A local browser database cannot protect against device failure.</p><div class="button-row">${action('export','Export backup','button primary')}${action('import-open','Import backup','button outline')}${action('reset','Reset demo progress','button danger')}</div><input id="import-file" type="file" accept="application/json,.json" hidden><div class="button-row">${action('storage-check','Check local storage status','button outline')}</div><p class="muted">Local data revision: ${state.revision} · Browser storage is not a permanent backup.</p><p id="storage-detail" class="muted">${db?'IndexedDB connected. Completed writes are confirmed transactionally.':'Storage unavailable: lessons and reviews cannot be saved.'}</p></section>${backupPreviewPanel()}
+ <div id="c9-settings-recovery" tabindex="-1">${recoveryCenterPanel()}</div><section id="c9-settings-data" class="simple-panel" tabindex="-1"><h2>Your learning data</h2><p>Export a JSON backup before switching browsers or clearing site storage. A local browser database cannot protect against device failure.</p><div class="button-row">${action('export','Export backup','button primary')}${action('import-open','Import backup','button outline')}${action('reset','Reset demo progress','button danger')}</div><input id="import-file" type="file" accept="application/json,.json" hidden><div class="button-row">${action('storage-check','Check local storage status','button outline')}</div><p class="muted">Local data revision: ${state.revision} · Browser storage is not a permanent backup.</p><p id="storage-detail" class="muted">${db?'IndexedDB connected. Completed writes are confirmed transactionally.':'Storage unavailable: lessons and reviews cannot be saved.'}</p></section>${renderDeviceReadiness({storageReady:Boolean(db),revision:state.revision,online:navigator.onLine,offlineShell:c9OfflineShell,coverage:c9OfflineCoverage,readback:c9DeviceReadback},action,esc)}${backupPreviewPanel()}
  <section id="c9-settings-curriculum" class="simple-panel" tabindex="-1"><h2>Curriculum status</h2><p><strong>Available:</strong> ${DEMO_LESSONS.length} original, author-written Mandarin demonstration lessons, not independently verified as official exam content.</p><p><strong>Not installed:</strong> Official 2025 HSK character and vocabulary inventories, approved audio libraries, and certified examination preparation.</p><p class="muted">No external analytics, cloud services, accounts, or remote curriculum downloads are used by this build.</p></section>`}
 function applySettings(){
  const dark=Boolean(state.settings.dark);
@@ -1150,6 +1152,21 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return;
  }
 
+ if(name==='c9-device-check'){
+  // Read only: never create dummy learner data or independent grading.
+  c9DeviceReadback=await inspectLocalReadback(db,state.revision,readState);
+  if(navigator.serviceWorker?.controller)await verifyC9OfflineShell();
+  const panel=$('c9-device-readiness');
+  if(panel)panel.outerHTML=renderDeviceReadiness({
+   storageReady:Boolean(db),revision:state.revision,online:navigator.onLine,
+   offlineShell:c9OfflineShell,coverage:c9OfflineCoverage,readback:c9DeviceReadback
+  },action,esc);
+  root.querySelector('#c9-device-readiness [data-action="c9-device-check"]')?.focus({preventScroll:true});
+  announceC9Interaction(c9DeviceReadback.status==='match'?
+   'Current learner revision read back successfully. Offline use still requires a physical device test.':
+   'Learner data could not be confirmed at the displayed revision. Check the device readiness result.');
+  return true;
+ }
  if(name==='c9-offline-repair'){
   if(!navigator.onLine){alertUser('Reconnect to prepare original offline assets.','error');return false;}
   if(!navigator.serviceWorker?.controller){
@@ -3285,6 +3302,13 @@ function networkLabel(){
   if(count)count.textContent=c9OfflineCoverage?
    c9OfflineCoverage.cached+' / '+c9OfflineCoverage.total+' static assets cached on this device.':
    'Cache coverage has not yet been verified by this service worker.';
+ }
+ const deviceStatus=$('c9-device-offline-status');
+ const deviceCount=$('c9-device-cache-count');
+ if(deviceStatus||deviceCount){
+  const info=offlineDeviceStatus(c9OfflineShell,c9OfflineCoverage);
+  if(deviceStatus)deviceStatus.textContent=info.message;
+  if(deviceCount)deviceCount.textContent=info.count;
  }
  const upgrade=$('c9-home-offline-upgrade');
  if(upgrade)upgrade.hidden=!online||c9OfflineShell!=='outdated';
