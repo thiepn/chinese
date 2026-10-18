@@ -24,12 +24,18 @@ with sync_playwright() as playwright:
     check('read-only IndexedDB record readback', True)
 
     # A saved native setting is used as a disposable original learner-state write.
+    revision_before = page.evaluate(
+        """() => Number(document.querySelector('#c9-settings-data .muted')
+        ?.textContent.match(/revision:\\s*(\\d+)/)?.[1] ?? -1)""")
     original = page.locator('input[data-setting="dark"]').is_checked()
     if original:
         page.locator('input[data-setting="dark"]').uncheck()
     else:
         page.locator('input[data-setting="dark"]').check()
-    page.wait_for_function("document.querySelector('#c9-settings-data .muted')?.textContent.includes('revision:')",timeout=10000)
+    page.wait_for_function(
+        """previous => Number(document.querySelector('#c9-settings-data .muted')
+        ?.textContent.match(/revision:\\s*(\\d+)/)?.[1] ?? -1) > previous""",
+        arg=revision_before,timeout=15000)
     page.reload(wait_until='domcontentloaded')
     page.locator('#c9-device-readiness').wait_for()
     check('native learner state survives online reload',
