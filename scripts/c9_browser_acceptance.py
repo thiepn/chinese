@@ -2129,7 +2129,8 @@ def main():
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
-                current="character-study-working-v77-dialogue-editorial-evidence"
+                preceding="character-study-working-v77-dialogue-editorial-evidence"
+                current="character-study-working-v78-guarded-turn-playback"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2140,10 +2141,10 @@ def main():
                     await store.put(new Request(location.origin+'/__c9_46_legacy_marker__'),
                                     new Response('old revision only'));
                   }
-                }""",[legacy,previous])
+                }""",[legacy,previous,preceding])
                 present=page.evaluate("async ()=>await caches.keys()")
-                if legacy not in present or previous not in present:
-                    raise AssertionError("Older v58 and v76 caches were not prepared")
+                if legacy not in present or previous not in present or preceding not in present:
+                    raise AssertionError("Older v58, v76 and v77 caches were not prepared")
                 open_route(page,"today")
                 page.wait_for_function("()=>Boolean(navigator.serviceWorker?.controller)",
                                        timeout=25000)
@@ -2151,7 +2152,8 @@ def main():
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
-                    keys.includes('character-study-working-v77-dialogue-editorial-evidence');
+                     !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
+                    keys.includes('character-study-working-v78-guarded-turn-playback');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -2165,7 +2167,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 and v76 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
+                return "Old v58, v76 and v77 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
