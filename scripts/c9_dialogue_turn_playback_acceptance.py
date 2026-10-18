@@ -49,7 +49,12 @@ with sync_playwright() as p:
           const module=await import('/'+moduleName+'.mjs');
           return (moduleName==='p77-dialogues'?module.P77_DIALOGUES:module.P75_DIALOGUES)[0];
         }""",source)
-        page.locator('#dialogue-choice').select_option(label=expected['title'])
+        # The actual native select label has a sequence number prefix.
+        options=page.locator('#dialogue-choice option')
+        matches=[o.get_attribute('value') for o in options.all()
+                 if expected['title'] in o.inner_text()]
+        assert len(matches)==1, phase+' source must map to exactly one native dialogue'
+        page.locator('#dialogue-choice').select_option(value=matches[0])
         expect(page.locator('#c9-native-dialogue .dialogue-turn')).to_have_count(8)
         buttons=page.locator('#c9-native-dialogue .dialogue-turn [data-action="c9-media-listen-turn"]')
         expect(buttons).to_have_count(8)
