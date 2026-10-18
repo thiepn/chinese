@@ -18,7 +18,7 @@ import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9Di
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
 import {inspectLocalReadback,offlineDeviceStatus,renderDeviceReadiness} from './device-readiness-c9.mjs';
-import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
+import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES,c9DialogueTurnLabel,resolveC9DialogueTurnPlayback} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import {renderC9NativeAction,renderC9PageHeading,renderC9ContextNav} from './ui-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
@@ -241,7 +241,7 @@ function renderDialoguesNative(){const d=findDialogue(dialogueId)||DIALOGUES[0],
 <section class="simple-panel dialogue-top"><label for="dialogue-choice">Choose a dialogue<select id="dialogue-choice">${DIALOGUES.map((item,i)=>`<option value="${item.id}" ${d.id===item.id?'selected':''}>${i+1}. ${esc(item.title)}</option>`).join('')}</select></label><div class="stats-grid">${stat(stats.practiced,'Conversations practiced')}${stat(stats.independent,'Independent correct answers')}${stat(stats.attempts,'Supplementary responses')}</div></section><div class="content-continuation" aria-label="Conversation navigation">${action('dialogue-prev','← Previous conversation','button outline small')}${action('dialogue-next-context','Next conversation →','button outline small')}</div>
 ${renderC9DialogueQuestionRepair(d,state,dialogueStep,action,esc)}
 ${renderC9P75DialogueEvidence(d,dialogueStep,dialogueFeedback,action,esc)}
-<div class="dialogue-layout"><article class="simple-panel dialogue-paper" id="c9-native-dialogue" tabindex="-1"><div class="panel-heading"><h2>${esc(d.title)}</h2><span class="muted">${d.lines.length} speaking turns</span></div>${renderC9TurnNavigator(d,c9DialogueTurn,action,esc)}<div class="dialogue-turns">${d.lines.map((line,index)=>`<div class="dialogue-turn ${c9DialogueTurn===index?'is-c9-current':''}" tabindex="-1" data-c9-turn-index="${index}" aria-current="${c9DialogueTurn===index?'step':'false'}"><span class="speaker-label" aria-label="Speaker ${line.speaker}">${esc(line.speaker)}</span><div><p class="dialogue-chinese" ${(d.p34||d.p75||d.p77)&&!dialogueSupport?'':'lang="zh-Hans"'}>${(d.p34||d.p75||d.p77)&&!dialogueSupport?'Audio turn · reveal transcript when ready':esc(line.hanzi)}</p>${dialogueSupport?`<p class="dialogue-pinyin">${esc(line.pinyin)}</p><p class="muted">${esc(line.english)}</p>`:''}<div class="button-row">${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-turn','Listen to guarded original turn','button outline small'):action('speak','Listen to this turn','button outline small',`data-text="${esc(line.hanzi)}"`)}</div></div></div>`).join('')}</div><div class="button-row">${action('dialogue-support',dialogueSupport?'Hide language support':'Show pinyin + English','button outline',`aria-pressed="${dialogueSupport}"`)}${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-whole','Listen to guarded original exchange','button outline'):action('speak','Listen to the exchange','button outline',`data-text="${esc(d.lines.map(x=>x.hanzi).join(' '))}"`)}</div><p class="muted">Device TTS is optional and is not certified pronunciation audio. Revealing language support makes the next answer assisted.</p>${dialogueWordLinks(d.id).length?`<div class="dialogue-word-links"><p class="eyebrow">EXPLORE WORDS IN THIS EXCHANGE</p><p class="muted">Written-form matches only; verify their meanings in context.</p><div class="word-link-row">${dialogueWordLinks(d.id).map(w=>action('lookup-word',`${esc(w.hanzi)} <small>${esc(w.pinyin)}</small>`,'button outline small',`data-word="${esc(w.hanzi)}"`)).join('')}</div></div>`:''}</article>
+<div class="dialogue-layout"><article class="simple-panel dialogue-paper" id="c9-native-dialogue" tabindex="-1"><div class="panel-heading"><h2>${esc(d.title)}</h2><span class="muted">${d.lines.length} speaking turns</span></div>${renderC9TurnNavigator(d,c9DialogueTurn,action,esc)}<div class="dialogue-turns">${d.lines.map((line,index)=>`<div class="dialogue-turn ${c9DialogueTurn===index?'is-c9-current':''}" tabindex="-1" data-c9-turn-index="${index}" aria-current="${c9DialogueTurn===index?'step':'false'}"><span class="speaker-label" aria-label="Speaker ${line.speaker}">${esc(line.speaker)}</span><div><p class="dialogue-chinese" ${(d.p34||d.p75||d.p77)&&!dialogueSupport?'':'lang="zh-Hans"'}>${(d.p34||d.p75||d.p77)&&!dialogueSupport?'Audio turn · reveal transcript when ready':esc(line.hanzi)}</p>${dialogueSupport?`<p class="dialogue-pinyin">${esc(line.pinyin)}</p><p class="muted">${esc(line.english)}</p>`:''}<div class="button-row">${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-turn','Play '+esc(c9DialogueTurnLabel(d,index))+' · device voice','button outline small',`data-turn-index="${index}" data-dialogue-id="${esc(d.id)}"`):action('speak','Play '+esc(c9DialogueTurnLabel(d,index))+' · device voice','button outline small',`data-text="${esc(line.hanzi)}"`)}</div></div></div>`).join('')}</div><div class="button-row">${action('dialogue-support',dialogueSupport?'Hide language support':'Show pinyin + English','button outline',`aria-pressed="${dialogueSupport}"`)}${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-whole','Listen to guarded original exchange','button outline'):action('speak','Listen to the exchange','button outline',`data-text="${esc(d.lines.map(x=>x.hanzi).join(' '))}"`)}</div><p class="muted">Device TTS is optional and is not certified pronunciation audio. Revealing language support makes the next answer assisted.</p>${dialogueWordLinks(d.id).length?`<div class="dialogue-word-links"><p class="eyebrow">EXPLORE WORDS IN THIS EXCHANGE</p><p class="muted">Written-form matches only; verify their meanings in context.</p><div class="word-link-row">${dialogueWordLinks(d.id).map(w=>action('lookup-word',`${esc(w.hanzi)} <small>${esc(w.pinyin)}</small>`,'button outline small',`data-word="${esc(w.hanzi)}"`)).join('')}</div></div>`:''}</article>
 <section class="simple-panel dialogue-quiz" id="c9-native-dialogue-question" tabindex="-1"><p class="eyebrow">CONTEXT CHECK · ${dialogueStep+1} / ${d.questions.length}</p><h2>${esc(q.prompt)}</h2>${dialogueFeedback?`<div class="reader-feedback ${dialogueFeedback.correct&&!dialogueFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${dialogueFeedback.correct?'Correct answer':'Review the conversation'}</strong><p>Reference: ${esc(q.answer)}</p>${d.p34?`<p><strong>Listening evidence:</strong> ${esc(d.p34.feedback[dialogueStep]||d.p34.teaching)}</p><p lang="zh-Hans">${esc(d.lines[dialogueStep===0?1:3].hanzi)}</p><p class="muted">${esc(d.lines[dialogueStep===0?1:3].pinyin)} · ${esc(d.lines[dialogueStep===0?1:3].english)}</p>`:''}<p>${dialogueFeedback.assisted?'Assisted attempt — not independent evidence.':'Saved as separate conversation practice.'}</p></div><div class="button-row">${action('dialogue-next',dialogueStep+1<d.questions.length?'Next context question →':'Next conversation →','button primary')}${action('dialogue-retry','Repeat this question','button outline')}</div>`:`<div class="choice-list">${q.options.map((opt,i)=>action('dialogue-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(opt)}`,'choice',`data-option="${esc(opt)}"`)).join('')}</div><div class="button-row">${action('dialogue-reveal','Reveal reference','button outline')}</div>`}<p class="muted">These questions assess contextual meaning, not official curriculum mastery.</p></section></div>${p33ScenarioTeaching(d,p33Branch,action,esc,p33DecisionUi)}${renderDialogueMission(d)}`;}
 function refreshC9MediaCatalog(kind){
  const reading=kind==='reading',target=root.querySelector(reading?'#c9-reading-results':'#c9-dialogue-results');if(!target)return;
@@ -1118,6 +1118,35 @@ async function speak(text,rate=demoSpeechRate){
  try{synthesis.speak(utt);}
  catch{if(request===c9SpeechGeneration)alertUser('Speech playback failed on this device. The original Chinese text remains available.','error');}
 }
+function syncC9DialogueTurnFocus(dialogue,next,focusRow=false){
+ if(!dialogue||dialogue.id!==dialogueId||
+  !Number.isInteger(next)||next<0||next>=dialogue.lines.length)return false;
+ c9DialogueTurn=next;
+ for(const el of root.querySelectorAll('[data-c9-turn-index]')){
+  const current=Number(el.dataset.c9TurnIndex)===next;
+  el.classList.toggle('is-c9-current',current);
+  el.setAttribute('aria-current',current?'step':'false');
+ }
+ const bar=root.querySelector('.c9-media-turn-nav');
+ if(bar){
+  const strong=bar.querySelector('strong'),speaker=bar.querySelector('div:first-child>span');
+  if(strong)strong.textContent='Turn '+(next+1)+' / '+dialogue.lines.length;
+  if(speaker)speaker.textContent='Speaker '+dialogue.lines[next].speaker+' · navigation does not reveal hidden listening-first text';
+  for(const control of bar.querySelectorAll('[data-action="c9-media-turn"]'))
+   control.disabled=control.dataset.dir==='-1'?next===0:next===dialogue.lines.length-1;
+  const play=bar.querySelector('[data-action="c9-media-listen-turn"]');
+  const slow=bar.querySelector('[data-action="c9-media-listen-turn-slow"]');
+  if(play)play.textContent='Play '+c9DialogueTurnLabel(dialogue,next);
+  if(slow)slow.textContent='Play '+c9DialogueTurnLabel(dialogue,next)+' slowly';
+ }
+ if(focusRow){
+  const row=root.querySelector('[data-c9-turn-index="'+next+'"]');
+  row?.scrollIntoView({block:'nearest',behavior:'auto'});
+  row?.focus({preventScroll:true});
+  announceC9Interaction(c9DialogueTurnLabel(dialogue,next)+' focused; no text revealed or grade recorded.');
+ }
+ return true;
+}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
  const handledWriting=await handleC9WritingAction(button,{
@@ -1561,8 +1590,16 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return speak(d.lines.map(line=>line.hanzi).join('。'),name==='c9-media-listen-slow'?0.68:demoSpeechRate);
  }
 if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
-  const d=findDialogue(dialogueId),line=d?.lines[c9DialogueTurn];if(!line)return;
-  return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
+  if(route()!=='dialogues')return false;
+  const d=findDialogue(dialogueId),row=button.dataset.turnIndex!==undefined;
+  const selected=resolveC9DialogueTurnPlayback(d,{
+   focused:c9DialogueTurn,requested:row?button.dataset.turnIndex:undefined,
+   sourceId:row?button.dataset.dialogueId:undefined
+  });
+  if(!selected)return false;
+  if(row&&selected.index!==c9DialogueTurn)syncC9DialogueTurnFocus(d,selected.index,false);
+  announceC9Interaction('Device voice: '+selected.label+'. The original transcript remains concealed.');
+  return speak(selected.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
  }
   if(name==='c9-reading-queue-page'){
   const delta=Number(button.dataset.delta);
@@ -1760,30 +1797,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return true;
  }
  if(name==='c9-media-turn'){
-  const dialogue=findDialogue(dialogueId);
-  if(!dialogue)return;
-  const delta=Number(button.dataset.dir);
-  if(![-1,1].includes(delta))return;
-  const next=Math.max(0,Math.min(dialogue.lines.length-1,c9DialogueTurn+delta));
-  if(next===c9DialogueTurn)return;
-  c9DialogueTurn=next;
-  for(const el of root.querySelectorAll('[data-c9-turn-index]')){
-   el.classList.toggle('is-c9-current',Number(el.dataset.c9TurnIndex)===next);
-   el.setAttribute('aria-current',Number(el.dataset.c9TurnIndex)===next?'step':'false');
-  }
-  const bar=root.querySelector('.c9-media-turn-nav');
-  if(bar){
-   const strong=bar.querySelector('strong'),speaker=bar.querySelector('div:first-child>span');
-   if(strong)strong.textContent='Turn '+(next+1)+' / '+dialogue.lines.length;
-   if(speaker)speaker.textContent='Speaker '+dialogue.lines[next].speaker+' · navigation does not reveal hidden listening-first text';
-   for(const control of bar.querySelectorAll('[data-action="c9-media-turn"]')){
-     control.disabled=control.dataset.dir==='-1'?next===0:next===dialogue.lines.length-1;
-   }
-  }
-  const target=root.querySelector('[data-c9-turn-index="'+next+'"]');
-  target?.scrollIntoView({block:'nearest',behavior:'auto'});
-  target?.focus({preventScroll:true});
-  return;
+  const d=findDialogue(dialogueId),delta=Number(button.dataset.dir);
+  if(route()!=='dialogues'||!d||![-1,1].includes(delta))return false;
+  const next=Math.max(0,Math.min(d.lines.length-1,c9DialogueTurn+delta));
+  return next===c9DialogueTurn?false:syncC9DialogueTurnFocus(d,next,true);
  }
  if(name==='c9-story-pinyin'||name==='c9-story-english'){
   const next=name==='c9-story-pinyin'?!c9StoryPinyin:!c9StoryEnglish;
