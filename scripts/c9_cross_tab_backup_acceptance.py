@@ -77,7 +77,10 @@ with sync_playwright() as pw:
           second.locator('input[data-setting="dark"]').is_checked()==original)
 
     # A further native mutation must reject the previously approved replacement.
+    before_conflict=second.locator('#c9-settings-data .muted').first.inner_text()
     second.locator('input[data-setting="dark"]').set_checked(not original)
+    expect(second.locator('#c9-settings-data .muted').first).not_to_have_text(
+        before_conflict,timeout=15000)
     first.locator('#restore-ack').fill('REPLACE')
     first.locator('[data-action="restore-confirm"]').click()
     expect(first.locator('#alert-banner')).to_contain_text(
