@@ -11,16 +11,16 @@ export function openDatabase(){return new Promise((resolve,reject)=>{
 });}
 function transaction(db,mode,operation){return new Promise((resolve,reject)=>{
  let result;let tx;let failure=null;
- try {tx=db.transaction(STORE,mode);const store=tx.objectStore(STORE);operation(store,(value)=>{result=value});
+ try {tx=db.transaction(STORE,mode);const store=tx.objectStore(STORE);operation(store,(value)=>{result=value},(cause)=>{failure=cause;store.transaction.abort()});
  tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||new Error('Save aborted'));tx.onerror=()=>reject(failure||tx.error||new Error('Save failed'));}
  catch(e){reject(e)}
 });}
 export async function readState(db){const raw=await transaction(db,'readonly',(store,finish)=>{const req=store.get('state');req.onsuccess=()=>finish(req.result)});if(!raw)return freshState();validateState(raw);return raw;}
-export async function updateState(db,modifier){return transaction(db,'readwrite',(store,finish)=>{
+export async function updateState(db,modifier){return transaction(db,'readwrite',(store,finish,fail)=>{
  const req=store.get('state');req.onsuccess=()=>{
   try {const current=req.result||freshState();validateState(current);const result=modifier(current);validateState(result);result.revision=current.revision+1;
     const put=store.put(result,'state');put.onsuccess=()=>finish(result);
-  }catch(e){store.transaction.abort();}
+  }catch(e){fail(e);}
  };});}
 export async function replaceState(db,incoming,{expectedRevision}={}){validateState(incoming);return updateState(db,current=>{if(expectedRevision!==undefined&&current.revision!==expectedRevision)throw new Error('Local data changed after the backup preview; inspect the backup again');return upgradedState(incoming)||structuredClone({...incoming,version:STATE_VERSION});});}
 export async function resetState(db){return updateState(db,_=>freshState());}

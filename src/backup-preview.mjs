@@ -1,5 +1,5 @@
 /** Batch 20: non-mutating comparison before any irreversible learner data replacement. */
-import {importBackup} from './study-storage.mjs';
+import {importBackup,readState,backupDocument} from './study-storage.mjs';
 import {recoverySnapshot} from './course-overview.mjs';
 export const MAX_BACKUP_BYTES=8_000_000;
 
@@ -20,3 +20,21 @@ export function previewBackup(document,current,{bytes=0}={}){
 }
 /** Never auto-merge, synthesize lost history, or alter grades when importing. */
 export function restoreRequiresAcknowledgement(preview,typed){return Boolean(preview?.explicitReplacement&&typed==='REPLACE');}
+
+/**
+ * User-requested backups must reflect the latest COMMITTED IndexedDB state,
+ * not a stale window snapshot. Never silently export an empty freshState when
+ * storage is inaccessible. Caller owns the eventual download gesture.
+ */
+export async function exportSavedBackup(db,read=readState){
+ if(!db)throw new Error('Local database unavailable; no backup was exported.');
+ const saved=await read(db);
+ return Object.freeze({document:backupDocument(saved),revision:saved.revision});
+}
+/** Import preview and replacement CAS must share a fresh stored baseline. */
+export async function previewSavedBackup(db,document,options={},read=readState){
+ if(!db)throw new Error('Local database unavailable; cannot preview a replacement.');
+ const current=await read(db);
+ const preview=previewBackup(document,current,options);
+ return Object.freeze({preview,learner:importBackup(document)});
+}
