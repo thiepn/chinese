@@ -84,6 +84,6 @@ test('P71 course retains original source study and adds genuine blind + writing-
  assert.match(app,/if\(name==='c9-p71-blind-start'\)/);
  assert.match(app,/if\(name==='c9-p71-blind-reveal'\)/);
  assert.match(app,/if\(name==='c9-p71-workshop-writing'\)/);
- assert.match(app,/character-study-working-v81-placement-route-focus/);
- assert.match(sw,/character-study-working-v81-placement-route-focus/);
+ assert.match(app,/character-study-working-v82-sandhi-lexical-context/);
+ assert.match(sw,/character-study-working-v82-sandhi-lexical-context/);
 });

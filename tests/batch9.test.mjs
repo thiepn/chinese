@@ -89,5 +89,5 @@ test('new routes, handlers, responsive CSS and offline dependencies are connecte
  for(const route of ['senses','workshop'])assert.ok(app.includes(`route==='${route}'`)||app.includes(`${route}:render`));
  for(const word of ['mission-start','mission-answer','workshop-check','sense-answer','wordbook-focus','toneExplanation'])assert.ok(app.includes(word),word);
  for(const asset of ['tone-coach.mjs','sense-lab.mjs','sentence-workshop.mjs','dialogue-missions.mjs'])assert.ok(sw.includes(asset));
- for(const route of ['#/senses','#/workshop'])assert.ok(html.includes(route));assert.ok(sw.includes('working-v81'));assert.ok(css.includes('.learning-studio'));
+ for(const route of ['#/senses','#/workshop'])assert.ok(html.includes(route));assert.ok(sw.includes('working-v82'));assert.ok(css.includes('.learning-studio'));
 });

@@ -4,7 +4,7 @@ import {PINYIN_INITIALS,PINYIN_FINALS,PINYIN_SYLLABLE_GROUPS,PINYIN_TONES,PINYIN
 export function soundPrimer(reference,action,esc){
  const parts=soundBreakdown(reference);if(!parts?.length)return '';
  return `<section class="p24-sound-primer" aria-label="Pinyin pronunciation connections">
- <div class="p24-primer-head"><strong>How these syllables work</strong><span>Written lexical Pinyin</span></div>
+ <div class="p24-primer-head"><strong>How these syllables work</strong><span>Reference Pinyin · compare contextual tones</span></div>
  <div class="p24-primer-parts">${parts.map(p=>`<div><strong>${esc(p.syllable)}</strong><span>Tone ${p.tone===5?'neutral':p.tone}</span><p>${esc(p.initialCue)}</p><p>${esc(p.finalCue)}</p>${p.extra?`<small>${esc(p.extra)}</small>`:''}</div>`).join('')}</div>
  ${action('pinyin-open','Open sound foundations →','button outline small')}</section>`;
 }
@@ -42,8 +42,8 @@ function spelling(action,esc){
  ${action('pinyin-tab','Practice tone-mark spelling →','button primary',`data-section="practice" data-filter="spelling"`)}</section>`;
 }
 function sandhi(action,esc){
- return `<section class="simple-panel p24-panel"><p class="eyebrow">CONNECTED SPEECH</p><h2>Sandhi, neutral tone and real speech rhythm</h2><p>The written reference remains lexical even when pronunciation changes in a phrase. Device TTS is only a listening aid.</p>
- <div class="p24-sandhi">${PINYIN_SANDHI.map(r=>`<article><div><span class="eyebrow">${esc(r.title)}</span><h3>${esc(r.subtitle)}</h3><p>${esc(r.explanation)}</p><small>${esc(r.cue)}</small></div><div><strong lang="zh-Hans">${esc(r.hanzi)}</strong><p>Written: ${esc(r.lexical)}</p><p>Spoken guide: ${esc(r.spoken)}</p>${speak(r.hanzi,action,esc)}</div></article>`).join('')}</div>
+ return `<section class="simple-panel p24-panel"><p class="eyebrow">CONNECTED SPEECH</p><h2>Sandhi, neutral tone and real speech rhythm</h2><p>Compare the isolated citation/base tones with a contextual spoken guide. Textbooks may write the original tones or mark some contextual changes; this lesson distinguishes both explicitly. Device TTS is only a listening aid, not independently verified audio.</p>
+ <div class="p24-sandhi">${PINYIN_SANDHI.map(r=>`<article><div><span class="eyebrow">${esc(r.title)}</span><h3>${esc(r.subtitle)}</h3><p>${esc(r.explanation)}</p><small>${esc(r.cue)}</small></div><div><strong lang="zh-Hans">${esc(r.hanzi)}</strong><p>Citation/base tones: ${esc(r.lexical)}</p><p>Contextual spoken guide: ${esc(r.spoken)}</p>${speak(r.hanzi,action,esc)}</div></article>`).join('')}</div>
  ${action('pinyin-tab','Review connected-speech questions →','button primary',`data-section="practice" data-filter="sandhi"`)}</section>`;
 }
 function practice({filter,index,feedback,typed},action,esc){

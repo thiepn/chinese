@@ -271,6 +271,31 @@ def main():
                 return "Start from lesson one opens authentic demo-01, without introduction credit"
             check("V1 optional placement skip opens first lesson",optional_skip_opens_first)
             ctx.close()
+            # Original Mandarin source-integrity gate: the teaching surface must
+            # distinguish citation tones from context forms without changing the
+            # author-owned Pinyin assessment answers or awarding review credit.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def sandhi_citation_reading():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="sandhi"]').click()
+                    page.locator('.p24-sandhi article').first.wait_for(state="visible")
+                    cases={"不是":("bù shì","bú shì"),"一个":("yī gè","yí ge"),"一天":("yī tiān","yì tiān")}
+                    for source,(citation,spoken) in cases.items():
+                        row=page.locator('.p24-sandhi article').filter(
+                            has=page.locator('strong[lang="zh-Hans"]',has_text=source))
+                        if row.count()!=1:
+                            raise AssertionError("Original sandhi row missing or duplicated: "+source)
+                        if "Citation/base tones: "+citation not in row.inner_text():
+                            raise AssertionError("Wrong original base reading for "+source)
+                        if "Contextual spoken guide: "+spoken not in row.inner_text():
+                            raise AssertionError("Wrong contextual pronunciation for "+source)
+                    if "not independently verified audio" not in page.locator('.p24-panel').first.inner_text():
+                        raise AssertionError("Device speech must not claim native reviewed audio")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Authentic 不/一 source tones versus spoken sandhi in "+str(width)+"px Chromium"
+                check("V1 original Mandarin citation/spoken sandhi "+str(width),sandhi_citation_reading)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2187,7 +2212,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v81-placement-route-focus"
+                current="character-study-working-v82-sandhi-lexical-context"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2210,7 +2235,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v81-placement-route-focus');
+                    keys.includes('character-study-working-v82-sandhi-lexical-context');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
