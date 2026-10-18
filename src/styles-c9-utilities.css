@@ -368,3 +368,17 @@
  .c9-search-page .p30-pagination{justify-content:stretch}
  .c9-search-page .p30-pagination>button{flex:1 1 auto}
 }
+
+/* Release rehearsal: one small, readable native Settings surface. */
+.c9-device-readiness{min-width:0}
+.c9-device-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.c9-device-grid>div{min-width:0;padding:14px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);background:var(--c9-surface-2)}
+.c9-device-grid strong{font-size:13px}
+.c9-device-grid p{font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.c9-device-grid small{font-size:11px;color:var(--c9-sub);line-height:1.5}
+.c9-device-rehearsal{margin-top:16px;border-top:1px solid var(--c9-line);padding-top:12px}
+.c9-device-rehearsal summary{cursor:pointer;font-size:13px;font-weight:650;min-height:44px;display:flex;align-items:center}
+.c9-device-rehearsal ol{margin:4px 0 12px;padding-left:23px}
+.c9-device-rehearsal li{font-size:12px;line-height:1.6;margin-bottom:8px}
+.c9-device-rehearsal p{font-size:11px;color:var(--c9-sub);line-height:1.5}
+@media(max-width:600px){.c9-device-grid{grid-template-columns:minmax(0,1fr)}.c9-device-readiness .button-row>*{flex:1 1 100%;min-height:44px;white-space:normal}}
