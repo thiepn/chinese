@@ -214,6 +214,62 @@ def main():
                     return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
                 check("Direct Chinese learner journey "+str(width),learner_first_navigation)
                 ctx.close()
+            # V1: saved placement must be a reachable original source action,
+            # not a dead-end Today navigation or a competing new-lesson CTA.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def placement_resume_flow():
+                    open_route(page,"today")
+                    start=page.locator("#c9-placement-anchor [data-action='placement-start']")
+                    if start.count()!=1: raise AssertionError("Optional placement entry missing")
+                    start.click()
+                    question=page.locator("#c9-placement-question")
+                    question.wait_for(state="visible")
+                    if not question.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Starting placement did not focus the original question")
+                    hero=page.locator(".c9-home-hero-actions")
+                    primary=hero.locator("[data-action='hub-primary']")
+                    if primary.count()!=1 or "Resume saved activity" not in primary.inner_text():
+                        raise AssertionError("Today incorrectly prioritizes an unrelated lesson over saved placement")
+                    secondary=hero.locator("[data-action='hub-lesson']")
+                    if secondary.count()!=1 or "optional" not in secondary.inner_text():
+                        raise AssertionError("Original next lesson not retained as secondary action")
+                    question.locator("[data-action='placement-answer']").first.click()
+                    page.locator("#c9-placement-anchor").get_by_text("Question 2 of 6").wait_for()
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Next original placement question lost keyboard focus")
+                    primary=page.locator(".c9-home-hero-actions [data-action='hub-primary']")
+                    primary.click()
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Today resume did not focus saved original placement")
+                    open_route(page,"learn")
+                    resume=page.locator(".hub-resume-strip [data-action='hub-resume'][data-kind='placement']")
+                    if resume.count()!=1: raise AssertionError("Native cross-route placement resume missing")
+                    resume.click()
+                    page.wait_for_function("()=>location.hash==='#/today'")
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Cross-route placement resume did not focus the saved question")
+                    page.locator("#c9-placement-anchor [data-action='placement-skip']").click()
+                    if page.evaluate("()=>location.hash")!="#/today":
+                        raise AssertionError("Skipping an active check silently launched an unrelated lesson")
+                    if "0 introduced" not in page.locator(".c9-home-date").inner_text():
+                        raise AssertionError("Placement answers improperly introduced original lessons")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original placement 1→2, focused saved resume on Today and Learn, active skip preserves no-credit state at "+str(width)+"px"
+                check("V1 focused placement recovery "+str(width),placement_resume_flow)
+                ctx.close()
+            ctx,page,errors=session(390,844,True)
+            def optional_skip_opens_first():
+                open_route(page,"today")
+                page.locator("#c9-placement-anchor [data-action='placement-skip']").click()
+                page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
+                page.locator("#c9-lesson-overview").wait_for(state="visible")
+                if "Not introduced" not in page.locator(".c9-lesson-record-badges").inner_text():
+                    raise AssertionError("Skipping placement fabricated introduction credit")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Start from lesson one opens authentic demo-01, without introduction credit"
+            check("V1 optional placement skip opens first lesson",optional_skip_opens_first)
+            ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2130,7 +2186,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v79-readback-content-integrity"
+                current="character-study-working-v80-learner-next-action-placement"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2153,7 +2209,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v79-readback-content-integrity');
+                    keys.includes('character-study-working-v80-learner-next-action-placement');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

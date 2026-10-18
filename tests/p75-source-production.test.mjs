@@ -91,6 +91,6 @@ test('no new grade writer, official audio or study store',()=>{
  assert.match(writing,/qualifiedP71/);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v79-readback-content-integrity/);
- assert.match(sw,/character-study-working-v79-readback-content-integrity/);
+ assert.match(app,/character-study-working-v80-learner-next-action-placement/);
+ assert.match(sw,/character-study-working-v80-learner-next-action-placement/);
 });

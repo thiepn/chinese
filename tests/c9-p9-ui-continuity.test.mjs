@@ -6,6 +6,8 @@ import {renderC9LessonWorkspace,c9LessonTransferSources} from '../src/lesson-c9.
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {freshState,addLesson} from '../src/study.mjs';
+import {startPlacement} from '../src/placement.mjs';
+import {learningHub} from '../src/learning-hub.mjs';
 import {renderC9Review} from '../src/review-practice-c9.mjs';
 import {findLibrarySentence} from '../src/sentence-library.mjs';
 import {findStory,STORIES} from '../src/stories.mjs';
@@ -488,4 +490,26 @@ test('C9-61 original dialogue question recovery uses every canonical question an
   "if(name==='c9-dialogue-repair-play')"])
   assert.ok(app.includes(fragment),'original guarded assessment handoff: '+fragment);
  assert.ok(!app.includes('addC9DialogueRepairEvent('),'no second native event writer');
+});
+
+test('V1 Home prioritizes saved optional placement over launching another lesson',()=>{
+ const state=startPlacement(freshState()),before=JSON.stringify(state);
+ assert.equal(learningHub(state).primary.kind,'resume');
+ assert.equal(learningHub(state).primary.source,'placement');
+ const html=renderC9Home(state,act,esc);
+ const hero=html.slice(html.indexOf('<div class="c9-home-hero-actions">'),html.indexOf('<div class="c9-home-source-preview"'));
+ assert.match(html,/CONTINUE SAVED WORK/);
+ assert.match(html,/Resume Placement check/);
+ assert.match(hero,/data-action="hub-primary"/);
+ assert.match(hero,/Resume saved activity/);
+ assert.match(hero,/Lesson 001 \(optional\)/);
+ assert.ok(hero.indexOf('data-action="hub-primary"')<hero.indexOf('data-action="hub-lesson"'));
+ assert.equal(JSON.stringify(state),before);
+});
+test('V1 Home keeps direct first lesson from an empty learner record',()=>{
+ const html=renderC9Home(freshState(),act,esc);
+ const hero=html.slice(html.indexOf('<div class="c9-home-hero-actions">'),html.indexOf('<div class="c9-home-source-preview"'));
+ assert.match(hero,/data-action="hub-lesson"/);
+ assert.match(hero,/Start lesson 001/);
+ assert.doesNotMatch(hero,/data-action="hub-primary"/);
 });

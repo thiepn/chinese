@@ -97,7 +97,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v79-readback-content-integrity';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v80-learner-next-action-placement';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -211,6 +211,7 @@ let planMistakeFilter='unresolved';
 let pendingRestore=null,restoreAcknowledgement='';
 let c9RenderedHash=null;
 let c9OpenCatalogAfterHash=false; // UI navigation only; never learner evidence.
+let c9PendingPlacementFocus=false; // One-shot navigation focus, not learner data.
 let c9PendingStoryLine=null; // Session-only exact source handoff, never private evidence.
 let c9SearchFocusPending=false;
 function alertUser(message,type='info'){const target=$('alert-banner');target.textContent=message;target.className=`alert ${type}`;if(type==='error')target.setAttribute('role','alert');else target.setAttribute('role','status');}
@@ -227,12 +228,20 @@ document.addEventListener('keydown',e=>{
 function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}syncC9Shell(current,{due:dueCards(state).length,storageReady:Boolean(db)});document.title=`${C9_ROUTE_LABELS[current]||'Home'} | THIEPN Chinese`;}
 function gated(){return `<div class="permission-note" role="note"><strong>Demo curriculum, not official HSK</strong><p>These ${DEMO_LESSONS.length} original Mandarin examples show how the app will work. They have not undergone independent linguistic review. The official 2025 HSK lists are not included or claimed as mastered.</p></div>`}
 
+function focusC9Placement(){
+ const anchor=root.querySelector('#c9-placement-anchor');
+ if(!anchor)return false;
+ const target=root.querySelector('#c9-placement-question')||anchor;
+ target.scrollIntoView({block:'start',behavior:'auto'});
+ target.focus({preventScroll:true});
+ return true;
+}
 function onboardingPanel(){const p=state.placement, suggestion=placementSuggestion(state);
  if(p?.status==='skipped')return '';
- if(p?.status==='completed')return `<section class="simple-panel onboarding-panel"><div><p class="eyebrow">OPTIONAL STARTING POINT</p><h2>Placement check complete</h2><p>${suggestion.correct}/${suggestion.total} correct. Suggested starting point: original demo lesson ${findLesson(suggestion.lessonId).order}. This is not a proficiency certificate or completed lessons.</p></div><div class="button-row">${action('placement-lesson','Open suggested lesson →','button primary',`data-id="${suggestion.lessonId}"`)}</div></section>`;
+ if(p?.status==='completed')return `<section id="c9-placement-anchor" tabindex="-1" class="simple-panel onboarding-panel"><div><p class="eyebrow">OPTIONAL STARTING POINT</p><h2>Placement check complete</h2><p>${suggestion.correct}/${suggestion.total} correct. Suggested starting point: original demo lesson ${findLesson(suggestion.lessonId).order}. This is not a proficiency certificate or completed lessons.</p></div><div class="button-row">${action('placement-lesson','Open suggested lesson →','button primary',`data-id="${suggestion.lessonId}"`)}</div></section>`;
  const active=p?.status==='active',q=active?placementQuestion(p.answers.length):null;
- return `<section class="simple-panel onboarding-panel" aria-label="Optional introduction"><div><p class="eyebrow">WELCOME · OPTIONAL DEMONSTRATION PLACEMENT</p><h2>${active?'What do you already recognize?':'Find a comfortable starting point.'}</h2><p>${active?`Question ${p.answers.length+1} of ${PLACEMENT_TOTAL}. Your choices are saved, but they do not mark lessons as studied.`:'Choose a short recognition check or start with the first lesson. No account required.'}</p></div>
- ${active?`<div class="placement-question"><p lang="zh-Hans" class="placement-hanzi">${esc(q.hanzi)}</p><p>${esc(q.prompt)}</p><div class="choice-list" role="group" aria-label="Choose the character meaning">${q.options.map((option,i)=>action('placement-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(option)}`,'choice',`data-option="${esc(option)}"`)).join('')}</div></div>`:
+ return `<section id="c9-placement-anchor" tabindex="-1" class="simple-panel onboarding-panel" aria-label="Optional introduction"><div><p class="eyebrow">WELCOME · OPTIONAL DEMONSTRATION PLACEMENT</p><h2>${active?'What do you already recognize?':'Find a comfortable starting point.'}</h2><p>${active?`Question ${p.answers.length+1} of ${PLACEMENT_TOTAL}. Your choices are saved, but they do not mark lessons as studied.`:'Choose a short recognition check or start with the first lesson. No account required.'}</p></div>
+ ${active?`<div id="c9-placement-question" tabindex="-1" class="placement-question" aria-label="Current optional placement question"><p lang="zh-Hans" class="placement-hanzi">${esc(q.hanzi)}</p><p>${esc(q.prompt)}</p><div class="choice-list" role="group" aria-label="Choose the character meaning">${q.options.map((option,i)=>action('placement-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(option)}`,'choice',`data-option="${esc(option)}"`)).join('')}</div></div>`:
  `<div class="button-row">${action('placement-start','Take 6-question check →','button primary')}${action('placement-skip','Start from lesson one','button outline')}</div>`}
  ${active?`<div class="button-row">${action('placement-skip','Skip assessment','button outline')}</div>`:''}</section>`;
 }
@@ -2543,7 +2552,18 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
 
  if(name==='hub-go'){const target=button.dataset.route;if(LEARNING_DESTINATIONS.some(d=>d.route===target)||['progress','settings','practice','journey','block','ladder','wordbook','senses','workshop'].includes(target))return go(target);return;}
  if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)return act({dataset:{action:'c9-lesson-open',id:item.lessonId}});if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
- if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
+ if(name==='hub-resume'){
+   const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);
+   if(!session)return alertUser('No saved session remains for this activity.');
+   if(session.kind==='placement'){
+    if(route()==='today')return focusC9Placement();
+    c9PendingPlacementFocus=true;
+    const accepted=go('today');
+    if(!accepted)c9PendingPlacementFocus=false;
+    return accepted;
+   }
+   return go(session.route);
+  }
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
  if(name==='hub-lesson')return act({dataset:{action:'c9-lesson-open',id}});
  if(name==='hub-dialogue')return act({dataset:{action:'c9-media-open-dialogue',id}});
@@ -2849,9 +2869,28 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   alertUser(`Local data read OK · revision ${disk.revision} · ${disk.events.length} review events. ${estimate?.quota?`Browser storage estimate: ${Math.round((estimate.usage||0)/1048576)} / ${Math.round(estimate.quota/1048576)} MB.`:''} Persistence: ${persist===true?'requested/granted':persist===false?'not guaranteed':'unknown'}. Export a backup for device-loss recovery.`);
  }catch(e){alertUser(`Storage check failed: ${e.message}`,'error');}return;}
 
- if(name==='placement-start'||name==='placement-restart'){const ok=await mutate(s=>startPlacement({...structuredClone(s),placement:null}));if(ok&&route()!=='today')go('today');return;}
- if(name==='placement-answer'){const response=button.dataset.option||'';return mutate(s=>answerPlacement(s,response));}
- if(name==='placement-skip'){return mutate(s=>skipPlacement(s));}
+ if(name==='placement-start'||name==='placement-restart'){
+   const ok=await mutate(s=>startPlacement({...structuredClone(s),placement:null}));
+   if(ok){
+    if(route()==='today')focusC9Placement();
+    else{
+     c9PendingPlacementFocus=true;
+     if(!go('today'))c9PendingPlacementFocus=false;
+    }
+   }
+   return ok;
+  }
+ if(name==='placement-answer'){
+   const ok=await mutate(s=>answerPlacement(s,button.dataset.option||''));
+   if(ok)focusC9Placement();
+   return ok;
+  }
+ if(name==='placement-skip'){
+   const openFirst=state.placement?.status!=='active'&&route()==='today';
+   const ok=await mutate(s=>skipPlacement(s));
+   if(ok&&openFirst)return c9OpenAuthoredLesson(DEMO_LESSONS[0].id);
+   return ok;
+  }
  if(name==='placement-lesson'||name==='coach-open-lesson')return c9OpenAuthoredLesson(id);
  if(name==='coach-practice'){guidedFocus='weak';guidedLimit=10;return go('practice');}
  if(name==='connected-session'){guidedFocus='connected';guidedLimit=10;return go('practice');}
@@ -3316,7 +3355,11 @@ window.addEventListener('hashchange',()=>{
   const heading=root.querySelector('#c9-browse-title');
   if(heading){heading.setAttribute('tabindex','-1');heading.scrollIntoView({block:'start'});heading.focus({preventScroll:true});}
  }
- announceC9Route(C9_ROUTE_LABELS[destination]||'Home',$('main'));
+ if(c9PendingPlacementFocus&&destination==='today'){
+   c9PendingPlacementFocus=false;
+   focusC9Placement();
+  }
+  announceC9Route(C9_ROUTE_LABELS[destination]||'Home',$('main'));
 if(c9ReturnFocus){
  const focus=root.querySelector('#'+c9ReturnFocus);
  c9ReturnFocus=null;
