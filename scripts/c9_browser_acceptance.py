@@ -460,6 +460,15 @@ def main():
                             reveal.click()
                         if right not in page.locator(".p36-correction").inner_text():
                             raise AssertionError("P36 "+gid+" source-owned correct target not revealed")
+                        if gid=="g78":
+                            page.locator('.p36-ext-actions [data-action="p36-repair"][data-id="g78"]').click()
+                            page.wait_for_function("()=>location.hash==='#/workshop'")
+                            if "P36 · REPAIR THE CONTEXTUAL GRAMMAR" not in page.locator(".learning-studio").inner_text():
+                                raise AssertionError("Native P36 repair action did not reach original Workshop")
+                            if "我不听清楚广播。" not in page.locator(".learning-studio").inner_text():
+                                raise AssertionError("Original same-context error lost in Workshop")
+                            if "我听不清楚广播。" in page.locator(".practice-hanzi").all_inner_texts():
+                                raise AssertionError("Reference incorrectly exposed before learner response")
                     if errors:raise RuntimeError("; ".join(errors[:2]))
                     return "P36 g65/g75/g78/g94 wrong-versus-target source continuity at "+str(width)+"px"
                 check("P36 original contextual correction "+str(width),p36_same_context_repair)
@@ -2380,7 +2389,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v87-contextual-p36-repair"
+                current="character-study-working-v88-native-p36-repair-workflow"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2403,7 +2412,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v87-contextual-p36-repair');
+                    keys.includes('character-study-working-v88-native-p36-repair-workflow');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
