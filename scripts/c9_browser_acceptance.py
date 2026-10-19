@@ -392,6 +392,41 @@ def main():
                     return "Native original g19/g54 have 3 distinct authored choices, correct and incorrect outcomes at "+str(width)+"px"
                 check("P25 original grammar three-choice cloze "+str(width),source_grammar_cloze_options)
                 ctx.close()
+            # Source-to-English translation alignment: transport vocabulary
+            # must not identify a generic 车 as bus or 车站 as railway station.
+            # Verify native grammar models on both desktop and mobile.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def grammar_context_and_translation():
+                    open_route(page,"grammar/g12")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.wait_for(state="visible")
+                    if "Where is the train station?" not in lesson.inner_text():
+                        raise AssertionError("Original train-station translation missing")
+                    lesson.locator('[data-action="grammar-mode"][data-mode="transformation"]').click()
+                    task=lesson.locator(".p25-task")
+                    if "Ask where the train station is." not in task.inner_text():
+                        raise AssertionError("Original g12 transfer context changed")
+                    chunks=task.locator('[data-action="grammar-chunk"]')
+                    if not chunks.filter(has_text="火车站").count() or chunks.filter(has_text="车站").count()!=1:
+                        raise AssertionError("Original train station transfer does not use specific 火车站")
+                    open_route(page,"grammar/g73")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.wait_for(state="visible")
+                    cards=lesson.locator(".p25-examples article")
+                    first=cards.first.inner_text()
+                    if "公交车已经到了。" not in first or "Gōngjiāo chē yǐjīng dào le." not in first or "The bus has already arrived." not in first:
+                        raise AssertionError("Original g73 Mandarin / tone-marked pinyin / English bus example misaligned")
+                    if "车已经到了。" in first and "公交车已经到了。" not in first:
+                        raise AssertionError("Generic car incorrectly presented as bus")
+                    open_route(page,"grammar/g75")
+                    second=page.locator(".p25-examples article").nth(1).inner_text()
+                    if "这个问题我还没听懂。" not in second or "I still haven't understood the spoken question." not in second:
+                        raise AssertionError("Original listening-result translation not aligned with 听懂")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Native g12/g73/g75 Mandarin, contextual translation, and original model continuity at "+str(width)+"px"
+                check("V1 source-backed grammar translation alignment "+str(width),grammar_context_and_translation)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2308,7 +2343,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v85-authored-grammar-cloze-options"
+                current="character-study-working-v86-original-grammar-context-accuracy"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2331,7 +2366,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v85-authored-grammar-cloze-options');
+                    keys.includes('character-study-working-v86-original-grammar-context-accuracy');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

@@ -16,7 +16,7 @@ export const P36_GRAMMAR_B=[
   [
    "这个问题我还没听懂。",
    "Zhège wèntí wǒ hái méi tīng dǒng.",
-   "I haven't understood this question when hearing it yet."
+   "I still haven't understood the spoken question."
   ],
   "懂",
   [

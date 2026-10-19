@@ -311,8 +311,8 @@ export const P36_GRAMMAR_A=[
   "Do not use 还不到了 to state that arrival has not happened yet.",
   "已",
   [
-   "车已经到了。",
-   "Chē yǐjīng dào le.",
+   "公交车已经到了。",
+   "Gōngjiāo chē yǐjīng dào le.",
    "The bus has already arrived."
   ],
   [
@@ -325,7 +325,7 @@ export const P36_GRAMMAR_A=[
    "正在",
    "还是"
   ],
-  "车已经还没到了。",
+  "公交车已经还没到了。",
   [
    "Tell a friend you have not finished your homework yet.",
    "我还没做完作业。",
