@@ -82,7 +82,7 @@ import {previewBackup,restoreRequiresAcknowledgement,MAX_BACKUP_BYTES,exportSave
 import {COURSE_COMPANIONS,companionForLesson,nearbyCompanions} from './course-companion.mjs';
 import {PINYIN_INITIALS,PINYIN_FINALS,PINYIN_SECTIONS,soundQuestion,evaluateSoundQuestion} from './pinyin-foundations.mjs';
 import {renderPinyinScreen,soundPrimer} from './pinyin-screen.mjs';
-import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarQuestion,gradeGrammarQuestion,nextGrammarLesson} from './grammar-course.mjs';
+import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarIdFromHash,grammarQuestion,gradeGrammarQuestion,nextGrammarLesson} from './grammar-course.mjs';
 import {renderGrammarScreen,grammarLessonList} from './grammar-screen.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,SENTENCE_MODES,findLibrarySentence,searchSentences,sentenceQuestion,hasSentenceMode,sentencePracticeId,toggleSentenceSaved,gradeSentenceChoice,sentenceBookmarked} from './sentence-library.mjs';
 import {renderSentenceScreen,sentenceResultsPanel} from './sentence-screen.mjs';
@@ -97,7 +97,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v89-contextual-grammar-cloze';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v90-grammar-three-digit-route';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -491,7 +491,7 @@ function vocabularyTodayPanel(){
  const selected=state.vocabularyJourney?.key?findWord(state.vocabularyJourney.key):introduced.at(-1);
  return `<section class="simple-panel p23-today-vocabulary"><div class="panel-heading"><div><p class="eyebrow">VOCABULARY IN CONTEXT</p><h2>${state.vocabularyJourney?'Resume your word journey':'Learn a complete Chinese word'}</h2></div><span class="muted">${introduced.length} independently introduced words</span></div><p>${selected?`Continue with ${esc(selected.hanzi)} (${esc(selected.pinyin)}): ${esc(selected.senses[0])}.`:'Discover a complete word, explore its examples, then practice meaning, contextual usage, pronunciation, written recall and listening.'}</p><div class="button-row">${selected?(state.vocabularyJourney?action('vocabulary-resume','Resume saved word journey →','button primary'):action('vocabulary-start','Continue word study →','button primary',`data-id="${esc(selected.key)}"`)):action('vocabulary-discover','Browse original vocabulary →','button primary')}${action('open-wordbook-practice','Vocabulary studio →','button outline')}</div></section>`;
 }
-function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2})/)||[])[1];return findGrammarLesson(id)?id:grammarSelected;}
+function selectedGrammarId(){return grammarIdFromHash(location.hash)||grammarSelected;}
 function renderGrammar(){
  const selected=selectedGrammarId();
  const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,p36ShowModel,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
@@ -3247,11 +3247,11 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
 // Browser history can switch the historical lesson ID without switching routes.
 // Resolve only genuine original IDs; malformed hashes never install a new source.
 function c9HashLearningSource(screen,hash){
+ if(screen==='grammar')return grammarIdFromHash(hash);
  const patterns={
   learn:/^#\/learn\/(demo-\d{2,3})$/,
   stories:/^#\/stories\/(story-\d{2,4})$/,
   dialogues:/^#\/dialogues\/(dialogue-\d{2,4})$/,
-  grammar:/^#\/grammar\/(g\d{2})$/,
   sentences:/^#\/sentences\/(sent-\d{3})$/,
   pathway:/^#\/pathway\/(path-\d{2})$/
  };
@@ -3260,7 +3260,6 @@ function c9HashLearningSource(screen,hash){
  return screen==='stories'?(findStory(id)?id:null):
   screen==='dialogues'?(findDialogue(id)?id:null):
   screen==='learn'?(findLesson(id)?id:null):
-  screen==='grammar'?(findGrammarLesson(id)?id:null):
   screen==='sentences'?(findLibrarySentence(id)?id:null):
   screen==='pathway'?(findPathwayMission(id)?id:null):null;
 }

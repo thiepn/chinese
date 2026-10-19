@@ -38,6 +38,14 @@ export const GRAMMAR_CHAPTERS=Object.freeze(chapters.map(ch=>Object.freeze({...c
  lessons:Object.freeze(GRAMMAR_LESSONS.filter(lesson=>lesson.chapter===ch.name).map(l=>l.id))})));
 const byId=new Map(GRAMMAR_LESSONS.map(l=>[l.id,l]));
 export function findGrammarLesson(id){return byId.get(id)||null;}
+/** Resolve an exact canonical source from a grammar deep link.
+ * Two- and three-digit IDs belong to the same original 164-lesson course.
+ * Reject partial matches so g128 can never silently display g12.
+ */
+export function grammarIdFromHash(hash){
+ const id=/^#\/grammar\/(g\d{2,3})$/.exec(String(hash??''))?.[1];
+ return id&&byId.has(id)?id:null;
+}
 export const GRAMMAR_MODES=Object.freeze(['meaning','cloze','ordering','transformation','production']);
 export function grammarWritingTaskId(id,mode){return 'grammar:'+id+':'+mode;}
 export const GRAMMAR_PRACTICE_TASKS=Object.freeze(GRAMMAR_LESSONS.flatMap(lesson=>

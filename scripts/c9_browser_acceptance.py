@@ -473,6 +473,39 @@ def main():
                     return "P36 g65/g75/g78/g94 wrong-versus-target source continuity at "+str(width)+"px"
                 check("P36 original contextual correction "+str(width),p36_same_context_repair)
                 ctx.close()
+            # Exact original grammar deep links: g128 previously resolved as
+            # g12 because the route parser captured only two digits.
+            # Cover cold load, same-route transitions, reload and Back/Forward.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def canonical_grammar_deep_links():
+                    cases=(("g01","Basic subject–verb–object order"),
+                           ("g99","Simultaneous activities with 一边…一边…"),
+                           ("g100","Sequence and planning with 先…再…"),
+                           ("g128","An outcome that survives a condition"),
+                           ("g164","Qualified consequence in formal writing"))
+                    for gid,title in cases:
+                        open_route(page,"grammar/"+gid)
+                        page.locator(".p25-lesson h2").filter(has_text=title).wait_for(state="visible")
+                        actual=page.locator(".p25-lesson h2").inner_text().strip()
+                        if actual!=title:
+                            raise AssertionError("Original "+gid+" rendered wrong lesson: "+actual)
+                        if page.evaluate("location.hash")!="#/grammar/"+gid:
+                            raise AssertionError("Original grammar deep link was rewritten: "+gid)
+                    page.reload(wait_until="domcontentloaded")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-1][1]).wait_for(state="visible")
+                    page.evaluate("location.hash='#/grammar/g128'")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-2][1]).wait_for(state="visible")
+                    page.evaluate("location.hash='#/grammar/g164'")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-1][1]).wait_for(state="visible")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-2][1]).wait_for(state="visible")
+                    if page.evaluate("location.hash")!="#/grammar/g128":
+                        raise AssertionError("Back navigation lost the original g128 identity")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Canonical g01/g99/g100/g128/g164 direct links, reload and Back at "+str(width)+"px"
+                check("V1 exact 2- and 3-digit grammar deep links "+str(width),canonical_grammar_deep_links)
+                ctx.close()
             # P46 g128: 虽然 could be a grammatical factual concession, but
             # the original authored target is hypothetical "even if". Show
             # the source meaning before grading, not only in answer feedback.
@@ -480,6 +513,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def contextual_advanced_cloze():
                     open_route(page,"grammar/g128")
+                    page.locator(".p25-lesson h2").filter(has_text="An outcome that survives a condition").wait_for(state="visible")
                     practice=page.locator(".p25-practice")
                     practice.locator('[data-action="grammar-mode"][data-mode="cloze"]').click()
                     practice=page.locator(".p25-practice")
@@ -2424,7 +2458,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v89-contextual-grammar-cloze"
+                current="character-study-working-v90-grammar-three-digit-route"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2447,7 +2481,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v89-contextual-grammar-cloze');
+                    keys.includes('character-study-working-v90-grammar-three-digit-route');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

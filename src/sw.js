@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v89-contextual-grammar-cloze';
+const CACHE='character-study-working-v90-grammar-three-digit-route';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
