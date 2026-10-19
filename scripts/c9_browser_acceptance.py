@@ -429,6 +429,41 @@ def main():
                     return "Native g12/g73/g75 Mandarin, contextual translation, and original model continuity at "+str(width)+"px"
                 check("V1 source-backed grammar translation alignment "+str(width),grammar_context_and_translation)
                 ctx.close()
+            # P36 learner-facing grammar repair must present one scene, not a
+            # wrong unrelated example beside a model about another subject.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p36_same_context_repair():
+                    checks=[
+                        ("g65","我今天早上没买了三瓶水。","我今天早上买了三瓶水。"),
+                        ("g75","我听了懂老师的话。","我听懂了老师的话。"),
+                        ("g78","我不听清楚广播。","我听不清楚广播。"),
+                        ("g94","因为下雨，我们就坐公交车。","如果下雨，我们就坐公交车。")
+                    ]
+                    for gid,wrong,right in checks:
+                        open_route(page,"grammar/"+gid)
+                        panel=page.locator(".p36-teaching-ext")
+                        panel.wait_for(state="visible")
+                        negative=panel.locator(".p36-correction > div").first.inner_text()
+                        if wrong not in negative:
+                            raise AssertionError("P36 "+gid+" shows unrelated original correction: "+negative)
+                        if panel.locator('[data-action="p36-repair"][data-id="'+gid+'"]').count()!=1:
+                            raise AssertionError("P36 "+gid+" original correction handoff missing")
+                        if gid=="g78":
+                            teaching=page.locator(".p25-teaching").inner_text()
+                            if "能看懂" not in teaching or "听不清楚" not in teaching:
+                                raise AssertionError("g78 still confuses modal 能 with potential complement")
+                            if "Potential complements: V得懂 versus V不懂" not in page.locator(".p25-lesson").inner_text():
+                                raise AssertionError("g78 title still misidentifies positive potential construction")
+                        reveal=panel.locator('[data-action="p36-toggle-model"]')
+                        if reveal.count()==1 and "Reveal reference" in reveal.inner_text():
+                            reveal.click()
+                        if right not in page.locator(".p36-correction").inner_text():
+                            raise AssertionError("P36 "+gid+" source-owned correct target not revealed")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "P36 g65/g75/g78/g94 wrong-versus-target source continuity at "+str(width)+"px"
+                check("P36 original contextual correction "+str(width),p36_same_context_repair)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2345,7 +2380,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v86-original-grammar-context-accuracy"
+                current="character-study-working-v87-contextual-p36-repair"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2368,7 +2403,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v86-original-grammar-context-accuracy');
+                    keys.includes('character-study-working-v87-contextual-p36-repair');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

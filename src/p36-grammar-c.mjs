@@ -23,7 +23,7 @@ export const P36_GRAMMAR_C=[
    "比",
    "一样"
   ],
-  "天气比越来越冷了。",
+  "课程比越来越有趣了。",
   [
    "Say that the classes are becoming more interesting.",
    "课程越来越有趣了。",
@@ -61,7 +61,7 @@ export const P36_GRAMMAR_C=[
    "再",
    "也"
   ],
-  "他今天再忘了带书。",
+  "我想又听一遍录音。",
   [
    "Say you want to listen to the recording once more.",
    "我想再听一遍录音。",
@@ -99,7 +99,7 @@ export const P36_GRAMMAR_C=[
    "才",
    "都"
   ],
-  "他七点才到了学校，所以到得特别早。",
+  "火车八点才到了。",
   [
    "Say the train arrived as early as eight.",
    "火车八点就到了。",
@@ -137,7 +137,7 @@ export const P36_GRAMMAR_C=[
    "也",
    "都"
   ],
-  "我也在图书馆看书，所以一直没离开。",
+  "朋友也在楼下等我。",
   [
    "Say your friend is still waiting downstairs.",
    "朋友还在楼下等我。",
@@ -175,7 +175,7 @@ export const P36_GRAMMAR_C=[
    "有",
    "是"
   ],
-  "我有说一点儿中文。",
+  "我会用这台电脑吗？",
   [
    "Ask whether you may use this computer.",
    "我可以用这台电脑吗？",
@@ -213,7 +213,7 @@ export const P36_GRAMMAR_C=[
    "会",
    "能"
   ],
-  "我现在得了回家。",
+  "考试以前我必须复习。",
   [
    "Tell a friend you should review before the exam.",
    "考试以前我应该复习。",
@@ -251,7 +251,7 @@ export const P36_GRAMMAR_C=[
    "是",
    "在"
   ],
-  "我明天去书店是买词典。",
+  "我去公园是练习说中文。",
   [
    "Say you will go to the park to practise speaking.",
    "我去公园练习说中文。",
@@ -289,7 +289,7 @@ export const P36_GRAMMAR_C=[
    "或者",
    "和"
   ],
-  "你坐地铁还是坐公交车吗？",
+  "你想喝茶还是水吗？",
   [
    "Ask whether your friend wants tea or water.",
    "你想喝茶还是水？",
@@ -328,7 +328,7 @@ export const P36_GRAMMAR_C=[
    "但是",
    "还是"
   ],
-  "因为今天很冷，但是我穿了外套。",
+  "因为我很累，但是今天在家休息。",
   [
    "Explain that you are staying home because you are tired.",
    "因为我很累，所以今天在家休息。",
@@ -366,7 +366,7 @@ export const P36_GRAMMAR_C=[
    "因为",
    "虽然"
   ],
-  "因为你有时间，我们就一起复习，时间还没确定。",
+  "因为下雨，我们就坐公交车。",
   [
    "Propose taking the bus if it rains.",
    "如果下雨，我们就坐公交车。",

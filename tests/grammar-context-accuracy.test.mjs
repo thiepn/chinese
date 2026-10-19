@@ -36,7 +36,8 @@ test('g73 completed arrival model names the bus in all three original languages'
  assert.equal(gradeGrammarQuestion(m,m.answer).correct,true);
  assert.equal(GRAMMAR_PRACTICE_TASKS.find(x=>x.id==='grammar:g73:meaning').hanzi,m.model.hanzi);
  const repair=P36_REPAIR_CASES.find(x=>x.grammarId==='g73');
- assert.ok(repair);assert.equal(repair.incorrect,'公交车已经还没到了。');
+ assert.ok(repair);assert.equal(repair.incorrect,'我已经还没做完作业。');
+ assert.equal(repair.correct.hanzi,'我还没做完作业。');
  assert.equal(repair.taskId,'p36:fix:g73');
 });
 

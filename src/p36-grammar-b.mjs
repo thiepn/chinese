@@ -1,7 +1,7 @@
 /** P36 original grammar volume B: result, directional, manner and comparative structures. */
 export const P36_GRAMMAR_B=[
  [
-  "Result complement 看懂: understand through reading or listening",
+  "Result complements 看懂 / 听懂: understanding what you see or hear",
   "Actions & aspect",
   "verb + 懂",
   "A result complement shows the achieved outcome of an action. 看懂 means to understand what was read; 看 names the activity without guaranteeing comprehension.",
@@ -23,7 +23,7 @@ export const P36_GRAMMAR_B=[
    "完",
    "到"
   ],
-  "我终于看了懂这句话。",
+  "我听了懂老师的话。",
   [
    "Say that you understood what the teacher said.",
    "我听懂了老师的话。",
@@ -60,7 +60,7 @@ export const P36_GRAMMAR_B=[
    "懂",
    "到"
   ],
-  "她已经看书完了。",
+  "我写今天的笔记完了。",
   [
    "Say you've finished writing today's notes.",
    "我写完今天的笔记了。",
@@ -98,7 +98,7 @@ export const P36_GRAMMAR_B=[
    "过",
    "着"
   ],
-  "我在书包里找了到钥匙。",
+  "我找了到手机。",
   [
    "Say that you found your phone.",
    "我找到手机了。",
@@ -114,12 +114,12 @@ export const P36_GRAMMAR_B=[
   ]
  ],
  [
-  "Potential complement: 能看懂 versus 看不懂",
+  "Potential complements: V得懂 versus V不懂",
   "Actions & aspect",
   "verb + 得 / 不 + result",
-  "Potential complements describe whether the speaker can achieve the result under the circumstances. 看得懂 means able to understand a text; 看不懂 means not able to understand it.",
-  "看不懂 does not simply mean refusing to read. It concerns comprehensibility or ability, often improved with explanation or practice.",
-  "Don't insert 不 before the whole verb when you mean inability to obtain the result.",
+  "Potential complements place 得 or 不 between an action and the result: 看得懂 and 听得懂 express achievable comprehension; 看不懂 and 听不清楚 express a result the speaker cannot achieve. 能看懂 uses the separate modal 能 before a result complement and is not itself the V得懂 construction.",
+  "看得懂 means the text is comprehensible; 看不懂 means it is not. Similarly, 听得懂 means spoken language is understood. The contrast is whether a result can be reached, not whether the person chooses to act.",
+  "When describing inability to understand or hear clearly, use V不懂 or V不清楚 rather than negating the entire verb with 不. Do not mistake 能 + verb for the potential-complement construction.",
   "懂",
   [
    "这段中文我看不懂。",
@@ -136,7 +136,7 @@ export const P36_GRAMMAR_B=[
    "没",
    "了"
   ],
-  "这段中文我不看懂。",
+  "我不听清楚广播。",
   [
    "Say that I cannot hear the announcement clearly.",
    "我听不清楚广播。",
@@ -173,7 +173,7 @@ export const P36_GRAMMAR_B=[
    "上去",
    "下来"
   ],
-  "老师在楼上说，请上去。",
+  "你上去吧，我在三楼。",
   [
    "From upstairs, invite a friend to come up.",
    "你上来吧，我在三楼。",
@@ -211,7 +211,7 @@ export const P36_GRAMMAR_B=[
    "出",
    "回"
   ],
-  "弟弟走出教室去了。",
+  "我从商店里走进去。",
   [
    "Describe coming out of a shop.",
    "我从商店里走出来了。",
@@ -248,7 +248,7 @@ export const P36_GRAMMAR_B=[
    "的",
    "地"
   ],
-  "她中文说的很好。",
+  "同学汉字写的很整齐。",
   [
    "Describe your classmate writing characters neatly.",
    "同学汉字写得很整齐。",
@@ -286,7 +286,7 @@ export const P36_GRAMMAR_B=[
    "很",
    "比"
   ],
-  "这张票比贵了。",
+  "这顿饭比好吃了！",
   [
    "Say that this meal is delicious.",
    "这顿饭太好吃了！",
@@ -324,7 +324,7 @@ export const P36_GRAMMAR_B=[
    "和",
    "很"
   ],
-  "这条路和那条路近一点儿。",
+  "黑色外套跟蓝色外套暖和一点儿。",
   [
    "Compare two coats and say black is a little warmer.",
    "黑色外套比蓝色外套暖和一点儿。",
@@ -362,7 +362,7 @@ export const P36_GRAMMAR_B=[
    "更",
    "不同"
   ],
-  "我的书包比你的书包一样大。",
+  "这间教室比那间一样安静。",
   [
    "Say this classroom is as quiet as that one.",
    "这间教室跟那间一样安静。",
