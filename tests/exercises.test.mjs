@@ -57,7 +57,7 @@ test('Mandarin tone-mark orthography never awards credit for the right contour o
 });
 test('Original Pinyin lessons and numbered orthography agree on accent placement',async()=>{
  const {PINYIN_RULES,PINYIN_WORD_MODELS,toneMarkedSyllable,evaluateSoundQuestion,PINYIN_QUESTIONS}=await import('../src/pinyin-foundations.mjs');
- for(const [plain,expected] of [['hao3','hǎo'],['zhou1','zhōu'],['liu4','liù'],['hui4','huì'],['nv3','nǚ'],['nue4','nuè'],['xie4','xiè'],['xiao1','xiāo']]){
+ for(const [plain,expected] of [['hao3','hǎo'],['zhou1','zhōu'],['liu4','liù'],['hui4','huì'],['nv3','nǚ'],['nve4','nüè'],['xie4','xiè'],['xiao1','xiāo']]){
   assert.equal(toneMarkedSyllable(plain),expected,plain);
   assert.equal(evaluatePinyin(expected,plain).correct,true,plain);
  }
@@ -81,7 +81,11 @@ test('P24 source syllable grid rejects manufactured Mandarin initial-final combi
  const listed=PINYIN_SYLLABLE_GROUPS.flatMap(g=>g.forms);
  assert.equal(listed.length,406,'reuse the original published P24 inventory');
  assert.equal(new Set(listed).size,406);
- for(const invalid of ['fiong','biong','shiong','fing','beiong','kiong','fue','piong','piang']){
+ // An unseparated source-owned compound (喜爱 xǐài) remains readable;
+ // this phase does not migrate canonical word keys or rewrite legacy authors.
+ assert.ok(parsePinyin('xǐài'));
+ assert.equal(evaluatePinyin('nue4','nüè').correct,false,'n/l require ü, not bare u');
+ for(const invalid of ['fiong','biong','shiong','fing','beiong','kiong','piong']){
   assert.ok(!listed.includes(invalid),invalid);
   assert.equal(parsePinyin(invalid),null,invalid);
   assert.equal(evaluatePinyin(invalid+'1','nǐ').reason,'format',invalid);

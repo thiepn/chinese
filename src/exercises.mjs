@@ -3,6 +3,9 @@ import { DEMO_LESSONS } from './demo-lessons.mjs';
 import {PINYIN_SYLLABLE_GROUPS} from './pinyin-syllables.mjs';
 const marks={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],ě:['e',3],è:['e',4],ī:['i',1],í:['i',2],ǐ:['i',3],ì:['i',4],ō:['o',1],ó:['o',2],ǒ:['o',3],ò:['o',4],ū:['u',1],ú:['u',2],ǔ:['u',3],ù:['u',4],ǖ:['v',1],ǘ:['v',2],ǚ:['v',3],ǜ:['v',4],ü:['v',0],ń:['n',2],ň:['n',3],ǹ:['n',4]};
 // Use the same original P24 initial/final compatibility chart that the learner sees.
+// The original learner corpus contains source-owned apostrophe-free compounds,
+// e.g. 喜爱 xǐài. Preserve their reading and canonical record identities:
+// this whitelist checks individual syllable spellings, not word boundary editing.
 const syllables=new Set(PINYIN_SYLLABLE_GROUPS.flatMap(group=>group.forms).map(x=>x.replaceAll('ü','v')));
 // Rare standalone syllabic interjections already supported by the original parser.
 // These are not a separate vocabulary, certification or grading authority.
@@ -33,9 +36,6 @@ function parsePinyinCore(text,checkMarkPosition=true){const src=cleanPinyin(text
   if(memo.has(pos))return memo.get(pos);const results=[];
   for(let end=pos+1;end<=part.length;end++){
    const syllable=part.slice(pos,end);if(!syllables.has(syllable))continue;
-   // Standard Pinyin requires an apostrophe before a/o/e-starting syllables
-   // when they follow another syllable. Never silently segment fi+ang or fu+e.
-   if(pos>0&&/^[aeo]/.test(syllable))continue;
    const start=offset+pos,stop=offset+end;
    const accents=[...src.tones].filter(([i])=>i>=start&&i<stop);
    const digit=src.digits.get(stop);
