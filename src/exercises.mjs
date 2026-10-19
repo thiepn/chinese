@@ -9,7 +9,8 @@ const marks={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],�
 const syllables=new Set(PINYIN_SYLLABLE_GROUPS.flatMap(group=>group.forms).map(x=>x.replaceAll('ü','v')));
 // Rare standalone syllabic interjections already supported by the original parser.
 // These are not a separate vocabulary, certification or grading authority.
-for(const exceptional of ['m','n','ng','hm'])syllables.add(exceptional);
+const standaloneSyllabic=new Set(['m','n','ng','hm']);
+for(const exceptional of standaloneSyllabic)syllables.add(exceptional);
 /** Hanyu Pinyin tone marks follow the vowel-priority spelling rules.
  * The rule is shared by written-answer grading and the existing P24 chart.
  * The special syllabic n supports the original ń/ň/ǹ notation.
@@ -35,7 +36,14 @@ function parsePinyinCore(text,checkMarkPosition=true){const src=cleanPinyin(text
  for(const part of parts){if(!part){offset++;continue}const memo=new Map();function solve(pos){if(pos===part.length)return [];
   if(memo.has(pos))return memo.get(pos);const results=[];
   for(let end=pos+1;end<=part.length;end++){
-   const syllable=part.slice(pos,end);if(!syllables.has(syllable))continue;
+   const syllable=part.slice(pos,end);
+   // Written 儿化 appends r to one existing syllable, e.g. 玩儿 wánr.
+   // This r is not an independent neutral-tone syllable.
+   const erhua=syllable.endsWith('r')&&syllable!=='er'&&syllables.has(syllable.slice(0,-1));
+   if(!syllables.has(syllable)&&!erhua)continue;
+   // Standalone syllabic interjections cannot form fake multipart blends:
+   // bi+o+ng is not a canonical biong syllable.
+   if(standaloneSyllabic.has(syllable)&&(pos!==0||end!==part.length))continue;
    const start=offset+pos,stop=offset+end;
    const accents=[...src.tones].filter(([i])=>i>=start&&i<stop);
    const digit=src.digits.get(stop);

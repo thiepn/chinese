@@ -85,6 +85,9 @@ test('P24 source syllable grid rejects manufactured Mandarin initial-final combi
  // this phase does not migrate canonical word keys or rewrite legacy authors.
  assert.ok(parsePinyin('xǐài'));
  assert.equal(evaluatePinyin('nue4','nüè').correct,false,'n/l require ü, not bare u');
+ assert.deepEqual(parsePinyin('wánr'),[{syllable:'wanr',tone:2}], 'Erhua suffix is one rhotacized syllable');
+ assert.equal(evaluatePinyin('wánr','wánr').correct,true,'Preserve original 玩儿 reading and grading');
+ assert.equal(parsePinyin('biong'),null,'ng interjection cannot create an invalid blend');
  for(const invalid of ['fiong','biong','shiong','fing','beiong','kiong','piong']){
   assert.ok(!listed.includes(invalid),invalid);
   assert.equal(parsePinyin(invalid),null,invalid);
