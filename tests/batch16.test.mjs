@@ -75,5 +75,5 @@ test('weak-priority selection retains count and no duplicate lessons',()=>{
 test('new UI and service worker register context trail, skill coach and offline modules',async()=>{
  const [app,css,sw]=await Promise.all(['app.mjs','styles.css','sw.js'].map(x=>readFile(`src/${x}`,'utf8')));
  for(const key of ['renderTrailPanel','trail-start','trail-answer','trail-next','blockDailyInsights'])assert.ok(app.includes(key),key);
- assert.match(css,/\.context-trail/);assert.match(sw,/character-study-working-v83/);assert.match(sw,/context-trail\.mjs/);assert.match(sw,/block-coach\.mjs/);
+ assert.match(css,/\.context-trail/);assert.match(sw,/character-study-working-v84/);assert.match(sw,/context-trail\.mjs/);assert.match(sw,/block-coach\.mjs/);
 });

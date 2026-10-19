@@ -332,6 +332,35 @@ def main():
                     return "Original 你好 invalid haǒ rejected; nǐ hǎo / ni3 hao3 accepted with no state changes at "+str(width)+"px"
                 check("P24 marked-vowel answer integrity "+str(width),pinyin_written_accent_authority)
                 ctx.close()
+            # Reuse the original P24 chart as the input authority: invalid
+            # manufactured sound combinations must receive format feedback,
+            # while genuine authored Pinyin prompts still accept their keys.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def checked_syllable_inventory():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="syllables"]').click()
+                    panel=page.locator(".p24-panel")
+                    if "Not every theoretical initial and final forms a Mandarin syllable" not in panel.inner_text():
+                        raise AssertionError("P24 source chart does not explain valid-combination boundary")
+                    if page.locator('.p24-chart [data-syllable="fiong"]').count():
+                        raise AssertionError("Invented f+iong was added to the original chart")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    for _ in range(4):
+                        page.locator('.p24-exercise [data-action="pinyin-reveal"]').click()
+                        page.locator('.p24-exercise [data-action="pinyin-next"]').click()
+                    if page.locator('.p24-exercise-target').inner_text().strip()!="你好":
+                        raise AssertionError("Original source-owned 你好 task identity was changed")
+                    page.locator("#pinyin-answer-entry").fill("fiong1")
+                    page.locator('.p24-exercise [data-action="pinyin-answer"]').click()
+                    feedback=page.locator(".p24-exercise .reader-feedback").inner_text()
+                    if "Correct answer" in feedback or "Use valid tone-marked pinyin" not in feedback:
+                        raise AssertionError("Made-up Mandarin syllable did not get format correction")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original chart forbids fiong and P24 native 你好 answer rejects invented syllable at "+str(width)+"px"
+                check("P24 canonical syllable combinations "+str(width),checked_syllable_inventory)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2248,7 +2277,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v83-pinyin-written-accent-integrity"
+                current="character-study-working-v84-canonical-syllable-chart"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2271,7 +2300,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v83-pinyin-written-accent-integrity');
+                    keys.includes('character-study-working-v84-canonical-syllable-chart');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

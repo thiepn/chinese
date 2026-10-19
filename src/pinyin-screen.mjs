@@ -22,7 +22,7 @@ function soundGrid(section,selected,action,esc){
 function syllables(selected,action,esc){
  const current=PINYIN_SYLLABLE_GROUPS.find(g=>g.forms.includes(selected))?selected:'ma';
  return `<section class="simple-panel p24-panel"><p class="eyebrow">COMBINE INITIALS AND FINALS</p><h2>Interactive Pinyin syllable chart</h2>
- <p>Select a syllable to see all four written tones and the unmarked neutral spelling. The examples are illustrative, not an exhaustive official syllable inventory.</p>
+ <p>Select a syllable to see all four written tones and the unmarked neutral spelling. The displayed spellings are the original valid initial–final combinations this app can check. Not every theoretical initial and final forms a Mandarin syllable; this is not an official HSK inventory.</p>
  <div class="p24-syllable-current"><strong>${esc(current)}</strong><div>${[1,2,3,4,5].map(n=>`<span><b>${esc(toneMarkedSyllable(current+n)||current)}</b><small>${n===5?'neutral':`tone ${n}`}</small></span>`).join('')}</div></div>
  <div class="p24-chart">${PINYIN_SYLLABLE_GROUPS.map(g=>`<section><h3>${g.initial==='none'?'Zero initial / y / w':esc(g.initial)}</h3><div>${g.forms.map(text=>action('pinyin-syllable',esc(text),'p24-chart-syllable '+(text===current?'selected':''),`data-syllable="${esc(text)}" aria-pressed="${text===current}"`)).join('')}</div></section>`).join('')}</div></section>`;
 }

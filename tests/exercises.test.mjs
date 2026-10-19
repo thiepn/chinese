@@ -73,3 +73,38 @@ test('Original Pinyin lessons and numbered orthography agree on accent placement
   assert.equal(evaluateSoundQuestion(q,row.pinyin).correct,true,row.hanzi);
  }
 });
+
+// The published P24 406-entry chart and the written-answer engine now share the
+// same permitted syllable spellings. Impossible blends must not be rewarded.
+test('P24 source syllable grid rejects manufactured Mandarin initial-final combinations',async()=>{
+ const {PINYIN_SYLLABLE_GROUPS}=await import('../src/pinyin-syllables.mjs');
+ const listed=PINYIN_SYLLABLE_GROUPS.flatMap(g=>g.forms);
+ assert.equal(listed.length,406,'reuse the original published P24 inventory');
+ assert.equal(new Set(listed).size,406);
+ for(const invalid of ['fiong','biong','shiong','fing','beiong','kiong','fue','piong','piang']){
+  assert.ok(!listed.includes(invalid),invalid);
+  assert.equal(parsePinyin(invalid),null,invalid);
+  assert.equal(evaluatePinyin(invalid+'1','nǐ').reason,'format',invalid);
+  assert.equal(evaluatePinyin(invalid+'1',invalid+'1').reason,'source',invalid);
+ }
+ for(const valid of ['bā','píng','zhōng','xiōng','qióng','nǚ','lüè','yuán','wǒ','xiè','zhī','er2']){
+  assert.ok(parsePinyin(valid),valid);
+ }
+});
+test('P24 exact authored syllable inventory remains compatible with original character and word sources',async()=>{
+ const {PINYIN_SYLLABLE_GROUPS:fromFoundations,PINYIN_WORD_MODELS}=await import('../src/pinyin-foundations.mjs');
+ const {PINYIN_SYLLABLE_GROUPS:fromAuthority}=await import('../src/pinyin-syllables.mjs');
+ assert.equal(fromFoundations,fromAuthority,'P24 UI and validation share exact original objects');
+ for(const group of fromAuthority){
+  for(const syllable of group.forms){
+   const parsed=parsePinyin(syllable.replaceAll('ü','v')+'1');
+   assert.ok(parsed,syllable);
+   assert.equal(parsed.map(s=>s.syllable).join(''),syllable.replaceAll('ü','v'),syllable);
+  }
+ }
+ for(const lesson of DEMO_LESSONS){
+  assert.ok(parsePinyin(lesson.pinyin),'Original character '+lesson.id+' '+lesson.pinyin);
+  for(const word of lesson.words)assert.ok(parsePinyin(word.pinyin),'Original word '+lesson.id+' '+word.hanzi+' '+word.pinyin);
+ }
+ for(const model of PINYIN_WORD_MODELS)assert.ok(parsePinyin(model.pinyin),'Original P24 word '+model.hanzi);
+});

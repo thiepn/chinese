@@ -1,11 +1,12 @@
 /** Deterministic demo exercise generator and conservative evaluation. Does not make HSK claims. */
 import { DEMO_LESSONS } from './demo-lessons.mjs';
+import {PINYIN_SYLLABLE_GROUPS} from './pinyin-syllables.mjs';
 const marks={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],ě:['e',3],è:['e',4],ī:['i',1],í:['i',2],ǐ:['i',3],ì:['i',4],ō:['o',1],ó:['o',2],ǒ:['o',3],ò:['o',4],ū:['u',1],ú:['u',2],ǔ:['u',3],ù:['u',4],ǖ:['v',1],ǘ:['v',2],ǚ:['v',3],ǜ:['v',4],ü:['v',0],ń:['n',2],ň:['n',3],ǹ:['n',4]};
-const initials=['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s','y','w',''];
-const finals=['iang','iong','uang','ueng','ang','eng','ing','ong','iao','ian','uan','uen','uai','uei','ao','ai','ei','ou','ia','ie','iu','in','un','ui','ua','uo','ue','ve','an','en','er','uo','a','o','e','i','u','v','m','n','ng'];
-const syllables=new Set(initials.flatMap(i=>finals.map(f=>i+f)));
-// Less common syllables are safe for input matching, while invented syllables are rejected.
-for(const special of ['zhi','chi','shi','ri','zi','ci','si','yuan','yun','yue','yin','ying','wu','yi','you','ye','ya','yo','yong','yong','wen','wang','weng','nue','lue','lv','nv','hm'])syllables.add(special);
+// Use the same original P24 initial/final compatibility chart that the learner sees.
+const syllables=new Set(PINYIN_SYLLABLE_GROUPS.flatMap(group=>group.forms).map(x=>x.replaceAll('ü','v')));
+// Rare standalone syllabic interjections already supported by the original parser.
+// These are not a separate vocabulary, certification or grading authority.
+for(const exceptional of ['m','n','ng','hm'])syllables.add(exceptional);
 /** Hanyu Pinyin tone marks follow the vowel-priority spelling rules.
  * The rule is shared by written-answer grading and the existing P24 chart.
  * The special syllabic n supports the original ń/ň/ǹ notation.
@@ -32,6 +33,9 @@ function parsePinyinCore(text,checkMarkPosition=true){const src=cleanPinyin(text
   if(memo.has(pos))return memo.get(pos);const results=[];
   for(let end=pos+1;end<=part.length;end++){
    const syllable=part.slice(pos,end);if(!syllables.has(syllable))continue;
+   // Standard Pinyin requires an apostrophe before a/o/e-starting syllables
+   // when they follow another syllable. Never silently segment fi+ang or fu+e.
+   if(pos>0&&/^[aeo]/.test(syllable))continue;
    const start=offset+pos,stop=offset+end;
    const accents=[...src.tones].filter(([i])=>i>=start&&i<stop);
    const digit=src.digits.get(stop);
