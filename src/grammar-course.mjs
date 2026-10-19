@@ -81,8 +81,8 @@ export function grammarQuestion(lessonId,mode='meaning'){
  if(mode==='cloze'){
   const cloze=lesson.cloze;
   return {id:'grammar:'+lesson.id+':cloze',mode,kind:'choice',
-   prompt:'Which expression completes the Chinese sentence?',
-   context:cloze.masked,answer:cloze.answer,
+   prompt:'Complete the sentence for the intended meaning.',
+   context:cloze.masked,targetMeaning:cloze.completed.english,answer:cloze.answer,
    options:seededOptions(cloze.answer,cloze.options.slice(1),lesson.order,{authoredCloze:true}),
    explanation:lesson.contrast,model:cloze.completed,grammar:lesson,taskId:grammarWritingTaskId(lesson.id,mode)};
  }
@@ -101,7 +101,12 @@ export function grammarQuestion(lessonId,mode='meaning'){
 }
 export function gradeGrammarQuestion(q,response){
  if(!q||!GRAMMAR_MODES.includes(q.mode))throw Error('Unknown grammar exercise');
- if(q.kind==='choice')return evaluateAnswer(response,q.answer,'choice');
+ if(q.kind==='choice'){
+  const outcome=evaluateAnswer(response,q.answer,'choice');
+  if(q.mode==='cloze'&&!outcome.correct)return {...outcome,
+   message:'This choice does not match the intended meaning. Another connector may be grammatical in a different context.'};
+  return outcome;
+ }
  const normalized=text=>String(text||'').normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
  const correct=normalized(response)===normalized(q.answer);
  return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':

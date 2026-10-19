@@ -78,8 +78,8 @@ test('P69 temporary personal text is never sent into approved stories, scoring o
 test('New original learning surfaces retain paired offline revision and source assets',()=>{
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v88-native-p36-repair-workflow/);
- assert.match(sw,/character-study-working-v88-native-p36-repair-workflow/);
+ assert.match(app,/character-study-working-v89-contextual-grammar-cloze/);
+ assert.match(sw,/character-study-working-v89-contextual-grammar-cloze/);
  assert.ok(sw.includes("'./character-c9.mjs'"));
  assert.ok(sw.includes("'./media-c9.mjs'"));
 });

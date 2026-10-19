@@ -473,6 +473,41 @@ def main():
                     return "P36 g65/g75/g78/g94 wrong-versus-target source continuity at "+str(width)+"px"
                 check("P36 original contextual correction "+str(width),p36_same_context_repair)
                 ctx.close()
+            # P46 g128: 虽然 could be a grammatical factual concession, but
+            # the original authored target is hypothetical "even if". Show
+            # the source meaning before grading, not only in answer feedback.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def contextual_advanced_cloze():
+                    open_route(page,"grammar/g128")
+                    practice=page.locator(".p25-practice")
+                    practice.locator('[data-action="grammar-mode"][data-mode="cloze"]').click()
+                    practice=page.locator(".p25-practice")
+                    meaning=practice.locator(".p25-task-meaning")
+                    if meaning.inner_text().strip()!="Even if time is short, we cannot change the data casually.":
+                        raise AssertionError("Hypothetical original g128 target meaning not exposed before grading")
+                    hanzi=practice.locator(".p25-task-context")
+                    if "＿＿" not in hanzi.inner_text() or hanzi.get_attribute("lang")!="zh-Hans":
+                        raise AssertionError("Original g128 Chinese cloze prompt missing or language mislabeled")
+                    options=practice.locator('.choice-list [data-action="grammar-answer"]')
+                    got=set(options.evaluate_all("(items)=>items.map(x=>x.dataset.option)"))
+                    if got!={"即使","虽然","因为"}:
+                        raise AssertionError("Original g128 exact distractors changed")
+                    practice.locator('.choice-list [data-action="grammar-answer"][data-option="虽然"]').click()
+                    feedback=practice.locator(".p25-result")
+                    if "different context" not in feedback.inner_text().lower() or "Model answer accepted" in feedback.inner_text():
+                        raise AssertionError("Source-authentic factual connector was treated as universal Mandarin error or credited")
+                    if "factual concession" not in feedback.inner_text():
+                        raise AssertionError("Source contrast distinguishing hypothetical and factual lost")
+                    open_route(page,"grammar/g128")
+                    page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                    page.locator('.p25-practice [data-action="grammar-answer"][data-option="即使"]').click()
+                    if "Model answer accepted" not in page.locator(".p25-result").inner_text():
+                        raise AssertionError("Original hypothetical connector answer incorrectly rejected")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "g128 source meaning and factual/hypothetical contrast at "+str(width)+"px"
+                check("P46 conditional meaning disambiguation "+str(width),contextual_advanced_cloze)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2389,7 +2424,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v88-native-p36-repair-workflow"
+                current="character-study-working-v89-contextual-grammar-cloze"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2412,7 +2447,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v88-native-p36-repair-workflow');
+                    keys.includes('character-study-working-v89-contextual-grammar-cloze');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
