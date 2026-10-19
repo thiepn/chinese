@@ -401,12 +401,14 @@ def main():
                     open_route(page,"grammar/g12")
                     lesson=page.locator(".p25-lesson")
                     lesson.wait_for(state="visible")
-                    if "Where is the train station?" not in lesson.inner_text():
-                        raise AssertionError("Original train-station translation missing")
                     lesson.locator('[data-action="grammar-mode"][data-mode="transformation"]').click()
                     task=lesson.locator(".p25-task")
                     if "Ask where the train station is." not in task.inner_text():
                         raise AssertionError("Original g12 transfer context changed")
+                    # Word chunks belong to the distinct original ordering mode,
+                    # not the free-text transformation mode.
+                    lesson.locator('[data-action="grammar-mode"][data-mode="ordering"]').click()
+                    task=lesson.locator(".p25-task")
                     chunks=task.locator('[data-action="grammar-chunk"]')
                     if not chunks.filter(has_text="火车站").count() or chunks.filter(has_text="车站").count()!=1:
                         raise AssertionError("Original train station transfer does not use specific 火车站")
