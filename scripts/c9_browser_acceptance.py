@@ -296,6 +296,42 @@ def main():
                     return "Authentic 不/一 source tones versus spoken sandhi in "+str(width)+"px Chromium"
                 check("V1 original Mandarin citation/spoken sandhi "+str(width),sandhi_citation_reading)
                 ctx.close()
+            # P24 original source answer key must not grade a correctly toned
+            # but incorrectly marked vowel as correct, on desktop or Android-sized Chrome.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def pinyin_written_accent_authority():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    # Original question index 4 is 你好 nǐ hǎo; never insert a
+                    # new shadow exercise or learner evidence to test spelling.
+                    for _ in range(4):
+                        page.locator(".p24-exercise [data-action='pinyin-reveal']").click()
+                        page.locator(".p24-exercise [data-action='pinyin-next']").click()
+                    if page.locator(".p24-exercise-target").inner_text().strip()!="你好":
+                        raise AssertionError("Original 你好 question/answer identity unexpectedly changed")
+                    page.locator("#pinyin-answer-entry").fill("nǐ haǒ")
+                    page.locator(".p24-exercise [data-action='pinyin-answer']").click()
+                    feedback=page.locator(".p24-exercise .reader-feedback")
+                    if "Review the teaching" not in feedback.inner_text():
+                        raise AssertionError("Misplaced third-tone mark received positive credit")
+                    if "correct vowel" not in feedback.inner_text():
+                        raise AssertionError("Incorrect tone mark placement lacks actionable feedback")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    for _ in range(4):
+                        page.locator(".p24-exercise [data-action='pinyin-reveal']").click()
+                        page.locator(".p24-exercise [data-action='pinyin-next']").click()
+                    page.locator("#pinyin-answer-entry").fill("ni3 hao3")
+                    page.locator(".p24-exercise [data-action='pinyin-answer']").click()
+                    feedback=page.locator(".p24-exercise .reader-feedback")
+                    if "Correct answer" not in feedback.inner_text():
+                        raise AssertionError("Correct numbered original 你好 Pinyin was rejected")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original 你好 invalid haǒ rejected; nǐ hǎo / ni3 hao3 accepted with no state changes at "+str(width)+"px"
+                check("P24 marked-vowel answer integrity "+str(width),pinyin_written_accent_authority)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2212,7 +2248,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v82-sandhi-lexical-context"
+                current="character-study-working-v83-pinyin-written-accent-integrity"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2235,7 +2271,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v82-sandhi-lexical-context');
+                    keys.includes('character-study-working-v83-pinyin-written-accent-integrity');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

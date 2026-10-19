@@ -35,3 +35,41 @@ test('cloze exercises preserve the target sentence and avoid fabricated HSK memb
 test('all 74 original lessons remain well-formed and contain two related words',()=>{
  assert.ok(DEMO_LESSONS.length>=74);for(const lesson of DEMO_LESSONS.slice(0,74)){assert.equal(lesson.words.length,2);assert.ok(lesson.sentence.hanzi.includes(lesson.hanzi));for(const w of lesson.words)assert.ok(w.hanzi.includes(lesson.hanzi));}
 });
+
+test('Mandarin tone-mark orthography never awards credit for the right contour on the wrong vowel',()=>{
+ for(const [invalid,correct,numbers] of [
+  ['haǒ','hǎo','hao3'],      // a has priority over o
+  ['zhoū','zhōu','zhou1'],  // ou marks o, not u
+  ['lìu','liù','liu4'],      // shortened iu marks u
+  ['hùi','huì','hui4'],      // shortened ui marks i
+  ['nǜe','nüè','nve4'],    // üe marks e
+  ['xìe','xiè','xie4'],    // e precedes i
+  ['xiaō','xiāo','xiao1']   // a before o
+ ]){
+  assert.equal(evaluatePinyin(invalid,correct).correct,false,invalid);
+  assert.equal(evaluatePinyin(invalid,correct).reason,'spelling',invalid);
+  assert.equal(evaluatePinyin(correct,numbers).correct,true,correct);
+  assert.equal(evaluatePinyin(numbers,correct).correct,true,numbers);
+ }
+ assert.equal(evaluatePinyin('nǐ haǒ','nǐ hǎo').reason,'spelling');
+ assert.equal(evaluatePinyin('hǎo3','hǎo').correct,true,'matching redundant numeric tone is historical accepted input');
+ assert.equal(evaluatePinyin('nǐ','nì').reason,'tone','a real tonal contrast remains separate from orthographic location');
+});
+test('Original Pinyin lessons and numbered orthography agree on accent placement',async()=>{
+ const {PINYIN_RULES,PINYIN_WORD_MODELS,toneMarkedSyllable,evaluateSoundQuestion,PINYIN_QUESTIONS}=await import('../src/pinyin-foundations.mjs');
+ for(const [plain,expected] of [['hao3','hǎo'],['zhou1','zhōu'],['liu4','liù'],['hui4','huì'],['nv3','nǚ'],['nue4','nuè'],['xie4','xiè'],['xiao1','xiāo']]){
+  assert.equal(toneMarkedSyllable(plain),expected,plain);
+  assert.equal(evaluatePinyin(expected,plain).correct,true,plain);
+ }
+ for(const r of PINYIN_RULES.filter(x=>x.id!=='apostrophe'&&x.id!=='spacing')){
+  const [numeric,marked]=r.conversion.split(' → ');
+  assert.ok(marked, r.id);
+  assert.equal(evaluatePinyin(marked,numeric).correct,true,r.id);
+ }
+ for(const row of PINYIN_WORD_MODELS){
+  const q=PINYIN_QUESTIONS.find(x=>x.kind==='pinyin'&&x.displayText===row.hanzi);
+  assert.ok(q,row.hanzi);
+  assert.equal(q.answer,row.pinyin);
+  assert.equal(evaluateSoundQuestion(q,row.pinyin).correct,true,row.hanzi);
+ }
+});
