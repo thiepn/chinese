@@ -361,6 +361,37 @@ def main():
                     return "Original chart forbids fiong and P24 native 你好 answer rejects invented syllable at "+str(width)+"px"
                 check("P24 canonical syllable combinations "+str(width),checked_syllable_inventory)
                 ctx.close()
+            # Grammar cloze must retain original distractors, including phrases
+            # that contain the correct character. Otherwise g19/g54 show only
+            # the answer and produce misleading "assessed" activity.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def source_grammar_cloze_options():
+                    for lesson_id,correct,wrong in (
+                        ("g19","下午",("是下午","在下午是")),
+                        ("g54","下周",("是下周","在下周是"))):
+                        open_route(page,"grammar/"+lesson_id)
+                        page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                        practice=page.locator(".p25-practice")
+                        options=practice.locator('.choice-list [data-action="grammar-answer"]')
+                        options.first.wait_for(state="visible")
+                        got=options.evaluate_all("(items)=>items.map(b=>b.dataset.option)")
+                        if len(got)!=3 or set(got)!={correct,*wrong}:
+                            raise AssertionError("Original "+lesson_id+" cloze answer key/distractors lost: "+str(got))
+                        if lesson_id=="g19":
+                            options.filter(has_text="是下午").click()
+                            result=practice.locator(".p25-result")
+                            if "Learning explanation" not in result.inner_text():
+                                raise AssertionError("Original incorrect cloze option awarded model credit")
+                            open_route(page,"grammar/"+lesson_id)
+                            page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                            page.locator('.p25-practice .choice-list [data-action="grammar-answer"][data-option="下午"]').click()
+                            if "Model answer accepted" not in page.locator(".p25-practice .p25-result").inner_text():
+                                raise AssertionError("Original g19 exact correct cloze answer rejected")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Native original g19/g54 have 3 distinct authored choices, correct and incorrect outcomes at "+str(width)+"px"
+                check("P25 original grammar three-choice cloze "+str(width),source_grammar_cloze_options)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2277,7 +2308,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v84-canonical-syllable-chart"
+                current="character-study-working-v85-authored-grammar-cloze-options"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2300,7 +2331,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v84-canonical-syllable-chart');
+                    keys.includes('character-study-working-v85-authored-grammar-cloze-options');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);

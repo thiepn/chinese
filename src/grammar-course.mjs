@@ -57,8 +57,13 @@ export const GRAMMAR_PRACTICE_TASKS=Object.freeze(GRAMMAR_LESSONS.flatMap(lesson
    mode==='production'?lesson.examples[1].pinyin:lesson.transformation.model.pinyin
  }))
 ));
-function seededOptions(correct,alternatives,index){
- const choices=[correct,...alternatives.filter(a=>a!==correct&&!String(a).includes(correct)&&!String(correct).includes(a))];
+function seededOptions(correct,alternatives,index,{authoredCloze=false}={}){
+ // English meaning distractors should not be near-duplicate substrings.
+ // Chinese cloze options are different: authored wrong particles/phrases
+ // deliberately CONTAIN the short correct target (下午 vs 是下午).
+ // Removing those distractors made several original lessons single-answer.
+ const choices=[correct,...alternatives.filter(a=>a!==correct&&
+  (authoredCloze||(!String(a).includes(correct)&&!String(correct).includes(a))))];
  const unique=[...new Set(choices)].slice(0,4);
  const shift=(index*11+7)%unique.length;
  return [...unique.slice(shift),...unique.slice(0,shift)];
@@ -78,7 +83,7 @@ export function grammarQuestion(lessonId,mode='meaning'){
   return {id:'grammar:'+lesson.id+':cloze',mode,kind:'choice',
    prompt:'Which expression completes the Chinese sentence?',
    context:cloze.masked,answer:cloze.answer,
-   options:seededOptions(cloze.answer,cloze.options.slice(1),lesson.order),
+   options:seededOptions(cloze.answer,cloze.options.slice(1),lesson.order,{authoredCloze:true}),
    explanation:lesson.contrast,model:cloze.completed,grammar:lesson,taskId:grammarWritingTaskId(lesson.id,mode)};
  }
  const task=GRAMMAR_PRACTICE_TASKS.find(t=>t.grammarId===lesson.id&&t.mode===mode);
