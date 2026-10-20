@@ -542,6 +542,37 @@ def main():
                     return "g128 source meaning and factual/hypothetical contrast at "+str(width)+"px"
                 check("P46 conditional meaning disambiguation "+str(width),contextual_advanced_cloze)
                 ctx.close()
+            # P47 g141: both examples must teach counterexpectation;
+            # preserve the canonical Mandarin/Pinyin/English production task.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p47_counterexpectation():
+                    open_route(page,"grammar/g141")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.locator("h2").filter(has_text="Contrary to expectation").wait_for(state="visible")
+                    example=lesson.locator(".p25-examples article").nth(1).inner_text()
+                    if "他为了减少错误反复修改报告，结果反而增加了错误。" not in example:
+                        raise AssertionError("g141 counterexpectation example missing")
+                    if "Tā wèile jiǎnshǎo cuòwù fǎnfù xiūgǎi bàogào" not in example:
+                        raise AssertionError("g141 Pinyin does not match authored Mandarin")
+                    if "ended up introducing more mistakes instead" not in example:
+                        raise AssertionError("g141 English does not explain unexpected outcome")
+                    if "报告反而变得更可信了" in example:
+                        raise AssertionError("Old predictable positive result still taught as 反而")
+                    lesson.locator('[data-action="grammar-mode"][data-mode="production"]').click()
+                    practice=page.locator(".p25-practice")
+                    if "ended up introducing more mistakes instead" not in practice.locator(".p25-task-context").inner_text():
+                        raise AssertionError("g141 production prompt uses outdated English")
+                    practice.locator("#grammar-entry").fill("他为了减少错误反复修改报告，结果反而增加了错误。")
+                    practice.locator('[data-action="grammar-answer"]').click()
+                    result=page.locator(".p25-result")
+                    result.wait_for(state="visible")
+                    if "Model answer accepted" not in result.inner_text():
+                        raise AssertionError("Canonical g141 exact-model answer rejected")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original g141 source, model and production practice at "+str(width)+"px"
+                check("P47 authentic counterexpectation grammar "+str(width),p47_counterexpectation)
+                ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
             for width,height,mobile in ((390,844,True),(1440,900,False)):
@@ -2458,7 +2489,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v90-grammar-three-digit-route"
+                current="character-study-working-v91-p47-counterexpectation"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2481,7 +2512,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v90-grammar-three-digit-route');
+                    keys.includes('character-study-working-v91-p47-counterexpectation');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
