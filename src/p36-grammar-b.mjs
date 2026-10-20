@@ -138,10 +138,10 @@ export const P36_GRAMMAR_B=[
   ],
   "我不听清楚广播。",
   [
-   "Say that I cannot hear the announcement clearly.",
+   "Say that I cannot hear the broadcast clearly.",
    "我听不清楚广播。",
    "Wǒ tīng bu qīngchu guǎngbō.",
-   "I can't hear the announcement clearly.",
+   "I can't hear the broadcast clearly.",
    [
     "我",
     "听不清楚",
@@ -288,10 +288,10 @@ export const P36_GRAMMAR_B=[
   ],
   "这顿饭比好吃了！",
   [
-   "Say that this meal is delicious.",
+   "Exclaim that this meal is so delicious.",
    "这顿饭太好吃了！",
    "Zhè dùn fàn tài hǎochī le!",
-   "This meal is delicious!",
+   "This meal is so delicious!",
    [
     "这顿饭",
     "太",
