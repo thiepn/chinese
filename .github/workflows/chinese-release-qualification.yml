@@ -65,6 +65,8 @@ jobs:
         run: python scripts/c9_dialogue_editorial_acceptance.py
       - name: Local Mandarin turn-specific playback and mobile a11y acceptance
         run: python scripts/c9_dialogue_turn_playback_acceptance.py
+      - name: F1 source-backed grammar and translation desktop/mobile acceptance
+        run: python scripts/c9_f1_educational_acceptance.py
       - name: Preserve public-only UI acceptance screenshots
         if: always()
         uses: actions/upload-artifact@v4
