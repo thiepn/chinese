@@ -36,7 +36,8 @@ test('source g141 production and ordering reuse corrected authentic Mandarin/Pin
   assert.equal(q.answer,hanzi);
   assert.equal(task.hanzi,hanzi);
   assert.equal(task.pinyin,pinyin);
-  assert.equal(q.model.english,english);
+  assert.equal(q.model.english,mode==='transformation'?lesson.transformation.prompt:english);
+  assert.equal(task.english,mode==='transformation'?lesson.transformation.prompt:english);
   assert.equal(gradeGrammarQuestion(q,hanzi).correct,true);
   assert.equal(gradeGrammarQuestion(q,'他没有随便猜测年份，报告反而变得更可信了。').correct,false);
  }
