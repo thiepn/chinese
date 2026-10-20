@@ -46,7 +46,9 @@ with sync_playwright() as playwright:
             assert chinese not in task.inner_text(), grammar_id
 
         open_lesson("g90")
-        page.locator('[data-action="grammar-translation"]').click()
+        translation_toggle = page.locator('[data-action="grammar-translation"]')
+        if "Reveal English" in translation_toggle.inner_text():
+            translation_toggle.click()
         expect(page.locator(".p25-examples")).to_contain_text(
             "You must knock before entering the classroom.")
         assert "in this example" not in page.locator(".p25-examples").inner_text()
