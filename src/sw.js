@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v91-p47-counterexpectation';
+const CACHE='character-study-working-v92-f1-source-accuracy';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
