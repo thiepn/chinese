@@ -20,6 +20,14 @@ import {DIALOGUES} from './dialogues.mjs';
 import {evaluateAnswer} from './exercises.mjs';
 
 const groups=['Foundations','Questions','Nouns & classifiers','Time & location','Actions & aspect','Connections & comparisons'];
+// Keep translation-choice alternatives near the authentic teaching source.
+// Arbitrary translations from distant course levels make advanced questions
+// answerable by topic alone rather than by understanding the Mandarin.
+const grammarSourceBands=[GRAMMAR_ROWS_A,GRAMMAR_ROWS_B,P32_GRAMMAR_ROWS_A,P32_GRAMMAR_ROWS_B,
+ P36_GRAMMAR_ROWS,P40_GRAMMAR_ROWS,P46_GRAMMAR_ROWS,P47_GRAMMAR_ROWS,
+ P50_GRAMMAR_ROWS,P51_GRAMMAR_ROWS];
+const sourceBandByGrammarId=new Map(grammarSourceBands.flatMap((rows,band)=>
+ rows.map(row=>[row[0],band])));
 const chapters=Object.freeze(groups.map((name,i)=>Object.freeze({id:'chapter-'+(i+1),name,number:i+1})));
 const lessonByChar=new Map(DEMO_LESSONS.map(lesson=>[lesson.hanzi,lesson.id]));
 function example(data){return Object.freeze({hanzi:data[0],pinyin:data[1],english:data[2]});}
@@ -76,14 +84,24 @@ function seededOptions(correct,alternatives,index,{authoredCloze=false}={}){
  const shift=(index*11+7)%unique.length;
  return [...unique.slice(shift),...unique.slice(0,shift)];
 }
+function sourcedMeaningAlternatives(lesson){
+ const band=sourceBandByGrammarId.get(lesson.id);
+ const peers=GRAMMAR_LESSONS.filter(l=>l.id!==lesson.id);
+ const rank=l=>(sourceBandByGrammarId.get(l.id)===band?0:2)+
+   (l.chapter===lesson.chapter?0:1);
+ peers.sort((a,b)=>rank(a)-rank(b)||
+   Math.abs(a.order-lesson.order)-Math.abs(b.order-lesson.order)||
+   a.order-b.order);
+ return peers.map(l=>l.examples[0].english);
+}
 export function grammarQuestion(lessonId,mode='meaning'){
  const lesson=findGrammarLesson(lessonId);if(!lesson||!GRAMMAR_MODES.includes(mode))return null;
  if(mode==='meaning'){
-  const rivals=GRAMMAR_LESSONS.filter(l=>l.id!==lesson.id).map(l=>l.examples[0].english);
+  const rivals=sourcedMeaningAlternatives(lesson);
   return {id:'grammar:'+lesson.id+':meaning',mode,kind:'choice',
    prompt:'What does this complete sentence mean?',context:lesson.examples[0].hanzi,
    answer:lesson.examples[0].english,
-   options:seededOptions(lesson.examples[0].english,[...rivals.slice((lesson.order*3)%rivals.length),...rivals],lesson.order),
+   options:seededOptions(lesson.examples[0].english,rivals,lesson.order),
    explanation:lesson.explanation,model:lesson.examples[0],grammar:lesson,taskId:grammarWritingTaskId(lesson.id,mode)};
  }
  if(mode==='cloze'){
