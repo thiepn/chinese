@@ -50,7 +50,7 @@ with sync_playwright() as playwright:
 
     # Present URL, unusable cached 404: must not report a complete shell.
     page.evaluate("""async () => {
-      const name=(await caches.keys()).find(x=>x==='character-study-working-v91-p47-counterexpectation');
+      const name=(await caches.keys()).find(x=>x==='character-study-working-v92-f1-source-accuracy');
       if(!name)throw Error('current compiled cache absent');
       const cache=await caches.open(name);
       await cache.put(new URL('./startup.mjs',location.href),
