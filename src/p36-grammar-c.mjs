@@ -206,7 +206,7 @@ export const P36_GRAMMAR_C=[
   [
    "进教室以前必须先敲门。",
    "Jìn jiàoshì yǐqián bìxū xiān qiāo mén.",
-   "You must knock before entering the classroom in this example."
+   "You must knock before entering the classroom."
   ],
   "得",
   [
@@ -291,7 +291,7 @@ export const P36_GRAMMAR_C=[
   ],
   "你想喝茶还是水吗？",
   [
-   "Ask whether your friend wants tea or water.",
+   "Ask your friend to choose between tea and water.",
    "你想喝茶还是水？",
    "Nǐ xiǎng hē chá háishi shuǐ?",
    "Would you like tea or water?",
