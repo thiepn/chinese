@@ -1759,8 +1759,10 @@ def main():
                         raise AssertionError("Original P43 Mandarin editor not linked")
                     first=cards.first
                     first.locator("details summary").click()
-                    if first.locator('details [lang="zh-Hans"]').count()!=2:
-                        raise AssertionError("Both independently authored source anchors missing")
+                    if first.locator('details [lang="zh-Hans"]').count()!=0:
+                        raise AssertionError("P76 source evidence leaked before any native answer")
+                    if "P75 original evidence withheld" not in first.locator("details").inner_text():
+                        raise AssertionError("P76 prior source must stay gated until native answer")
                     dialogue_links=first.locator('[data-action="c9-media-open-dialogue"]')
                     if dialogue_links.count()!=2:
                         raise AssertionError("P76 previous and new original dialogue links are not both present")
@@ -1776,6 +1778,11 @@ def main():
                         raise AssertionError("Original dialogue question writer missing")
                     page.locator(".dialogue-quiz [data-action='dialogue-answer']").first.click()
                     page.locator(".c9-p75-dialogue-evidence").wait_for(state="visible")
+                    first=page.locator(".c9-p76-case-grid article").first
+                    if first.locator('details [lang="zh-Hans"]').count()!=1:
+                        raise AssertionError("P76 did not reveal the single now-answered source while other two remain hidden")
+                    if "P77 follow-up evidence withheld" not in first.locator("details").inner_text():
+                        raise AssertionError("P76 unattempted follow-up evidence leaked after prior answer")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("P76 paired-source argument lab overflow "+str(width))
                     if errors:raise RuntimeError("; ".join(errors[:2]))
