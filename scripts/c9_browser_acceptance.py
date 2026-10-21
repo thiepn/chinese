@@ -2496,7 +2496,7 @@ def main():
                 legacy="character-study-working-v58-c9-49-context-transfer"
                 previous="character-study-working-v76-device-offline-readiness"
                 preceding="character-study-working-v77-dialogue-editorial-evidence"
-                current="character-study-working-v95-f4-source-fidelity"
+                current="character-study-working-v96-hsk-target-free-entry"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2519,7 +2519,7 @@ def main():
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
                      !keys.includes('character-study-working-v76-device-offline-readiness')&&
                      !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
-                    keys.includes('character-study-working-v95-f4-source-fidelity');
+                    keys.includes('character-study-working-v96-hsk-target-free-entry');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
