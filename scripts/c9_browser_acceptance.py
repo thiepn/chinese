@@ -1781,7 +1781,7 @@ def main():
                     first=page.locator(".c9-p76-case-grid article").first
                     if first.locator('details [lang="zh-Hans"]').count()!=1:
                         raise AssertionError("P76 did not reveal the single now-answered source while other two remain hidden")
-                    if "P77 follow-up evidence withheld" not in first.locator("details").inner_text():
+                    if "P77 follow-up evidence withheld" not in first.locator("details").text_content():
                         raise AssertionError("P76 unattempted follow-up evidence leaked after prior answer")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("P76 paired-source argument lab overflow "+str(width))
