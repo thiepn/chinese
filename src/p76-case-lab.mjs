@@ -105,7 +105,7 @@ export function renderP76CaseLab(state,activeId,act,esc){
    (c.nextDialogueId?act('c9-media-open-dialogue','Continue with an original follow-up conversation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.nextDialogueId)+'"'):'')+
    act('c9-media-open-story','Read separate P71 dossier →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
    act('c9-p71-open-composition','Compose in the original P43 editor →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(c.readingId)+'"')+
-   '</div><details class="c9-p76-evidence"><summary>Original-source comparison and grammar transfer</summary>'+
+   '</div><details><summary>Original-source comparison and grammar transfer</summary>'+
    (progress.reading.reviewed?evidence('P71 reading',c.readingEvidence)+
     '<div class="c9-p76-grammar"><strong>Attested grammar in P71</strong>'+
      c.grammar.map(g=>'<div><span lang="zh-Hans">'+esc(g.token)+'</span> · '+esc(g.title)+
