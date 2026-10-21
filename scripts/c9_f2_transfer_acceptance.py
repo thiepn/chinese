@@ -20,7 +20,7 @@ with sync_playwright() as playwright:
         card=cases()
         card.locator("details summary").click()
         expect(page.locator(".c9-p76-case-grid article")).to_have_count(5)
-        assert card.locator("details [lang='zh-Hans']").count()==0
+        assert card.locator("details .c9-p76-source-review [lang='zh-Hans']").count()==0
         assert card.locator("details [data-action='grammar-select']").count()==0
         assert "P77 follow-up evidence withheld" in card.locator("details").inner_text()
         # Only a real original reading answer may unlock this source's review.
@@ -39,7 +39,7 @@ with sync_playwright() as playwright:
             return status && !status.textContent.includes('Reading: not attempted');
         }""",timeout=15000)
         card.locator("details summary").click()
-        assert card.locator("details [lang='zh-Hans']").count()==1, card.locator(".c9-p76-status").inner_text()
+        assert card.locator("details .c9-p76-source-review [lang='zh-Hans']").count()==1, card.locator(".c9-p76-status").inner_text()
         grammar=card.locator('details [data-action="grammar-select"]')
         assert grammar.count()>=2
         assert card.locator('details [data-action="lookup-word"]').count()<=1
@@ -59,7 +59,7 @@ with sync_playwright() as playwright:
         expect(page.locator(".c9-p75-dialogue-evidence")).to_be_visible()
         card=cases()
         card.locator("details summary").click()
-        assert card.locator("details [lang='zh-Hans']").count()==2
+        assert card.locator("details .c9-p76-source-review [lang='zh-Hans']").count()==2
         assert "P77 follow-up evidence withheld" in card.locator("details").inner_text()
 
         # The P77 follow-up has its own canonical answer, not inherited credit.
@@ -69,7 +69,7 @@ with sync_playwright() as playwright:
         expect(page.locator(".c9-p75-dialogue-evidence")).to_be_visible()
         card=cases()
         card.locator("details summary").click()
-        assert card.locator("details [lang='zh-Hans']").count()==3
+        assert card.locator("details .c9-p76-source-review [lang='zh-Hans']").count()==3
         assert "P77 follow-up evidence withheld" not in card.locator("details").inner_text()
         assert "Negotiation question:" in card.locator(".c9-p76-status").inner_text()
         assert "New-evidence question:" in card.locator(".c9-p76-status").inner_text()
