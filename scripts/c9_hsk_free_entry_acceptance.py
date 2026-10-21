@@ -23,8 +23,10 @@ with sync_playwright() as p:
         source_id=first.get_attribute("data-id")
         assert source_id.startswith("demo-")
         first.click()
-        expect(page.locator(".c9-lesson-course-position")).to_be_visible()
-        assert source_id in page.url or page.locator(".c9-lesson-heading").count()>0
+        expect(page.locator("#c9-lesson-title")).to_be_visible()
+        lesson_number=int(source_id.split("-")[-1])
+        expect(page.locator(".c9-lesson-header .c9-eyebrow").first).to_contain_text(f"LESSON {lesson_number:03d} / 428")
+        expect(page.locator('[data-action="c9-learn-back"]')).to_be_visible()
 
         # Returning to learning keeps chosen difficulty in this tab.
         page.locator('[data-action="c9-learn-back"]').click()
