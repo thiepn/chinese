@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v95-f4-source-fidelity';
+const CACHE='character-study-working-v96-hsk-target-free-entry';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -24,6 +24,7 @@ const CONCEPT9_ASSETS=[
   './home-c9.mjs',
   './styles-c9-learn.css',
   './learn-hub-c9.mjs',
+  './hsk-targets-c9.mjs',
   './styles-c9-lesson.css',
   './lesson-c9.mjs',
   './styles-c9-character.css',
