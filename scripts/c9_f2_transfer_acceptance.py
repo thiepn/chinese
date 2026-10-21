@@ -32,8 +32,12 @@ with sync_playwright() as playwright:
         choices.first.click()
         expect(page.locator(".story-practice .reader-feedback")).to_be_visible()
         card=cases()
+        page.wait_for_function("""() => {
+            const status=document.querySelector('.c9-p76-case-grid article .c9-p76-status');
+            return status && !status.textContent.includes('Reading: not attempted');
+        }""",timeout=15000)
         card.locator("details summary").click()
-        assert card.locator("details [lang='zh-Hans']").count()==1
+        assert card.locator("details [lang='zh-Hans']").count()==1, card.locator(".c9-p76-status").inner_text()
         grammar=card.locator('details [data-action="grammar-select"]')
         assert grammar.count()>=2
         assert card.locator('details [data-action="lookup-word"]').count()<=1
