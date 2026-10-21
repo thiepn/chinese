@@ -22,7 +22,7 @@ with sync_playwright() as p:
             expect(practice).to_contain_text("Type the pinyin for "+hanzi)
             expect(practice.locator("#story-entry")).to_be_visible()
             assert practice.locator(".p28-evidence").count()==0, "Source answer appeared before submission"
-            assert pinyin not in practice.locator("h2").inner_text().lower(), "Target Pinyin leaked into prompt"
+            assert pinyin not in practice.locator("h3").inner_text().lower(), "Target Pinyin leaked into prompt"
             practice.locator("#story-entry").fill(pinyin)
             practice.locator('[data-action="story-check"]').click()
             evidence=page.locator(".story-practice .p28-evidence")
