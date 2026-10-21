@@ -18,6 +18,7 @@ with sync_playwright() as playwright:
             return lab.locator(".c9-p76-case-grid article").first
 
         card=cases()
+        card.locator("details summary").click()
         expect(page.locator(".c9-p76-case-grid article")).to_have_count(5)
         assert card.locator("details [lang='zh-Hans']").count()==0
         assert card.locator("details [data-action='grammar-select']").count()==0
@@ -31,6 +32,7 @@ with sync_playwright() as playwright:
         choices.first.click()
         expect(page.locator(".story-practice .reader-feedback")).to_be_visible()
         card=cases()
+        card.locator("details summary").click()
         assert card.locator("details [lang='zh-Hans']").count()==1
         grammar=card.locator('details [data-action="grammar-select"]')
         assert grammar.count()>=2
@@ -44,11 +46,13 @@ with sync_playwright() as playwright:
 
         # An original P75 answer reveals only the earlier negotiation.
         card=cases()
+        card.locator("details summary").click()
         card.locator('[data-action="c9-media-open-dialogue"]').first.click()
         expect(page.locator("#c9-native-dialogue")).to_be_visible()
         page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first.click()
         expect(page.locator(".c9-p75-dialogue-evidence")).to_be_visible()
         card=cases()
+        card.locator("details summary").click()
         assert card.locator("details [lang='zh-Hans']").count()==2
         assert "P77 follow-up evidence withheld" in card.locator("details").inner_text()
 
@@ -58,6 +62,7 @@ with sync_playwright() as playwright:
         page.locator('.dialogue-quiz [data-action="dialogue-answer"]').first.click()
         expect(page.locator(".c9-p75-dialogue-evidence")).to_be_visible()
         card=cases()
+        card.locator("details summary").click()
         assert card.locator("details [lang='zh-Hans']").count()==3
         assert "P77 follow-up evidence withheld" not in card.locator("details").inner_text()
         assert "Negotiation question:" in card.locator(".c9-p76-status").inner_text()
