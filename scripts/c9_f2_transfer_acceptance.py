@@ -26,6 +26,8 @@ with sync_playwright() as playwright:
         # Only a real original reading answer may unlock this source's review.
         card.locator('[data-action="c9-media-open-story"]').click()
         expect(page.locator("#c9-native-reading")).to_be_visible()
+        expect(page.locator("#story-choice option:checked")).to_contain_text(
+            "archive's provisional map")
         page.locator('.p28-reading-modes [data-mode="beginner-reason"]').click()
         choices=page.locator('.story-practice [data-action="story-answer"]')
         expect(choices.first).to_be_visible()
