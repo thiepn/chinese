@@ -59,7 +59,7 @@ test('HSK-level browser filters the actual lesson collection and preserves origi
  const withHistory=renderC9HSKTargets(introduced,'4',act,esc);
  assert.ok(withHistory.includes('1 / '+hskTargetLessons('4').length+' introduced'));
  assert.ok(withHistory.includes('Not introduced'));
- assert.ok(withHistory.includes('Introduced'));
+ assert.ok(withHistory.includes('Browse all '+hskTargetLessons('4').length+' lessons'));
  assert.ok(withHistory.includes('without prerequisites'));
 });
 test('Advanced targets have real original reading and mission buttons but do not masquerade as a fully mapped syllabus',()=>{
