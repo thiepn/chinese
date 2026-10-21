@@ -74,6 +74,6 @@ test('editor is source-only; still no authority to approve or grade',()=>{
  assert.doesNotMatch(mod,/\b(addReadingEvent|addSentenceEvent|updateState|gradeCard|indexedDB|localStorage|fetch)\s*\(/);
  assert.match(mod,/editorialStatus:'unreviewed'/);
  assert.match(app,/if\(name==='c9-reading-review-copy'\)/);
- assert.match(app,/character-study-working-v93-f2-evidence-transfer/);
- assert.match(sw,/character-study-working-v93-f2-evidence-transfer/);
+ assert.match(app,/character-study-working-v94-f3-source-pronunciation/);
+ assert.match(sw,/character-study-working-v94-f3-source-pronunciation/);
 });
