@@ -59,7 +59,7 @@ export function hskTargetPractice(id){
  const k=String(id);
  if(!HSK_TARGETS.some(t=>t.id===k))return Object.freeze({grammar:[],readings:[],dialogues:[],missions:[]});
  const range=GRAMMAR_RANGES[k];
- const grammar=range?GRAMMAR_LESSONS.filter(g=>{const n=Number(g.id.slice(1));return /^g\\d+$/.test(g.id)&&n>=range[0]&&n<=range[1];}):[];
+ const grammar=range?GRAMMAR_LESSONS.filter(g=>{const n=Number(g.id.slice(1));return /^g\d+$/.test(g.id)&&n>=range[0]&&n<=range[1];}):[];
  const sources=READING_SOURCES[k]||[];
  const readings=STORIES.filter(s=>sources.includes(s.beginner?.source));
  const traits=DIALOGUE_SOURCES[k]||[];
@@ -70,7 +70,7 @@ function studySources(state,id,act,esc){
  const items=hskTargetPractice(id);
  const categories=[
   ['Grammar',items.grammar,'grammar-select','grammar',g=>g.title],
-  ['Reading',items.readings,'c9-media-open-story','stories',s=>s.title],
+  ['Reading',String(id)==='6'?[]:items.readings,'c9-media-open-story','stories',s=>s.title],
   ['Listening & dialogue',items.dialogues,'c9-media-open-dialogue','dialogues',d=>d.title]
  ];
  const groups=categories.filter(([,records])=>records.length).map(([label,records,action,route,name])=>
