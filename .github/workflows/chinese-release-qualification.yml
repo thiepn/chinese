@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Source regression suite
         run: npm test
+      - name: Emit source-backed HSK 3.0 target coverage matrix
+        run: node scripts/hsk3_source_coverage.mjs
       - name: Source-to-dist and offline manifest
         run: npm run build && npm run verify
   chromium:
@@ -75,6 +77,8 @@ jobs:
         run: python scripts/c9_f4_source_accuracy_acceptance.py
       - name: HSK target direct-entry local Chromium desktop/mobile acceptance
         run: python scripts/c9_hsk_free_entry_acceptance.py
+      - name: HSK original grammar reading dialogue desktop/mobile source handoff
+        run: python scripts/c9_hsk_skill_source_acceptance.py
       - name: Preserve public-only UI acceptance screenshots
         if: always()
         uses: actions/upload-artifact@v4
