@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v75-p77-consequence-dialogues';
+const CACHE='character-study-working-v75-p77-shared-word-visuals-v1';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -30,6 +30,7 @@ const CONCEPT9_ASSETS=[
   './character-c9.mjs',
   './styles-c9-libraries.css',
   './libraries-c9.mjs',
+  './visual-lexicon-c9.mjs',
   './styles-c9-review-practice.css',
   './review-practice-c9.mjs',
   './styles-c9-media.css',
@@ -415,6 +416,20 @@ self.addEventListener('fetch',event=>{
   if(cached)return cached;
   try{
    const response=await fetch(event.request);
+   // Optional word pictures are cached only when seen, in the existing shell cache.
+   // They do not count as required offline assets or contain learner state.
+   const isVisual=url.pathname.includes('/visual-lexicon/assets/')&&
+    /^[a-z0-9-]+\.svg$/.test(url.pathname.slice(url.pathname.lastIndexOf('/')+1));
+   if(isVisual&&response.ok){
+    try{
+     await cache.put(event.request,response.clone());
+     const images=(await cache.keys()).filter(req=>{
+      const path=new URL(req.url).pathname;
+      return path.includes('/visual-lexicon/assets/')&&/^[a-z0-9-]+\.svg$/.test(path.slice(path.lastIndexOf('/')+1));
+     });
+     for(const oldest of images.slice(0,Math.max(0,images.length-12)))await cache.delete(oldest);
+    }catch{/* Image cache failure must not hide the original word. */}
+   }
    return response;
   }catch(error){
    if(event.request.mode==='navigate')
