@@ -23,7 +23,7 @@ export const P36_GRAMMAR_A=[
    "过",
    "着"
   ],
-  "我昨天没买了一本词典。",
+  "我今天早上没买了三瓶水。",
   [
    "Describe buying three bottles of water this morning.",
    "我今天早上买了三瓶水。",
@@ -61,7 +61,7 @@ export const P36_GRAMMAR_A=[
    "吗",
    "过"
   ],
-  "现在不下雨过。",
+  "商店已经关门过。",
   [
    "Tell a friend the shop is no longer open.",
    "商店已经关门了。",
@@ -99,7 +99,7 @@ export const P36_GRAMMAR_A=[
    "了",
    "着"
   ],
-  "你去着北京吗？",
+  "你吃着这道菜吗？",
   [
    "Ask whether your friend has tried this dish before.",
    "你吃过这道菜吗？",
@@ -137,7 +137,7 @@ export const P36_GRAMMAR_A=[
    "不",
    "是"
   ],
-  "我不坐过飞机。",
+  "我不去过这个博物馆。",
   [
    "Say that you have never been to this museum.",
    "我没去过这个博物馆。",
@@ -174,7 +174,7 @@ export const P36_GRAMMAR_A=[
    "了",
    "过"
   ],
-  "门开过，请进去吧。",
+  "墙上挂过一张照片。",
   [
    "Describe a picture hanging on the wall.",
    "墙上挂着一张照片。",
@@ -211,7 +211,7 @@ export const P36_GRAMMAR_A=[
    "已经",
    "过"
   ],
-  "我已经跟老师说话，现在还在说。",
+  "我已经听完中文录音了。",
   [
    "Tell someone you are listening to a Chinese recording now.",
    "我正在听中文录音。",
@@ -249,7 +249,7 @@ export const P36_GRAMMAR_A=[
    "过",
    "着"
   ],
-  "我们二十分钟等。",
+  "我昨天两个小时学习。",
   [
    "Report that you studied for two hours yesterday.",
    "我昨天学习了两个小时。",
@@ -287,7 +287,7 @@ export const P36_GRAMMAR_A=[
    "两个",
    "两点"
   ],
-  "我每个星期去两个图书馆。",
+  "我每周运动三个。",
   [
    "Say you exercise three times a week.",
    "我每周运动三次。",
@@ -311,8 +311,8 @@ export const P36_GRAMMAR_A=[
   "Do not use 还不到了 to state that arrival has not happened yet.",
   "已",
   [
-   "车已经到了。",
-   "Chē yǐjīng dào le.",
+   "公交车已经到了。",
+   "Gōngjiāo chē yǐjīng dào le.",
    "The bus has already arrived."
   ],
   [
@@ -325,7 +325,7 @@ export const P36_GRAMMAR_A=[
    "正在",
    "还是"
   ],
-  "车已经还没到了。",
+  "我已经还没做完作业。",
   [
    "Tell a friend you have not finished your homework yet.",
    "我还没做完作业。",
@@ -363,7 +363,7 @@ export const P36_GRAMMAR_A=[
    "不",
    "已经"
   ],
-  "昨天我没买了票。",
+  "我昨天没坐了地铁。",
   [
    "Say that you didn't take the metro yesterday.",
    "我昨天没坐地铁。",

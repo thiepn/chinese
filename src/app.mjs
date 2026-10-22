@@ -1,6 +1,7 @@
 import { DEMO_LESSONS, demoSearch, findLesson } from './demo-lessons.mjs';
 import {renderC9Home} from './home-c9.mjs';
 import {renderC9LearnHub,renderC9LessonBrowser,renderC9SearchResults,renderC9PathwayHub} from './learn-hub-c9.mjs';
+import {hskTargetLessons} from './hsk-targets-c9.mjs';
 import {renderC9LessonWorkspace,C9_LESSON_SECTIONS} from './lesson-c9.mjs';
 import {renderC9CharacterStudy,connectC9Writing,disconnectC9Writing} from './character-c9.mjs';
 import {renderC9VocabularyLibrary,c9WordCatalogResults,renderC9GrammarDirectory,renderC9SentenceDirectory,renderC9TypingPath,C9_WORD_FILTERS,C9_WORD_CONTEXT_FILTERS} from './libraries-c9.mjs';
@@ -12,11 +13,13 @@ import {renderC9NativeHandoff,renderC9DraftContinuation,renderC9SkillWritingRetu
 import {renderC9SkillsWorkspace,c9SkillTrack,c9SkillPhaseInTrack,c9SkillPhase,c9SkillSource,c9SkillStages,c9SkillStageId,c9SkillLinks,c9SkillNextSource} from './skills-c9.mjs';
 import {c9WritingLinkedUnit} from './writing-c9.mjs';
 import {readingReviewPacket} from './reading-editorial-c9.mjs';
+import {dialogueReviewPacket} from './dialogue-editorial-c9.mjs';
 import {renderP71BlindListening,p71ListeningPart,p71BlindStudyPrompt,P71_BLIND_MODES} from './p71-listening-c9.mjs';
 import {renderC9ReadingHub,renderC9DialogueHub,renderC9ReadingCatalog,renderC9DialogueCatalog,renderC9ReadingNavigator,renderC9ListeningWorkflow,renderC9TurnNavigator,renderC9DialogueQuestionRepair,c9DialogueQuestionRepair,renderC9P75DialogueEvidence,renderC9DialogueRoleplay,c9RoleplaySource,renderC9ReadingRecall,c9ReadingRecallSource,renderC9ReaderIntro,renderC9OriginalStoryWordSupport,renderC9PersonalTextReader,connectC9PersonalTextReader,disconnectC9PersonalTextReader} from './media-c9.mjs';
 import {renderC9ConversationCircuit,c9ConversationCircuit,c9WorkshopSourceContinuation,renderC9WorkshopSourceContinuation} from './conversation-circuit-c9.mjs';
 import {renderC9ProgressOverview,renderC9SearchIntro,renderC9SearchAssist,renderC9SettingsIntro,renderC9Secondary} from './utilities-c9.mjs';
-import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES} from './accessibility-c9.mjs';
+import {inspectLocalReadback,offlineDeviceStatus,renderDeviceReadiness} from './device-readiness-c9.mjs';
+import {captureC9Focus,restoreC9Focus,announceC9Route,announceC9Interaction,installC9KeyboardHelp,C9_NATIVE_DISCLOSURE_CLASSES,c9DialogueTurnLabel,resolveC9DialogueTurnPlayback} from './accessibility-c9.mjs';
 import {connectC9Shell,syncC9Shell,C9_ROUTE_LABELS} from './shell-c9.mjs';
 import {renderC9NativeAction,renderC9PageHeading,renderC9ContextNav} from './ui-c9.mjs';
 import { freshState, addLesson, gradeCard, cardInfo, cardsForLesson, dueCards, summary, validateState, upgradedState, lessonGroups } from './study.mjs';
@@ -76,11 +79,11 @@ import {PLAN_FOCI,PLAN_MINUTES,planPreferences,setPlanPreferences,plannedDays,mi
 import {learningHub,activeLearningSessions,LEARNING_DESTINATIONS} from './learning-hub.mjs';
 import {contentConnections} from './context-continuity.mjs';
 import {courseOverview,courseShortcuts,recoverySnapshot} from './course-overview.mjs';
-import {previewBackup,restoreRequiresAcknowledgement,MAX_BACKUP_BYTES} from './backup-preview.mjs';
+import {previewBackup,restoreRequiresAcknowledgement,MAX_BACKUP_BYTES,exportSavedBackup,previewSavedBackup} from './backup-preview.mjs';
 import {COURSE_COMPANIONS,companionForLesson,nearbyCompanions} from './course-companion.mjs';
 import {PINYIN_INITIALS,PINYIN_FINALS,PINYIN_SECTIONS,soundQuestion,evaluateSoundQuestion} from './pinyin-foundations.mjs';
 import {renderPinyinScreen,soundPrimer} from './pinyin-screen.mjs';
-import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarQuestion,gradeGrammarQuestion,nextGrammarLesson} from './grammar-course.mjs';
+import {GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_MODES,findGrammarLesson,grammarIdFromHash,grammarQuestion,gradeGrammarQuestion,nextGrammarLesson} from './grammar-course.mjs';
 import {renderGrammarScreen,grammarLessonList} from './grammar-screen.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,SENTENCE_MODES,findLibrarySentence,searchSentences,sentenceQuestion,hasSentenceMode,sentencePracticeId,toggleSentenceSaved,gradeSentenceChoice,sentenceBookmarked} from './sentence-library.mjs';
 import {renderSentenceScreen,sentenceResultsPanel} from './sentence-screen.mjs';
@@ -95,10 +98,11 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v75-p77-consequence-dialogues';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v101-course-first-mobile-grid';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
-let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, never learner data.
+let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
+let c9DeviceReadback=null; // Transient read-only result; never a grade or learner record.
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 const c9ReadingRecallUi={index:0,revealed:false,typed:'',referenceSeen:false}; // Tab-only, ungraded.
@@ -173,7 +177,7 @@ let storiesOnlyBookmarked=false,storiesLongOnly=false,storiesBeginnerOnly=false,
 let guidedLimit=10,guidedFocus='balanced',guidedTyped='',guidedOrder=[],guidedAssisted=false;
 let demoSpeechRate=0.86;
 let pinyinSection='sounds',pinyinFilter='all',pinyinIndex=0,pinyinTyped='',pinyinFeedback=null,pinyinSound='b',pinyinSyllable='ma';
-let grammarSelected='g01',grammarChapter='all',grammarQuery='',grammarMode='meaning',grammarTyped='',grammarFeedback=null,grammarAssisted=false,grammarOrder=[],grammarShowEnglish=true;
+let grammarSelected='g01',grammarChapter='all',grammarQuery='',grammarMode='meaning',grammarTyped='',grammarFeedback=null,grammarAssisted=false,grammarOrder=[],grammarShowEnglish=true,p36ShowModel=false,p36ReferenceViewedId=null;
 let dialogueId=DIALOGUES[0].id,dialogueStep=0,dialogueSupport=false,dialogueFeedback=null;
 let p33Theme='all',p33Query='',p33Branch=null;
 const p33DecisionUi={typed:'',revealed:false,referenceSeen:false}; // In-tab source rehearsal, no grade writer.
@@ -188,7 +192,7 @@ let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null
 let c9WorkshopOrigin=null; // Validated in-tab source handoff, never a progress writer.
 let p31Theme='all',p31Status='all',p31Page=0,p31WordPage=0;
 let p30CoachIndex=0,p30CoachCategory='all',p30Query='',p30Kind='all',p30Saved=false,p30Page=0;
-let c9LearnQuery='',c9LearnUnit='all',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
+let c9LearnQuery='',c9LearnUnit='all',c9LearnLevel='all',c9LevelPane='learn',c9LearnStatus='all',c9LearnKind='all',c9LearnSaved=false,c9LearnPage=0,c9LearnDetail=false;
 let c9LessonSection='overview',c9LessonFocused=true,c9LastLessonId=null,c9CharacterShowTranslations=true;
 let c9WordQuery='',c9WordFilter='all',c9WordContext='all',c9WordPage=0;
 let c9TypingTopic='all',c9TypingStatus='all',c9TypingPage=0;
@@ -208,6 +212,7 @@ let planMistakeFilter='unresolved';
 let pendingRestore=null,restoreAcknowledgement='';
 let c9RenderedHash=null;
 let c9OpenCatalogAfterHash=false; // UI navigation only; never learner evidence.
+let c9PendingPlacementFocus=false; // One-shot navigation focus, not learner data.
 let c9PendingStoryLine=null; // Session-only exact source handoff, never private evidence.
 let c9SearchFocusPending=false;
 function alertUser(message,type='info'){const target=$('alert-banner');target.textContent=message;target.className=`alert ${type}`;if(type==='error')target.setAttribute('role','alert');else target.setAttribute('role','status');}
@@ -224,12 +229,20 @@ document.addEventListener('keydown',e=>{
 function navUpdate(){const current=route();for(const a of document.querySelectorAll('[data-route]')){if(a.dataset.route===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')}syncC9Shell(current,{due:dueCards(state).length,storageReady:Boolean(db)});document.title=`${C9_ROUTE_LABELS[current]||'Home'} | THIEPN Chinese`;}
 function gated(){return `<div class="permission-note" role="note"><strong>Demo curriculum, not official HSK</strong><p>These ${DEMO_LESSONS.length} original Mandarin examples show how the app will work. They have not undergone independent linguistic review. The official 2025 HSK lists are not included or claimed as mastered.</p></div>`}
 
+function focusC9Placement(){
+ const anchor=root.querySelector('#c9-placement-anchor');
+ if(!anchor)return false;
+ const target=root.querySelector('#c9-placement-question')||anchor;
+ target.scrollIntoView({block:'start',behavior:'auto'});
+ target.focus({preventScroll:true});
+ return true;
+}
 function onboardingPanel(){const p=state.placement, suggestion=placementSuggestion(state);
  if(p?.status==='skipped')return '';
- if(p?.status==='completed')return `<section class="simple-panel onboarding-panel"><div><p class="eyebrow">OPTIONAL STARTING POINT</p><h2>Placement check complete</h2><p>${suggestion.correct}/${suggestion.total} correct. Suggested starting point: original demo lesson ${findLesson(suggestion.lessonId).order}. This is not a proficiency certificate or completed lessons.</p></div><div class="button-row">${action('placement-lesson','Open suggested lesson →','button primary',`data-id="${suggestion.lessonId}"`)}</div></section>`;
+ if(p?.status==='completed')return `<section id="c9-placement-anchor" tabindex="-1" class="simple-panel onboarding-panel"><div><p class="eyebrow">OPTIONAL STARTING POINT</p><h2>Placement check complete</h2><p>${suggestion.correct}/${suggestion.total} correct. Suggested starting point: original demo lesson ${findLesson(suggestion.lessonId).order}. This is not a proficiency certificate or completed lessons.</p></div><div class="button-row">${action('placement-lesson','Open suggested lesson →','button primary',`data-id="${suggestion.lessonId}"`)}</div></section>`;
  const active=p?.status==='active',q=active?placementQuestion(p.answers.length):null;
- return `<section class="simple-panel onboarding-panel" aria-label="Optional introduction"><div><p class="eyebrow">WELCOME · OPTIONAL DEMONSTRATION PLACEMENT</p><h2>${active?'What do you already recognize?':'Find a comfortable starting point.'}</h2><p>${active?`Question ${p.answers.length+1} of ${PLACEMENT_TOTAL}. Your choices are saved, but they do not mark lessons as studied.`:'Choose a short recognition check or start with the first lesson. No account required.'}</p></div>
- ${active?`<div class="placement-question"><p lang="zh-Hans" class="placement-hanzi">${esc(q.hanzi)}</p><p>${esc(q.prompt)}</p><div class="choice-list" role="group" aria-label="Choose the character meaning">${q.options.map((option,i)=>action('placement-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(option)}`,'choice',`data-option="${esc(option)}"`)).join('')}</div></div>`:
+ return `<section id="c9-placement-anchor" tabindex="-1" class="simple-panel onboarding-panel" aria-label="Optional introduction"><div><p class="eyebrow">WELCOME · OPTIONAL DEMONSTRATION PLACEMENT</p><h2>${active?'What do you already recognize?':'Find a comfortable starting point.'}</h2><p>${active?`Question ${p.answers.length+1} of ${PLACEMENT_TOTAL}. Your choices are saved, but they do not mark lessons as studied.`:'Choose a short recognition check or start with the first lesson. No account required.'}</p></div>
+ ${active?`<div id="c9-placement-question" tabindex="-1" class="placement-question" aria-label="Current optional placement question"><p lang="zh-Hans" class="placement-hanzi">${esc(q.hanzi)}</p><p>${esc(q.prompt)}</p><div class="choice-list" role="group" aria-label="Choose the character meaning">${q.options.map((option,i)=>action('placement-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(option)}`,'choice',`data-option="${esc(option)}"`)).join('')}</div></div>`:
  `<div class="button-row">${action('placement-start','Take 6-question check →','button primary')}${action('placement-skip','Start from lesson one','button outline')}</div>`}
  ${active?`<div class="button-row">${action('placement-skip','Skip assessment','button outline')}</div>`:''}</section>`;
 }
@@ -238,7 +251,7 @@ function renderDialoguesNative(){const d=findDialogue(dialogueId)||DIALOGUES[0],
 <section class="simple-panel dialogue-top"><label for="dialogue-choice">Choose a dialogue<select id="dialogue-choice">${DIALOGUES.map((item,i)=>`<option value="${item.id}" ${d.id===item.id?'selected':''}>${i+1}. ${esc(item.title)}</option>`).join('')}</select></label><div class="stats-grid">${stat(stats.practiced,'Conversations practiced')}${stat(stats.independent,'Independent correct answers')}${stat(stats.attempts,'Supplementary responses')}</div></section><div class="content-continuation" aria-label="Conversation navigation">${action('dialogue-prev','← Previous conversation','button outline small')}${action('dialogue-next-context','Next conversation →','button outline small')}</div>
 ${renderC9DialogueQuestionRepair(d,state,dialogueStep,action,esc)}
 ${renderC9P75DialogueEvidence(d,dialogueStep,dialogueFeedback,action,esc)}
-<div class="dialogue-layout"><article class="simple-panel dialogue-paper" id="c9-native-dialogue" tabindex="-1"><div class="panel-heading"><h2>${esc(d.title)}</h2><span class="muted">${d.lines.length} speaking turns</span></div>${renderC9TurnNavigator(d,c9DialogueTurn,action,esc)}<div class="dialogue-turns">${d.lines.map((line,index)=>`<div class="dialogue-turn ${c9DialogueTurn===index?'is-c9-current':''}" tabindex="-1" data-c9-turn-index="${index}" aria-current="${c9DialogueTurn===index?'step':'false'}"><span class="speaker-label" aria-label="Speaker ${line.speaker}">${esc(line.speaker)}</span><div><p class="dialogue-chinese" ${(d.p34||d.p75||d.p77)&&!dialogueSupport?'':'lang="zh-Hans"'}>${(d.p34||d.p75||d.p77)&&!dialogueSupport?'Audio turn · reveal transcript when ready':esc(line.hanzi)}</p>${dialogueSupport?`<p class="dialogue-pinyin">${esc(line.pinyin)}</p><p class="muted">${esc(line.english)}</p>`:''}<div class="button-row">${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-turn','Listen to guarded original turn','button outline small'):action('speak','Listen to this turn','button outline small',`data-text="${esc(line.hanzi)}"`)}</div></div></div>`).join('')}</div><div class="button-row">${action('dialogue-support',dialogueSupport?'Hide language support':'Show pinyin + English','button outline',`aria-pressed="${dialogueSupport}"`)}${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-whole','Listen to guarded original exchange','button outline'):action('speak','Listen to the exchange','button outline',`data-text="${esc(d.lines.map(x=>x.hanzi).join(' '))}"`)}</div><p class="muted">Device TTS is optional and is not certified pronunciation audio. Revealing language support makes the next answer assisted.</p>${dialogueWordLinks(d.id).length?`<div class="dialogue-word-links"><p class="eyebrow">EXPLORE WORDS IN THIS EXCHANGE</p><p class="muted">Written-form matches only; verify their meanings in context.</p><div class="word-link-row">${dialogueWordLinks(d.id).map(w=>action('lookup-word',`${esc(w.hanzi)} <small>${esc(w.pinyin)}</small>`,'button outline small',`data-word="${esc(w.hanzi)}"`)).join('')}</div></div>`:''}</article>
+<div class="dialogue-layout"><article class="simple-panel dialogue-paper" id="c9-native-dialogue" tabindex="-1"><div class="panel-heading"><h2>${esc(d.title)}</h2><span class="muted">${d.lines.length} speaking turns</span></div>${renderC9TurnNavigator(d,c9DialogueTurn,action,esc)}<div class="dialogue-turns">${d.lines.map((line,index)=>`<div class="dialogue-turn ${c9DialogueTurn===index?'is-c9-current':''}" tabindex="-1" data-c9-turn-index="${index}" aria-current="${c9DialogueTurn===index?'step':'false'}"><span class="speaker-label" aria-label="Speaker ${line.speaker}">${esc(line.speaker)}</span><div><p class="dialogue-chinese" ${(d.p34||d.p75||d.p77)&&!dialogueSupport?'':'lang="zh-Hans"'}>${(d.p34||d.p75||d.p77)&&!dialogueSupport?'Audio turn · reveal transcript when ready':esc(line.hanzi)}</p>${dialogueSupport?`<p class="dialogue-pinyin">${esc(line.pinyin)}</p><p class="muted">${esc(line.english)}</p>`:''}<div class="button-row">${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-turn','Play '+esc(c9DialogueTurnLabel(d,index))+' · device voice','button outline small',`data-turn-index="${index}" data-dialogue-id="${esc(d.id)}"`):action('speak','Play '+esc(c9DialogueTurnLabel(d,index))+' · device voice','button outline small',`data-text="${esc(line.hanzi)}"`)}</div></div></div>`).join('')}</div><div class="button-row">${action('dialogue-support',dialogueSupport?'Hide language support':'Show pinyin + English','button outline',`aria-pressed="${dialogueSupport}"`)}${(d.p75||d.p77)&&!dialogueSupport?action('c9-media-listen-whole','Listen to guarded original exchange','button outline'):action('speak','Listen to the exchange','button outline',`data-text="${esc(d.lines.map(x=>x.hanzi).join(' '))}"`)}</div><p class="muted">Device TTS is optional and is not certified pronunciation audio. Revealing language support makes the next answer assisted.</p>${dialogueWordLinks(d.id).length?`<div class="dialogue-word-links"><p class="eyebrow">EXPLORE WORDS IN THIS EXCHANGE</p><p class="muted">Written-form matches only; verify their meanings in context.</p><div class="word-link-row">${dialogueWordLinks(d.id).map(w=>action('lookup-word',`${esc(w.hanzi)} <small>${esc(w.pinyin)}</small>`,'button outline small',`data-word="${esc(w.hanzi)}"`)).join('')}</div></div>`:''}</article>
 <section class="simple-panel dialogue-quiz" id="c9-native-dialogue-question" tabindex="-1"><p class="eyebrow">CONTEXT CHECK · ${dialogueStep+1} / ${d.questions.length}</p><h2>${esc(q.prompt)}</h2>${dialogueFeedback?`<div class="reader-feedback ${dialogueFeedback.correct&&!dialogueFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${dialogueFeedback.correct?'Correct answer':'Review the conversation'}</strong><p>Reference: ${esc(q.answer)}</p>${d.p34?`<p><strong>Listening evidence:</strong> ${esc(d.p34.feedback[dialogueStep]||d.p34.teaching)}</p><p lang="zh-Hans">${esc(d.lines[dialogueStep===0?1:3].hanzi)}</p><p class="muted">${esc(d.lines[dialogueStep===0?1:3].pinyin)} · ${esc(d.lines[dialogueStep===0?1:3].english)}</p>`:''}<p>${dialogueFeedback.assisted?'Assisted attempt — not independent evidence.':'Saved as separate conversation practice.'}</p></div><div class="button-row">${action('dialogue-next',dialogueStep+1<d.questions.length?'Next context question →':'Next conversation →','button primary')}${action('dialogue-retry','Repeat this question','button outline')}</div>`:`<div class="choice-list">${q.options.map((opt,i)=>action('dialogue-answer',`<span>${String.fromCharCode(65+i)}</span>${esc(opt)}`,'choice',`data-option="${esc(opt)}"`)).join('')}</div><div class="button-row">${action('dialogue-reveal','Reveal reference','button outline')}</div>`}<p class="muted">These questions assess contextual meaning, not official curriculum mastery.</p></section></div>${p33ScenarioTeaching(d,p33Branch,action,esc,p33DecisionUi)}${renderDialogueMission(d)}`;}
 function refreshC9MediaCatalog(kind){
  const reading=kind==='reading',target=root.querySelector(reading?'#c9-reading-results':'#c9-dialogue-results');if(!target)return;
@@ -291,7 +304,7 @@ function workshopSourceLabel(task){
  return 'Reading · '+esc(findStory(task.storyId||task.readingId)?.title||'Original text');
 }
 function renderWorkshop(){const task=sentenceTask(sentenceIndex),stats=sentenceStats(state);return `${title('SENTENCE WORKSHOP','Build the Chinese sentence.','Reconstruct an exact sentence using its English meaning. This checks written form, not open-ended translation fluency.')}${gated()}${renderC9WorkshopSourceContinuation(task.id,c9WorkshopOrigin,state,action,esc)}
- <section class="simple-panel learning-studio"><div class="stats-grid">${stat(SENTENCE_TASKS.length,'Sentence tasks')}${stat(stats.practiced,'Tasks attempted')}${stat(stats.independent,'Independent correct')}</div><div class="button-row"></div><div class="guided-meta"><span>Task ${sentenceIndex%SENTENCE_TASKS.length+1}/${SENTENCE_TASKS.length}</span><span>${workshopSourceLabel(task)}</span></div><p class="eyebrow">${task.p32Correction?'P32 · CORRECT THE MISTAKE':task.p33ScenarioId?'P33 · PRODUCE A CONVERSATION TURN':task.p34AudioId?'P34 · WRITE WHAT YOU HEARD':'ENGLISH-TO-CHINESE · EXACT RECONSTRUCTION'}</p><h2>${esc(task.english)}</h2>${sentenceFeedback?`<div class="reader-feedback ${sentenceFeedback.correct&&!sentenceFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${sentenceFeedback.correct?'Exact form correct':'Compare with the model sentence'}</strong><p>${esc(sentenceFeedback.message)}</p><p class="practice-hanzi" lang="zh-Hans">${esc(task.hanzi)}</p><p>${esc(task.pinyin)}</p>${task.p34AudioId?`<div class="p31-writing-feedback"><strong>Listening-first transfer</strong><p>${esc(task.explanation||'')}</p><p>Compare this authored line with the recording from your device voice; exact written reconstruction does not certify spoken fluency.</p></div>`:''}${task.p33ScenarioId?`<div class="p31-writing-feedback"><strong>Conversation context</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.teaching||'')}</p><strong>Social usage</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pragmatics||'')}</p><strong>Common confusion</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pitfall||'')}</p></div>`:''}${task.p32Correction?`<div class="p31-writing-feedback"><strong>Why the learner sentence needs repair</strong><p>${esc(task.explanation)}</p><p>One specific reference sentence is checked; other valid corrections may exist.</p></div>`:''}${task.p31LessonId?`<div class="p31-writing-feedback"><strong>Grammar and meaning</strong><p>${esc(findP31Guide(task.p31LessonId)?.grammarExplanation||'')}</p><strong>Common confusion</strong><p>${esc(findP31Guide(task.p31LessonId)?.pitfall||'')}</p><strong>Pronunciation focus</strong><p>${esc(findP31Guide(task.p31LessonId)?.pronunciation||'')}</p></div>`:''}</div>${action('workshop-next','Next sentence →','button primary')}${task.grammarId?action('grammar-select','Return to grammar teaching','button outline small',`data-id="${task.grammarId}"`):''}${task.sentenceId?action('sentence-select','Return to sentence context →','button outline small',`data-id="${task.sentenceId}"`):''}${task.readingId?action('open-story-link','Return to reading →','button outline small',`data-id="${task.readingId}"`):''}${task.pathwayId?action('pathway-select','Return to pathway mission →','button outline small',`data-id="${task.pathwayId}"`):''}${task.p31LessonId?action('p31-open-lesson','Return to character teaching →','button outline small',`data-id="${task.p31LessonId}"`):''}${task.p33ScenarioId?action('p33-open-scenario','Return to conversation →','button outline small',`data-id="${task.p33ScenarioId}"`):''}${task.p34AudioId?action('p34-open-listening','Return to listening →','button outline small',`data-id="${task.p34AudioId}"`):''}`:
+ <section class="simple-panel learning-studio"><div class="stats-grid">${stat(SENTENCE_TASKS.length,'Sentence tasks')}${stat(stats.practiced,'Tasks attempted')}${stat(stats.independent,'Independent correct')}</div><div class="button-row"></div><div class="guided-meta"><span>Task ${sentenceIndex%SENTENCE_TASKS.length+1}/${SENTENCE_TASKS.length}</span><span>${workshopSourceLabel(task)}</span></div><p class="eyebrow">${task.p36Correction?'P36 · REPAIR THE CONTEXTUAL GRAMMAR':task.p32Correction?'P32 · CORRECT THE MISTAKE':task.p33ScenarioId?'P33 · PRODUCE A CONVERSATION TURN':task.p34AudioId?'P34 · WRITE WHAT YOU HEARD':'ENGLISH-TO-CHINESE · EXACT RECONSTRUCTION'}</p><h2>${esc(task.english)}</h2>${sentenceFeedback?`<div class="reader-feedback ${sentenceFeedback.correct&&!sentenceFeedback.assisted?'correct':'incorrect'}" role="status"><strong>${sentenceFeedback.correct?'Exact form correct':'Compare with the model sentence'}</strong><p>${esc(sentenceFeedback.message)}</p><p class="practice-hanzi" lang="zh-Hans">${esc(task.hanzi)}</p><p>${esc(task.pinyin)}</p>${task.p34AudioId?`<div class="p31-writing-feedback"><strong>Listening-first transfer</strong><p>${esc(task.explanation||'')}</p><p>Compare this authored line with the recording from your device voice; exact written reconstruction does not certify spoken fluency.</p></div>`:''}${task.p33ScenarioId?`<div class="p31-writing-feedback"><strong>Conversation context</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.teaching||'')}</p><strong>Social usage</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pragmatics||'')}</p><strong>Common confusion</strong><p>${esc(findP33Scenario(task.p33ScenarioId)?.pitfall||'')}</p></div>`:''}${task.p32Correction?`<div class="p31-writing-feedback"><strong>Why the learner sentence needs repair</strong><p>${esc(task.explanation)}</p><p>One specific reference sentence is checked; other valid corrections may exist.</p></div>`:''}${task.p36Correction?`<div class="p31-writing-feedback"><strong>Original P36 grammar correction</strong><p>${esc(task.explanation)}</p><p>${esc(task.contrast)}</p><p>${esc(task.pitfall)}</p><p>One source-backed model is checked; other acceptable formulations may exist. Assisted work cannot count as independent evidence.</p></div>`:''}${task.p31LessonId?`<div class="p31-writing-feedback"><strong>Grammar and meaning</strong><p>${esc(findP31Guide(task.p31LessonId)?.grammarExplanation||'')}</p><strong>Common confusion</strong><p>${esc(findP31Guide(task.p31LessonId)?.pitfall||'')}</p><strong>Pronunciation focus</strong><p>${esc(findP31Guide(task.p31LessonId)?.pronunciation||'')}</p></div>`:''}</div>${action('workshop-next','Next sentence →','button primary')}${task.grammarId?action('grammar-select','Return to grammar teaching','button outline small',`data-id="${task.grammarId}"`):''}${task.sentenceId?action('sentence-select','Return to sentence context →','button outline small',`data-id="${task.sentenceId}"`):''}${task.readingId?action('open-story-link','Return to reading →','button outline small',`data-id="${task.readingId}"`):''}${task.pathwayId?action('pathway-select','Return to pathway mission →','button outline small',`data-id="${task.pathwayId}"`):''}${task.p31LessonId?action('p31-open-lesson','Return to character teaching →','button outline small',`data-id="${task.p31LessonId}"`):''}${task.p33ScenarioId?action('p33-open-scenario','Return to conversation →','button outline small',`data-id="${task.p33ScenarioId}"`):''}${task.p34AudioId?action('p34-open-listening','Return to listening →','button outline small',`data-id="${task.p34AudioId}"`):''}`:
  `<div class="answer-entry"><label for="workshop-entry">Type the complete Chinese sentence</label><textarea id="workshop-entry" rows="2" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write the Chinese characters">${esc(sentenceTyped)}</textarea></div><div class="button-row">${action('workshop-check','Check written sentence →','button primary',sentenceTyped.trim()?'':'disabled')}${action('workshop-support','Show pinyin · assisted','button outline')}${action('workshop-reveal','Reveal model sentence','button outline')}${task.p34AudioId?action('c9-workshop-listen','Listen to original spoken writing prompt','button outline small','data-id="'+esc(task.id)+'"'):task.p33ScenarioId?action('c9-workshop-listen','Hear original written model · assisted','button outline small','data-id="'+esc(task.id)+'"'):''}</div>${sentenceSupport?`<p class="lesson-guide">Model pronunciation: ${esc(task.pinyin)}. Help makes this attempt assisted.</p>`:''}`}</section>`;}
 
 function highlightVocabulary(sentence,word){
@@ -473,21 +486,21 @@ function finishOverviewPanel({compact=false}={}){
  const o=courseOverview(state);const actions=courseShortcuts(state);return `<section class="simple-panel finish-overview" aria-label="Learning evidence and continuity"><div class="panel-heading"><div><p class="eyebrow">LEARNING CONTINUITY</p><h2>From today's work to your next step</h2></div><span class="muted">Evidence, not a mastery estimate</span></div><div class="finish-evidence"><div><strong>${o.introduced}/${o.total}</strong><span>Lessons introduced</span></div><div><strong>${o.scheduled.attempts}</strong><span>Scheduled attempts</span></div><div><strong>${o.supplementary}</strong><span>Other learning observations</span></div><div><strong>${o.sessions.length}</strong><span>Unfinished sessions</span></div></div>${compact?'':`<div class="finish-shortcuts">${actions.map(a=>`<div><div><strong>${esc(a.label)}</strong><small>${esc(a.description)}</small></div>${action('finish-next','Open →','button outline small',`data-kind="${a.kind}" data-route="${a.route}" ${a.source?`data-source="${a.source}"`:''} ${a.lessonId?`data-lesson="${a.lessonId}"`:''}`)}</div>`).join('')}</div>`}<p class="muted">Scheduled recall is credited only by independent graded review. Supplemental practice, assistance and activity volume are different observations.</p></section>`;
 }
 function recoveryCenterPanel(){const o=courseOverview(state);return `<section class="simple-panel finish-recovery" aria-label="Session recovery center"><div class="panel-heading"><h2>Saved study sessions</h2><span class="muted">${o.sessions.length} unfinished</span></div>${o.sessions.length?`<div class="finish-shortcuts">${o.sessions.map(item=>`<div><div><strong>${esc(item.label)}</strong><small>${esc(item.detail)}</small></div>${action('hub-resume','Resume →','button outline small',`data-kind="${esc(item.kind)}"`)}</div>`).join('')}</div>`:'<p>No paused study activities. Your completed answers and practice histories remain stored separately.</p>'}<p class="muted">Checkpoints save submitted answers. Unsubmitted text may not survive leaving a screen. Restoring a backup replaces these checkpoints.</p></section>`;}
-function backupPreviewPanel(){if(!pendingRestore)return '';const p=pendingRestore.preview;return `<section class="simple-panel finish-backup-preview" aria-label="Backup import preview" role="region"><p class="eyebrow">VALIDATED BACKUP · NOT YET RESTORED</p><h2>Review before replacing your data</h2><p>Backup created: ${p.createdAt?esc(p.createdAt):'Date not provided'} · Version ${p.formatVersion}. This is a <strong>replacement</strong>, not a merge.</p><div class="finish-compare"><div><strong>Current device</strong><p>${p.current.learned} introduced lessons</p><p>${p.current.scheduledEvents} scheduled attempts</p><p>${p.current.supplementaryEvents} other learning observations</p><p>${p.current.sessions.length} unfinished sessions</p><p>${p.current.wordbook} wordbook entries</p></div><div><strong>Incoming backup</strong><p>${p.incoming.learned} introduced lessons</p><p>${p.incoming.scheduledEvents} scheduled attempts</p><p>${p.incoming.supplementaryEvents} other learning observations</p><p>${p.incoming.sessions.length} unfinished sessions</p><p>${p.incoming.wordbook} wordbook entries</p></div></div>${p.warnings.length?`<div class="finish-warning" role="note"><strong>Potential data loss</strong><ul>${p.warnings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'<p class="muted">No reductions were detected in these summary counts. Records can still differ: replacement overwrites your current history.</p>'}<p class="muted">Export the current state before restoring if you might want it later. Import validation cannot independently prove the backup's origin.</p><div class="setting-row"><label for="restore-ack"><strong>Type REPLACE to confirm</strong><p>This irreversibly overwrites this browser's current learner history.</p></label><input id="restore-ack" type="text" autocomplete="off" spellcheck="false" aria-describedby="restore-ack-status" value="${esc(restoreAcknowledgement)}"></div><p class="muted" id="restore-ack-status">The backup has been checked but has not changed local data.</p><div class="button-row">${action('restore-confirm','Replace local learner data','button danger',restoreRequiresAcknowledgement(p,restoreAcknowledgement)?'':'disabled')}${action('restore-cancel','Cancel import','button outline')}${action('export','Export current data first','button outline')}</div></section>`;}
+function backupPreviewPanel(){if(!pendingRestore)return '';const p=pendingRestore.preview;return `<section class="simple-panel finish-backup-preview" aria-label="Backup import preview" role="region"><p class="eyebrow">VALIDATED BACKUP · NOT YET RESTORED</p><h2>Review before replacing your data</h2><p>Backup created: ${p.createdAt?esc(p.createdAt):'Date not provided'} · Version ${p.formatVersion}. This is a <strong>replacement</strong>, not a merge.</p><p class="muted" id="restore-stored-revision" role="status">Stored revision at preview: ${p.current.revision}. If another tab saves anything after this preview, replacement will be rejected; preview the backup again.</p><div class="finish-compare"><div><strong>Current device</strong><p>${p.current.learned} introduced lessons</p><p>${p.current.scheduledEvents} scheduled attempts</p><p>${p.current.supplementaryEvents} other learning observations</p><p>${p.current.sessions.length} unfinished sessions</p><p>${p.current.wordbook} wordbook entries</p></div><div><strong>Incoming backup</strong><p>${p.incoming.learned} introduced lessons</p><p>${p.incoming.scheduledEvents} scheduled attempts</p><p>${p.incoming.supplementaryEvents} other learning observations</p><p>${p.incoming.sessions.length} unfinished sessions</p><p>${p.incoming.wordbook} wordbook entries</p></div></div>${p.warnings.length?`<div class="finish-warning" role="note"><strong>Potential data loss</strong><ul>${p.warnings.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'<p class="muted">No reductions were detected in these summary counts. Records can still differ: replacement overwrites your current history.</p>'}<p class="muted">Export the current state before restoring if you might want it later. Import validation cannot independently prove the backup's origin.</p><div class="setting-row"><label for="restore-ack"><strong>Type REPLACE to confirm</strong><p>This irreversibly overwrites this browser's current learner history.</p></label><input id="restore-ack" type="text" autocomplete="off" spellcheck="false" aria-describedby="restore-ack-status" value="${esc(restoreAcknowledgement)}"></div><p class="muted" id="restore-ack-status">The backup has been checked but has not changed local data.</p><div class="button-row">${action('restore-confirm','Replace local learner data','button danger',restoreRequiresAcknowledgement(p,restoreAcknowledgement)?'':'disabled')}${action('restore-cancel','Cancel import','button outline')}${action('export','Export current data first','button outline')}</div></section>`;}
 function vocabularyTodayPanel(){
  const introduced=(state.vocabularyIntroduced||[]).map(findWord).filter(Boolean);
  const selected=state.vocabularyJourney?.key?findWord(state.vocabularyJourney.key):introduced.at(-1);
  return `<section class="simple-panel p23-today-vocabulary"><div class="panel-heading"><div><p class="eyebrow">VOCABULARY IN CONTEXT</p><h2>${state.vocabularyJourney?'Resume your word journey':'Learn a complete Chinese word'}</h2></div><span class="muted">${introduced.length} independently introduced words</span></div><p>${selected?`Continue with ${esc(selected.hanzi)} (${esc(selected.pinyin)}): ${esc(selected.senses[0])}.`:'Discover a complete word, explore its examples, then practice meaning, contextual usage, pronunciation, written recall and listening.'}</p><div class="button-row">${selected?(state.vocabularyJourney?action('vocabulary-resume','Resume saved word journey →','button primary'):action('vocabulary-start','Continue word study →','button primary',`data-id="${esc(selected.key)}"`)):action('vocabulary-discover','Browse original vocabulary →','button primary')}${action('open-wordbook-practice','Vocabulary studio →','button outline')}</div></section>`;
 }
-function selectedGrammarId(){const id=(location.hash.match(/^#\/grammar\/(g\d{2})/)||[])[1];return findGrammarLesson(id)?id:grammarSelected;}
+function selectedGrammarId(){return grammarIdFromHash(location.hash)||grammarSelected;}
 function renderGrammar(){
  const selected=selectedGrammarId();
- const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
+ const native=renderGrammarScreen({lessonId:selected,chapter:grammarChapter,query:grammarQuery,mode:grammarMode,typed:grammarTyped,feedback:grammarFeedback,assisted:grammarAssisted,order:grammarOrder,showEnglish:grammarShowEnglish,p36ShowModel,sentenceEvents:state.sentenceEvents||[]},action,esc,title,gated);
  return '<div class="c9-language-workspace c9-language-workspace--grammar">'+
   renderC9GrammarDirectory(state,action,esc)+
   '<section class="c9-language-native c9-language-study" id="c9-native-grammar" aria-label="Original grammar lessons">'+native+'</section></div>';
 }
-function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];}
+function grammarSessionReset(){grammarMode='meaning';grammarTyped='';grammarFeedback=null;grammarAssisted=false;grammarOrder=[];p36ShowModel=false;p36ReferenceViewedId=null;}
 function openGrammarLesson(id){
  const selected=findGrammarLesson(id);if(!selected)return false;
  // Reopening the same selected grammar unit must not erase a typed answer.
@@ -598,7 +611,7 @@ function renderToday(){
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false,
-   offlineShell:c9OfflineShell,showPinyin:state.settings.showPinyin})+
+   offlineShell:c9OfflineShell,showPinyin:state.settings.showPinyin,selectedLevel:c9LearnLevel})+
   '<section class="c9-skills-home-cta" aria-label="Continue language skills"><div>'+
   '<strong>Connect characters, reading, dialogue and writing</strong>'+
   '<p>Choose one learning skill, continue with source-backed material, and return to the original native practice.</p></div>'+
@@ -643,7 +656,7 @@ function foundationalExpansionPanel(){
  </section>`;
 }
 function renderLearnLegacy(){const l=findLesson(displayLessonId)||DEMO_LESSONS[0];const m=summary(state);return `${title('THE LEARNING PATH','Learn characters in words.','${DEMO_LESSONS.length} original demonstration lessons, organized into ${lessonGroups().length} thematic study units.')}${gated()}${learnWorkspace(state,action,esc,{index:p30CoachIndex,category:p30CoachCategory})}${p31LessonShelf(state,action,esc,{theme:p31Theme,status:p31Status,page:p31Page})}<details class="p30-learn-utilities"><summary>Quick learning utilities and course continuity</summary>${compactHubPanel()}${finishOverviewPanel({compact:true})}</details><div class="button-row course-learn-action">${action('course-lesson','Guided Daily Journey →','button primary',`data-id="${l.id}"`)}${action('ladder-open','Practice sentence construction →','button outline',`data-id="${l.id}"`)}${action('pinyin-open','Sound foundations →','button outline')}${action('grammar-open','Grammar course →','button outline')}${action('sentence-open','Sentence library →','button outline')}${action('pathway-open','Learning pathway →','button primary')}${action('reading-open-beginner','Beginner readings →','button outline')}${action('reading-open-long','Extended readings →','button outline')}</div>${foundationalExpansionPanel()}<div class="learn-head"><div><strong>${m.learned} of ${m.total}</strong> lessons introduced</div><div class="progress-rail"><span style="width:${100*m.learned/m.total}%"></span></div></div><div class="learn-layout"><div class="lesson-list" role="group" aria-label="Demo lessons">${lessonGroups().map(g=>`<div class="lesson-group-label"><strong>${g.index.toString().padStart(2,'0')} · ${g.name}</strong><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>${g.lessons.map(lessonCard).join('')}`).join('')}</div>${lessonDetails(l)}</div>${companionLibraryPanel(l.id)}`}
-function c9LearnUi(){return {query:c9LearnQuery,unit:c9LearnUnit,status:c9LearnStatus,kind:c9LearnKind,saved:c9LearnSaved,page:c9LearnPage,view:c9LearnDetail?'lesson':'catalog',selectedId:displayLessonId};}
+function c9LearnUi(){return {query:c9LearnQuery,unit:c9LearnUnit,level:c9LearnLevel,pane:c9LevelPane,status:c9LearnStatus,kind:c9LearnKind,saved:c9LearnSaved,page:c9LearnPage,view:c9LearnDetail?'lesson':'catalog',selectedId:displayLessonId};}
 function refreshC9DiscoveryResults(){
  const ui=c9LearnUi(),browser=$('c9-lesson-browser'),search=$('c9-learn-search-results');
  if(browser)browser.innerHTML=renderC9LessonBrowser(state,ui,action,esc);
@@ -866,7 +879,7 @@ function renderSettingsNative(){const s=state.settings;return `${title('PREFEREN
  <section id="c9-settings-study" class="simple-panel" tabindex="-1"><h2>Study preferences</h2><div class="setting-row"><div><strong>Pinyin during teaching</strong><p>Show pronunciation while studying. It stays hidden during independent review.</p></div><label class="toggle"><input type="checkbox" data-setting="showPinyin" ${s.showPinyin?'checked':''}><span>Show</span></label></div><div class="setting-row"><div><strong>Dark appearance</strong><p>Use a darker, high-contrast learning workspace.</p></div><label class="toggle"><input type="checkbox" data-setting="dark" ${s.dark?'checked':''}><span>Dark</span></label></div><div class="setting-row"><div><strong>Target new lessons per day</strong><p>Preference for future learning recommendations, not a strict limit.</p></div><select data-setting="dailyNew" aria-label="Target new lessons per day">${[2,3,5,8,10,15].map(n=>`<option value="${n}" ${n===s.dailyNew?'selected':''}>${n} lessons</option>`).join('')}</select></div></section>
  <section class="simple-panel"><h2>Optional placement check</h2><p>A six-question demo recognition check can suggest where to begin. It does not create mastery credit, mark lessons learned, or claim an official HSK level.</p><p>${state.placement?.status==='completed'?'Completed · '+state.placement.answers.filter(a=>a.correct).length+'/6 correct':state.placement?.status==='active'?'In progress · '+state.placement.answers.length+'/6 answered':'Not completed'}</p>${action('placement-restart','Restart placement check','button outline')}</section>
  <section id="c9-settings-reading" class="simple-panel" tabindex="-1"><h2>Reading preferences</h2><div class="setting-row"><div><strong>Larger Chinese characters throughout</strong><p>Increase Hanzi sizes in lessons, reviews and reading without exposing answers.</p></div><label class="toggle"><input type="checkbox" data-setting="hanziLarge" ${s.hanziLarge?'checked':''}><span>Large</span></label></div><div class="setting-row"><div><strong>Larger Chinese text in readings</strong><p>Adjust story reading without changing the assessment answer.</p></div><label class="toggle"><input type="checkbox" data-setting="readingLarge" ${s.readingLarge?'checked':''}><span>Large</span></label></div></section><section class="simple-panel"><h2>Session recovery</h2><p>Your saved vocabulary wordbook contains ${(state.bookmarkedWords||[]).length} entries. ${(state.dialogueEvents||[]).length} dialogue and ${(state.wordPracticeEvents||[]).length} wordbook attempts, plus ${(state.senseEvents||[]).length} contextual-sense, ${(state.sentenceEvents||[]).length} sentence-building, and ${(state.missionEvents||[]).length} conversation-mission attempts are included in JSON backups. Each completed mixed-practice answer is saved transactionally together with the current session position. Backups include an unfinished guided session, and older backups with no session remain valid.</p><p>${state.practiceSession?`Guided practice checkpoint: ${state.practiceSession.cursor} of ${state.practiceSession.limit} answered.`:'No unfinished guided session.'}</p>${state.practiceSession?action('open-practice','Resume saved session →','button outline'):''}</section>
- <div id="c9-settings-recovery" tabindex="-1">${recoveryCenterPanel()}</div><section id="c9-settings-data" class="simple-panel" tabindex="-1"><h2>Your learning data</h2><p>Export a JSON backup before switching browsers or clearing site storage. A local browser database cannot protect against device failure.</p><div class="button-row">${action('export','Export backup','button primary')}${action('import-open','Import backup','button outline')}${action('reset','Reset demo progress','button danger')}</div><input id="import-file" type="file" accept="application/json,.json" hidden><div class="button-row">${action('storage-check','Check local storage status','button outline')}</div><p class="muted">Local data revision: ${state.revision} · Browser storage is not a permanent backup.</p><p id="storage-detail" class="muted">${db?'IndexedDB connected. Completed writes are confirmed transactionally.':'Storage unavailable: lessons and reviews cannot be saved.'}</p></section>${backupPreviewPanel()}
+ <div id="c9-settings-recovery" tabindex="-1">${recoveryCenterPanel()}</div><section id="c9-settings-data" class="simple-panel" tabindex="-1"><h2>Your learning data</h2><p>Export a JSON backup before switching browsers or clearing site storage. A local browser database cannot protect against device failure. Exports read the latest committed IndexedDB record, including changes from other tabs; unfinished private writing that has not been separately saved is not included.</p><div class="button-row">${action('export','Export backup','button primary')}${action('import-open','Import backup','button outline')}${action('reset','Reset demo progress','button danger')}</div><input id="import-file" type="file" accept="application/json,.json" hidden><div class="button-row">${action('storage-check','Check local storage status','button outline')}</div><p class="muted">Local data revision: ${state.revision} · Browser storage is not a permanent backup.</p><p id="storage-detail" class="muted">${db?'IndexedDB connected. Completed writes are confirmed transactionally.':'Storage unavailable: lessons and reviews cannot be saved.'}</p></section>${renderDeviceReadiness({storageReady:Boolean(db),revision:state.revision,online:navigator.onLine,offlineShell:c9OfflineShell,coverage:c9OfflineCoverage,readback:c9DeviceReadback},action,esc)}${backupPreviewPanel()}
  <section id="c9-settings-curriculum" class="simple-panel" tabindex="-1"><h2>Curriculum status</h2><p><strong>Available:</strong> ${DEMO_LESSONS.length} original, author-written Mandarin demonstration lessons, not independently verified as official exam content.</p><p><strong>Not installed:</strong> Official 2025 HSK character and vocabulary inventories, approved audio libraries, and certified examination preparation.</p><p class="muted">No external analytics, cloud services, accounts, or remote curriculum downloads are used by this build.</p></section>`}
 function applySettings(){
  const dark=Boolean(state.settings.dark);
@@ -966,6 +979,7 @@ function render(){
   else dialogueId=source||DIALOGUES[0].id;
  }
  if(c9RenderedHash===null&&route()==='learn'){
+   c9LearnLevel=location.hash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1]||'all';
   const source=c9HashLearningSource('learn',location.hash);
   c9LearnDetail=Boolean(source);
   if(source){displayLessonId=source;c9LessonSection='overview';c9LessonFocused=true;}
@@ -1066,7 +1080,7 @@ function c9OpenNativeWorkshopTask(index,assisted=false,origin=null){
  sentenceSupport=Boolean(assisted);c9WorkshopOrigin=receipt;
  render();return true;
 }
-async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
+async function mutate(fn,{renderAfter=true}={}){if(!db){alertUser('Changes cannot be saved. This browser does not provide a working local database.','error');return false}if(busy)return false;busy=true;try{state=await updateState(db,fn);c9DeviceReadback=null;channel?.postMessage('data-changed');clearAlert();if(renderAfter)render();return true}catch(e){alertUser(`Not saved: ${e.message}`,'error');return false}finally{busy=false}}
 /* C9-48: one cancellable controller for the original device voice actions.
  * No network TTS, recordings, transcription, listening grades or new state. */
 let c9SpeechGeneration=0;
@@ -1115,6 +1129,35 @@ async function speak(text,rate=demoSpeechRate){
  try{synthesis.speak(utt);}
  catch{if(request===c9SpeechGeneration)alertUser('Speech playback failed on this device. The original Chinese text remains available.','error');}
 }
+function syncC9DialogueTurnFocus(dialogue,next,focusRow=false){
+ if(!dialogue||dialogue.id!==dialogueId||
+  !Number.isInteger(next)||next<0||next>=dialogue.lines.length)return false;
+ c9DialogueTurn=next;
+ for(const el of root.querySelectorAll('[data-c9-turn-index]')){
+  const current=Number(el.dataset.c9TurnIndex)===next;
+  el.classList.toggle('is-c9-current',current);
+  el.setAttribute('aria-current',current?'step':'false');
+ }
+ const bar=root.querySelector('.c9-media-turn-nav');
+ if(bar){
+  const strong=bar.querySelector('strong'),speaker=bar.querySelector('div:first-child>span');
+  if(strong)strong.textContent='Turn '+(next+1)+' / '+dialogue.lines.length;
+  if(speaker)speaker.textContent='Speaker '+dialogue.lines[next].speaker+' · navigation does not reveal hidden listening-first text';
+  for(const control of bar.querySelectorAll('[data-action="c9-media-turn"]'))
+   control.disabled=control.dataset.dir==='-1'?next===0:next===dialogue.lines.length-1;
+  const play=bar.querySelector('[data-action="c9-media-listen-turn"]');
+  const slow=bar.querySelector('[data-action="c9-media-listen-turn-slow"]');
+  if(play)play.textContent='Play '+c9DialogueTurnLabel(dialogue,next);
+  if(slow)slow.textContent='Play '+c9DialogueTurnLabel(dialogue,next)+' slowly';
+ }
+ if(focusRow){
+  const row=root.querySelector('[data-c9-turn-index="'+next+'"]');
+  row?.scrollIntoView({block:'nearest',behavior:'auto'});
+  row?.focus({preventScroll:true});
+  announceC9Interaction(c9DialogueTurnLabel(dialogue,next)+' focused; no text revealed or grade recorded.');
+ }
+ return true;
+}
 async function act(button){const name=button.dataset.action,id=button.dataset.id;
 
  const handledWriting=await handleC9WritingAction(button,{
@@ -1150,6 +1193,23 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return;
  }
 
+ if(name==='c9-device-check'){
+  // Read only: never create dummy learner data or independent grading.
+  const snapshot=state;
+   const checked=await inspectLocalReadback(db,snapshot.revision,readState,snapshot);
+   c9DeviceReadback=state===snapshot?checked:Object.freeze({...checked,status:'stale'});
+  if(navigator.serviceWorker?.controller)await verifyC9OfflineShell();
+  const panel=$('c9-device-readiness');
+  if(panel)panel.outerHTML=renderDeviceReadiness({
+   storageReady:Boolean(db),revision:state.revision,online:navigator.onLine,
+   offlineShell:c9OfflineShell,coverage:c9OfflineCoverage,readback:c9DeviceReadback
+  },action,esc);
+  root.querySelector('#c9-device-readiness [data-action="c9-device-check"]')?.focus({preventScroll:true});
+  announceC9Interaction(c9DeviceReadback.status==='match'?
+   'Current learner revision read back successfully. Offline use still requires a physical device test.':
+   'Learner data could not be confirmed at the displayed revision. Check the device readiness result.');
+  return true;
+ }
  if(name==='c9-offline-repair'){
   if(!navigator.onLine){alertUser('Reconnect to prepare original offline assets.','error');return false;}
   if(!navigator.serviceWorker?.controller){
@@ -1543,8 +1603,16 @@ async function act(button){const name=button.dataset.action,id=button.dataset.id
   return speak(d.lines.map(line=>line.hanzi).join('。'),name==='c9-media-listen-slow'?0.68:demoSpeechRate);
  }
 if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
-  const d=findDialogue(dialogueId),line=d?.lines[c9DialogueTurn];if(!line)return;
-  return speak(line.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
+  if(route()!=='dialogues')return false;
+  const d=findDialogue(dialogueId),row=button.dataset.turnIndex!==undefined;
+  const selected=resolveC9DialogueTurnPlayback(d,{
+   focused:c9DialogueTurn,requested:row?button.dataset.turnIndex:undefined,
+   sourceId:row?button.dataset.dialogueId:undefined
+  });
+  if(!selected)return false;
+  if(row&&selected.index!==c9DialogueTurn)syncC9DialogueTurnFocus(d,selected.index,false);
+  announceC9Interaction('Device voice: '+selected.label+'. The original transcript remains concealed.');
+  return speak(selected.hanzi,name==='c9-media-listen-turn-slow'?0.68:demoSpeechRate);
  }
   if(name==='c9-reading-queue-page'){
   const delta=Number(button.dataset.delta);
@@ -1655,7 +1723,22 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return opened;
  }
  if(name==='c9-media-open-dialogue')return c9OpenMediaSource('dialogues',id);
- if(name==='c9-reading-review-copy'){
+ if(name==='c9-dialogue-review-copy'){
+   // Public authored source and source-owned answer keys only. No private
+   // P43 writing, learner history, account or device state is copied.
+   const packet=route()==='dialogues'?dialogueReviewPacket(id):null;
+   if(!packet)return alertUser('Original dialogue source was not found.','error');
+   try{
+    if(!navigator.clipboard?.writeText)throw Error('No browser clipboard');
+    await navigator.clipboard.writeText(packet);
+    alertUser('Public original dialogue manuscript copied with answer keys. Qualified human editorial approval remains outstanding.');
+    announceC9Interaction('Original dialogue editorial packet copied. Editorial approval remains outstanding.');
+   }catch{
+    alertUser('Clipboard unavailable. Review the public dialogue and its authorial evidence manually.','error');
+   }
+   return true;
+  }
+  if(name==='c9-reading-review-copy'){
   const review=readingReviewPacket(id);
   if(!review||route()!=='stories')return alertUser('Original reading source was not found.','error');
   try{
@@ -1727,30 +1810,10 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return true;
  }
  if(name==='c9-media-turn'){
-  const dialogue=findDialogue(dialogueId);
-  if(!dialogue)return;
-  const delta=Number(button.dataset.dir);
-  if(![-1,1].includes(delta))return;
-  const next=Math.max(0,Math.min(dialogue.lines.length-1,c9DialogueTurn+delta));
-  if(next===c9DialogueTurn)return;
-  c9DialogueTurn=next;
-  for(const el of root.querySelectorAll('[data-c9-turn-index]')){
-   el.classList.toggle('is-c9-current',Number(el.dataset.c9TurnIndex)===next);
-   el.setAttribute('aria-current',Number(el.dataset.c9TurnIndex)===next?'step':'false');
-  }
-  const bar=root.querySelector('.c9-media-turn-nav');
-  if(bar){
-   const strong=bar.querySelector('strong'),speaker=bar.querySelector('div:first-child>span');
-   if(strong)strong.textContent='Turn '+(next+1)+' / '+dialogue.lines.length;
-   if(speaker)speaker.textContent='Speaker '+dialogue.lines[next].speaker+' · navigation does not reveal hidden listening-first text';
-   for(const control of bar.querySelectorAll('[data-action="c9-media-turn"]')){
-     control.disabled=control.dataset.dir==='-1'?next===0:next===dialogue.lines.length-1;
-   }
-  }
-  const target=root.querySelector('[data-c9-turn-index="'+next+'"]');
-  target?.scrollIntoView({block:'nearest',behavior:'auto'});
-  target?.focus({preventScroll:true});
-  return;
+  const d=findDialogue(dialogueId),delta=Number(button.dataset.dir);
+  if(route()!=='dialogues'||!d||![-1,1].includes(delta))return false;
+  const next=Math.max(0,Math.min(d.lines.length-1,c9DialogueTurn+delta));
+  return next===c9DialogueTurn?false:syncC9DialogueTurnFocus(d,next,true);
  }
  if(name==='c9-story-pinyin'||name==='c9-story-english'){
   const next=name==='c9-story-pinyin'?!c9StoryPinyin:!c9StoryEnglish;
@@ -1909,7 +1972,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-lesson-select')return c9OpenAuthoredLesson(id);
  if(name==='c9-learn-back'){
   if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
-  c9OpenCatalogAfterHash=true;
+  c9OpenCatalogAfterHash=c9LearnLevel==='all';
   if(location.hash==='#/learn'){
    c9LearnDetail=false;render();
    const catalog=root.querySelector('details.c9-discovery-catalog');
@@ -1923,10 +1986,61 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   return true;
  }
  if(name==='c9-lesson-open')return c9OpenAuthoredLesson(id);
+ if(name==='c9-hsk-select'||name==='c9-hsk-browse'){
+    const level=button.dataset.level;
+    if(!['1','2','3','4','5','6','7-9'].includes(level))return false;
+    c9LearnLevel=level;c9LevelPane='learn';c9LearnUnit='all';c9LearnQuery='';c9LearnStatus='all';c9LearnPage=0;c9LearnDetail=false;
+    const target='#/learn/level/'+level;
+    if(name==='c9-hsk-browse')c9OpenCatalogAfterHash=true;
+    if(location.hash!==target)location.hash=target;
+    else{
+      render();
+      if(name==='c9-hsk-browse'){
+        const catalog=root.querySelector('details.c9-discovery-catalog');
+        if(catalog)catalog.open=true;
+        root.querySelector('#c9-browse-title')?.scrollIntoView({block:'start'});
+      }
+    }
+    return true;
+  }
+  if(name==='c9-hsk-back'){
+    c9LearnLevel='all';c9LearnDetail=false;
+    if(location.hash!=='#/learn')location.hash='#/learn';else render();
+    return true;
+  }
+  if(name==='c9-level-pane'){
+   if(!['learn','practice','review'].includes(button.dataset.pane)||c9LearnLevel==='all'||route()!=='learn'||c9LearnDetail)return false;
+   c9LevelPane=button.dataset.pane;render();
+   root.querySelector('.c9-level-tabs')?.scrollIntoView({block:'nearest'});
+   return true;
+ }
+ if(name==='c9-level-unit'){
+   if(c9LearnLevel==='all'||route()!=='learn'||c9LearnDetail)return false;
+   const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit&&
+     hskTargetLessons(c9LearnLevel).some(l=>g.lessons.some(item=>item.id===l.id)));
+   if(!unit)return false;
+   c9LevelPane='learn';c9LearnUnit=String(unit.index);c9LearnQuery='';c9LearnStatus='all';c9LearnPage=0;
+   render();
+   const catalog=root.querySelector('details.c9-discovery-catalog');
+   if(catalog)catalog.open=true;
+   root.querySelector('#c9-browse-title')?.scrollIntoView({block:'start'});
+   return true;
+ }
+ if(name==='c9-level-review-start'){
+   if(route()!=='learn'||c9LearnLevel==='all'||c9LearnDetail)return false;
+   const allowed=new Set(hskTargetLessons(c9LearnLevel).map(l=>l.id));
+   const queue=reviewPlan(state,{now:Date.now(),focus:'all',limit:50,lessonIds:allowed}).map(item=>item.id);
+   if(!queue.length)return false;
+   if(!go('review'))return false;
+   reviewFocus='all';sessionQueue=queue;
+   sessionDone=0;sessionCorrect=0;sessionSkipped=0;reviewInvalidated=0;reviewPaused=false;
+   revealed=false;typedAnswer='';chosenOption='';checkResult=null;activeReviewId=null;
+   render();return true;
+ }
  if(name==='c9-unit-open'){
    const unit=lessonGroups().find(g=>String(g.index)===button.dataset.unit);
    if(!unit)return;
-   c9LearnUnit=String(unit.index);c9LearnStatus='all';c9LearnQuery='';c9LearnPage=0;c9LearnDetail=false;
+   c9LearnLevel='all';c9LevelPane='learn';c9LearnUnit=String(unit.index);c9LearnStatus='all';c9LearnQuery='';c9LearnPage=0;c9LearnDetail=false;
    render();
    const unitPicker=$('c9-learn-unit');
    if(unitPicker){unitPicker.scrollIntoView({block:'center'});unitPicker.focus({preventScroll:true});}
@@ -1960,7 +2074,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
    return;
  }
  if(name==='c9-discovery-reset'){
-   c9LearnQuery='';c9LearnUnit='all';c9LearnStatus='all';c9LearnKind='all';
+   c9LearnQuery='';c9LearnUnit='all';c9LearnLevel='all';c9LearnStatus='all';c9LearnKind='all';
    c9LearnSaved=false;c9LearnPage=0;render();
    root.querySelector('#c9-learn-query')?.focus({preventScroll:true});return;
  }
@@ -2393,7 +2507,25 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(saved){libraryFeedback={...result,assisted};render();}
   return;
  }
- if(name==='grammar-open'){return go('grammar');}
+ if(name==='p36-toggle-model'){
+   const id=button.dataset.id;
+   if(route()!=='grammar'||selectedGrammarId()!==id||!findGrammarLesson(id)||!id.match(/^g(?:6[5-9]|7\d|8\d|9[0-4])$/))return false;
+   p36ShowModel=!p36ShowModel;
+   if(p36ShowModel)p36ReferenceViewedId=id;
+   render();return true;
+  }
+  if(name==='p36-repair'){
+   const id=button.dataset.id;
+   if(!id||!/^g(?:6[5-9]|7\d|8\d|9[0-4])$/.test(id))return false;
+   const index=SENTENCE_TASKS.findIndex(t=>t.id==='p36:fix:'+id&&t.p36Correction);
+   if(index<0)return alertUser('Original P36 correction task unavailable.','error');
+   return c9OpenNativeWorkshopTask(index,p36ReferenceViewedId===id);
+  }
+  if(name==='p36-sentences'){
+   if(!go('sentences'))return false;
+   librarySource='original-p36';libraryPage=0;render();return true;
+  }
+  if(name==='grammar-open'){return go('grammar');}
  if(name==='grammar-select'){
   const fromWriting=route()==='writing';
   const opened=findGrammarLesson(id)?openGrammarLesson(id):false;
@@ -2491,7 +2623,18 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
 
  if(name==='hub-go'){const target=button.dataset.route;if(LEARNING_DESTINATIONS.some(d=>d.route===target)||['progress','settings','practice','journey','block','ladder','wordbook','senses','workshop'].includes(target))return go(target);return;}
  if(name==='hub-primary'){const item=learningHub(state).primary;if(item.kind==='resume')return act({dataset:{action:'hub-resume',kind:item.source}});if(item.kind==='journey'&&item.lessonId)return act({dataset:{action:'c9-lesson-open',id:item.lessonId}});if(item.kind==='remediation'){planMistakeFilter='unresolved';return go('plan');}return go(item.route);}
- if(name==='hub-resume'){const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);if(!session)return alertUser('No saved session remains for this activity.');return go(session.route);}
+ if(name==='hub-resume'){
+   const session=activeLearningSessions(state).find(s=>s.kind===button.dataset.kind);
+   if(!session)return alertUser('No saved session remains for this activity.');
+   if(session.kind==='placement'){
+    if(route()==='today')return focusC9Placement();
+    c9PendingPlacementFocus=true;
+    const accepted=go('today');
+    if(!accepted)c9PendingPlacementFocus=false;
+    return accepted;
+   }
+   return go(session.route);
+  }
  if(name==='hub-task')return act({dataset:{action:'plan-launch',kind:button.dataset.kind}});
  if(name==='hub-lesson')return act({dataset:{action:'c9-lesson-open',id}});
  if(name==='hub-dialogue')return act({dataset:{action:'c9-media-open-dialogue',id}});
@@ -2797,9 +2940,28 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   alertUser(`Local data read OK · revision ${disk.revision} · ${disk.events.length} review events. ${estimate?.quota?`Browser storage estimate: ${Math.round((estimate.usage||0)/1048576)} / ${Math.round(estimate.quota/1048576)} MB.`:''} Persistence: ${persist===true?'requested/granted':persist===false?'not guaranteed':'unknown'}. Export a backup for device-loss recovery.`);
  }catch(e){alertUser(`Storage check failed: ${e.message}`,'error');}return;}
 
- if(name==='placement-start'||name==='placement-restart'){const ok=await mutate(s=>startPlacement({...structuredClone(s),placement:null}));if(ok&&route()!=='today')go('today');return;}
- if(name==='placement-answer'){const response=button.dataset.option||'';return mutate(s=>answerPlacement(s,response));}
- if(name==='placement-skip'){return mutate(s=>skipPlacement(s));}
+ if(name==='placement-start'||name==='placement-restart'){
+   const ok=await mutate(s=>startPlacement({...structuredClone(s),placement:null}));
+   if(ok){
+    if(route()==='today')focusC9Placement();
+    else{
+     c9PendingPlacementFocus=true;
+     if(!go('today'))c9PendingPlacementFocus=false;
+    }
+   }
+   return ok;
+  }
+ if(name==='placement-answer'){
+   const ok=await mutate(s=>answerPlacement(s,button.dataset.option||''));
+   if(ok)focusC9Placement();
+   return ok;
+  }
+ if(name==='placement-skip'){
+   const openFirst=state.placement?.status!=='active'&&route()==='today';
+   const ok=await mutate(s=>skipPlacement(s));
+   if(ok&&openFirst)return c9OpenAuthoredLesson(DEMO_LESSONS[0].id);
+   return ok;
+  }
  if(name==='placement-lesson'||name==='coach-open-lesson')return c9OpenAuthoredLesson(id);
  if(name==='coach-practice'){guidedFocus='weak';guidedLimit=10;return go('practice');}
  if(name==='connected-session'){guidedFocus='connected';guidedLimit=10;return go('practice');}
@@ -2963,7 +3125,24 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='speak')return speak(button.dataset.text||'',button.dataset.rate==='slow'?0.68:demoSpeechRate);
  if(name==='speech-stop'){stopC9Speech(true);return;}
  if(name==='select-explore'){const typ=button.dataset.type;searchSelection=typ==='word'&&findWord(id)?{type:'word',id}:typ==='character'&&findLesson(id)?{type:'character',id}:null;return render();}
- if(name==='export'){try{validateState(state);const content=JSON.stringify(backupDocument(state),null,2);const blob=new Blob([content],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);alertUser('Backup export started. Confirm the file was saved on your device.');}catch(e){alertUser(`Backup failed: ${e.message}`,'error')}return}
+ if(name==='export'){
+  if(busy)return alertUser('A learning-data operation is in progress. Finish it before exporting.','error');
+  busy=true;
+  try{
+   // The in-tab state can lag a commit from a second tab. Always export the
+   // authoritative persisted snapshot; never claim an empty fallback as backup.
+   const snapshot=await exportSavedBackup(db);
+   const content=JSON.stringify(snapshot.document,null,2);
+   const blob=new Blob([content],{type:'application/json'});
+   const url=URL.createObjectURL(blob),link=document.createElement('a');
+   link.href=url;link.download=`character-study-backup-${new Date().toISOString().slice(0,10)}.json`;
+   document.body.append(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),5000);
+   alertUser(`Saved revision ${snapshot.revision} backup export started. Check that the file was saved outside browser storage. Unsubmitted private writing requires its separate export.`);
+  }catch(e){alertUser(`Backup not exported: ${e.message}`,'error');}
+  finally{busy=false;}
+  return;
+ }
  if(name==='import-open')return $('import-file')?.click();
  if(name==='reset'){if(!confirm('Delete all demo learning progress in this browser? Export a backup first if you want to keep it.'))return;const cleared=await mutate(_=>freshState());if(cleared){pendingRestore=null;restoreAcknowledgement='';}return}
 }
@@ -3100,7 +3279,7 @@ if(e.target.id==='p30-saved'){p30Saved=e.target.checked;p30Page=0;return render(
 }
 if(e.target.id==='sentence-library-saved'){librarySavedOnly=e.target.checked;libraryPage=0;render();return;}
 if(e.target.id==='grammar-chapter-select'){const chapter=GRAMMAR_CHAPTERS.find(c=>String(c.number)===e.target.value);if(!chapter){grammarChapter='all';return render();}grammarChapter=e.target.value;openGrammarLesson(chapter.lessons[0]);return;}if(e.target.id==='pinyin-filter'){pinyinFilter=e.target.value;pinyinIndex=0;pinyinFeedback=null;pinyinTyped='';render();return;}if(e.target.id==='wordbook-mode'){if(WORD_PRACTICE_MODES.includes(e.target.value)&&!state.vocabularyJourney){wordbookMode=e.target.value;wordbookFeedback=null;wordbookTyped='';render();}return;}if(e.target.id==='wordbook-focus'){wordbookFocus=e.target.value;wordbookIndex=0;wordbookFeedback=null;wordbookTyped='';render();return;}if(e.target.id==='dialogue-choice'){const selected=e.target.value;if(!c9OpenMediaSource('dialogues',selected))e.target.value=dialogueId;return;}if(e.target.id==='guided-size'){guidedLimit=Number(e.target.value);return;}if(e.target.id==='guided-focus'){guidedFocus=e.target.value;return;} if(e.target.id==='drill-lesson'){if(findLesson(e.target.value)){drillLessonId=e.target.value;resetDrill();render();}return;}if(e.target.id==='review-focus'){reviewFocus=e.target.value;return render();}if(e.target.id==='review-size'){reviewSize=Number(e.target.value);return render();}if(e.target.id==='story-choice'){const selected=e.target.value;if(!c9OpenMediaSource('stories',selected))e.target.value=storyId;return;}if(e.target.id==='reader-lesson'){readerLessonId=e.target.value;readerResult=null;showLessonTranslation=false;render();return;}
- if(e.target.id==='import-file'&&e.target.files?.length){if(!db)return;try{const file=e.target.files[0];if(file.size>MAX_BACKUP_BYTES)throw new Error('Backup exceeds 8 MB size limit');const doc=JSON.parse(await file.text());const inspected=previewBackup(doc,state,{bytes:file.size});pendingRestore={learner:importBackup(doc),preview:inspected};restoreAcknowledgement='';e.target.value='';go('settings');render();alertUser('Backup validated. Review the comparison below before choosing to replace any learner data.');}catch(err){pendingRestore=null;restoreAcknowledgement='';alertUser(`Import rejected: ${err.message}`,'error')}}
+ if(e.target.id==='import-file'&&e.target.files?.length){if(!db)return;try{const file=e.target.files[0];if(file.size>MAX_BACKUP_BYTES)throw new Error('Backup exceeds 8 MB size limit');const doc=JSON.parse(await file.text());const inspected=await previewSavedBackup(db,doc,{bytes:file.size});pendingRestore=inspected;restoreAcknowledgement='';e.target.value='';go('settings');render();alertUser('Backup validated. Review the comparison below before choosing to replace any learner data.');}catch(err){pendingRestore=null;restoreAcknowledgement='';alertUser(`Import rejected: ${err.message}`,'error')}}
 });
 document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Enter'&&e.ctrlKey&&e.target.id==='sentence-library-entry'){
  e.preventDefault();const button=root.querySelector('[data-action="sentence-answer"]');if(button&&!button.disabled)void act(button);return;
@@ -3121,11 +3300,11 @@ document.addEventListener('keydown',e=>{if(route()==='sentences'&&e.code==='Ente
 // Browser history can switch the historical lesson ID without switching routes.
 // Resolve only genuine original IDs; malformed hashes never install a new source.
 function c9HashLearningSource(screen,hash){
+ if(screen==='grammar')return grammarIdFromHash(hash);
  const patterns={
   learn:/^#\/learn\/(demo-\d{2,3})$/,
   stories:/^#\/stories\/(story-\d{2,4})$/,
   dialogues:/^#\/dialogues\/(dialogue-\d{2,4})$/,
-  grammar:/^#\/grammar\/(g\d{2})$/,
   sentences:/^#\/sentences\/(sent-\d{3})$/,
   pathway:/^#\/pathway\/(path-\d{2})$/
  };
@@ -3134,7 +3313,6 @@ function c9HashLearningSource(screen,hash){
  return screen==='stories'?(findStory(id)?id:null):
   screen==='dialogues'?(findDialogue(id)?id:null):
   screen==='learn'?(findLesson(id)?id:null):
-  screen==='grammar'?(findGrammarLesson(id)?id:null):
   screen==='sentences'?(findLibrarySentence(id)?id:null):
   screen==='pathway'?(findPathwayMission(id)?id:null):null;
 }
@@ -3201,6 +3379,9 @@ window.addEventListener('hashchange',()=>{
   }
  }
  if(destination==='learn'){
+   const chosenLevel=currentHash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1];
+   if(chosenLevel)c9LearnLevel=chosenLevel;
+   else if(previous!=='learn'&&!c9HashLearningSource('learn',currentHash))c9LearnLevel='all';
   const lessonId=c9HashLearningSource('learn',currentHash);
   const originalChanged=Boolean(lessonId)&&(!c9LearnDetail||displayLessonId!==lessonId);
   c9LearnDetail=Boolean(lessonId);
@@ -3209,7 +3390,7 @@ window.addEventListener('hashchange',()=>{
    if(originalChanged){c9LessonSection='overview';c9LessonFocused=true;}
    showLessonTranslation=state.settings.showPinyin;
   }
-  if(!lessonId&&previous==='learn'&&previousHash!==currentHash)c9OpenCatalogAfterHash=true;
+  if(!lessonId&&previous==='learn'&&c9LearnLevel==='all'&&/^#\/learn\/demo-\d{2,3}$/.test(previousHash))c9OpenCatalogAfterHash=true;
  }
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
   grammarSelected=targetSource;
@@ -3253,6 +3434,13 @@ if(c9ReturnFocus){
  c9ReturnFocus=null;
  if(focus){focus.scrollIntoView({block:'start',behavior:'auto'});focus.focus({preventScroll:true});}
 }
+// Route accessibility focuses the page heading; restore the saved placement
+// question afterwards so resume is accessible from every workspace.
+if(c9PendingPlacementFocus&&destination==='today'){
+   c9PendingPlacementFocus=false;
+   focusC9Placement();
+  }
+  
 if(c9SearchFocusPending&&route()==='find'){root.querySelector('#p30-query')?.focus({preventScroll:true});c9SearchFocusPending=false;}});
 window.addEventListener('online',networkLabel);window.addEventListener('offline',networkLabel);
 function networkLabel(){
@@ -3285,6 +3473,13 @@ function networkLabel(){
   if(count)count.textContent=c9OfflineCoverage?
    c9OfflineCoverage.cached+' / '+c9OfflineCoverage.total+' static assets cached on this device.':
    'Cache coverage has not yet been verified by this service worker.';
+ }
+ const deviceStatus=$('c9-device-offline-status');
+ const deviceCount=$('c9-device-cache-count');
+ if(deviceStatus||deviceCount){
+  const info=offlineDeviceStatus(c9OfflineShell,c9OfflineCoverage);
+  if(deviceStatus)deviceStatus.textContent=info.message;
+  if(deviceCount)deviceCount.textContent=info.count;
  }
  const upgrade=$('c9-home-offline-upgrade');
  if(upgrade)upgrade.hidden=!online||c9OfflineShell!=='outdated';
@@ -3356,7 +3551,7 @@ async function setupSW(){
   console.warn('Offline shell unavailable',error);
  }
 }
-async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
+async function init(){networkLabel();if('BroadcastChannel'in window){channel=new BroadcastChannel('character-study-v2');channel.onmessage=async()=>{if(db){try{state=await readState(db);c9DeviceReadback=null;render()}catch(e){alertUser(`State refresh failed: ${e.message}`,'error')}}};}
  try{db=await openDatabase();state=await readState(db);validateState(state);const migration=upgradedState(state);if(migration)state=await updateState(db,_=>migration);render();}catch(e){storageError=e;render();alertUser(`Local storage unavailable: ${e.message}. The app is read-only until storage works.`,'error');}
  // Offline installation is never a prerequisite for drawing the current
  // learner's dashboard. Let the first paint and interaction take priority;

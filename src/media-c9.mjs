@@ -1,4 +1,6 @@
 import {P75_DIALOGUES} from './p75-dialogues.mjs';
+import {c9DialogueTurnLabel} from './accessibility-c9.mjs';
+import {auditDialogueSource,auditDialogueInventory} from './dialogue-editorial-c9.mjs';
 import {renderP76CaseLab} from './p76-case-lab.mjs';
 /**
  * C9-09 Clean Modular Scholar — Reading, Listening & Conversations.
@@ -470,7 +472,8 @@ export function renderC9P75ConversationCourse(state,currentId,act,esc){
  '<header><p class="c9-eyebrow">P75 · FIVE ORIGINAL MULTI-SPEAKER NEGOTIATIONS</p>'+
  '<h2 id="c9-p75-conversations-title">Negotiate what the evidence supports</h2>'+
  '<p>Five new upper-intermediate Mandarin dialogues, forty bilingual turns and fifteen source-linked questions. Hear speakers with optional device TTS, answer through the original Dialogue grader, rehearse a speaking role, then compose in the original P43 editor. P71 reading themes are related but are separate authorial manuscripts. DEMO_ONLY · UNREVIEWED · not official HSK or verified listening/speaking.</p></header>'+
- '<div class="c9-p75-dialogue-grid">'+rows.map((d,i)=>{
+ '<p class="c9-media-provenance">Source review: '+auditDialogueInventory().unreviewed+' independent conversation scripts remain unreviewed. Source checks cannot validate Pinyin tones, translation, answer fairness or rights.</p>'+
+  '<div class="c9-p75-dialogue-grid">'+rows.map((d,i)=>{
   const story=STORIES.find(s=>s.beginner?.p71?.id===d.p75.readingId);
   const own=history.filter(e=>e.dialogueId===d.id),independent=new Set(own.filter(e=>e.correct&&!e.assisted).map(e=>e.question)),last=own.at(-1);
   return '<article'+(d.id===currentId?' class="is-current"':'')+'>'+
@@ -483,7 +486,10 @@ export function renderC9P75ConversationCourse(state,currentId,act,esc){
    act('c9-media-open-dialogue','Practice native conversation →','c9-button c9-button--primary c9-button--small','data-id="'+esc(d.id)+'"')+
    (story?act('c9-media-open-story','Read related P71 passage →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
    (story?act('c9-p71-open-composition','Write an independent Mandarin response →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
-   '</div><small>Public authorial educational script only; related topic does not establish source identity or HSK membership.</small>'+
+   '</div><details class="c9-dialogue-editorial"><summary>Source editorial audit · UNREVIEWED · '+auditDialogueSource(d.id).issues.length+' structural issues</summary>'+
+    '<p>Source: '+esc(auditDialogueSource(d.id).sourcePath)+'. Original answer keys are not shown until an editor explicitly copies the review packet. Structural checks are not linguistic approval.</p>'+
+    act('c9-dialogue-review-copy','Copy complete original source review (contains answer keys)','c9-button c9-button--secondary c9-button--small','data-id="'+esc(d.id)+'"')+
+    '</details><small>Public authorial educational script only; related topic does not establish source identity or HSK membership.</small>'+
    '</article>';
  }).join('')+'</div></section>';
 }
@@ -513,11 +519,14 @@ export function renderC9P77ConsequenceCourse(state,currentId,act,esc){
    (prior?act('c9-media-open-dialogue','Revisit previous negotiation →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(prior.id)+'"'):'')+
    (story?act('c9-media-open-story','Read separate background source →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
    (story?act('c9-p71-open-composition','Compose an independent Mandarin response →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'')+
-   '</div><details><summary>Source provenance and editorial status</summary>'+
+   '</div><details class="c9-dialogue-editorial"><summary>Source provenance and editorial status</summary>'+
    '<p>Original follow-up '+esc(x.id)+' / canonical dialogue '+esc(d.id)+
    '. Previous independent negotiation '+esc(x.previous)+
    '. Related separately authored reading '+esc(x.readingId)+
-   '. These scripts do not constitute one verified real-world record; Mandarin and Pinyin require qualified review.</p></details>'+
+   '. These scripts do not constitute one verified real-world record; Mandarin and Pinyin require qualified review.</p>'+
+    '<p>Source audit: '+auditDialogueSource(d.id).issues.length+' structural issues · UNREVIEWED. Checks are not tone, translation, fairness, copyright or HSK approval. The complete reviewer packet contains answer keys.</p>'+
+    act('c9-dialogue-review-copy','Copy complete original source review (contains answer keys)','c9-button c9-button--secondary c9-button--small','data-id="'+esc(d.id)+'"')+
+    '</details>'+
    '</article>';
  }).join('')+'</div></section>';
 }
@@ -734,8 +743,8 @@ export function renderC9TurnNavigator(d,active,act,esc){
  '<span>Speaker '+esc(line?.speaker||'A')+' · moving between turns does not reveal the source transcript or record an answer</span></div>'+
  '<div class="c9-media-turn-actions">'+
  act('c9-media-turn','← Previous','c9-button c9-button--secondary c9-button--small','data-dir="-1" '+(current===0?'disabled':''))+
- act('c9-media-listen-turn','Play focused turn','c9-button c9-button--primary c9-button--small')+
- act('c9-media-listen-turn-slow','Slower · focused turn','c9-button c9-button--secondary c9-button--small')+
+ act('c9-media-listen-turn','Play '+c9DialogueTurnLabel(d,current),'c9-button c9-button--primary c9-button--small')+
+ act('c9-media-listen-turn-slow','Play '+c9DialogueTurnLabel(d,current)+' slowly','c9-button c9-button--secondary c9-button--small')+
  act('c9-media-turn','Next turn →','c9-button c9-button--secondary c9-button--small','data-dir="1" '+(current===d.lines.length-1?'disabled':''))+
  '</div></nav>';
 }

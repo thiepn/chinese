@@ -470,3 +470,69 @@
  .c9-original-curriculum-disclosure>summary{padding:13px 12px;gap:10px}
  .c9-original-curriculum-disclosure .c9-original-curriculum{padding:12px}
 }
+
+
+/* Direct HSK-target entry: navigational difficulty, never certified membership. */
+.c9-level-entry,.c9-level-selected{padding:clamp(18px,2.2vw,27px);border:1px solid var(--c9-line);background:var(--c9-surface);min-width:0}
+.c9-level-entry h2,.c9-level-selected h2{margin:0 0 17px;font:600 clamp(22px,2.5vw,30px)/1.22 var(--c9-display);letter-spacing:-.02em}
+.c9-level-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.c9-level-choice{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:17px 15px;min-width:0;min-height:118px;cursor:pointer;border:1px solid var(--c9-line);background:transparent;color:var(--c9-ink);font:inherit}
+.c9-level-choice strong{font-size:19px;font-weight:650;line-height:1.2}
+.c9-level-choice span{font-size:14px;line-height:1.4;color:var(--c9-sub)}
+.c9-level-choice small{font-size:12px;color:var(--c9-muted);margin-top:auto;line-height:1.3}
+.c9-level-choice:hover,.c9-level-choice:focus-visible{border-color:var(--c9-accent);outline-offset:2px}
+.c9-level-choice.is-selected{background:var(--c9-accent-soft);border-color:var(--c9-accent)}
+.c9-level-caveat{font-size:13px;color:var(--c9-sub);line-height:1.55;margin:15px 0 0}
+.c9-level-selected>p{font-size:14px;color:var(--c9-sub);margin:-7px 0 14px}
+.c9-level-lesson-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.c9-level-lesson,.c9-level-source{display:flex;align-items:center;min-width:0;gap:13px;text-align:left;cursor:pointer;line-height:1.45;padding:13px 15px;border:1px solid var(--c9-line);background:transparent;color:var(--c9-ink);font:inherit}
+.c9-level-lesson:hover,.c9-level-source:hover,.c9-level-lesson:focus-visible,.c9-level-source:focus-visible{border-color:var(--c9-accent);background:var(--c9-surface-2)}
+.c9-level-lesson>span{font:500 29px/1.15 var(--c9-hanzi-display);flex:none}
+.c9-level-lesson>strong,.c9-level-source>strong{font-size:14px;flex:1;min-width:0;overflow-wrap:anywhere}
+.c9-level-lesson>small,.c9-level-source>small{font-size:12px;color:var(--c9-sub);flex:none}
+.c9-level-source{flex-wrap:wrap}
+.c9-level-source>small{flex-basis:100%}
+.c9-level-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+@media(max-width:720px){.c9-level-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-level-lesson-list{grid-template-columns:1fr}.c9-level-lesson>small{display:none}}
+@media(max-width:350px){.c9-level-grid{grid-template-columns:1fr}.c9-level-choice{min-height:82px}}
+
+/* Authored skill sources in an HSK-target view. The source engine owns grading. */
+.c9-level-skills{border-top:1px solid var(--c9-line);margin-top:23px;padding-top:21px;display:grid;gap:15px}
+.c9-level-skills>h3{font:600 20px/1.3 var(--c9-display);margin:0}
+.c9-level-skills-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.c9-level-source-group{min-width:0;display:flex;flex-direction:column;gap:10px}
+.c9-level-source-group>header{display:flex;gap:7px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.c9-level-source-group h3{font-size:15px;margin:0;line-height:1.35}
+.c9-level-source-group header a{font-size:13px;color:var(--c9-accent)}
+.c9-level-source-list{display:grid;gap:7px}
+.c9-level-source-list .c9-level-source{min-height:66px;align-items:flex-start;gap:4px;flex-direction:column}
+.c9-level-source-count,.c9-level-skills>p{font-size:13px;line-height:1.5;color:var(--c9-sub);margin:0}
+@media(max-width:760px){.c9-level-skills-grid{grid-template-columns:1fr}.c9-level-source-list{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.c9-level-source-list{grid-template-columns:1fr}}
+
+/* L1: level evidence and the three native learning actions. */
+.c9-level-overview{padding:14px 0 19px;display:grid;gap:14px}
+.c9-level-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.c9-level-metrics>div{display:flex;flex-direction:column;gap:4px;min-width:0;border:1px solid var(--c9-line);padding:14px 12px}
+.c9-level-metrics strong{font:650 clamp(19px,2vw,25px)/1.2 var(--c9-display);font-variant-numeric:tabular-nums}
+.c9-level-metrics span{color:var(--c9-sub);font-size:13px;line-height:1.4}
+.c9-level-continuation{display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.c9-level-continuation>strong{font-size:15px}
+.c9-level-tabs{display:flex;gap:3px;border-bottom:1px solid var(--c9-line);margin:3px 0 17px}
+.c9-level-tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 19px;font-size:15px;font-weight:600;line-height:1.4;font-family:inherit;color:var(--c9-sub);cursor:pointer}
+.c9-level-tab.is-selected{border-bottom-color:var(--c9-accent);color:var(--c9-ink)}
+.c9-level-tab:focus-visible{outline:2px solid var(--c9-accent);outline-offset:-3px}
+.c9-level-chapters{margin-top:20px;display:grid;gap:12px}
+.c9-level-chapters>h3,.c9-level-review-panel>h3{margin:0;font-size:17px}
+.c9-level-chapter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.c9-level-chapter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px;border:1px solid var(--c9-line);min-width:0}
+.c9-level-chapter>strong{flex-basis:100%;font-size:15px;overflow-wrap:anywhere}
+.c9-level-chapter>span{flex-basis:100%;color:var(--c9-sub);font-size:13px}
+.c9-level-review-panel{display:grid;gap:12px}
+.c9-level-review-panel>p{margin:0;font-size:14px;color:var(--c9-sub)}
+.c9-level-review-panel>.c9-button{justify-self:start}
+.c9-level-retry-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.c9-level-practice-stats{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;margin-top:16px;font-size:14px}
+.c9-level-practice-stats span{color:var(--c9-sub)}
+@media(max-width:760px){.c9-level-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-level-chapter-grid,.c9-level-retry-list{grid-template-columns:1fr}}
+@media(max-width:350px){.c9-level-tab{padding:11px 14px}.c9-level-metrics{gap:6px}.c9-level-metrics>div{padding:11px 9px}}

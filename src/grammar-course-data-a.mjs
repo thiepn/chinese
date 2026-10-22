@@ -495,11 +495,11 @@ export const GRAMMAR_ROWS_A=[
     ],
     [
       "Ask where the train station is.",
-      "车站在哪里？",
-      "Chēzhàn zài nǎlǐ?",
+      "火车站在哪里？",
+      "Huǒchēzhàn zài nǎlǐ?",
       "Where is the train station?",
       [
-        "车站",
+        "火车站",
         "在",
         "哪里",
         "？"

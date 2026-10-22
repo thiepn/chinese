@@ -5,6 +5,7 @@
 import {courseOverview,courseShortcuts} from './course-overview.mjs';
 import {learningHub} from './learning-hub.mjs';
 import {lessonGroups} from './study-groups.mjs';
+import {hskTargetLessons,hskTargetPractice,HSK_TARGETS} from './hsk-targets-c9.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
 
 const ICONS=Object.freeze({
@@ -42,12 +43,13 @@ function taskRow(task,act,esc){
  * The renderer is deliberately pure. Online and storage flags are display-only:
  * the existing mutate()/IndexedDB pathway is still sole authority for writes.
  */
-export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offlineShell='checking',showPinyin=true}={}){
+export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offlineShell='checking',showPinyin=true,selectedLevel='all'}={}){
  const overview=courseOverview(state),hub=learningHub(state);
  const plan=hub.plan,primary=hub.primary;
  const hasActivity=overview.introduced>0||overview.scheduled.attempts>0||overview.supplementary>0||hub.sessions.length>0;
  const shortcuts=courseShortcuts(state);
  const lesson=overview.nextLesson;
+ const lessonIsPrimary=Boolean(lesson&&primary.kind==='journey');
  const last=overview.lastLesson;
 
  const storageNotice=!storageReady?'<div class="c9-home-notice c9-home-notice--warning" role="status"><strong>Local saving is unavailable</strong><span>You can browse the available material, but progress cannot be saved until browser storage works. Existing learning records have not been changed.</span></div>':'';
@@ -69,19 +71,26 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   '<strong>Update offline lessons</strong><span>An older cached version currently controls this tab. Before reloading, copy or export any unsaved private P43 writing. Reload online to let the current service worker prepare its original lessons. Your local review history is not reset.</span></div>';
  const scenery='<svg class="c9-home-mountains" viewBox="0 0 430 175" aria-hidden="true" focusable="false"><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130V175H0Z" fill="currentColor" opacity=".08"/><path d="M0 151Q51 120 77 126Q120 57 158 106Q189 126 218 73Q262 28 317 108Q358 71 430 130" fill="none" stroke="currentColor" opacity=".17"/><path d="M181 133h91m-76 0 17-18h38l17 18m-60-19 5-10h37l7 10m-12 19v-16m-22 16v-16m-21-15h69" fill="none" stroke="currentColor" opacity=".19"/><path d="M20 157h150m132 0h128" stroke="currentColor" opacity=".13"/></svg>';
  const nextSource=lesson?.sentence?.hanzi&&lesson?.sentence?.english?
-  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>AUTHORED EXAMPLE · NEXT LESSON</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+
+  '<div class="c9-home-source-preview" aria-label="Next original lesson sentence"><span>'+(lessonIsPrimary?'AUTHORED EXAMPLE · NEXT LESSON':'OPTIONAL · NEXT CHARACTER LESSON')+'</span><strong lang="zh-Hans">'+esc(lesson.sentence.hanzi)+'</strong>'+(showPinyin?'<small>'+esc(lesson.sentence.pinyin)+'</small>':'')+'<p>'+esc(lesson.sentence.english)+'</p>'+
   '<details class="c9-home-listening"><summary>Listen and shadow this sentence ↘</summary>'+
   renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
-  '</details><div class="c9-home-source-actions" role="group" aria-label="Continue this exact original Chinese example">'+act('hub-lesson','Open complete lesson →','c9-button c9-button--primary c9-button--small','data-id="'+esc(lesson.id)+'"')+act('c9-character-open','Explore this character','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>':'';
- const courseCaption=lesson?'LESSON '+String(lesson.order).padStart(3,'0')+' OF '+overview.total:'ORIGINAL CHARACTER COURSE';
- const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">START HERE · CHARACTER COURSE</span>'+
-  '<h2 id="c9-home-next">'+(lesson?'Lesson '+String(lesson.order).padStart(3,'0')+' · <span lang="zh-Hans">'+esc(lesson.hanzi)+'</span> · '+esc(lesson.meaning):esc(primary.label))+'</h2>'+
-  '<p>'+(lesson?'Study the character first, then its pronunciation, vocabulary, sentences and guided practice.':esc(primary.detail))+'</p>'+
+  '</details><div class="c9-home-source-actions" role="group" aria-label="Continue this exact original Chinese example">'+act('hub-lesson','Open complete lesson →','c9-button '+(lessonIsPrimary?'c9-button--primary':'c9-button--secondary')+' c9-button--small','data-id="'+esc(lesson.id)+'"')+act('c9-character-open','Explore this character','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>':'';
+ const courseCaption=lesson?(lessonIsPrimary?'LESSON ':'OPTIONAL NEXT LESSON · ')+String(lesson.order).padStart(3,'0')+' OF '+overview.total:'ORIGINAL CHARACTER COURSE';
+ const heroKicker=lessonIsPrimary?'START HERE · CHARACTER COURSE':
+  primary.kind==='resume'?'CONTINUE SAVED WORK':
+  primary.kind==='review'?'DUE NOW · SCHEDULED RECALL':
+  primary.kind==='remediation'?'NEXT STEP · REPAIR OBSERVED MISTAKES':'NEXT STEP · ORIGINAL PRACTICE';
+ const heroAction=primary.kind==='resume'?'Resume saved activity':
+  primary.kind==='review'?'Begin due review':
+  primary.kind==='remediation'?'Open mistake corrections':'Continue studying';
+ const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">'+heroKicker+'</span>'+
+  '<h2 id="c9-home-next">'+(lessonIsPrimary?'Lesson '+String(lesson.order).padStart(3,'0')+' · <span lang="zh-Hans">'+esc(lesson.hanzi)+'</span> · '+esc(lesson.meaning):esc(primary.label))+'</h2>'+
+  '<p>'+(lessonIsPrimary?'Study the character first, then its pronunciation, vocabulary, sentences and guided practice.':esc(primary.detail))+'</p>'+
   '<div class="c9-home-hero-actions">'+
-  (lesson?act('hub-lesson',(hasActivity?'Continue lesson ':'Start lesson ')+String(lesson.order).padStart(3,'0')+' '+icon('arrow'),'c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"'):
-   act('hub-primary','Continue studying '+icon('arrow'),'c9-button c9-button--primary'))+
-  '<a class="c9-button c9-button--secondary" href="#/review">Review · '+overview.due+' due</a>'+
-  (hub.sessions.length?act('hub-primary','Resume unfinished activity','c9-button c9-button--quiet'):'')+
+  (lessonIsPrimary?act('hub-lesson',(hasActivity?'Continue lesson ':'Start lesson ')+String(lesson.order).padStart(3,'0')+' '+icon('arrow'),'c9-button c9-button--primary','data-id="'+esc(lesson.id)+'"'):
+   act('hub-primary',heroAction+' '+icon('arrow'),'c9-button c9-button--primary'))+
+  (lesson&&!lessonIsPrimary?act('hub-lesson','Lesson '+String(lesson.order).padStart(3,'0')+' (optional)','c9-button c9-button--secondary','data-id="'+esc(lesson.id)+'"'):'')+
+  (overview.due&&primary.kind!=='review'?'<a class="c9-button c9-button--secondary" href="#/review">Review · '+overview.due+' due</a>':'')+
   '</div>'+nextSource+'</div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">'+(lesson?esc(lesson.hanzi):'学')+'</span><span class="c9-home-art-caption">'+courseCaption+'</span></div></section>';
  const greeting='<header class="c9-home-heading"><div><p class="c9-home-kicker">THIEPN CHINESE · TODAY</p><h1>'+(hasActivity?'Continue learning, one step at a time.':'A quiet place to begin Chinese.')+'</h1><p>Original characters, complete words and source sentences. Your next action is ready below.</p></div><span class="c9-home-date" aria-label="Local learning status">'+overview.introduced+' introduced · '+overview.due+' due</span></header>';
  const metrics='<section class="c9-home-metrics" aria-label="Your actual learning records">'+
@@ -138,9 +147,31 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
- return '<div class="c9-home">'+greeting+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+'<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+
-  '<div class="c9-home-columns"><div class="c9-home-main-column">'+quick+'</div><div class="c9-home-side-column">'+studyProgress+continuation+'</div></div>'+roadmap+
-  '<details class="c9-home-explore-more"><summary><span><strong>Explore the rest of your course</strong><small>Original units, reading, conversations, grammar and pronunciation</small></span><span class="c9-home-explore-chevron" aria-hidden="true">⌄</span></summary>'+
-  '<div class="c9-home-explore-content">'+connected+'</div></details>'+
-  readiness+'</div>';
+ const lastId=(state.introductions||[]).at(-1)?.id||last?.id;
+ const inferred=HSK_TARGETS.find(t=>hskTargetLessons(t.id).some(l=>l.id===lastId))?.id||'1';
+ const level=HSK_TARGETS.some(t=>t.id===selectedLevel)?selectedLevel:inferred;
+ const available=hskTargetLessons(level),learned=new Set(state.learned||[]);
+ const next=available.find(l=>!learned.has(l.id))||available[0]||null;
+ const sources=hskTargetPractice(level);
+ const reading=sources.readings[0],dialogue=sources.dialogues[0],mission=sources.missions[0];
+ const selected=next?{id:next.id,kind:'lesson',label:'Lesson '+next.order+' · '+next.meaning,action:'c9-lesson-open'}:
+  reading?{id:reading.id,kind:'reading',label:reading.title,action:'c9-media-open-story'}:
+  dialogue?{id:dialogue.id,kind:'dialogue',label:dialogue.title,action:'c9-media-open-dialogue'}:
+  mission?{id:mission.id,kind:'mission',label:mission.title,action:'pathway-select'}:null;
+ const levelTitle=HSK_TARGETS.find(t=>t.id===level)?.name||'HSK 1';
+ const firstAction=hub.sessions.length?act('hub-primary','Resume saved activity →','c9-button c9-button--primary'):
+  selected?act(selected.action,(available.some(l=>learned.has(l.id))?'Continue ':'Start ')+selected.kind+' →',
+   'c9-button c9-button--primary','data-id="'+esc(selected.id)+'"'):
+  '<a class="c9-button c9-button--primary" href="#/learn/level/'+esc(level)+'">'+esc(levelTitle)+' · Open course →</a>';
+ return '<div class="c9-home">'+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+
+  '<section class="c9-home-course-launch"><h1>'+esc(levelTitle)+' · '+esc(selected?.label||'Learn Chinese')+'</h1>'+
+  ''+
+  '<div class="c9-home-course-actions">'+firstAction+
+  '<a class="c9-button c9-button--secondary" href="#/learn/level/'+esc(level)+'">View '+esc(levelTitle)+'</a><a class="c9-home-level-link" href="#/learn">Change level</a></div></section>'+
+  (overview.due?'<section class="c9-course-review"><strong>'+overview.due+' review cards due</strong>'+
+   '<a href="#/review" class="c9-button c9-button--secondary">Review now</a></section>':'')+
+  '<details class="c9-home-explore-more"><summary><strong>Progress and other resources</strong></summary>'+
+  '<div class="c9-home-explore-content">'+greeting+
+  '<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+studyProgress+continuation+roadmap+connected+
+  '</div></details>'+readiness+'</div>';
 }

@@ -114,3 +114,24 @@ export function installC9KeyboardHelp(){
   }
  });
 }
+
+/** Guarded dialogue playback: explicit per-row requests cannot fall back
+ * silently to another focused speaking turn. No saved learner state, text
+ * in DOM attributes, inferred listening grade or alternate source authority. */
+export function c9DialogueTurnLabel(dialogue,index){
+ const line=dialogue?.lines?.[index];
+ if(!Number.isInteger(index)||index<0||!line)return null;
+ return 'Turn '+(index+1)+' of '+dialogue.lines.length+', speaker '+String(line.speaker);
+}
+export function resolveC9DialogueTurnPlayback(dialogue,{focused,requested,sourceId}={}){
+ if(!dialogue||!Array.isArray(dialogue.lines))return null;
+ let index=focused;
+ if(requested!==undefined){
+  if(typeof requested!=='string'||!/^(0|[1-9][0-9]*)$/.test(requested)||sourceId!==dialogue.id)return null;
+  index=Number(requested);
+ }
+ if(!Number.isSafeInteger(index)||index<0||index>=dialogue.lines.length)return null;
+ const line=dialogue.lines[index];
+ if(typeof line?.hanzi!=='string'||!line.hanzi.trim())return null;
+ return Object.freeze({index,hanzi:line.hanzi,speaker:line.speaker,label:c9DialogueTurnLabel(dialogue,index)});
+}

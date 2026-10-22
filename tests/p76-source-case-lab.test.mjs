@@ -36,7 +36,7 @@ test('P76 native owner projections are read-only and expose the original convers
  const c=p76Cases()[0],q=dialogueQuestion(c.dialogueId,c.nativeQuestion);
  const next=addDialogueEvent(state,{id:'p76-native-1',dialogueId:c.dialogueId,question:c.nativeQuestion,answer:q.answer,at:1000});
  const updated=renderP76CaseLab(next,c.dialogueId,act,esc);
- assert.match(updated,/independently correct observed/);
+ assert.match(updated,/Negotiation question: independent correct/);
  assert.equal(state.dialogueEvents.length,0);
 });
 test('P76 introduces no new assessment, persistence or certified language authority',()=>{
@@ -44,6 +44,6 @@ test('P76 introduces no new assessment, persistence or certified language author
  assert.doesNotMatch(s,/\b(addDialogueEvent|addReadingEvent|addSentenceEvent|indexedDB|localStorage|fetch)\s*\(/);
  const app=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
- assert.match(app,/character-study-working-v75-p77-consequence-dialogues/);
- assert.match(sw,/character-study-working-v75-p77-consequence-dialogues/);
+ assert.match(app,/character-study-working-v101-course-first-mobile-grid/);
+ assert.match(sw,/character-study-working-v101-course-first-mobile-grid/);
 });

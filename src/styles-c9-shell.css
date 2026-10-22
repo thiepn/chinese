@@ -286,7 +286,7 @@
   }
   .c9-mobile-nav.mobile-nav {
     display:grid;
-    grid-template-columns:repeat(5,minmax(0,1fr));
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:0;
     position:fixed;
     inset:auto 0 0 0;
@@ -482,3 +482,9 @@
  .c9-app-shell .c9-context-more[open]>summary{width:100%;justify-content:space-between}
  .c9-app-shell .c9-context-more-links{position:static;width:100%;max-width:none;z-index:auto}
 }
+
+/* P2 navigation: a fixed four-destination hierarchy with contextual resources. */
+.c9-primary-four{margin-top:8px}.c9-primary-four a{min-height:48px}.c9-sidebar .c9-sidebar-study-more{margin-top:12px}.c9-sidebar .side-bottom{margin-top:auto}
+
+/* P2: desktop uses sidebar resources; do not show an inert mobile drawer control. */
+@media(min-width:801px){#c9-more-toggle{display:none!important}}

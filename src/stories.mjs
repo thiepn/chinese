@@ -467,7 +467,24 @@ export function storyExercise(story,mode){if(!story||!STORIES_BY_ID.has(story.id
  if(mode==='comprehension')return {kind:'choice',prompt:story.question.prompt,answer:story.question.answer,options:story.question.options};
  if(mode==='cloze'){const {line,answer,options}=story.cloze;const sentence=story.lines[line].hanzi;const i=sentence.indexOf(answer);if(i<0)return null;return {kind:'choice',prompt:sentence.slice(0,i)+'＿＿'+sentence.slice(i+answer.length),answer,options};}
  if(mode==='ordering'){return {kind:'ordering',prompt:'Put the Chinese chunks in the correct order.',answer:story.order.join(''),chunks:story.order};}
- if(mode==='pronunciation'){const text=glossaryMap.has(story.cloze.answer)?story.cloze.answer:tokenWords.find(w=>story.lines.some(l=>l.hanzi.includes(w)));const match=glossaryMap.get(text);if(!match)return null;return {kind:'pinyin',prompt:`Type the pinyin for ${text} (with tones).`,answer:match.pinyin,display:text};}
+ if(mode==='pronunciation'){
+  // P68/P71 authored reading focus is the only source-backed whole-word
+  // pronunciation target for these passages. The old glossary fallback could
+  // silently quiz an unrelated word instead of the authored reading focus.
+  const focus=['original-p68','original-p71'].includes(story.beginner?.source)?
+   (story.beginner.p68||story.beginner.p71)?.focusWord:null;
+  if(focus){
+   const evidence=story.lines.findIndex(line=>line.hanzi.includes(focus.hanzi));
+   if(evidence<0||!focus.pinyin||!focus.hanzi)return null;
+   return {kind:'pinyin',prompt:`Type the pinyin for ${focus.hanzi} (with tones).`,
+    answer:focus.pinyin,display:focus.hanzi,evidence,
+    explanation:'The target and pronunciation are from the authored source focus word. This source sentence provides usage context; it does not independently certify all contextual senses or actual spoken pronunciation.'};
+  }
+  const text=glossaryMap.has(story.cloze.answer)?story.cloze.answer:
+   tokenWords.find(w=>story.lines.some(l=>l.hanzi.includes(w)));
+  const match=glossaryMap.get(text);if(!match)return null;
+  return {kind:'pinyin',prompt:`Type the pinyin for ${text} (with tones).`,answer:match.pinyin,display:text};
+ }
  return null;
 }
 export function shuffledChunkIndices(parts,seed){let order=parts.map((_,i)=>i);let n=[...seed].reduce((a,c)=>(Math.imul(a,33)+c.charCodeAt(0))>>>0,5381);for(let i=order.length-1;i>0;i--){n=(Math.imul(n,1664525)+1013904223)>>>0;const j=n%(i+1);[order[i],order[j]]=[order[j],order[i]];}if(order.length>1&&order.every((v,i)=>v===i))order.reverse();return order;}

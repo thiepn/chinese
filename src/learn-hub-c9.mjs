@@ -6,6 +6,7 @@
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {renderC9EmptyState} from './ui-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
+import {hskTargetLessons,renderC9HSKTargets} from './hsk-targets-c9.mjs';
 import {plain} from './lexicon.mjs';
 import {WORKSPACE_DESTINATIONS,courseSearch,FIND_CATEGORIES} from './workspace-p30.mjs';
 import {courseOverview} from './course-overview.mjs';
@@ -46,8 +47,9 @@ function unitMatches(unit,search,selected,learned,status){
 export function renderC9LessonBrowser(state,ui,act,esc){
  const learned=new Set(state.learned||[]);
  const groups=lessonGroups();
- const filter=groups.filter(g=>unitMatches(g,ui.query,ui.unit,learned,ui.status));
- const lessons=filter.flatMap(g=>g.lessons.filter(l=>lessonMatch(l,ui.query,g.name)
+ const allowed=ui.level&&ui.level!=='all'?new Set(hskTargetLessons(ui.level).map(l=>l.id)):null;
+ const filter=groups.filter(g=>(!allowed||g.lessons.some(l=>allowed.has(l.id)))&&unitMatches(g,ui.query,ui.unit,learned,ui.status));
+ const lessons=filter.flatMap(g=>g.lessons.filter(l=>(!allowed||allowed.has(l.id))&&lessonMatch(l,ui.query,g.name)
    &&(ui.status==='all'||(ui.status==='introduced'?learned.has(l.id):!learned.has(l.id))))
    .map(l=>({lesson:l,unit:g})));
  const pageSize=12;
@@ -58,7 +60,7 @@ export function renderC9LessonBrowser(state,ui,act,esc){
  (lessons.length?'<div class="c9-lesson-results">'+selected.map(({lesson:l,unit:g})=>{
   const introduced=learned.has(l.id);
   return '<article class="c9-lesson-row"><span class="c9-lesson-index c9-tabular">'+String(l.order).padStart(3,'0')+'</span><div class="c9-lesson-character" lang="zh-Hans">'+esc(l.hanzi)+'</div><div class="c9-lesson-copy"><strong>'+esc(l.pinyin)+' <span aria-hidden="true">·</span> '+esc(l.meaning)+'</strong><span>'+esc(g.name)+' · Original lesson</span></div><span class="c9-badge '+(introduced?'c9-badge--success':'')+'">'+(introduced?'Introduced':'Not introduced')+'</span>'+lessonActions(l,introduced,act,esc)+'</article>';
- }).join('')+'</div>':empty('No matching lessons','Try a different Chinese character, tone-marked Pinyin, meaning or unit. Adjust the introduction filter if needed.'))+
+ }).join('')+'</div>':empty('No matching lessons','Try a different search, unit or learning-history filter. Some advanced HSK targets have original readings or missions, not mapped character lessons.'))+
  '<div class="c9-discovery-pagination"><span>Page '+(page+1)+' of '+pages+'</span><div class="c9-inline">'+
  act('c9-lesson-page','Previous','c9-button c9-button--secondary c9-button--small','data-dir="-1" '+(page?'':'disabled'))+
  act('c9-lesson-page','Next','c9-button c9-button--secondary c9-button--small','data-dir="1" '+(page<pages-1?'':'disabled'))+'</div></div>';
@@ -121,7 +123,7 @@ export function renderC9LearnHub(state,ui,act,esc){
  const o=courseOverview(state),hub=learningHub(state);
  const unit=lessonGroups().find(x=>String(x.index)===String(ui.unit));
  const status=ui.status||'all',kind=isKnownKind(ui.kind)?ui.kind:'all';
- const intro=title('Learn Chinese','Start with your next lesson, follow the numbered course, or open a review session.');
+ const intro=ui.level&&ui.level!=='all'?'':title('Chinese course','Choose a level to study lessons, words, grammar, reading and listening.');
  if(ui.view==='lesson'){
   const chosen=DEMO_LESSONS.find(l=>l.id===ui.selectedId)||DEMO_LESSONS[0];
   return '<section class="c9-lesson-heading">'+
@@ -150,7 +152,8 @@ export function renderC9LearnHub(state,ui,act,esc){
       '<span class="c9-guided-step-body"><strong><span lang="zh-Hans">'+esc(l.hanzi)+'</span> '+esc(l.meaning)+'</strong>'+
       '<small>'+esc(l.pinyin)+' · '+((state.learned||[]).includes(l.id)?'Introduced':'Not yet introduced')+'</small></span>'+
       '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
- return '<div class="c9-discovery">'+intro+featured+
+ return '<div class="c9-discovery">'+intro+renderC9HSKTargets(state,ui.level,act,esc,{pane:ui.pane})+
+  (ui.level&&ui.level!=='all'?'':'<p class="c9-course-default"><a href="#/learn/level/1" class="c9-button c9-button--primary">Start with HSK 1 →</a></p>')+
   '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons by unit</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
   '<div class="c9-discovery-search-heading"><label class="c9-discovery-search-label" for="c9-learn-query">Search Chinese characters, Pinyin, meanings or unit names</label>'+

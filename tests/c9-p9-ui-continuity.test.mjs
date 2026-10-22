@@ -6,6 +6,8 @@ import {renderC9LessonWorkspace,c9LessonTransferSources} from '../src/lesson-c9.
 import {renderC9CharacterStudy} from '../src/character-c9.mjs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
 import {freshState,addLesson} from '../src/study.mjs';
+import {startPlacement} from '../src/placement.mjs';
+import {learningHub} from '../src/learning-hub.mjs';
 import {renderC9Review} from '../src/review-practice-c9.mjs';
 import {findLibrarySentence} from '../src/sentence-library.mjs';
 import {findStory,STORIES} from '../src/stories.mjs';
@@ -24,7 +26,7 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
  const state=freshState(),before=JSON.stringify(state);
  const html=renderC9Home(state,act,esc);
  for(const key of ['c9-home-first-fold','c9-home-source-preview','c9-home-plan','c9-home-metrics','c9-home-roadmap','hub-task','hub-lesson'])assert.ok(html.includes(key),key);
- assert.ok(html.indexOf('c9-home-roadmap')<html.indexOf('c9-home-explore-more'));
+ assert.ok(html.indexOf('c9-home-explore-more')<html.indexOf('c9-home-roadmap'));
  assert.ok(html.includes('Start lesson 001'), 'Home must reveal its first lesson directly');
  assert.ok(html.includes('data-action="hub-lesson"'), 'Home must use original lesson authority');
  assert.ok(html.includes(esc(DEMO_LESSONS[0].sentence.hanzi)));
@@ -33,13 +35,14 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
  assert.equal(JSON.stringify(state),before);
 });
 
-test('P9 native sidebar keeps all five destinations in accessible nested navigation',()=>{
+test('P2 retains four primary destinations and nested original resources',()=>{
  const shell=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
- assert.ok(shell.includes('<details class="c9-sidebar-study-more">'));
- assert.ok(shell.includes('<nav aria-label="Additional study pathways"'));
+ assert.equal((shell.match(/<details class="c9-sidebar-study-more">/g)||[]).length,2);
+ assert.ok(shell.includes('aria-label="Course resources"'));
+ assert.deepEqual([...shell.matchAll(/data-c9-primary="([^"]+)"/g)].map(m=>m[1]),['today','learn','review','progress']);
  for(const route of ['skills','writing','advanced','pathway','plan'])assert.ok(shell.includes('data-route="'+route+'"'),route);
  const sync=readFileSync(new URL('../src/shell-c9.mjs',import.meta.url),'utf8');
- assert.ok(sync.includes("pathways.open=true"));
+ assert.ok(sync.includes('group.open=true'));
 });
 
 test('P9 Lesson retains six native sections and original read-only source previews',()=>{
@@ -488,4 +491,26 @@ test('C9-61 original dialogue question recovery uses every canonical question an
   "if(name==='c9-dialogue-repair-play')"])
   assert.ok(app.includes(fragment),'original guarded assessment handoff: '+fragment);
  assert.ok(!app.includes('addC9DialogueRepairEvent('),'no second native event writer');
+});
+
+test('V1 Home prioritizes saved optional placement over launching another lesson',()=>{
+ const state=startPlacement(freshState()),before=JSON.stringify(state);
+ assert.equal(learningHub(state).primary.kind,'resume');
+ assert.equal(learningHub(state).primary.source,'placement');
+ const html=renderC9Home(state,act,esc);
+ const hero=html.slice(html.indexOf('<div class="c9-home-hero-actions">'),html.indexOf('<div class="c9-home-source-preview"'));
+ assert.match(html,/CONTINUE SAVED WORK/);
+ assert.match(html,/Resume Placement check/);
+ assert.match(hero,/data-action="hub-primary"/);
+ assert.match(hero,/Resume saved activity/);
+ assert.match(hero,/Lesson 001 \(optional\)/);
+ assert.ok(hero.indexOf('data-action="hub-primary"')<hero.indexOf('data-action="hub-lesson"'));
+ assert.equal(JSON.stringify(state),before);
+});
+test('V1 Home keeps direct first lesson from an empty learner record',()=>{
+ const html=renderC9Home(freshState(),act,esc);
+ const hero=html.slice(html.indexOf('<div class="c9-home-hero-actions">'),html.indexOf('<div class="c9-home-source-preview"'));
+ assert.match(hero,/data-action="hub-lesson"/);
+ assert.match(hero,/Start lesson 001/);
+ assert.doesNotMatch(hero,/data-action="hub-primary"/);
 });

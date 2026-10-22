@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Source regression suite
         run: npm test
+      - name: Emit source-backed HSK 3.0 target coverage matrix
+        run: node scripts/hsk3_source_coverage.mjs
       - name: Source-to-dist and offline manifest
         run: npm run build && npm run verify
   chromium:
@@ -56,7 +58,30 @@ jobs:
           else:
               raise RuntimeError('Local source server did not start')
           PY
+          python scripts/p2_course_nav_acceptance.py
           python scripts/c9_browser_acceptance.py --expected-head "${{ github.sha }}" --chromium "$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" --artifacts /tmp/chinese-acceptance
+      - name: Local device-readiness cache repair and offline reload
+        run: python scripts/c9_device_offline_acceptance.py
+      - name: Real two-tab backup and restore conflict acceptance
+        run: python scripts/c9_cross_tab_backup_acceptance.py
+      - name: Original P75/P77 editorial-source and mobile accessibility acceptance
+        run: python scripts/c9_dialogue_editorial_acceptance.py
+      - name: Local Mandarin turn-specific playback and mobile a11y acceptance
+        run: python scripts/c9_dialogue_turn_playback_acceptance.py
+      - name: F1 source-backed grammar and translation desktop/mobile acceptance
+        run: python scripts/c9_f1_educational_acceptance.py
+      - name: F2 native source-to-grammar/word three-stage Chromium transfer
+        run: python scripts/c9_f2_transfer_acceptance.py
+      - name: F3 original source-owned Pinyin and contextual evidence desktop/mobile acceptance
+        run: python scripts/c9_f3_source_pronunciation_acceptance.py
+      - name: F4 original Mandarin source fidelity and answer evidence desktop/mobile acceptance
+        run: python scripts/c9_f4_source_accuracy_acceptance.py
+      - name: HSK target direct-entry local Chromium desktop/mobile acceptance
+        run: python scripts/c9_hsk_free_entry_acceptance.py
+      - name: HSK original grammar reading dialogue desktop/mobile source handoff
+        run: python scripts/c9_hsk_skill_source_acceptance.py
+      - name: L1 source-owned level workspace and scoped review desktop/mobile acceptance
+        run: python scripts/c9_l1_level_workspace_acceptance.py
       - name: Preserve public-only UI acceptance screenshots
         if: always()
         uses: actions/upload-artifact@v4

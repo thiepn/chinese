@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v75-p77-consequence-dialogues';
+const CACHE='character-study-working-v101-course-first-mobile-grid';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -24,6 +24,8 @@ const CONCEPT9_ASSETS=[
   './home-c9.mjs',
   './styles-c9-learn.css',
   './learn-hub-c9.mjs',
+  './hsk-targets-c9.mjs',
+  './hsk-level-workspace-c9.mjs',
   './styles-c9-lesson.css',
   './lesson-c9.mjs',
   './styles-c9-character.css',
@@ -94,6 +96,8 @@ const LEARNING_ASSETS=[
   './foundational-expansion.mjs',
   './study.mjs',
   './study-storage.mjs',
+  './device-readiness-c9.mjs',
+  './dialogue-editorial-c9.mjs',
   './exercises.mjs',
   './stories.mjs',
   './lexicon.mjs',
@@ -346,6 +350,16 @@ const RUNTIME_ASSETS=[
 ];
 const ASSETS=[...new Set(RUNTIME_ASSETS)];
 const PRECACHE_BATCH_SIZE=24;
+// URL keys alone can count unusable cached responses as ready.
+async function usableShellPaths(cache){
+ const usable=[];
+ for(const path of ASSETS){
+  const response=await cache.match(new URL(path,self.location.href).href);
+  if(response?.ok&&response.type!=='opaque'&&response.type!=='opaqueredirect')
+   usable.push(path);
+ }
+ return usable;
+}
 /** A controlling SW is not proof that Cache Storage still contains all assets.
  * Only user-visible shell status is returned. Never send learner data.
  */
@@ -357,11 +371,11 @@ self.addEventListener('message',event=>{
   let cached=0,failed=false;
   try{
    const cache=await caches.open(CACHE);
-   const known=async()=>new Set((await cache.keys()).map(request=>request.url));
+   const known=async()=>new Set(await usableShellPaths(cache));
    if(event.data.type==='c9-offline-repair'){
     try{
      const entries=await known();
-     const missing=ASSETS.filter(path=>!entries.has(new URL(path,self.location.href).href));
+     const missing=ASSETS.filter(path=>!entries.has(path));
      // Repair is explicitly learner-triggered. One failed static asset must
      // not prevent the remaining originals from being prepared for offline use.
      for(let i=0;i<missing.length;i+=PRECACHE_BATCH_SIZE){
@@ -378,8 +392,7 @@ self.addEventListener('message',event=>{
      }
     }catch{failed=true;}
    }
-   const keys=await known();
-   cached=ASSETS.filter(path=>keys.has(new URL(path,self.location.href).href)).length;
+   cached=(await known()).size;
   }catch{failed=true;}
   reply.postMessage({type:'c9-offline-status',version:CACHE,
    cached,total:ASSETS.length,complete:cached===ASSETS.length&&!failed,failed});
@@ -412,7 +425,8 @@ self.addEventListener('fetch',event=>{
   const cache=await caches.open(CACHE);
   // Do not accidentally serve stale assets from another cache revision.
   const cached=await cache.match(event.request,{ignoreSearch:true});
-  if(cached)return cached;
+  // Never serve a corrupt cached shell response; allow online recovery.
+  if(cached?.ok&&cached.type!=='opaque'&&cached.type!=='opaqueredirect')return cached;
   try{
    const response=await fetch(event.request);
    return response;

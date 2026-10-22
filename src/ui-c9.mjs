@@ -6,12 +6,12 @@
  */
 const META=Object.freeze({
  today:{label:'Home',area:'Study',parent:'today',group:'study'},
- learn:{label:'Learn',area:'Course',parent:'learn',group:'course'},
+ learn:{label:'Course',area:'Course',parent:'learn',group:'course'},
  character:{label:'Character Study',area:'Course',parent:'learn',group:'course'},
  review:{label:'Review',area:'Practice',parent:'review',group:'practice'},
- explore:{label:'Explore',area:'Discover',parent:'explore',group:'discover'},
+ explore:{label:'Explore',area:'Discover',parent:'learn',group:'discover'},
  find:{label:'Search',area:'Discover',parent:'explore',group:'discover'},
- progress:{label:'Progress',area:'My learning',parent:'more',group:'personal'},
+ progress:{label:'Progress',area:'My learning',parent:'progress',group:'personal'},
  settings:{label:'Settings',area:'My learning',parent:'more',group:'personal'},
  reader:{label:'Character Reading',area:'Reading',parent:'learn',group:'media'},
  stories:{label:'Reading & Stories',area:'Reading',parent:'learn',group:'media'},
@@ -97,7 +97,7 @@ const C9_PINNED_CONTEXT=Object.freeze({
  personal:['progress','settings','plan']
 });
 export function renderC9ContextNav(route,esc){
- if(route==='today')return '';
+ if(['today','learn','review'].includes(route))return '';
  const info=c9RouteInfo(route);
  const links=C9_CONTEXT_LINKS[info.group]||C9_CONTEXT_LINKS.course;
  const available=[...new Set([route,...links])];

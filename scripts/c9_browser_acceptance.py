@@ -124,7 +124,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def compiled_first_home():
                     page.goto(args.base_url.rstrip("/")+"/#/today",wait_until="domcontentloaded")
-                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.locator(".c9-home-course-launch").wait_for(state="visible")
                     info=page.evaluate("""()=>{
                       const paths=performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname);
                       return {ms:Math.round(performance.now()),
@@ -162,7 +162,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def learner_first_navigation():
                     open_route(page,"today")
-                    entry=page.locator(".c9-home-hero-actions [data-action='hub-lesson']")
+                    entry=page.locator(".c9-home-course-actions a[href^='#/learn/demo-']")
                     if entry.count()!=1 or not entry.is_visible():
                         raise AssertionError("Home lacks one direct lesson-start action")
                     if "Start lesson 001" not in entry.inner_text():
@@ -173,12 +173,10 @@ def main():
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Start lesson did not open the actual native teaching")
                     page.locator('[data-action="c9-learn-back"]').first.click()
-                    guided=page.locator(".c9-guided-course")
+                    guided=page.locator(".c9-level-grid")
                     guided.wait_for(state="visible")
-                    if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
-                        raise AssertionError("Numbered lesson sequence absent above the catalog")
-                    if "001" not in guided.locator(".c9-guided-step").first.inner_text():
-                        raise AssertionError("Lesson one not discoverable at the course start")
+                    if guided.locator('[data-action="c9-hsk-select"]').count()!=7:
+                        raise AssertionError("The course level chooser did not return after the first lesson")
                     if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("Back to all lessons stranded the learner behind a closed catalog")
                     if not page.locator(".c9-discovery-catalog-body").is_visible():
@@ -194,7 +192,7 @@ def main():
                         menu=page.locator("#c9-mobile-drawer")
                         if not menu.evaluate("(e)=>e.open"):
                             raise AssertionError("Mobile optional destinations did not open")
-                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=5:
+                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=6:
                             raise AssertionError("Mobile More again exposes too many first-level routes")
                         advanced=menu.locator("details.c9-drawer-advanced")
                         if advanced.evaluate("(e)=>e.open"):
@@ -213,6 +211,365 @@ def main():
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                     return "Home → exact first lesson; course list; five optional mobile destinations; scheduled/free review at "+str(width)+"px"
                 check("Direct Chinese learner journey "+str(width),learner_first_navigation)
+                ctx.close()
+            # V1: saved placement must be a reachable original source action,
+            # not a dead-end Today navigation or a competing new-lesson CTA.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def placement_resume_flow():
+                    open_route(page,"today")
+                    start=page.locator("#c9-placement-anchor [data-action='placement-start']")
+                    if start.count()!=1: raise AssertionError("Optional placement entry missing")
+                    start.click()
+                    question=page.locator("#c9-placement-question")
+                    question.wait_for(state="visible")
+                    if not question.evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Starting placement did not focus the original question")
+                    hero=page.locator(".c9-home-course-actions")
+                    primary=hero.locator("[data-action='hub-primary']")
+                    if primary.count()!=1 or "Resume saved activity" not in primary.inner_text():
+                        raise AssertionError("Today incorrectly prioritizes an unrelated lesson over saved placement")
+                    secondary=hero.locator("a[href='#/learn']")
+                    if secondary.count()!=1:
+                        raise AssertionError("Explicit course-level choice missing alongside saved placement")
+                    question.locator("[data-action='placement-answer']").first.click()
+                    page.locator("#c9-placement-anchor").get_by_text("Question 2 of 6").wait_for()
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Next original placement question lost keyboard focus")
+                    primary=page.locator(".c9-home-course-actions [data-action='hub-primary']")
+                    primary.click()
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Today resume did not focus saved original placement")
+                    open_route(page,"learn")
+                    resume=page.locator(".hub-resume-strip [data-action='hub-resume'][data-kind='placement']")
+                    if resume.count()!=1: raise AssertionError("Native cross-route placement resume missing")
+                    resume.click()
+                    page.wait_for_function("()=>location.hash==='#/today'")
+                    page.wait_for_function("()=>document.activeElement?.id==='c9-placement-question'",timeout=10000)
+                    if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
+                        raise AssertionError("Cross-route placement resume did not focus the saved question")
+                    page.locator("#c9-placement-anchor [data-action='placement-skip']").click()
+                    if page.evaluate("()=>location.hash")!="#/today":
+                        raise AssertionError("Skipping an active check silently launched an unrelated lesson")
+                    if "0 introduced" not in page.locator(".c9-home-date").inner_text():
+                        raise AssertionError("Placement answers improperly introduced original lessons")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original placement 1→2, focused saved resume on Today and Learn, active skip preserves no-credit state at "+str(width)+"px"
+                check("V1 focused placement recovery "+str(width),placement_resume_flow)
+                ctx.close()
+            ctx,page,errors=session(390,844,True)
+            def optional_skip_opens_first():
+                open_route(page,"today")
+                page.locator("#c9-placement-anchor [data-action='placement-skip']").click()
+                page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
+                page.locator("#c9-lesson-overview").wait_for(state="visible")
+                if "Not introduced" not in page.locator(".c9-lesson-record-badges").inner_text():
+                    raise AssertionError("Skipping placement fabricated introduction credit")
+                if errors: raise RuntimeError("; ".join(errors[:2]))
+                return "Start from lesson one opens authentic demo-01, without introduction credit"
+            check("V1 optional placement skip opens first lesson",optional_skip_opens_first)
+            ctx.close()
+            # Original Mandarin source-integrity gate: the teaching surface must
+            # distinguish citation tones from context forms without changing the
+            # author-owned Pinyin assessment answers or awarding review credit.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def sandhi_citation_reading():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="sandhi"]').click()
+                    page.locator('.p24-sandhi article').first.wait_for(state="visible")
+                    cases={"不是":("bù shì","bú shì"),"一个":("yī gè","yí ge"),"一天":("yī tiān","yì tiān")}
+                    for source,(citation,spoken) in cases.items():
+                        row=page.locator('.p24-sandhi article').filter(
+                            has=page.locator('strong[lang="zh-Hans"]',has_text=source))
+                        if row.count()!=1:
+                            raise AssertionError("Original sandhi row missing or duplicated: "+source)
+                        if "Citation/base tones: "+citation not in row.inner_text():
+                            raise AssertionError("Wrong original base reading for "+source)
+                        if "Contextual spoken guide: "+spoken not in row.inner_text():
+                            raise AssertionError("Wrong contextual pronunciation for "+source)
+                    if "not independently verified audio" not in page.locator('.p24-panel').first.inner_text():
+                        raise AssertionError("Device speech must not claim native reviewed audio")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Authentic 不/一 source tones versus spoken sandhi in "+str(width)+"px Chromium"
+                check("V1 original Mandarin citation/spoken sandhi "+str(width),sandhi_citation_reading)
+                ctx.close()
+            # P24 original source answer key must not grade a correctly toned
+            # but incorrectly marked vowel as correct, on desktop or Android-sized Chrome.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def pinyin_written_accent_authority():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    # Original question index 4 is 你好 nǐ hǎo; never insert a
+                    # new shadow exercise or learner evidence to test spelling.
+                    for _ in range(4):
+                        page.locator(".p24-exercise [data-action='pinyin-reveal']").click()
+                        page.locator(".p24-exercise [data-action='pinyin-next']").click()
+                    if page.locator(".p24-exercise-target").inner_text().strip()!="你好":
+                        raise AssertionError("Original 你好 question/answer identity unexpectedly changed")
+                    page.locator("#pinyin-answer-entry").fill("nǐ haǒ")
+                    page.locator(".p24-exercise [data-action='pinyin-answer']").click()
+                    feedback=page.locator(".p24-exercise .reader-feedback")
+                    if "Review the teaching" not in feedback.inner_text():
+                        raise AssertionError("Misplaced third-tone mark received positive credit")
+                    if "correct vowel" not in feedback.inner_text():
+                        raise AssertionError("Incorrect tone mark placement lacks actionable feedback")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    for _ in range(4):
+                        page.locator(".p24-exercise [data-action='pinyin-reveal']").click()
+                        page.locator(".p24-exercise [data-action='pinyin-next']").click()
+                    page.locator("#pinyin-answer-entry").fill("ni3 hao3")
+                    page.locator(".p24-exercise [data-action='pinyin-answer']").click()
+                    feedback=page.locator(".p24-exercise .reader-feedback")
+                    if "Correct answer" not in feedback.inner_text():
+                        raise AssertionError("Correct numbered original 你好 Pinyin was rejected")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original 你好 invalid haǒ rejected; nǐ hǎo / ni3 hao3 accepted with no state changes at "+str(width)+"px"
+                check("P24 marked-vowel answer integrity "+str(width),pinyin_written_accent_authority)
+                ctx.close()
+            # Reuse the original P24 chart as the input authority: invalid
+            # manufactured sound combinations must receive format feedback,
+            # while genuine authored Pinyin prompts still accept their keys.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def checked_syllable_inventory():
+                    open_route(page,"pinyin")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="syllables"]').click()
+                    panel=page.locator(".p24-panel")
+                    if "Not every theoretical initial and final forms a Mandarin syllable" not in panel.inner_text():
+                        raise AssertionError("P24 source chart does not explain valid-combination boundary")
+                    if page.locator('.p24-chart [data-syllable="fiong"]').count():
+                        raise AssertionError("Invented f+iong was added to the original chart")
+                    page.locator('.p24-tabs [data-action="pinyin-tab"][data-section="practice"]').click()
+                    page.locator("#pinyin-filter").select_option("practice")
+                    for _ in range(4):
+                        page.locator('.p24-exercise [data-action="pinyin-reveal"]').click()
+                        page.locator('.p24-exercise [data-action="pinyin-next"]').click()
+                    if page.locator('.p24-exercise-target').inner_text().strip()!="你好":
+                        raise AssertionError("Original source-owned 你好 task identity was changed")
+                    page.locator("#pinyin-answer-entry").fill("fiong1")
+                    page.locator('.p24-exercise [data-action="pinyin-answer"]').click()
+                    feedback=page.locator(".p24-exercise .reader-feedback").inner_text()
+                    if "Correct answer" in feedback or "Use valid tone-marked pinyin" not in feedback:
+                        raise AssertionError("Made-up Mandarin syllable did not get format correction")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Original chart forbids fiong and P24 native 你好 answer rejects invented syllable at "+str(width)+"px"
+                check("P24 canonical syllable combinations "+str(width),checked_syllable_inventory)
+                ctx.close()
+            # Grammar cloze must retain original distractors, including phrases
+            # that contain the correct character. Otherwise g19/g54 show only
+            # the answer and produce misleading "assessed" activity.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def source_grammar_cloze_options():
+                    for lesson_id,correct,wrong in (
+                        ("g19","下午",("是下午","在下午是")),
+                        ("g54","下周",("是下周","在下周是"))):
+                        open_route(page,"grammar/"+lesson_id)
+                        page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                        practice=page.locator(".p25-practice")
+                        options=practice.locator('.choice-list [data-action="grammar-answer"]')
+                        options.first.wait_for(state="visible")
+                        got=options.evaluate_all("(items)=>items.map(b=>b.dataset.option)")
+                        if len(got)!=3 or set(got)!={correct,*wrong}:
+                            raise AssertionError("Original "+lesson_id+" cloze answer key/distractors lost: "+str(got))
+                        if lesson_id=="g19":
+                            options.filter(has_text="是下午").click()
+                            result=practice.locator(".p25-result")
+                            if "Learning explanation" not in result.inner_text():
+                                raise AssertionError("Original incorrect cloze option awarded model credit")
+                            open_route(page,"grammar/"+lesson_id)
+                            page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                            page.locator('.p25-practice .choice-list [data-action="grammar-answer"][data-option="下午"]').click()
+                            if "Model answer accepted" not in page.locator(".p25-practice .p25-result").inner_text():
+                                raise AssertionError("Original g19 exact correct cloze answer rejected")
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return "Native original g19/g54 have 3 distinct authored choices, correct and incorrect outcomes at "+str(width)+"px"
+                check("P25 original grammar three-choice cloze "+str(width),source_grammar_cloze_options)
+                ctx.close()
+            # Source-to-English translation alignment: transport vocabulary
+            # must not identify a generic 车 as bus or 车站 as railway station.
+            # Verify native grammar models on both desktop and mobile.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def grammar_context_and_translation():
+                    open_route(page,"grammar/g12")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.wait_for(state="visible")
+                    lesson.locator('[data-action="grammar-mode"][data-mode="transformation"]').click()
+                    task=lesson.locator(".p25-task")
+                    if "Ask where the train station is." not in task.inner_text():
+                        raise AssertionError("Original g12 transfer context changed")
+                    # Word chunks belong to the distinct original ordering mode,
+                    # not the free-text transformation mode.
+                    lesson.locator('[data-action="grammar-mode"][data-mode="ordering"]').click()
+                    task=lesson.locator(".p25-task")
+                    chunks=task.locator('[data-action="grammar-chunk"]')
+                    if not chunks.filter(has_text="火车站").count() or chunks.filter(has_text="车站").count()!=1:
+                        raise AssertionError("Original train station transfer does not use specific 火车站")
+                    open_route(page,"grammar/g73")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.wait_for(state="visible")
+                    cards=lesson.locator(".p25-examples article")
+                    first=cards.first.inner_text()
+                    if "公交车已经到了。" not in first or "Gōngjiāo chē yǐjīng dào le." not in first or "The bus has already arrived." not in first:
+                        raise AssertionError("Original g73 Mandarin / tone-marked pinyin / English bus example misaligned")
+                    if "车已经到了。" in first and "公交车已经到了。" not in first:
+                        raise AssertionError("Generic car incorrectly presented as bus")
+                    open_route(page,"grammar/g75")
+                    second=page.locator(".p25-examples article").nth(1).inner_text()
+                    if "这个问题我还没听懂。" not in second or "I still haven't understood the spoken question." not in second:
+                        raise AssertionError("Original listening-result translation not aligned with 听懂")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Native g12/g73/g75 Mandarin, contextual translation, and original model continuity at "+str(width)+"px"
+                check("V1 source-backed grammar translation alignment "+str(width),grammar_context_and_translation)
+                ctx.close()
+            # P36 learner-facing grammar repair must present one scene, not a
+            # wrong unrelated example beside a model about another subject.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p36_same_context_repair():
+                    checks=[
+                        ("g65","我今天早上没买了三瓶水。","我今天早上买了三瓶水。"),
+                        ("g75","我听了懂老师的话。","我听懂了老师的话。"),
+                        ("g78","我不听清楚广播。","我听不清楚广播。"),
+                        ("g94","因为下雨，我们就坐公交车。","如果下雨，我们就坐公交车。")
+                    ]
+                    for gid,wrong,right in checks:
+                        open_route(page,"grammar/"+gid)
+                        panel=page.locator(".p36-teaching-ext")
+                        panel.wait_for(state="visible")
+                        negative=panel.locator(".p36-correction > div").first.inner_text()
+                        if wrong not in negative:
+                            raise AssertionError("P36 "+gid+" shows unrelated original correction: "+negative)
+                        if panel.locator('[data-action="p36-repair"][data-id="'+gid+'"]').count()!=1:
+                            raise AssertionError("P36 "+gid+" original correction handoff missing")
+                        if gid=="g78":
+                            teaching=page.locator(".p25-teaching").inner_text()
+                            if "能看懂" not in teaching or "听不清楚" not in teaching:
+                                raise AssertionError("g78 still confuses modal 能 with potential complement")
+                            if "Potential complements: V得懂 versus V不懂" not in page.locator(".p25-lesson").inner_text():
+                                raise AssertionError("g78 title still misidentifies positive potential construction")
+                        reveal=panel.locator('[data-action="p36-toggle-model"]')
+                        if reveal.count()==1 and "Reveal reference" in reveal.inner_text():
+                            reveal.click()
+                        if right not in page.locator(".p36-correction").inner_text():
+                            raise AssertionError("P36 "+gid+" source-owned correct target not revealed")
+                        if gid=="g78":
+                            page.locator('.p36-ext-actions [data-action="p36-repair"][data-id="g78"]').click()
+                            page.wait_for_function("()=>location.hash==='#/workshop'")
+                            if "P36 · REPAIR THE CONTEXTUAL GRAMMAR" not in page.locator(".learning-studio").inner_text():
+                                raise AssertionError("Native P36 repair action did not reach original Workshop")
+                            if "我不听清楚广播。" not in page.locator(".learning-studio").inner_text():
+                                raise AssertionError("Original same-context error lost in Workshop")
+                            if "我听不清楚广播。" in page.locator(".practice-hanzi").all_inner_texts():
+                                raise AssertionError("Reference incorrectly exposed before learner response")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "P36 g65/g75/g78/g94 wrong-versus-target source continuity at "+str(width)+"px"
+                check("P36 original contextual correction "+str(width),p36_same_context_repair)
+                ctx.close()
+            # Exact original grammar deep links: g128 previously resolved as
+            # g12 because the route parser captured only two digits.
+            # Cover cold load, same-route transitions, reload and Back/Forward.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def canonical_grammar_deep_links():
+                    cases=(("g01","Basic subject–verb–object order"),
+                           ("g99","Simultaneous activities with 一边…一边…"),
+                           ("g100","Sequence and planning with 先…再…"),
+                           ("g128","An outcome that survives a condition"),
+                           ("g164","Qualified consequence in formal writing"))
+                    for gid,title in cases:
+                        open_route(page,"grammar/"+gid)
+                        page.locator(".p25-lesson h2").filter(has_text=title).wait_for(state="visible")
+                        actual=page.locator(".p25-lesson h2").inner_text().strip()
+                        if actual!=title:
+                            raise AssertionError("Original "+gid+" rendered wrong lesson: "+actual)
+                        if page.evaluate("location.hash")!="#/grammar/"+gid:
+                            raise AssertionError("Original grammar deep link was rewritten: "+gid)
+                    page.reload(wait_until="domcontentloaded")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-1][1]).wait_for(state="visible")
+                    page.evaluate("location.hash='#/grammar/g128'")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-2][1]).wait_for(state="visible")
+                    page.evaluate("location.hash='#/grammar/g164'")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-1][1]).wait_for(state="visible")
+                    page.go_back(wait_until="domcontentloaded")
+                    page.locator(".p25-lesson h2").filter(has_text=cases[-2][1]).wait_for(state="visible")
+                    if page.evaluate("location.hash")!="#/grammar/g128":
+                        raise AssertionError("Back navigation lost the original g128 identity")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Canonical g01/g99/g100/g128/g164 direct links, reload and Back at "+str(width)+"px"
+                check("V1 exact 2- and 3-digit grammar deep links "+str(width),canonical_grammar_deep_links)
+                ctx.close()
+            # P46 g128: 虽然 could be a grammatical factual concession, but
+            # the original authored target is hypothetical "even if". Show
+            # the source meaning before grading, not only in answer feedback.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def contextual_advanced_cloze():
+                    open_route(page,"grammar/g128")
+                    page.locator(".p25-lesson h2").filter(has_text="An outcome that survives a condition").wait_for(state="visible")
+                    practice=page.locator(".p25-practice")
+                    practice.locator('[data-action="grammar-mode"][data-mode="cloze"]').click()
+                    practice=page.locator(".p25-practice")
+                    meaning=practice.locator(".p25-task-meaning")
+                    if meaning.inner_text().strip()!="Even if time is short, we cannot change the data casually.":
+                        raise AssertionError("Hypothetical original g128 target meaning not exposed before grading")
+                    hanzi=practice.locator(".p25-task-context")
+                    if "＿＿" not in hanzi.inner_text() or hanzi.get_attribute("lang")!="zh-Hans":
+                        raise AssertionError("Original g128 Chinese cloze prompt missing or language mislabeled")
+                    options=practice.locator('.choice-list [data-action="grammar-answer"]')
+                    got=set(options.evaluate_all("(items)=>items.map(x=>x.dataset.option)"))
+                    if got!={"即使","虽然","因为"}:
+                        raise AssertionError("Original g128 exact distractors changed")
+                    practice.locator('.choice-list [data-action="grammar-answer"][data-option="虽然"]').click()
+                    feedback=practice.locator(".p25-result")
+                    if "different context" not in feedback.inner_text().lower() or "Model answer accepted" in feedback.inner_text():
+                        raise AssertionError("Source-authentic factual connector was treated as universal Mandarin error or credited")
+                    if "factual concession" not in feedback.inner_text():
+                        raise AssertionError("Source contrast distinguishing hypothetical and factual lost")
+                    open_route(page,"grammar/g128")
+                    page.locator('.p25-practice [data-action="grammar-mode"][data-mode="cloze"]').click()
+                    page.locator('.p25-practice [data-action="grammar-answer"][data-option="即使"]').click()
+                    if "Model answer accepted" not in page.locator(".p25-result").inner_text():
+                        raise AssertionError("Original hypothetical connector answer incorrectly rejected")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "g128 source meaning and factual/hypothetical contrast at "+str(width)+"px"
+                check("P46 conditional meaning disambiguation "+str(width),contextual_advanced_cloze)
+                ctx.close()
+            # P47 g141: both examples must teach counterexpectation;
+            # preserve the canonical Mandarin/Pinyin/English production task.
+            for width,height,mobile in ((390,844,True),(1440,900,False)):
+                ctx,page,errors=session(width,height,mobile)
+                def p47_counterexpectation():
+                    open_route(page,"grammar/g141")
+                    lesson=page.locator(".p25-lesson")
+                    lesson.locator("h2").filter(has_text="Contrary to expectation").wait_for(state="visible")
+                    example=lesson.locator(".p25-examples article").nth(1).inner_text()
+                    if "他为了减少错误反复修改报告，结果反而增加了错误。" not in example:
+                        raise AssertionError("g141 counterexpectation example missing")
+                    if "Tā wèile jiǎnshǎo cuòwù fǎnfù xiūgǎi bàogào" not in example:
+                        raise AssertionError("g141 Pinyin does not match authored Mandarin")
+                    if "ended up introducing more mistakes instead" not in example:
+                        raise AssertionError("g141 English does not explain unexpected outcome")
+                    if "报告反而变得更可信了" in example:
+                        raise AssertionError("Old predictable positive result still taught as 反而")
+                    lesson.locator('[data-action="grammar-mode"][data-mode="production"]').click()
+                    practice=page.locator(".p25-practice")
+                    if "ended up introducing more mistakes instead" not in practice.locator(".p25-task-context").inner_text():
+                        raise AssertionError("g141 production prompt uses outdated English")
+                    practice.locator("#grammar-entry").fill("他为了减少错误反复修改报告，结果反而增加了错误。")
+                    practice.locator('[data-action="grammar-answer"]').click()
+                    result=page.locator(".p25-result")
+                    result.wait_for(state="visible")
+                    if "Model answer accepted" not in result.inner_text():
+                        raise AssertionError("Canonical g141 exact-model answer rejected")
+                    if errors:raise RuntimeError("; ".join(errors[:2]))
+                    return "Original g141 source, model and production practice at "+str(width)+"px"
+                check("P47 authentic counterexpectation grammar "+str(width),p47_counterexpectation)
                 ctx.close()
             # A unit selection must survive the original same-route render;
             # the lesson browser must remain visible and the filter selected.
@@ -246,8 +603,8 @@ def main():
             for width,height,mobile in ((390,844,True),(1440,900,False)):
                 ctx,page,errors=session(width,height,mobile)
                 def guided_lesson_steps():
-                    open_route(page,"learn")
-                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator(".c9-course-primary [data-action='c9-lesson-open']").first.click()
                     page.locator("#c9-lesson-overview").wait_for(state="visible")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("First character step not visible")
@@ -328,8 +685,8 @@ def main():
             for width,height,mobile in ((390,844,True),(1440,900,False)):
                 ctx,page,errors=session(width,height,mobile)
                 def canonical_lesson_history():
-                    open_route(page,"learn")
-                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator(".c9-course-primary [data-action='c9-lesson-open']").first.click()
                     page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
                     original=page.locator("#c9-lesson-title").inner_text()
                     if not page.locator('[data-action="c9-lesson-copy-link"]').is_visible():
@@ -352,11 +709,11 @@ def main():
                     page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
                     page.locator('[data-action="c9-learn-back"]').first.click()
                     page.wait_for_function("()=>location.hash==='#/learn'")
-                    page.locator(".c9-guided-course").wait_for(state="visible")
+                    page.locator(".c9-level-grid").wait_for(state="visible")
                     if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("All lessons left catalog closed after deep link")
                     open_route(page,"learn/demo-999")
-                    page.locator(".c9-guided-course").wait_for(state="visible")
+                    page.locator(".c9-level-grid").wait_for(state="visible")
                     if page.locator(".c9-lesson-workspace").count():
                         raise AssertionError("Unknown original ID fabricated a lesson")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
@@ -881,7 +1238,7 @@ def main():
             ctx,page,errors=session(1440,900,False)
             def native_pathways():
                 open_route(page,"today")
-                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more")
+                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more:has(nav[aria-label='Additional study pathways'])")
                 if pathways.count()!=1: raise AssertionError("Study pathways disclosure missing")
                 if pathways.evaluate("(e)=>e.open"): raise AssertionError("Pathways should start closed on Home")
                 pathways.locator("summary").focus()
@@ -907,19 +1264,17 @@ def main():
                 ctx,page,errors=session(width,height,True)
                 def compact_home_context():
                     open_route(page,"today")
-                    if not page.locator(".c9-home>.c9-home-roadmap").is_visible():
-                        raise AssertionError("Actual course units still hidden in collapsed Home panel")
-                    course=page.locator(".c9-home>.c9-home-roadmap")
-                    if course.locator(".c9-home-roadmap-unit").count()<1:
-                        raise AssertionError("Source course unit suggestions absent")
+                    if not page.locator(".c9-home-course-launch").is_visible():
+                        raise AssertionError("Course-first Home CTA is missing")
+                    if page.locator("details.c9-home-explore-more").evaluate("(e)=>e.open"):
+                        raise AssertionError("Optional dashboard should start closed")
                     # Home deliberately omits the redundant contextual rail.
                     # Study routes retain the compact native related-destinations row.
                     open_route(page,"learn")
-                    context=page.locator(".c9-context-bar").first
-                    if context.count()!=1: raise AssertionError("Native contextual toolbar missing")
-                    bounds=context.bounding_box()
-                    if not bounds or bounds["width"]>width+4 or bounds["height"]>115:
-                        raise AssertionError("Context toolbar too large on mobile: "+str(bounds))
+                    context=page.locator(".c9-context-bar")
+                    if context.count(): raise AssertionError("Duplicate contextual toolbar over course")
+                    if page.locator('.c9-level-grid [data-action="c9-hsk-select"]').count()!=7:
+                        raise AssertionError("Course difficulty chooser missing")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("Mobile Home horizontal overflow")
                     open_route(page,"character/demo-01")
@@ -942,6 +1297,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def details_visibility():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     home=page.locator("details.c9-home-listening")
                     deck=home.locator(".c9-listening-deck")
                     if home.evaluate("(e)=>e.open") or deck.is_visible():
@@ -954,8 +1310,8 @@ def main():
                     deck.wait_for(state="visible")
                     hs.press("Enter")
                     if deck.is_visible():raise AssertionError("Home audio did not collapse")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     details=page.locator("details.c9-lesson-resources")
                     preview=details.locator(".c9-lesson-source-preview")
                     child=details.locator(".c9-lesson-resources-content")
@@ -1007,8 +1363,8 @@ def main():
             # viewport; its adjacent-lesson pager is preserved at the bottom.
             ctx,page,errors=session(390,844,True)
             def mobile_original_lesson_fold():
-                open_route(page,"learn")
-                page.locator('[data-action="c9-lesson-open"]').first.click()
+                open_route(page,"learn/level/1")
+                page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                 section=page.locator("#c9-lesson-overview").bounding_box()
                 if not section or section["y"]>764:
                     raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
@@ -1033,6 +1389,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def original_listening_journey():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     box=page.locator("details.c9-home-listening")
                     if box.evaluate("(e)=>e.open"):raise AssertionError("P9 Home speech toolkit must be optional")
                     box.locator("summary").click()
@@ -1042,8 +1399,8 @@ def main():
                         raise AssertionError("Home slow listen unavailable")
                     if not home.locator('[data-action="speech-stop"]').count():
                         raise AssertionError("Home stop audio unavailable")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     box=page.locator("details.c9-lesson-resources")
                     if box.evaluate("(e)=>e.open"):raise AssertionError("Original lesson stages should lead")
                     box.locator("summary").click()
@@ -1400,8 +1757,10 @@ def main():
                         raise AssertionError("Original P43 Mandarin editor not linked")
                     first=cards.first
                     first.locator("details summary").click()
-                    if first.locator('details [lang="zh-Hans"]').count()!=2:
-                        raise AssertionError("Both independently authored source anchors missing")
+                    if first.locator('details [lang="zh-Hans"]').count()!=0:
+                        raise AssertionError("P76 source evidence leaked before any native answer")
+                    if "P75 original evidence withheld" not in first.locator("details").inner_text():
+                        raise AssertionError("P76 prior source must stay gated until native answer")
                     dialogue_links=first.locator('[data-action="c9-media-open-dialogue"]')
                     if dialogue_links.count()!=2:
                         raise AssertionError("P76 previous and new original dialogue links are not both present")
@@ -1417,6 +1776,11 @@ def main():
                         raise AssertionError("Original dialogue question writer missing")
                     page.locator(".dialogue-quiz [data-action='dialogue-answer']").first.click()
                     page.locator(".c9-p75-dialogue-evidence").wait_for(state="visible")
+                    first=page.locator(".c9-p76-case-grid article").first
+                    if first.locator('details [lang="zh-Hans"]').count()!=1:
+                        raise AssertionError("P76 did not reveal the single now-answered source while other two remain hidden")
+                    if "P77 follow-up evidence withheld" not in first.locator("details").text_content():
+                        raise AssertionError("P76 unattempted follow-up evidence leaked after prior answer")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("P76 paired-source argument lab overflow "+str(width))
                     if errors:raise RuntimeError("; ".join(errors[:2]))
@@ -1729,6 +2093,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def source_led_surfaces():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     page.locator(".c9-home-first-fold .c9-home-hero").wait_for(state="visible")
                     page.locator(".c9-home-first-fold .c9-home-plan").wait_for(state="visible")
                     home=page.locator(".c9-home-source-preview")
@@ -1736,8 +2101,8 @@ def main():
                         raise AssertionError("Home lost source-authored Chinese example")
                     home_english=home.locator(":scope > p").inner_text()
                     if not home_english: raise AssertionError("Home source gloss absent")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     page.locator("details.c9-lesson-resources summary").click()
                     preview=page.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
@@ -1837,8 +2202,8 @@ def main():
             for width,height,mobile in [(1280,900,False),(1440,900,False),(1680,960,False),(390,844,True)]:
                 ctx,page,errors=session(width,height,mobile)
                 def lesson_hitboxes():
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     page.locator(".c9-lesson-layout").wait_for(state="visible")
                     positions=page.evaluate("""() => {
                       const left=document.querySelector('.c9-lesson-left');
@@ -1905,8 +2270,8 @@ def main():
             ctx.close()
             ctx,page,errors=session()
             def review():
-                open_route(page,"learn")
-                page.locator('[data-action="c9-lesson-open"]').first.click()
+                open_route(page,"learn/level/1")
+                page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                 page.locator('.c9-lesson-sections [data-section="finish"]').click()
                 page.locator('[data-action="mark-studied"]').first.click()
                 open_route(page,"review")
@@ -2128,25 +2493,32 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v75-p77-consequence-dialogues"
+                previous="character-study-working-v76-device-offline-readiness"
+                preceding="character-study-working-v77-dialogue-editorial-evidence"
+                current="character-study-working-v99-course-first-level-journey"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
                     raise AssertionError("Stale-cache seed must not execute the app")
-                page.evaluate("""async name=>{
-                  const store=await caches.open(name);
-                  await store.put(new Request(location.origin+'/__c9_46_legacy_marker__'),
-                                  new Response('old revision only'));
-                }""",legacy)
-                if legacy not in page.evaluate("async ()=>await caches.keys()"):
-                    raise AssertionError("Older cache was not prepared")
+                page.evaluate("""async names=>{
+                  for(const name of names){
+                    const store=await caches.open(name);
+                    await store.put(new Request(location.origin+'/__c9_46_legacy_marker__'),
+                                    new Response('old revision only'));
+                  }
+                }""",[legacy,previous,preceding])
+                present=page.evaluate("async ()=>await caches.keys()")
+                if legacy not in present or previous not in present or preceding not in present:
+                    raise AssertionError("Older v58, v76 and v77 caches were not prepared")
                 open_route(page,"today")
                 page.wait_for_function("()=>Boolean(navigator.serviceWorker?.controller)",
                                        timeout=25000)
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v75-p77-consequence-dialogues');
+                     !keys.includes('character-study-working-v76-device-offline-readiness')&&
+                     !keys.includes('character-study-working-v77-dialogue-editorial-evidence')&&
+                    keys.includes('character-study-working-v99-course-first-level-journey');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
@@ -2160,7 +2532,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
+                return "Old v58, v76 and v77 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
@@ -2172,7 +2544,7 @@ def main():
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
-                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.locator(".c9-home-course-launch").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
                     page.locator(".c9-discovery").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")

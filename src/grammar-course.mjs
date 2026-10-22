@@ -20,6 +20,14 @@ import {DIALOGUES} from './dialogues.mjs';
 import {evaluateAnswer} from './exercises.mjs';
 
 const groups=['Foundations','Questions','Nouns & classifiers','Time & location','Actions & aspect','Connections & comparisons'];
+// Keep translation-choice alternatives near the authentic teaching source.
+// Arbitrary translations from distant course levels make advanced questions
+// answerable by topic alone rather than by understanding the Mandarin.
+const grammarSourceBands=[GRAMMAR_ROWS_A,GRAMMAR_ROWS_B,P32_GRAMMAR_ROWS_A,P32_GRAMMAR_ROWS_B,
+ P36_GRAMMAR_ROWS,P40_GRAMMAR_ROWS,P46_GRAMMAR_ROWS,P47_GRAMMAR_ROWS,
+ P50_GRAMMAR_ROWS,P51_GRAMMAR_ROWS];
+const sourceBandByGrammarId=new Map(grammarSourceBands.flatMap((rows,band)=>
+ rows.map(row=>[row[0],band])));
 const chapters=Object.freeze(groups.map((name,i)=>Object.freeze({id:'chapter-'+(i+1),name,number:i+1})));
 const lessonByChar=new Map(DEMO_LESSONS.map(lesson=>[lesson.hanzi,lesson.id]));
 function example(data){return Object.freeze({hanzi:data[0],pinyin:data[1],english:data[2]});}
@@ -38,6 +46,14 @@ export const GRAMMAR_CHAPTERS=Object.freeze(chapters.map(ch=>Object.freeze({...c
  lessons:Object.freeze(GRAMMAR_LESSONS.filter(lesson=>lesson.chapter===ch.name).map(l=>l.id))})));
 const byId=new Map(GRAMMAR_LESSONS.map(l=>[l.id,l]));
 export function findGrammarLesson(id){return byId.get(id)||null;}
+/** Resolve an exact canonical source from a grammar deep link.
+ * Two- and three-digit IDs belong to the same original 164-lesson course.
+ * Reject partial matches so g128 can never silently display g12.
+ */
+export function grammarIdFromHash(hash){
+ const id=/^#\/grammar\/(g\d{2,3})$/.exec(String(hash??''))?.[1];
+ return id&&byId.has(id)?id:null;
+}
 export const GRAMMAR_MODES=Object.freeze(['meaning','cloze','ordering','transformation','production']);
 export function grammarWritingTaskId(id,mode){return 'grammar:'+id+':'+mode;}
 export const GRAMMAR_PRACTICE_TASKS=Object.freeze(GRAMMAR_LESSONS.flatMap(lesson=>
@@ -57,28 +73,43 @@ export const GRAMMAR_PRACTICE_TASKS=Object.freeze(GRAMMAR_LESSONS.flatMap(lesson
    mode==='production'?lesson.examples[1].pinyin:lesson.transformation.model.pinyin
  }))
 ));
-function seededOptions(correct,alternatives,index){
- const choices=[correct,...alternatives.filter(a=>a!==correct&&!String(a).includes(correct)&&!String(correct).includes(a))];
+function seededOptions(correct,alternatives,index,{authoredCloze=false}={}){
+ // English meaning distractors should not be near-duplicate substrings.
+ // Chinese cloze options are different: authored wrong particles/phrases
+ // deliberately CONTAIN the short correct target (下午 vs 是下午).
+ // Removing those distractors made several original lessons single-answer.
+ const choices=[correct,...alternatives.filter(a=>a!==correct&&
+  (authoredCloze||(!String(a).includes(correct)&&!String(correct).includes(a))))];
  const unique=[...new Set(choices)].slice(0,4);
  const shift=(index*11+7)%unique.length;
  return [...unique.slice(shift),...unique.slice(0,shift)];
 }
+function sourcedMeaningAlternatives(lesson){
+ const band=sourceBandByGrammarId.get(lesson.id);
+ const peers=GRAMMAR_LESSONS.filter(l=>l.id!==lesson.id);
+ const rank=l=>(sourceBandByGrammarId.get(l.id)===band?0:2)+
+   (l.chapter===lesson.chapter?0:1);
+ peers.sort((a,b)=>rank(a)-rank(b)||
+   Math.abs(a.order-lesson.order)-Math.abs(b.order-lesson.order)||
+   a.order-b.order);
+ return peers.map(l=>l.examples[0].english);
+}
 export function grammarQuestion(lessonId,mode='meaning'){
  const lesson=findGrammarLesson(lessonId);if(!lesson||!GRAMMAR_MODES.includes(mode))return null;
  if(mode==='meaning'){
-  const rivals=GRAMMAR_LESSONS.filter(l=>l.id!==lesson.id).map(l=>l.examples[0].english);
+  const rivals=sourcedMeaningAlternatives(lesson);
   return {id:'grammar:'+lesson.id+':meaning',mode,kind:'choice',
    prompt:'What does this complete sentence mean?',context:lesson.examples[0].hanzi,
    answer:lesson.examples[0].english,
-   options:seededOptions(lesson.examples[0].english,[...rivals.slice((lesson.order*3)%rivals.length),...rivals],lesson.order),
+   options:seededOptions(lesson.examples[0].english,rivals,lesson.order),
    explanation:lesson.explanation,model:lesson.examples[0],grammar:lesson,taskId:grammarWritingTaskId(lesson.id,mode)};
  }
  if(mode==='cloze'){
   const cloze=lesson.cloze;
   return {id:'grammar:'+lesson.id+':cloze',mode,kind:'choice',
-   prompt:'Which expression completes the Chinese sentence?',
-   context:cloze.masked,answer:cloze.answer,
-   options:seededOptions(cloze.answer,cloze.options.slice(1),lesson.order),
+   prompt:'Complete the sentence for the intended meaning.',
+   context:cloze.masked,targetMeaning:cloze.completed.english,answer:cloze.answer,
+   options:seededOptions(cloze.answer,cloze.options.slice(1),lesson.order,{authoredCloze:true}),
    explanation:lesson.contrast,model:cloze.completed,grammar:lesson,taskId:grammarWritingTaskId(lesson.id,mode)};
  }
  const task=GRAMMAR_PRACTICE_TASKS.find(t=>t.grammarId===lesson.id&&t.mode===mode);
@@ -96,7 +127,12 @@ export function grammarQuestion(lessonId,mode='meaning'){
 }
 export function gradeGrammarQuestion(q,response){
  if(!q||!GRAMMAR_MODES.includes(q.mode))throw Error('Unknown grammar exercise');
- if(q.kind==='choice')return evaluateAnswer(response,q.answer,'choice');
+ if(q.kind==='choice'){
+  const outcome=evaluateAnswer(response,q.answer,'choice');
+  if(q.mode==='cloze'&&!outcome.correct)return {...outcome,
+   message:'This choice does not match the intended meaning. Another connector may be grammatical in a different context.'};
+  return outcome;
+ }
  const normalized=text=>String(text||'').normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
  const correct=normalized(response)===normalized(q.answer);
  return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':

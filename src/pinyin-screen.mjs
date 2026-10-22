@@ -4,7 +4,7 @@ import {PINYIN_INITIALS,PINYIN_FINALS,PINYIN_SYLLABLE_GROUPS,PINYIN_TONES,PINYIN
 export function soundPrimer(reference,action,esc){
  const parts=soundBreakdown(reference);if(!parts?.length)return '';
  return `<section class="p24-sound-primer" aria-label="Pinyin pronunciation connections">
- <div class="p24-primer-head"><strong>How these syllables work</strong><span>Written lexical Pinyin</span></div>
+ <div class="p24-primer-head"><strong>How these syllables work</strong><span>Reference Pinyin · compare contextual tones</span></div>
  <div class="p24-primer-parts">${parts.map(p=>`<div><strong>${esc(p.syllable)}</strong><span>Tone ${p.tone===5?'neutral':p.tone}</span><p>${esc(p.initialCue)}</p><p>${esc(p.finalCue)}</p>${p.extra?`<small>${esc(p.extra)}</small>`:''}</div>`).join('')}</div>
  ${action('pinyin-open','Open sound foundations →','button outline small')}</section>`;
 }
@@ -22,7 +22,7 @@ function soundGrid(section,selected,action,esc){
 function syllables(selected,action,esc){
  const current=PINYIN_SYLLABLE_GROUPS.find(g=>g.forms.includes(selected))?selected:'ma';
  return `<section class="simple-panel p24-panel"><p class="eyebrow">COMBINE INITIALS AND FINALS</p><h2>Interactive Pinyin syllable chart</h2>
- <p>Select a syllable to see all four written tones and the unmarked neutral spelling. The examples are illustrative, not an exhaustive official syllable inventory.</p>
+ <p>Select a syllable to see all four written tones and the unmarked neutral spelling. The displayed spellings are the original valid initial–final combinations this app can check. Not every theoretical initial and final forms a Mandarin syllable; this is not an official HSK inventory.</p>
  <div class="p24-syllable-current"><strong>${esc(current)}</strong><div>${[1,2,3,4,5].map(n=>`<span><b>${esc(toneMarkedSyllable(current+n)||current)}</b><small>${n===5?'neutral':`tone ${n}`}</small></span>`).join('')}</div></div>
  <div class="p24-chart">${PINYIN_SYLLABLE_GROUPS.map(g=>`<section><h3>${g.initial==='none'?'Zero initial / y / w':esc(g.initial)}</h3><div>${g.forms.map(text=>action('pinyin-syllable',esc(text),'p24-chart-syllable '+(text===current?'selected':''),`data-syllable="${esc(text)}" aria-pressed="${text===current}"`)).join('')}</div></section>`).join('')}</div></section>`;
 }
@@ -42,8 +42,8 @@ function spelling(action,esc){
  ${action('pinyin-tab','Practice tone-mark spelling →','button primary',`data-section="practice" data-filter="spelling"`)}</section>`;
 }
 function sandhi(action,esc){
- return `<section class="simple-panel p24-panel"><p class="eyebrow">CONNECTED SPEECH</p><h2>Sandhi, neutral tone and real speech rhythm</h2><p>The written reference remains lexical even when pronunciation changes in a phrase. Device TTS is only a listening aid.</p>
- <div class="p24-sandhi">${PINYIN_SANDHI.map(r=>`<article><div><span class="eyebrow">${esc(r.title)}</span><h3>${esc(r.subtitle)}</h3><p>${esc(r.explanation)}</p><small>${esc(r.cue)}</small></div><div><strong lang="zh-Hans">${esc(r.hanzi)}</strong><p>Written: ${esc(r.lexical)}</p><p>Spoken guide: ${esc(r.spoken)}</p>${speak(r.hanzi,action,esc)}</div></article>`).join('')}</div>
+ return `<section class="simple-panel p24-panel"><p class="eyebrow">CONNECTED SPEECH</p><h2>Sandhi, neutral tone and real speech rhythm</h2><p>Compare the isolated citation/base tones with a contextual spoken guide. Textbooks may write the original tones or mark some contextual changes; this lesson distinguishes both explicitly. Device TTS is only a listening aid, not independently verified audio.</p>
+ <div class="p24-sandhi">${PINYIN_SANDHI.map(r=>`<article><div><span class="eyebrow">${esc(r.title)}</span><h3>${esc(r.subtitle)}</h3><p>${esc(r.explanation)}</p><small>${esc(r.cue)}</small></div><div><strong lang="zh-Hans">${esc(r.hanzi)}</strong><p>Citation/base tones: ${esc(r.lexical)}</p><p>Contextual spoken guide: ${esc(r.spoken)}</p>${speak(r.hanzi,action,esc)}</div></article>`).join('')}</div>
  ${action('pinyin-tab','Review connected-speech questions →','button primary',`data-section="practice" data-filter="sandhi"`)}</section>`;
 }
 function practice({filter,index,feedback,typed},action,esc){
