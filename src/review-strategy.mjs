@@ -1,7 +1,9 @@
 /** Diversified due-only queue; no fabricated grades or predicted retention. */
 import {dueCards,cardInfo,DAY} from './study.mjs';
-export function reviewPlan(state,{now=Date.now(),focus='all',limit=10}={}){
- const due=dueCards(state,now);const recent=new Map();for(const e of state.events||[])recent.set(e.cardId,e);
+export function reviewPlan(state,{now=Date.now(),focus='all',limit=10,lessonIds=null}={}){
+ // An optional source-owned lesson subset only restricts due candidates.
+ // The established review priority, scheduler and grading authority are unchanged.
+ const due=dueCards(state,now).filter(id=>!lessonIds||lessonIds.has(id.split(':')[0]));const recent=new Map();for(const e of state.events||[])recent.set(e.cardId,e);
  const family=id=>{const k=cardInfo(id)?.type||'';return k==='reading'||k.startsWith('wordread')?'pronunciation':k==='sentence'?'sentences':'meanings'};
  const rows=due.filter(id=>{const f=family(id);return focus==='all'||focus==='weak'||focus===f}).map((id,index)=>{
   const ev=recent.get(id),card=state.cards[id],overdue=Math.max(0,(now-card.due)/DAY);const needs=!!ev&&(ev.grade===0||ev.correct===false||ev.assisted);
