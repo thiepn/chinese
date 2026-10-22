@@ -124,7 +124,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def compiled_first_home():
                     page.goto(args.base_url.rstrip("/")+"/#/today",wait_until="domcontentloaded")
-                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.locator(".c9-home-course-launch").wait_for(state="visible")
                     info=page.evaluate("""()=>{
                       const paths=performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname);
                       return {ms:Math.round(performance.now()),
@@ -162,7 +162,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def learner_first_navigation():
                     open_route(page,"today")
-                    entry=page.locator(".c9-home-hero-actions [data-action='hub-lesson']")
+                    entry=page.locator(".c9-home-course-actions a[href^='#/learn/demo-']")
                     if entry.count()!=1 or not entry.is_visible():
                         raise AssertionError("Home lacks one direct lesson-start action")
                     if "Start lesson 001" not in entry.inner_text():
@@ -173,12 +173,10 @@ def main():
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("Start lesson did not open the actual native teaching")
                     page.locator('[data-action="c9-learn-back"]').first.click()
-                    guided=page.locator(".c9-guided-course")
+                    guided=page.locator(".c9-level-grid")
                     guided.wait_for(state="visible")
-                    if not guided.is_visible() or guided.locator(".c9-guided-list li").count()<2:
-                        raise AssertionError("Numbered lesson sequence absent above the catalog")
-                    if "001" not in guided.locator(".c9-guided-step").first.inner_text():
-                        raise AssertionError("Lesson one not discoverable at the course start")
+                    if guided.locator('[data-action="c9-hsk-select"]').count()!=7:
+                        raise AssertionError("The course level chooser did not return after the first lesson")
                     if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("Back to all lessons stranded the learner behind a closed catalog")
                     if not page.locator(".c9-discovery-catalog-body").is_visible():
@@ -194,7 +192,7 @@ def main():
                         menu=page.locator("#c9-mobile-drawer")
                         if not menu.evaluate("(e)=>e.open"):
                             raise AssertionError("Mobile optional destinations did not open")
-                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=5:
+                        if menu.locator(".c9-drawer-primary .c9-drawer-quicklink").count()!=6:
                             raise AssertionError("Mobile More again exposes too many first-level routes")
                         advanced=menu.locator("details.c9-drawer-advanced")
                         if advanced.evaluate("(e)=>e.open"):
@@ -227,18 +225,18 @@ def main():
                     question.wait_for(state="visible")
                     if not question.evaluate("(e)=>document.activeElement===e"):
                         raise AssertionError("Starting placement did not focus the original question")
-                    hero=page.locator(".c9-home-hero-actions")
+                    hero=page.locator(".c9-home-course-actions")
                     primary=hero.locator("[data-action='hub-primary']")
                     if primary.count()!=1 or "Resume saved activity" not in primary.inner_text():
                         raise AssertionError("Today incorrectly prioritizes an unrelated lesson over saved placement")
-                    secondary=hero.locator("[data-action='hub-lesson']")
-                    if secondary.count()!=1 or "optional" not in secondary.inner_text():
-                        raise AssertionError("Original next lesson not retained as secondary action")
+                    secondary=hero.locator("a[href='#/learn']")
+                    if secondary.count()!=1:
+                        raise AssertionError("Explicit course-level choice missing alongside saved placement")
                     question.locator("[data-action='placement-answer']").first.click()
                     page.locator("#c9-placement-anchor").get_by_text("Question 2 of 6").wait_for()
                     if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
                         raise AssertionError("Next original placement question lost keyboard focus")
-                    primary=page.locator(".c9-home-hero-actions [data-action='hub-primary']")
+                    primary=page.locator(".c9-home-course-actions [data-action='hub-primary']")
                     primary.click()
                     if not page.locator("#c9-placement-question").evaluate("(e)=>document.activeElement===e"):
                         raise AssertionError("Today resume did not focus saved original placement")
@@ -605,8 +603,8 @@ def main():
             for width,height,mobile in ((390,844,True),(1440,900,False)):
                 ctx,page,errors=session(width,height,mobile)
                 def guided_lesson_steps():
-                    open_route(page,"learn")
-                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator(".c9-course-primary [data-action='c9-lesson-open']").first.click()
                     page.locator("#c9-lesson-overview").wait_for(state="visible")
                     if not page.locator("#c9-lesson-overview").is_visible():
                         raise AssertionError("First character step not visible")
@@ -687,8 +685,8 @@ def main():
             for width,height,mobile in ((390,844,True),(1440,900,False)):
                 ctx,page,errors=session(width,height,mobile)
                 def canonical_lesson_history():
-                    open_route(page,"learn")
-                    page.locator(".c9-guided-actions [data-action='c9-lesson-open']").first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator(".c9-course-primary [data-action='c9-lesson-open']").first.click()
                     page.wait_for_function("()=>location.hash==='#/learn/demo-01'")
                     original=page.locator("#c9-lesson-title").inner_text()
                     if not page.locator('[data-action="c9-lesson-copy-link"]').is_visible():
@@ -711,11 +709,11 @@ def main():
                     page.wait_for_function("()=>location.hash==='#/learn/demo-02'")
                     page.locator('[data-action="c9-learn-back"]').first.click()
                     page.wait_for_function("()=>location.hash==='#/learn'")
-                    page.locator(".c9-guided-course").wait_for(state="visible")
+                    page.locator(".c9-level-grid").wait_for(state="visible")
                     if not page.locator("details.c9-discovery-catalog").evaluate("(e)=>e.open"):
                         raise AssertionError("All lessons left catalog closed after deep link")
                     open_route(page,"learn/demo-999")
-                    page.locator(".c9-guided-course").wait_for(state="visible")
+                    page.locator(".c9-level-grid").wait_for(state="visible")
                     if page.locator(".c9-lesson-workspace").count():
                         raise AssertionError("Unknown original ID fabricated a lesson")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
@@ -1240,7 +1238,7 @@ def main():
             ctx,page,errors=session(1440,900,False)
             def native_pathways():
                 open_route(page,"today")
-                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more")
+                pathways=page.locator(".c9-sidebar .c9-sidebar-study-more:has(nav[aria-label='Additional study pathways'])")
                 if pathways.count()!=1: raise AssertionError("Study pathways disclosure missing")
                 if pathways.evaluate("(e)=>e.open"): raise AssertionError("Pathways should start closed on Home")
                 pathways.locator("summary").focus()
@@ -1266,19 +1264,17 @@ def main():
                 ctx,page,errors=session(width,height,True)
                 def compact_home_context():
                     open_route(page,"today")
-                    if not page.locator(".c9-home>.c9-home-roadmap").is_visible():
-                        raise AssertionError("Actual course units still hidden in collapsed Home panel")
-                    course=page.locator(".c9-home>.c9-home-roadmap")
-                    if course.locator(".c9-home-roadmap-unit").count()<1:
-                        raise AssertionError("Source course unit suggestions absent")
+                    if not page.locator(".c9-home-course-launch").is_visible():
+                        raise AssertionError("Course-first Home CTA is missing")
+                    if page.locator("details.c9-home-explore-more").evaluate("(e)=>e.open"):
+                        raise AssertionError("Optional dashboard should start closed")
                     # Home deliberately omits the redundant contextual rail.
                     # Study routes retain the compact native related-destinations row.
                     open_route(page,"learn")
-                    context=page.locator(".c9-context-bar").first
-                    if context.count()!=1: raise AssertionError("Native contextual toolbar missing")
-                    bounds=context.bounding_box()
-                    if not bounds or bounds["width"]>width+4 or bounds["height"]>115:
-                        raise AssertionError("Context toolbar too large on mobile: "+str(bounds))
+                    context=page.locator(".c9-context-bar")
+                    if context.count(): raise AssertionError("Duplicate contextual toolbar over course")
+                    if page.locator('.c9-level-grid [data-action="c9-hsk-select"]').count()!=7:
+                        raise AssertionError("Course difficulty chooser missing")
                     if page.evaluate("()=>document.documentElement.scrollWidth-innerWidth")>4:
                         raise AssertionError("Mobile Home horizontal overflow")
                     open_route(page,"character/demo-01")
@@ -1301,6 +1297,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def details_visibility():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     home=page.locator("details.c9-home-listening")
                     deck=home.locator(".c9-listening-deck")
                     if home.evaluate("(e)=>e.open") or deck.is_visible():
@@ -1313,8 +1310,8 @@ def main():
                     deck.wait_for(state="visible")
                     hs.press("Enter")
                     if deck.is_visible():raise AssertionError("Home audio did not collapse")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     details=page.locator("details.c9-lesson-resources")
                     preview=details.locator(".c9-lesson-source-preview")
                     child=details.locator(".c9-lesson-resources-content")
@@ -1366,8 +1363,8 @@ def main():
             # viewport; its adjacent-lesson pager is preserved at the bottom.
             ctx,page,errors=session(390,844,True)
             def mobile_original_lesson_fold():
-                open_route(page,"learn")
-                page.locator('[data-action="c9-lesson-open"]').first.click()
+                open_route(page,"learn/level/1")
+                page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                 section=page.locator("#c9-lesson-overview").bounding_box()
                 if not section or section["y"]>764:
                     raise AssertionError("Original teaching still below mobile bottom navigation: "+str(section))
@@ -1392,6 +1389,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def original_listening_journey():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     box=page.locator("details.c9-home-listening")
                     if box.evaluate("(e)=>e.open"):raise AssertionError("P9 Home speech toolkit must be optional")
                     box.locator("summary").click()
@@ -1401,8 +1399,8 @@ def main():
                         raise AssertionError("Home slow listen unavailable")
                     if not home.locator('[data-action="speech-stop"]').count():
                         raise AssertionError("Home stop audio unavailable")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     box=page.locator("details.c9-lesson-resources")
                     if box.evaluate("(e)=>e.open"):raise AssertionError("Original lesson stages should lead")
                     box.locator("summary").click()
@@ -2095,6 +2093,7 @@ def main():
                 ctx,page,errors=session(width,height,mobile)
                 def source_led_surfaces():
                     open_route(page,"today")
+                    page.locator("details.c9-home-explore-more summary").click()
                     page.locator(".c9-home-first-fold .c9-home-hero").wait_for(state="visible")
                     page.locator(".c9-home-first-fold .c9-home-plan").wait_for(state="visible")
                     home=page.locator(".c9-home-source-preview")
@@ -2102,8 +2101,8 @@ def main():
                         raise AssertionError("Home lost source-authored Chinese example")
                     home_english=home.locator(":scope > p").inner_text()
                     if not home_english: raise AssertionError("Home source gloss absent")
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     page.locator("details.c9-lesson-resources summary").click()
                     preview=page.locator(".c9-lesson-source-preview")
                     preview.wait_for(state="visible")
@@ -2203,8 +2202,8 @@ def main():
             for width,height,mobile in [(1280,900,False),(1440,900,False),(1680,960,False),(390,844,True)]:
                 ctx,page,errors=session(width,height,mobile)
                 def lesson_hitboxes():
-                    open_route(page,"learn")
-                    page.locator('[data-action="c9-lesson-open"]').first.click()
+                    open_route(page,"learn/level/1")
+                    page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                     page.locator(".c9-lesson-layout").wait_for(state="visible")
                     positions=page.evaluate("""() => {
                       const left=document.querySelector('.c9-lesson-left');
@@ -2271,8 +2270,8 @@ def main():
             ctx.close()
             ctx,page,errors=session()
             def review():
-                open_route(page,"learn")
-                page.locator('[data-action="c9-lesson-open"]').first.click()
+                open_route(page,"learn/level/1")
+                page.locator('.c9-course-primary [data-action="c9-lesson-open"]').first.click()
                 page.locator('.c9-lesson-sections [data-section="finish"]').click()
                 page.locator('[data-action="mark-studied"]').first.click()
                 open_route(page,"review")
@@ -2545,7 +2544,7 @@ def main():
                 try:
                     page.reload(wait_until="domcontentloaded")
                     page.locator("#app-content").wait_for(state="visible")
-                    page.locator(".c9-home-hero").wait_for(state="visible")
+                    page.locator(".c9-home-course-launch").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/learn",wait_until="domcontentloaded")
                     page.locator(".c9-discovery").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
