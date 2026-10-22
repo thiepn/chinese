@@ -2128,7 +2128,7 @@ def main():
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v75-p77-consequence-dialogues"
+                current="character-study-working-v75-p77-consequence-dialogues-visual-lexicon-v1"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2146,13 +2146,13 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v75-p77-consequence-dialogues');
+                    keys.includes('character-study-working-v75-p77-consequence-dialogues-visual-lexicon-v1');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
                   return (await store.keys()).length;
                 }""",current)
-                if kept!=8:
+                if kept!=11:
                     raise AssertionError("Updated cache lacks complete compiled runtime assets: "+str(kept))
                 ctx.set_offline(True)
                 try:
@@ -2160,7 +2160,7 @@ def main():
                     page.locator("#app-content").wait_for(state="visible")
                     if errors: raise RuntimeError("; ".join(errors[:2]))
                 finally: ctx.set_offline(False)
-                return "Old v58 CacheStorage deleted; 8 compiled runtime assets retained and offline reload works (not live SW takeover)"
+                return "Old v58 CacheStorage deleted; 11 compiled runtime plus original image assets retained and offline reload works (not live SW takeover)"
             check("C9-50 stale offline cache migration",stale_cache_upgrade)
             ctx.close()
             ctx,page,errors=session()
@@ -2177,8 +2177,19 @@ def main():
                     page.locator(".c9-discovery").wait_for(state="visible")
                     page.goto(args.base_url.rstrip("/")+"/#/character/demo-01",wait_until="domcontentloaded")
                     page.locator(".c9-character-glyph").wait_for(state="visible")
+                    # The first shared image consumer must load a real original SVG
+                    # while disconnected; no secondary cache or learner writes.
+                    open_route(page,"wordbook")
+                    page.locator("#c9-word-query").fill("商店")
+                    picture=page.locator('#c9-word-catalog .c9-lexicon-image[src$="/shop.svg"]').first
+                    picture.wait_for(state="attached")
+                    picture.scroll_into_view_if_needed()
+                    page.wait_for_function("""()=>{
+                      const image=document.querySelector('#c9-word-catalog .c9-lexicon-image[src$="/shop.svg"]');
+                      return image&&image.complete&&image.naturalWidth>0;
+                    }""",timeout=15000)
                     if errors: raise RuntimeError("; ".join(errors[:2]))
-                    return "Service worker serves compiled original Home, lesson and character offline"
+                    return "Compiled original Home, lesson and character plus pinned Word Library SVG offline"
                 finally: ctx.set_offline(False)
             check("offline cached shell",offline)
             ctx.close()
