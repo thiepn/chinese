@@ -35,10 +35,11 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
  assert.equal(JSON.stringify(state),before);
 });
 
-test('P9 native sidebar keeps all five destinations in accessible nested navigation',()=>{
+test('P2 retains four primary destinations and nested original resources',()=>{
  const shell=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  assert.equal((shell.match(/<details class="c9-sidebar-study-more">/g)||[]).length,2);
- assert.ok(shell.includes('<nav aria-label="Additional study pathways"'));
+ assert.ok(shell.includes('aria-label="Course resources"'));
+ assert.deepEqual([...shell.matchAll(/data-c9-primary="([^"]+)"/g)].map(m=>m[1]),['today','learn','review','progress']);
  for(const route of ['skills','writing','advanced','pathway','plan'])assert.ok(shell.includes('data-route="'+route+'"'),route);
  const sync=readFileSync(new URL('../src/shell-c9.mjs',import.meta.url),'utf8');
  assert.ok(sync.includes('group.open=true'));

@@ -150,18 +150,24 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  const lastId=(state.introductions||[]).at(-1)?.id||last?.id;
  const inferred=HSK_TARGETS.find(t=>hskTargetLessons(t.id).some(l=>l.id===lastId))?.id||'1';
  const level=HSK_TARGETS.some(t=>t.id===selectedLevel)?selectedLevel:inferred;
- const available=hskTargetLessons(level);
- const next=available.find(l=>!(state.learned||[]).includes(l.id))||available[0]||null;
+ const available=hskTargetLessons(level),learned=new Set(state.learned||[]);
+ const next=available.find(l=>!learned.has(l.id))||available[0]||null;
+ const sources=hskTargetPractice(level);
+ const reading=sources.readings[0],dialogue=sources.dialogues[0],mission=sources.missions[0];
+ const selected=next?{id:next.id,kind:'lesson',label:'Lesson '+next.order+' · '+next.meaning,action:'c9-lesson-open'}:
+  reading?{id:reading.id,kind:'reading',label:reading.title,action:'c9-media-open-story'}:
+  dialogue?{id:dialogue.id,kind:'dialogue',label:dialogue.title,action:'c9-media-open-dialogue'}:
+  mission?{id:mission.id,kind:'mission',label:mission.title,action:'pathway-select'}:null;
  const levelTitle=HSK_TARGETS.find(t=>t.id===level)?.name||'HSK 1';
  const firstAction=hub.sessions.length?act('hub-primary','Resume saved activity →','c9-button c9-button--primary'):
- next?'<a class="c9-button c9-button--primary" href="#/learn/'+esc(next.id)+'">'+
- (hasActivity?'Continue':'Start')+' · '+esc(levelTitle)+' · Lesson '+next.order+' →</a>':
- '<a class="c9-button c9-button--primary" href="#/learn/level/'+esc(level)+'">'+esc(levelTitle)+' · Open course →</a>';
+  selected?act(selected.action,(available.some(l=>learned.has(l.id))?'Continue ':'Start ')+selected.kind+' →',
+   'c9-button c9-button--primary','data-id="'+esc(selected.id)+'"'):
+  '<a class="c9-button c9-button--primary" href="#/learn/level/'+esc(level)+'">'+esc(levelTitle)+' · Open course →</a>';
  return '<div class="c9-home">'+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+
-  '<section class="c9-home-course-launch"><h1>Learn Chinese</h1>'+
+  '<section class="c9-home-course-launch"><h1>'+esc(levelTitle)+' · '+esc(selected?.label||'Learn Chinese')+'</h1>'+
   ''+
   '<div class="c9-home-course-actions">'+firstAction+
-  '<a class="c9-button c9-button--secondary" href="#/learn">Change level</a></div></section>'+
+  '<a class="c9-button c9-button--secondary" href="#/learn/level/'+esc(level)+'">View '+esc(levelTitle)+'</a><a class="c9-home-level-link" href="#/learn">Change level</a></div></section>'+
   (overview.due?'<section class="c9-course-review"><strong>'+overview.due+' review cards due</strong>'+
    '<a href="#/review" class="c9-button c9-button--secondary">Review now</a></section>':'')+
   '<details class="c9-home-explore-more"><summary><strong>Progress and other resources</strong></summary>'+

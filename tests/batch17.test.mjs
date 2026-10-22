@@ -82,5 +82,5 @@ test('invalid external imported histories and session pointers fail validation',
 test('new route, source navigation, accessibility hooks and pre-cache all present',async()=>{
  const [app,html,css,sw]=await Promise.all(['app.mjs','index.html','styles.css','sw.js'].map(n=>readFile(`src/${n}`,'utf8')));
  for(const keyword of ['renderFluency','fluency-start','fluency-answer','fluency-hint','fluency-source','fluency-analytics','fluency-entry','fluencySummary'])assert.ok(app.includes(keyword),keyword);
- assert.match(html,/href="#\/fluency"/);assert.match(css,/\.fluency-work/);assert.match(sw,/character-study-working-v99/);assert.match(sw,/fluency-studio\.mjs/);
+ assert.match(html,/href="#\/fluency"/);assert.match(css,/\.fluency-work/);assert.match(sw,/character-study-working-v100/);assert.match(sw,/fluency-studio\.mjs/);
 });
