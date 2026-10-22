@@ -24,7 +24,6 @@ with sync_playwright() as p:
    original_id=item.get_attribute('data-id')
    assert original_id
    item.click()
-   expect(page).to_have_url(lambda url: expected in url,timeout=12000) if False else None
    page.wait_for_function('(prefix) => location.hash.startsWith(prefix)',arg=expected,timeout=12000)
    assert original_id in page.url, (level,kind,original_id,page.url)
    assert page.evaluate('()=>document.documentElement.scrollWidth <= innerWidth+4'),(level,width)
