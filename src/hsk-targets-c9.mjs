@@ -4,6 +4,7 @@ import {STORIES} from './stories.mjs';
 import {PATHWAY_MISSIONS} from './pathway-course.mjs';
 import {GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {DIALOGUES} from './dialogues.mjs';
+import {levelWorkspaceEvidence,renderLevelEvidencePanel,renderLevelUnits,renderLevelReview} from './hsk-level-workspace-c9.mjs';
 
 export const HSK_TARGETS=Object.freeze([
  ['1','HSK 1','Foundations'],
@@ -83,7 +84,7 @@ function studySources(state,id,act,esc){
   '<h3>Practice by skill</h3><div class="c9-level-skills-grid">'+groups.join('')+'</div>'+
   '<p>Source selection is provisional. These activities reuse the original review, reading and dialogue assessments; they do not award an HSK level.</p></section>':'';
 }
-export function renderC9HSKTargets(state,selectedId,act,esc){
+export function renderC9HSKTargets(state,selectedId,act,esc,{pane='learn',now=Date.now()}={}){
  const selected=HSK_TARGETS.find(t=>t.id===String(selectedId));
  const introduced=new Set(state.learned||[]);
  const choices=HSK_TARGETS.map(t=>{
@@ -99,6 +100,14 @@ export function renderC9HSKTargets(state,selectedId,act,esc){
   '<p class="c9-level-caveat">Choose any level, without prerequisites. Original study stages are provisional, not a verified HSK 3.0 syllabus.</p></section>';
  if(!selected)return chooser;
  const lessons=hskTargetLessons(selected.id),readings=hskTargetReadings(selected.id),missions=hskTargetMissions(selected.id);
+ const practice=hskTargetPractice(selected.id);
+ const evidence=levelWorkspaceEvidence(state,{lessons,...practice},now);
+ const selectedPane=['learn','practice','review'].includes(pane)?pane:'learn';
+ const tabs='<nav class="c9-level-tabs" aria-label="'+esc(selected.name)+' learning activities">'+
+  [['learn','Learn'],['practice','Practice'],['review','Review']].map(([value,label])=>
+   act('c9-level-pane',label,'c9-level-tab'+(selectedPane===value?' is-selected':''),
+     'data-pane="'+value+'" aria-pressed="'+(selectedPane===value)+'"')).join('')+'</nav>';
+
  const sorted=[...lessons.filter(l=>!introduced.has(l.id)),...lessons.filter(l=>introduced.has(l.id))];
  const entries=sorted.slice(0,8).map(l=>act('c9-lesson-open',
    '<span lang="zh-Hans">'+esc(l.hanzi)+'</span><strong>'+esc(l.pinyin)+' · '+esc(l.meaning)+'</strong>'+
@@ -111,11 +120,19 @@ export function renderC9HSKTargets(state,selectedId,act,esc){
  const missionEntries=missions.map(m=>act('pathway-select',
    '<strong>'+esc(m.title)+'</strong><small>Original band '+m.band+' mission</small>',
    'c9-level-source','data-id="'+esc(m.id)+'"'));
+ const sourceEntries=entries.concat(advanced,missionEntries);
+ const learn='<div class="c9-level-lesson-list">'+sourceEntries.join('')+'</div>'+
+  renderLevelUnits(evidence,act,esc)+studySources(state,selected.id,act,esc);
+ const practiceBody=studySources(state,selected.id,act,esc)+
+  '<div class="c9-level-practice-stats"><strong>Recorded original attempts</strong><span>'+
+   evidence.grammarAttempts+' grammar · '+evidence.readingAttempts+' reading · '+
+   evidence.dialogueAttempts+' dialogue · '+evidence.missionAttempts+' mission</span></div>'+
+  (missions.length?'<div class="c9-level-lesson-list">'+missionEntries.join('')+'</div>':'');
  return chooser+'<section class="c9-level-selected" aria-labelledby="c9-level-selected-title">'+
   '<h2 id="c9-level-selected-title">'+esc(selected.name)+' practice</h2>'+
-  '<p>'+esc(selected.focus)+' · provisional level selection</p>'+
-  '<div class="c9-level-lesson-list">'+entries.concat(advanced,missionEntries).join('')+'</div>'+
-  studySources(state,selected.id,act,esc)+
-  '<div class="c9-level-actions"><a class="c9-button c9-button--secondary" href="#/review">My review</a>'+
-  '<a class="c9-button c9-button--secondary" href="#/skills">Study by skill</a></div></section>';
+  '<p>'+esc(selected.focus)+' · original authored study stage · official HSK mapping not verified</p>'+
+  renderLevelEvidencePanel(evidence,act,esc)+tabs+
+  (selectedPane==='review'?renderLevelReview(evidence,act,esc):
+   selectedPane==='practice'?practiceBody:learn)+
+  '</section>';
 }
