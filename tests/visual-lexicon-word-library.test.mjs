@@ -35,7 +35,7 @@ test('optional reference art is exact, lazy, same-origin, and absent during reca
  const html=c9WordCatalogResults(state,{query:'书'},act,esc);
  assert.match(html,/src="\.\/visual-lexicon\/assets\/book\.svg"/);
  assert.match(html,/loading="lazy" decoding="async"/);
- assert.doesNotMatch(c9WordCatalogResults(state,{query:'电脑'},act,esc),/c9-lexicon-image/);
+ assert.equal(localVocabularyImage({languageId:'chinese',lexemeId:'电脑|diannao',usage:'reference'}),null);
 });
 test('existing offline shell precaches optional local images, no secondary cache',()=>{
  const sw=readFileSync(new URL('./sw.js',root),'utf8'),app=readFileSync(new URL('./app.mjs',root),'utf8');
