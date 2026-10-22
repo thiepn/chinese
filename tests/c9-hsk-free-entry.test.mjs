@@ -65,7 +65,8 @@ test('HSK-level browser filters the actual lesson collection and preserves origi
 test('Advanced targets have real original reading and mission buttons but do not masquerade as a fully mapped syllabus',()=>{
  const state=freshState();
  const six=renderC9HSKTargets(state,'6',act,esc);
- assert.equal((six.match(/class="c9-level-source" data-action="c9-media-open-story"/g)||[]).length,5);
+ const sourceList=six.split('<div class="c9-level-lesson-list">')[1]?.split('</div>')[0]||'';
+ assert.equal((sourceList.match(/data-action="c9-media-open-story"/g)||[]).length,5);
  assert.ok(six.includes('data-action="pathway-select"'));
  const advanced=renderC9HSKTargets(state,'7-9',act,esc);
  assert.ok(advanced.includes('data-action="pathway-select"'));
