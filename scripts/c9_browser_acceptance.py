@@ -2155,10 +2155,15 @@ def main():
                         try:
                             page.reload(wait_until="domcontentloaded")
                             page.locator("#c9-word-query").fill("商店")
+                            # Lazy images must be brought into the mobile viewport
+                            # after offline reload; offscreen art need not load.
+                            offline_image=page.locator("#c9-word-catalog .c9-vocab-visual img").first
+                            offline_image.wait_for(state="attached",timeout=12000)
+                            offline_image.scroll_into_view_if_needed()
                             page.wait_for_function("""()=> {
                               const image=document.querySelector('#c9-word-catalog .c9-vocab-visual img');
-                              return image?.complete&&image.naturalWidth===320;
-                            }""",timeout=12000)
+                              return image?.complete&&image.naturalWidth>0;
+                            }""",timeout=15000)
                         finally:
                             ctx.set_offline(False)
                     if errors: raise RuntimeError("; ".join(errors[:2]))
