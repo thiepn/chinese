@@ -30,6 +30,7 @@ const CONCEPT9_ASSETS=[
   './character-c9.mjs',
   './styles-c9-libraries.css',
   './libraries-c9.mjs',
+  './visual-lexicon-c9.mjs',
   './styles-c9-review-practice.css',
   './review-practice-c9.mjs',
   './styles-c9-media.css',
