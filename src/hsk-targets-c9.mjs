@@ -2,6 +2,8 @@
 import {lessonGroups} from './study-groups.mjs';
 import {STORIES} from './stories.mjs';
 import {PATHWAY_MISSIONS} from './pathway-course.mjs';
+import {GRAMMAR_LESSONS} from './grammar-course.mjs';
+import {DIALOGUES} from './dialogues.mjs';
 
 export const HSK_TARGETS=Object.freeze([
  ['1','HSK 1','Foundations'],
@@ -30,6 +32,56 @@ export function hskTargetReadings(id){
 }
 export function hskTargetMissions(id){
  return PATHWAY_MISSIONS.filter(m=>String(id)==='6'?m.band===6:String(id)==='7-9'?m.band>=7:false);
+}
+// The references below are the author's original source families, not
+// HSK examination membership. The stable native IDs and answer/history
+// owners stay in grammar-course, STORIES and DIALOGUES.
+const GRAMMAR_RANGES=Object.freeze({
+ '1':[1,64],'2':[65,94],'3':[95,124],'4':[125,146],'5':[147,164]
+});
+const READING_SOURCES=Object.freeze({
+ '1':['original-p34'],
+ '2':['original-p38'],
+ '3':['original-p41'],
+ '4':['original-p46','original-p47','original-p48'],
+ '5':['original-p50','original-p51'],
+ '6':['original-p71']
+});
+const DIALOGUE_SOURCES=Object.freeze({
+ '1':['p33','p34'],
+ '2':['p37'],
+ '3':['p42','p44','p45'],
+ '4':['p46','p47','p48','p49'],
+ '5':['p50','p51'],
+ '6':['p75','p77']
+});
+export function hskTargetPractice(id){
+ const k=String(id);
+ if(!HSK_TARGETS.some(t=>t.id===k))return Object.freeze({grammar:[],readings:[],dialogues:[],missions:[]});
+ const range=GRAMMAR_RANGES[k];
+ const grammar=range?GRAMMAR_LESSONS.filter(g=>{const n=Number(g.id.slice(1));return /^g\\d+$/.test(g.id)&&n>=range[0]&&n<=range[1];}):[];
+ const sources=READING_SOURCES[k]||[];
+ const readings=STORIES.filter(s=>sources.includes(s.beginner?.source));
+ const traits=DIALOGUE_SOURCES[k]||[];
+ const dialogues=DIALOGUES.filter(d=>traits.some(p=>Boolean(d[p])));
+ return Object.freeze({grammar,readings,dialogues,missions:hskTargetMissions(k)});
+}
+function studySources(state,id,act,esc){
+ const items=hskTargetPractice(id);
+ const categories=[
+  ['Grammar',items.grammar,'grammar-select','grammar',g=>g.title],
+  ['Reading',items.readings,'c9-media-open-story','stories',s=>s.title],
+  ['Listening & dialogue',items.dialogues,'c9-media-open-dialogue','dialogues',d=>d.title]
+ ];
+ const groups=categories.filter(([,records])=>records.length).map(([label,records,action,route,name])=>
+  '<section class="c9-level-source-group"><header><h3>'+label+'</h3><a href="#/'+route+'">All '+route+'</a></header>'+
+  '<div class="c9-level-source-list">'+records.slice(0,3).map(item=>
+   act(action,'<strong>'+esc(name(item))+'</strong><small>Original source</small>',
+     'c9-level-source','data-id="'+esc(item.id)+'"')).join('')+'</div>'+
+  '<span class="c9-level-source-count">'+records.length+' original sources</span></section>');
+ return groups.length?'<section class="c9-level-skills" aria-label="Original grammar reading and listening for selected study target">'+
+  '<h3>Practice by skill</h3><div class="c9-level-skills-grid">'+groups.join('')+'</div>'+
+  '<p>Source selection is provisional. These activities reuse the original review, reading and dialogue assessments; they do not award an HSK level.</p></section>':'';
 }
 export function renderC9HSKTargets(state,selectedId,act,esc){
  const selected=HSK_TARGETS.find(t=>t.id===String(selectedId));
@@ -63,6 +115,7 @@ export function renderC9HSKTargets(state,selectedId,act,esc){
   '<h2 id="c9-level-selected-title">'+esc(selected.name)+' practice</h2>'+
   '<p>'+esc(selected.focus)+' · provisional level selection</p>'+
   '<div class="c9-level-lesson-list">'+entries.concat(advanced,missionEntries).join('')+'</div>'+
+  studySources(state,selected.id,act,esc)+
   '<div class="c9-level-actions"><a class="c9-button c9-button--secondary" href="#/review">My review</a>'+
   '<a class="c9-button c9-button--secondary" href="#/skills">Study by skill</a></div></section>';
 }
