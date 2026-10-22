@@ -9,7 +9,7 @@ import {c9WordCatalogResults} from '../src/libraries-c9.mjs';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const act=(name,label,classes='',attrs='')=>'<button data-action="'+esc(name)+'" '+attrs+'>'+esc(label)+'</button>';
 test('all 12 Chinese Word Library visuals are approved canonical keys with byte-identical original artwork',()=>{
- assert.equal(C9_SHARED_VISUAL_CATALOG_SHA,'344d573564f188ba586f31bd690cad09e161d55e');
+ assert.equal(C9_SHARED_VISUAL_CATALOG_SHA,'541159c3462960f9b2c2273598befc6f3dd2e322');
  assert.equal(C9_WORD_IMAGES.length,12);
  assert.equal(new Set(C9_WORD_IMAGES.map(x=>x.key)).size,12);
  const indexed=new Set(WORDS.map(w=>w.key));
@@ -23,7 +23,7 @@ test('all 12 Chinese Word Library visuals are approved canonical keys with byte-
   assert.equal(hash,item.blobSha,item.key);
  }
  assert.equal(c9VisualForWord('苹果|pingguo'),null);
- assert.equal(c9VisualForWord('书|shuo'),null);
+ assert.equal(c9VisualForWord('书|shu'),null);
 });
 test('native Word Library renders mapped images without removing words, data, or original actions',()=>{
  const state={bookmarkedWords:[],vocabularyIntroduced:[]};
@@ -36,7 +36,7 @@ test('native Word Library renders mapped images without removing words, data, or
  assert.match(html,/loading="lazy"/);
  assert.match(html,/decoding="async"/);
  assert.equal(c9VisualMarkup('苹果|pingguo',esc),'');
- assert.match(c9VisualMarkup('水|shui',esc),/alt="Illustration of a glass of water"/);
+ assert.match(c9VisualMarkup('喝水|heshui',esc),/alt="Illustration of a person lifting a tilted cup to drink"/);
  assert.deepEqual(state,{bookmarkedWords:[],vocabularyIntroduced:[]});
 });
 test('a failed optional image removes only its own figure, never the original source word',async()=>{

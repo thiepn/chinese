@@ -1,68 +1,68 @@
-/** Pinned read-only consumer subset of thiepn/languages@344d573564f188ba586f31bd690cad09e161d55e. */
-export const C9_SHARED_VISUAL_CATALOG_SHA="344d573564f188ba586f31bd690cad09e161d55e";
+/** Exact Word Library keys, pinned to thiepn/languages@541159c3462960f9b2c2273598befc6f3dd2e322; not character headwords. */
+export const C9_SHARED_VISUAL_CATALOG_SHA="541159c3462960f9b2c2273598befc6f3dd2e322";
 export const C9_WORD_IMAGES=Object.freeze([
   {
-    "key": "书|shu",
-    "conceptId": "object.book",
-    "file": "book.svg",
-    "alt": "Illustration of a closed book",
-    "blobSha": "cbb6d7d4f16af1c24a5d20dd053ef9b67e53f20b"
+    "key": "看书|kanshu",
+    "conceptId": "action.read-book",
+    "file": "read.svg",
+    "alt": "Illustration of a person reading",
+    "blobSha": "479eff055d29031ebeac504ad6e47da6d464f2e9"
   },
   {
-    "key": "水|shui",
-    "conceptId": "beverage.water",
-    "file": "water.svg",
-    "alt": "Illustration of a glass of water",
-    "blobSha": "eebaaec38dedc3a57bd143de819fc17e19d4c78f"
-  },
-  {
-    "key": "喝|he",
-    "conceptId": "action.drink-from-cup",
-    "file": "drink.svg",
-    "alt": "Illustration of a person lifting a tilted cup to drink",
-    "blobSha": "6743239dfdfd349dced6a93596884a5e79b77e4b"
-  },
-  {
-    "key": "吃|chi",
-    "conceptId": "action.eat-food",
-    "file": "eat.svg",
-    "alt": "Illustration of a person bringing food from a plate to their mouth",
-    "blobSha": "77595b0ac4ed09d991efe413a73ce5f053c84b1a"
-  },
-  {
-    "key": "大|da",
-    "conceptId": "relation.larger-box",
-    "file": "big.svg",
-    "alt": "Illustration of a large box beside a much smaller box",
-    "blobSha": "44f8a0175b7188fbdd5c231b4833499bb7b0d20e"
-  },
-  {
-    "key": "小|xiao",
-    "conceptId": "relation.smaller-box",
-    "file": "small.svg",
-    "alt": "Illustration of a small box beside a much larger box",
-    "blobSha": "b4850f5f8ebd4013be2bcc6c9bbcdde0d8a61be9"
-  },
-  {
-    "key": "人|ren",
-    "conceptId": "person.standing",
-    "file": "person.svg",
-    "alt": "Illustration of a single person standing",
-    "blobSha": "b67c455529805f230b233e4c63952ae12e0f7da5"
-  },
-  {
-    "key": "写|xie",
+    "key": "写字|xiezi",
     "conceptId": "action.write-with-pencil",
     "file": "write.svg",
     "alt": "Illustration of a pencil writing",
     "blobSha": "37de3defbea81b780ea6480f7d3e951905f15644"
   },
   {
-    "key": "读|du",
-    "conceptId": "action.read-book",
-    "file": "read.svg",
-    "alt": "Illustration of a person reading",
-    "blobSha": "479eff055d29031ebeac504ad6e47da6d464f2e9"
+    "key": "吃饭|chifan",
+    "conceptId": "action.eat-food",
+    "file": "eat.svg",
+    "alt": "Illustration of a person bringing food from a plate to their mouth",
+    "blobSha": "77595b0ac4ed09d991efe413a73ce5f053c84b1a"
+  },
+  {
+    "key": "喝水|heshui",
+    "conceptId": "action.drink-from-cup",
+    "file": "drink.svg",
+    "alt": "Illustration of a person lifting a tilted cup to drink",
+    "blobSha": "6743239dfdfd349dced6a93596884a5e79b77e4b"
+  },
+  {
+    "key": "水果|shuiguo",
+    "conceptId": "food.mixed-fruit",
+    "file": "fruit.svg",
+    "alt": "Illustration of assorted fruit",
+    "blobSha": "6528380fc8feaadd3baa7ad5417e80e18d0ecbff"
+  },
+  {
+    "key": "汽车|qiche",
+    "conceptId": "vehicle.car",
+    "file": "car.svg",
+    "alt": "Illustration of a compact car",
+    "blobSha": "1e6171564d06042762904273c2d1beba55ace019"
+  },
+  {
+    "key": "火车|huoche",
+    "conceptId": "vehicle.train",
+    "file": "train.svg",
+    "alt": "Illustration of a passenger train",
+    "blobSha": "6ef6b59b6bec5a088793a6cb13c6addc859a6b1a"
+  },
+  {
+    "key": "飞机|feiji",
+    "conceptId": "vehicle.airplane",
+    "file": "airplane.svg",
+    "alt": "Illustration of an airplane",
+    "blobSha": "ecd03f74402a21a6e3bfc70f0c355cf7b1eac98e"
+  },
+  {
+    "key": "学生|xuesheng",
+    "conceptId": "person.student-with-book",
+    "file": "student.svg",
+    "alt": "Illustration of a student carrying a schoolbook",
+    "blobSha": "14dc2b0419bb55fd2632c6912a5223f951726e50"
   },
   {
     "key": "商店|shangdian",
