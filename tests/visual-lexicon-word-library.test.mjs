@@ -11,7 +11,7 @@ const act=(_type,label)=>'<button>'+label+'</button>';
 const state={bookmarkedWords:[],vocabularyIntroduced:[]};
 test('approved Chinese catalog maps 3 original word keys to byte-intact original SVGs',()=>{
  assert.equal(CHINESE_LOCAL_VISUALS.length,3);
- assert.equal(new Set(CHINESE_LOCAL_VISUALS.map(x=>x.lexemeId)).size,12);
+ assert.equal(new Set(CHINESE_LOCAL_VISUALS.map(x=>x.lexemeId)).size,3);
  for(const row of CHINESE_LOCAL_VISUALS){
   assert.ok(WORDS.some(w=>w.key===row.lexemeId),'Unrecognized original word key: '+row.lexemeId);
   const bytes=readFileSync(new URL('./visual-lexicon/assets/'+row.asset,root));
@@ -34,7 +34,7 @@ test('optional reference art is exact, lazy, same-origin, and absent during reca
  assert.ok(findWord('商店|shangdian'));
  assert.equal(localVocabularyImage({languageId:'chinese',lexemeId:'书|shu',usage:'reference'}),null);
  const html=c9WordCatalogResults(state,{query:'商店'},act,esc);
- assert.match(html,/src="\.\/visual-lexicon\/assets\/book\.svg"/);
+ assert.match(html,/src="\.\/visual-lexicon\/assets\/shop\.svg"/);
  assert.match(html,/loading="lazy" decoding="async"/);
  assert.equal(localVocabularyImage({languageId:'chinese',lexemeId:'电脑|diannao',usage:'reference'}),null);
 });
