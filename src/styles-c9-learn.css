@@ -495,3 +495,17 @@
 .c9-level-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
 @media(max-width:720px){.c9-level-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-level-lesson-list{grid-template-columns:1fr}.c9-level-lesson>small{display:none}}
 @media(max-width:350px){.c9-level-grid{grid-template-columns:1fr}.c9-level-choice{min-height:82px}}
+
+/* Authored skill sources in an HSK-target view. The source engine owns grading. */
+.c9-level-skills{border-top:1px solid var(--c9-line);margin-top:23px;padding-top:21px;display:grid;gap:15px}
+.c9-level-skills>h3{font:600 20px/1.3 var(--c9-display);margin:0}
+.c9-level-skills-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.c9-level-source-group{min-width:0;display:flex;flex-direction:column;gap:10px}
+.c9-level-source-group>header{display:flex;gap:7px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.c9-level-source-group h3{font-size:15px;margin:0;line-height:1.35}
+.c9-level-source-group header a{font-size:13px;color:var(--c9-accent)}
+.c9-level-source-list{display:grid;gap:7px}
+.c9-level-source-list .c9-level-source{min-height:66px;align-items:flex-start;gap:4px;flex-direction:column}
+.c9-level-source-count,.c9-level-skills>p{font-size:13px;line-height:1.5;color:var(--c9-sub);margin:0}
+@media(max-width:760px){.c9-level-skills-grid{grid-template-columns:1fr}.c9-level-source-list{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.c9-level-source-list{grid-template-columns:1fr}}
