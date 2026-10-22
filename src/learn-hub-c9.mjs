@@ -123,7 +123,7 @@ export function renderC9LearnHub(state,ui,act,esc){
  const o=courseOverview(state),hub=learningHub(state);
  const unit=lessonGroups().find(x=>String(x.index)===String(ui.unit));
  const status=ui.status||'all',kind=isKnownKind(ui.kind)?ui.kind:'all';
- const intro=title('Learn Chinese','Start with your next lesson, follow the numbered course, or open a review session.');
+ const intro=ui.level&&ui.level!=='all'?'':title('Chinese course','Choose a level to study lessons, words, grammar, reading and listening.');
  if(ui.view==='lesson'){
   const chosen=DEMO_LESSONS.find(l=>l.id===ui.selectedId)||DEMO_LESSONS[0];
   return '<section class="c9-lesson-heading">'+
@@ -153,7 +153,7 @@ export function renderC9LearnHub(state,ui,act,esc){
       '<small>'+esc(l.pinyin)+' · '+((state.learned||[]).includes(l.id)?'Introduced':'Not yet introduced')+'</small></span>'+
       '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
  return '<div class="c9-discovery">'+intro+renderC9HSKTargets(state,ui.level,act,esc,{pane:ui.pane})+
-  (ui.level&&ui.level!=='all'?'':featured)+
+  (ui.level&&ui.level!=='all'?'':'<p class="c9-course-default"><a href="#/learn/level/1" class="c9-button c9-button--primary">Start with HSK 1 →</a></p>')+
   '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons by unit</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
   '<div class="c9-discovery-search-heading"><label class="c9-discovery-search-label" for="c9-learn-query">Search Chinese characters, Pinyin, meanings or unit names</label>'+

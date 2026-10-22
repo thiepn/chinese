@@ -6,7 +6,7 @@
  */
 const META=Object.freeze({
  today:{label:'Home',area:'Study',parent:'today',group:'study'},
- learn:{label:'Learn',area:'Course',parent:'learn',group:'course'},
+ learn:{label:'Course',area:'Course',parent:'learn',group:'course'},
  character:{label:'Character Study',area:'Course',parent:'learn',group:'course'},
  review:{label:'Review',area:'Practice',parent:'review',group:'practice'},
  explore:{label:'Explore',area:'Discover',parent:'explore',group:'discover'},
@@ -97,7 +97,7 @@ const C9_PINNED_CONTEXT=Object.freeze({
  personal:['progress','settings','plan']
 });
 export function renderC9ContextNav(route,esc){
- if(route==='today')return '';
+ if(['today','learn','review'].includes(route))return '';
  const info=c9RouteInfo(route);
  const links=C9_CONTEXT_LINKS[info.group]||C9_CONTEXT_LINKS.course;
  const available=[...new Set([route,...links])];

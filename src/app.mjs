@@ -98,7 +98,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v98-l1-level-workspace';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v99-course-first-level-journey';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -979,6 +979,7 @@ function render(){
   else dialogueId=source||DIALOGUES[0].id;
  }
  if(c9RenderedHash===null&&route()==='learn'){
+   c9LearnLevel=location.hash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1]||'all';
   const source=c9HashLearningSource('learn',location.hash);
   c9LearnDetail=Boolean(source);
   if(source){displayLessonId=source;c9LessonSection='overview';c9LessonFocused=true;}
@@ -1986,19 +1987,28 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  }
  if(name==='c9-lesson-open')return c9OpenAuthoredLesson(id);
  if(name==='c9-hsk-select'||name==='c9-hsk-browse'){
-   const level=button.dataset.level;
-   if(!['1','2','3','4','5','6','7-9'].includes(level))return false;
-   c9LearnLevel=level;c9LevelPane='learn';c9LearnUnit='all';c9LearnQuery='';c9LearnStatus='all';c9LearnPage=0;c9LearnDetail=false;
-   render();
-   const target=name==='c9-hsk-browse'?$('c9-browse-title'):$('c9-level-selected-title');
-   if(name==='c9-hsk-browse'){
-     const catalog=root.querySelector('details.c9-discovery-catalog');
-     if(catalog)catalog.open=true;
-   }
-   target?.scrollIntoView({block:'start',behavior:'auto'});
-   return true;
- }
- if(name==='c9-level-pane'){
+    const level=button.dataset.level;
+    if(!['1','2','3','4','5','6','7-9'].includes(level))return false;
+    c9LearnLevel=level;c9LevelPane='learn';c9LearnUnit='all';c9LearnQuery='';c9LearnStatus='all';c9LearnPage=0;c9LearnDetail=false;
+    const target='#/learn/level/'+level;
+    if(name==='c9-hsk-browse')c9OpenCatalogAfterHash=true;
+    if(location.hash!==target)location.hash=target;
+    else{
+      render();
+      if(name==='c9-hsk-browse'){
+        const catalog=root.querySelector('details.c9-discovery-catalog');
+        if(catalog)catalog.open=true;
+        root.querySelector('#c9-browse-title')?.scrollIntoView({block:'start'});
+      }
+    }
+    return true;
+  }
+  if(name==='c9-hsk-back'){
+    c9LearnLevel='all';c9LearnDetail=false;
+    if(location.hash!=='#/learn')location.hash='#/learn';else render();
+    return true;
+  }
+  if(name==='c9-level-pane'){
    if(!['learn','practice','review'].includes(button.dataset.pane)||c9LearnLevel==='all'||route()!=='learn'||c9LearnDetail)return false;
    c9LevelPane=button.dataset.pane;render();
    root.querySelector('.c9-level-tabs')?.scrollIntoView({block:'nearest'});
@@ -3369,6 +3379,7 @@ window.addEventListener('hashchange',()=>{
   }
  }
  if(destination==='learn'){
+   c9LearnLevel=currentHash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1]||'all';
   const lessonId=c9HashLearningSource('learn',currentHash);
   const originalChanged=Boolean(lessonId)&&(!c9LearnDetail||displayLessonId!==lessonId);
   c9LearnDetail=Boolean(lessonId);
@@ -3377,7 +3388,7 @@ window.addEventListener('hashchange',()=>{
    if(originalChanged){c9LessonSection='overview';c9LessonFocused=true;}
    showLessonTranslation=state.settings.showPinyin;
   }
-  if(!lessonId&&previous==='learn'&&previousHash!==currentHash)c9OpenCatalogAfterHash=true;
+  if(!lessonId&&previous==='learn'&&/^#\/learn\/demo-\d{2,3}$/.test(previousHash))c9OpenCatalogAfterHash=true;
  }
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
   grammarSelected=targetSource;

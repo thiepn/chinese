@@ -37,11 +37,11 @@ test('HSK 6 and HSK 7–9 link to actual original advanced sources without inven
 test('Learn presents direct HSK target choices before sequential suggestions and exposes native no-gate actions',()=>{
  const state=freshState(),before=JSON.stringify(state);
  const html=renderC9LearnHub(state,ui(),act,esc);
- assert.ok(html.indexOf('Choose your HSK target')<html.indexOf('YOUR NEXT LESSON'));
+ assert.ok(html.includes('Choose your HSK target'));
  assert.equal((html.match(/data-action="c9-hsk-select"/g)||[]).length,7);
  for(const level of HSK_TARGETS)assert.ok(html.includes('data-level="'+level.id+'" aria-pressed="false"'));
  const l5=hskTargetLessons('5')[0],selected=renderC9LearnHub(state,ui('5'),act,esc);
- assert.match(selected,/HSK 5 practice/);
+ assert.match(selected,/HSK 5 course/);
  assert.match(selected,/aria-pressed="true"/);
  assert.ok(selected.includes('data-id="'+l5.id+'"'),'Chosen target must open original lesson by canonical ID');
  assert.ok(!selected.includes('YOUR NEXT LESSON'),'Do not force beginner-first featured lesson after choosing HSK5');
