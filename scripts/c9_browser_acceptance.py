@@ -2122,13 +2122,56 @@ def main():
                     return str(width)+"x"+str(height)+" original editor visible"
                 check("P43 "+str(width)+"x"+str(height)+" responsive",writing_layout)
                 ctx.close()
+            # Shared lexical pictures are optional, same-origin, and bounded.
+            for width,height,mobile in [(390,844,True),(1366,850,False)]:
+                ctx,page,errors=session(width,height,mobile)
+                def shared_visual_wordbook():
+                    open_route(page,"today")
+                    page.wait_for_function("()=>Boolean(navigator.serviceWorker?.controller)",timeout=25000)
+                    open_route(page,"wordbook")
+                    page.locator("#c9-word-query").fill("商店")
+                    image=page.locator("#c9-word-catalog .c9-vocab-visual img").first
+                    image.wait_for(state="attached",timeout=12000)
+                    image.scroll_into_view_if_needed()
+                    page.wait_for_function("""()=> {
+                       const image=document.querySelector('#c9-word-catalog .c9-vocab-visual img');
+                       return image?.complete&&image.naturalWidth===320;
+                    }""",timeout=12000)
+                    if not image.get_attribute("src").endswith("/visual-lexicon/assets/shop.svg"):
+                        raise AssertionError("Word Library image is not a bundled original SVG")
+                    if image.get_attribute("loading")!="lazy":
+                        raise AssertionError("Illustration lazy loading not preserved")
+                    if not page.locator("#c9-word-catalog").get_by_text("商店",exact=True).count():
+                        raise AssertionError("Original word text disappeared")
+                    if mobile:
+                        page.wait_for_function("""async()=> {
+                          const names=await caches.keys();
+                          const cacheName=names.find(n=>n.includes('shared-word-visuals-v1'));
+                          if(!cacheName)return false;
+                          const cache=await caches.open(cacheName);
+                          return Boolean(await cache.match(new URL('./visual-lexicon/assets/shop.svg',location.href)));
+                        }""",timeout=15000)
+                        ctx.set_offline(True)
+                        try:
+                            page.reload(wait_until="domcontentloaded")
+                            page.locator("#c9-word-query").fill("商店")
+                            page.wait_for_function("""()=> {
+                              const image=document.querySelector('#c9-word-catalog .c9-vocab-visual img');
+                              return image?.complete&&image.naturalWidth===320;
+                            }""",timeout=12000)
+                        finally:
+                            ctx.set_offline(False)
+                    if errors: raise RuntimeError("; ".join(errors[:2]))
+                    return str(width)+"px original Word Library image; "+("cached offline" if mobile else "loaded locally")
+                check("Shared Word Library visual "+str(width),shared_visual_wordbook)
+                ctx.close()
             # Existing offline cache names are discarded during installation
             # of the new source worker. This tests stale CacheStorage migration,
             # not a running-v58-service-worker takeover in a real user profile.
             ctx,page,errors=session()
             def stale_cache_upgrade():
                 legacy="character-study-working-v58-c9-49-context-transfer"
-                current="character-study-working-v75-p77-consequence-dialogues"
+                current="character-study-working-v75-p77-shared-word-visuals-v1"
                 response=page.goto(args.base_url.rstrip("/")+
                     "/__c9_46_preinstall_cache_seed__",wait_until="domcontentloaded")
                 if response is None or response.status!=404:
@@ -2146,7 +2189,7 @@ def main():
                 page.wait_for_function("""async ()=> {
                   const keys=await caches.keys();
                   return !keys.includes('character-study-working-v58-c9-49-context-transfer')&&
-                    keys.includes('character-study-working-v75-p77-consequence-dialogues');
+                    keys.includes('character-study-working-v75-p77-shared-word-visuals-v1');
                 }""",timeout=15000)
                 kept=page.evaluate("""async name=>{
                   const store=await caches.open(name);
