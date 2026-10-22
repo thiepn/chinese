@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v75-p77-consequence-dialogues';
+const CACHE='character-study-working-v75-p77-consequence-dialogues-visual-lexicon-v1';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -342,7 +342,19 @@ const ADVANCED_SOURCE_ASSETS=[
 const RUNTIME_ASSETS=[
  './','./index.html','./startup.mjs','./styles-startup.css',
  './manifest.webmanifest','./icons/icon.svg',
- './icons/icon-192.png','./icons/icon-512.png'
+ './icons/icon-192.png','./icons/icon-512.png',
+ './visual-lexicon/assets/book.svg',
+ './visual-lexicon/assets/water.svg',
+ './visual-lexicon/assets/drink.svg',
+ './visual-lexicon/assets/eat.svg',
+ './visual-lexicon/assets/big.svg',
+ './visual-lexicon/assets/small.svg',
+ './visual-lexicon/assets/person.svg',
+ './visual-lexicon/assets/write.svg',
+ './visual-lexicon/assets/read.svg',
+ './visual-lexicon/assets/shop.svg',
+ './visual-lexicon/assets/tea.svg',
+ './visual-lexicon/assets/winter.svg',
 ];
 const ASSETS=[...new Set(RUNTIME_ASSETS)];
 const PRECACHE_BATCH_SIZE=24;

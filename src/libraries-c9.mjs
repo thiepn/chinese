@@ -1,6 +1,7 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
+import {localVocabularyImage} from './visual-lexicon-c9.mjs';
 import {sourceWordUsage,sourceWordCoverage,sourceWordContextPairs} from './source-bridges-c9.mjs';
 import {GRAMMAR_CHAPTERS,GRAMMAR_LESSONS} from './grammar-course.mjs';
 import {SENTENCE_LIBRARY,SENTENCE_TOPICS,sentencePracticeId} from './sentence-library.mjs';
@@ -14,6 +15,10 @@ const metrics=(items)=>'<div class="c9-library-metrics">'+items.map(([value,labe
 const bar=(done,total,label)=>'<div class="c9-library-bar"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
 const paragraph=(text)=>'<p class="c9-library-disclaimer c9-unified-source-note">'+text+'</p>';
 const PAGE=12;
+// Failed optional artwork never removes the word or its English meaning.
+if(typeof document!=='undefined')document.addEventListener('error',event=>{
+ if(event.target?.classList?.contains('c9-lexicon-image'))event.target.closest('.c9-lexicon-figure')?.remove();
+},true);
 
 export function c9WordCatalogResults(state,{query='',filter='all',context='all',page=0}={},act,esc){
  const saved=new Set(state.bookmarkedWords||[]),introduced=new Set(state.vocabularyIntroduced||[]);
@@ -38,11 +43,13 @@ export function c9WordCatalogResults(state,{query='',filter='all',context='all',
   const usage=sourceWordUsage(w.key,{limit:5});
   const coverage=sourceWordCoverage(w.key);
   const contextPairs=sourceWordContextPairs(w.key,{limit:2});
+  const image=localVocabularyImage({languageId:'chinese',lexemeId:w.key,usage:'reference'});
   return '<article class="c9-library-word"><div class="c9-library-word-head"><div><strong lang="zh-Hans">'+esc(w.hanzi)+'</strong>'+
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
    (savedHere?'<span class="c9-badge">Saved</span>':'')+'</div></div>'+
    '<p class="c9-library-word-meaning">'+esc(w.senses.slice(0,3).join(' / '))+'</p>'+
+   (image?'<figure class="c9-lexicon-figure"><img class="c9-lexicon-image" src="'+esc(image.src)+'" alt="'+esc(image.alt)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>':'')+
    (w.collocations.length?'<div class="c9-library-collocations"><span class="c9-eyebrow">AUTHORED COMBINATIONS</span><div>'+
     w.collocations.slice(0,3).map(c=>'<span lang="zh-Hans">'+esc(c)+'</span>').join('')+'</div></div>':'')+
    (w.examples.length?'<div class="c9-library-word-example"><span class="c9-eyebrow">SOURCE SENTENCE</span>'+
