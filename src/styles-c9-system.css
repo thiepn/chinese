@@ -668,3 +668,5 @@
 .c9-course-level :focus-visible,.c9-home-course-launch :focus-visible{outline:3px solid var(--c9-focus,var(--c9-accent));outline-offset:3px}
 @media(max-width:700px){.c9-course-primary,.c9-course-review{align-items:stretch;flex-direction:column}.c9-course-words{grid-template-columns:repeat(2,minmax(0,1fr))}.c9-course-module{padding:16px 0}}
 @media(max-width:390px){.c9-course-words{grid-template-columns:1fr}}
+
+.c9-home-explore-more:not([open])>.c9-home-explore-content{display:none!important}

@@ -146,13 +146,20 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
+ const nextSource=lesson||last||lessonGroups()[0].lessons[0];
+ const firstAction=primary.kind==='resume'?
+  act('hub-primary','Resume saved activity →','c9-button c9-button--primary'):
+  '<a class="c9-button c9-button--primary" href="#/learn/'+esc(nextSource.id)+'">'+
+  (hasActivity?'Continue lesson ':'Start lesson ')+String(nextSource.order).padStart(3,'0')+' →</a>';
  return '<div class="c9-home">'+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+
   '<section class="c9-home-course-launch"><h1>Learn Chinese</h1>'+
-  '<p>Follow a level-based course with vocabulary, grammar, reading and listening.</p>'+
-  '<div class="c9-home-course-actions"><a class="c9-button c9-button--primary" href="#/learn/level/1">Start HSK 1 →</a>'+
+  '<p>Study a level through its lessons, vocabulary, grammar, reading and listening.</p>'+
+  '<div class="c9-home-course-actions">'+firstAction+
   '<a class="c9-button c9-button--secondary" href="#/learn">Choose a level</a></div></section>'+
-  (overview.due?'<section class="c9-course-review"><strong>'+overview.due+' review cards due</strong><a href="#/review" class="c9-button c9-button--secondary">Review now</a></section>':'')+
+  (overview.due?'<section class="c9-course-review"><strong>'+overview.due+' review cards due</strong>'+
+   '<a href="#/review" class="c9-button c9-button--secondary">Review now</a></section>':'')+
   '<details class="c9-home-explore-more"><summary><strong>Progress and other resources</strong></summary>'+
-  '<div class="c9-home-explore-content">'+metrics+studyProgress+continuation+today+roadmap+connected+'</div></details>'+
-  readiness+'</div>';
+  '<div class="c9-home-explore-content">'+greeting+
+  '<div class="c9-home-first-fold">'+hero+today+'</div>'+metrics+studyProgress+continuation+roadmap+connected+
+  '</div></details>'+readiness+'</div>';
 }

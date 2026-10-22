@@ -26,7 +26,7 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
  const state=freshState(),before=JSON.stringify(state);
  const html=renderC9Home(state,act,esc);
  for(const key of ['c9-home-first-fold','c9-home-source-preview','c9-home-plan','c9-home-metrics','c9-home-roadmap','hub-task','hub-lesson'])assert.ok(html.includes(key),key);
- assert.ok(html.indexOf('c9-home-roadmap')<html.indexOf('c9-home-explore-more'));
+ assert.ok(html.indexOf('c9-home-explore-more')<html.indexOf('c9-home-roadmap'));
  assert.ok(html.includes('Start lesson 001'), 'Home must reveal its first lesson directly');
  assert.ok(html.includes('data-action="hub-lesson"'), 'Home must use original lesson authority');
  assert.ok(html.includes(esc(DEMO_LESSONS[0].sentence.hanzi)));
@@ -37,11 +37,11 @@ test('P9 Home exposes authored next study and actual unit roadmap without claimi
 
 test('P9 native sidebar keeps all five destinations in accessible nested navigation',()=>{
  const shell=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
- assert.ok(shell.includes('<details class="c9-sidebar-study-more">'));
+ assert.equal((shell.match(/<details class="c9-sidebar-study-more">/g)||[]).length,2);
  assert.ok(shell.includes('<nav aria-label="Additional study pathways"'));
  for(const route of ['skills','writing','advanced','pathway','plan'])assert.ok(shell.includes('data-route="'+route+'"'),route);
  const sync=readFileSync(new URL('../src/shell-c9.mjs',import.meta.url),'utf8');
- assert.ok(sync.includes("pathways.open=true"));
+ assert.ok(sync.includes('group.open=true'));
 });
 
 test('P9 Lesson retains six native sections and original read-only source previews',()=>{

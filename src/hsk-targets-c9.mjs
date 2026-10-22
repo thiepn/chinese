@@ -160,7 +160,7 @@ export function renderC9HSKTargets(state,selectedId,act,esc,{pane='learn',now=Da
    '<a href="#/review" class="c9-button c9-button--secondary">Open Review</a>')+'</section>';
  return '<div class="c9-course-level">'+act('c9-hsk-back','← All levels','c9-button c9-button--quiet')+
   '<header class="c9-course-header"><h1>'+esc(selected.name)+' course</h1>'+
-  '<p>'+esc(selected.focus)+' · original difficulty target, not a verified HSK syllabus.</p></header>'+
+  '<p>'+esc(selected.focus)+' · provisional original difficulty target, not a verified HSK syllabus.</p></header>'+
   mainAction+review+lessonsPanel+vocabPanel+grammar+readings+listening+missions+
   '<details class="c9-course-expand c9-course-switcher"><summary>Change level</summary>'+chooser+'</details></div>';
 }

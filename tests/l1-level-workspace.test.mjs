@@ -12,21 +12,17 @@ const action=(name,label,cls='',extra='')=>'<button class="'+cls+'" data-action=
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const evidence=(state,level,now)=>levelWorkspaceEvidence(state,{lessons:hskTargetLessons(level),...hskTargetPractice(level)},now);
 
-test('L1: all seven HSK targets have separate native Learn, Practice and Review panes and honest source provenance',()=>{
+test('L1: all seven targets contain complete nested native course sections without competing activity tabs',()=>{
  const state=freshState(),before=JSON.stringify(state);
  for(const target of HSK_TARGETS){
-  for(const pane of ['learn','practice','review']){
-   const html=renderC9HSKTargets(state,target.id,action,esc,{pane,now:1e9});
-   assert.ok(html.includes(target.name+' practice'));
-   assert.ok(html.includes('official HSK mapping not verified'));
-   assert.equal((html.match(/data-action="c9-level-pane"/g)||[]).length,3);
-   assert.ok(html.includes('data-pane="'+pane+'" aria-pressed="true"'));
-   for(const other of ['learn','practice','review'].filter(x=>x!==pane))
-    assert.ok(html.includes('data-pane="'+other+'" aria-pressed="false"'));
-   assert.ok(html.includes('c9-level-metrics'),'Canonical read-only evidence missing');
-   if(pane==='review')assert.ok(html.includes('Scheduled recall'));
-   if(pane==='practice'&&target.id!=='7-9')assert.ok(html.includes('Recorded original attempts'));
-  }
+  const html=renderC9HSKTargets(state,target.id,action,esc,{now:1e9});
+  assert.ok(html.includes(target.name+' course'));
+  assert.ok(html.includes('provisional original difficulty target'));
+  assert.ok(!html.includes('data-action="c9-level-pane"'),'Duplicate course activity tabs are not needed');
+  for(const title of ['1. Course lessons','2. Vocabulary','3. Grammar and sentences','4. Reading','5. Listening and conversation'])
+   assert.ok(html.includes(title),title);
+  assert.ok(html.includes('c9-course-review'),'Original scheduled review must remain separate');
+  assert.ok(html.includes('data-action="c9-hsk-back"'));
  }
  assert.equal(JSON.stringify(state),before);
 });
@@ -92,13 +88,13 @@ test('L1: original lesson chapters are exact, non-overlapping per-level subsets,
   if(l.length){
    const html=renderC9HSKTargets(s,t.id,action,esc);
    assert.ok(html.includes('data-action="c9-level-unit"'));
-   assert.ok(html.includes('Original lesson units'));
+   assert.ok(html.includes('Browse lesson units'));
   }
  }
  assert.equal(all.size,428);
  assert.equal(evidence(s,'6',1e9).due,0);
  assert.equal(evidence(s,'7-9',1e9).due,0);
- assert.ok(renderC9HSKTargets(s,'6',action,esc,{pane:'review'}).includes('All scheduled review'));
+ assert.ok(renderC9HSKTargets(s,'6',action,esc).includes('scheduled cards due'));
 });
 test('L1: level review and resume are non-mutating; no official HSK accomplishment or new scheduler',()=>{
  const s=freshState();

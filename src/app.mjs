@@ -1972,7 +1972,7 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
  if(name==='c9-lesson-select')return c9OpenAuthoredLesson(id);
  if(name==='c9-learn-back'){
   if(!c9ConfirmLeaveNativeAnswer('learn'))return false;
-  c9OpenCatalogAfterHash=true;
+  c9OpenCatalogAfterHash=c9LearnLevel==='all';
   if(location.hash==='#/learn'){
    c9LearnDetail=false;render();
    const catalog=root.querySelector('details.c9-discovery-catalog');
@@ -3379,7 +3379,9 @@ window.addEventListener('hashchange',()=>{
   }
  }
  if(destination==='learn'){
-   c9LearnLevel=currentHash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1]||'all';
+   const chosenLevel=currentHash.match(/^#\/learn\/level\/(1|2|3|4|5|6|7-9)$/)?.[1];
+   if(chosenLevel)c9LearnLevel=chosenLevel;
+   else if(previous!=='learn'&&!c9HashLearningSource('learn',currentHash))c9LearnLevel='all';
   const lessonId=c9HashLearningSource('learn',currentHash);
   const originalChanged=Boolean(lessonId)&&(!c9LearnDetail||displayLessonId!==lessonId);
   c9LearnDetail=Boolean(lessonId);
@@ -3388,7 +3390,7 @@ window.addEventListener('hashchange',()=>{
    if(originalChanged){c9LessonSection='overview';c9LessonFocused=true;}
    showLessonTranslation=state.settings.showPinyin;
   }
-  if(!lessonId&&previous==='learn'&&/^#\/learn\/demo-\d{2,3}$/.test(previousHash))c9OpenCatalogAfterHash=true;
+  if(!lessonId&&previous==='learn'&&c9LearnLevel==='all'&&/^#\/learn\/demo-\d{2,3}$/.test(previousHash))c9OpenCatalogAfterHash=true;
  }
  if(destination==='grammar'&&targetSource&&targetSource!==grammarSelected){
   grammarSelected=targetSource;
