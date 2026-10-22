@@ -58,6 +58,7 @@ jobs:
           else:
               raise RuntimeError('Local source server did not start')
           PY
+          python scripts/p2_course_nav_acceptance.py
           python scripts/c9_browser_acceptance.py --expected-head "${{ github.sha }}" --chromium "$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')" --artifacts /tmp/chinese-acceptance
       - name: Local device-readiness cache repair and offline reload
         run: python scripts/c9_device_offline_acceptance.py
