@@ -44,7 +44,7 @@ const progress=(done,total,label)=>{
  '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(total,Math.max(0,done))+'"><span style="width:'+value+'%"></span></div></div>';
 };
 const stat=(n,label)=>'<div class="c9-assessment-stat"><strong>'+count(n)+'</strong><span>'+label+'</span></div>';
-const title=(eyebrow,name,desc)=>'<header class="c9-assessment-title"><p class="c9-eyebrow">'+eyebrow+'</p>'+
+const title=(eyebrow,name,desc)=>'<header class="c9-assessment-title">'+
  '<h1>'+name+'</h1><p>'+desc+'</p></header>';
 const link=(route,text)=>'<a href="#/'+route+'" class="c9-button c9-button--secondary">'+text+'</a>';
 
@@ -71,11 +71,11 @@ export function renderC9Review({
       '</span></li>';
   }).join('');
   return '<div class="c9-assessment c9-review-setup">'+
-    title('SCHEDULED RECALL','Review what is due','Review the prompts due now, or practise independently without changing their schedule.')+
+    title('SCHEDULED RECALL','Scheduled review','Review the prompts due now, or practise independently without changing their schedule.')+
     '<div class="c9-assessment-stats">'+stat(due.length,'Due now')+stat(overview.cards,'Registered recall targets')+
       stat(overview.successful,'Independent correct attempts')+'</div>'+
     '<section class="c9-assessment-panel c9-unified-card c9-review-start" aria-labelledby="c9-review-start-title">'+
-    '<p class="c9-eyebrow">READY WHEN YOU ARE</p><h2 id="c9-review-start-title">'+
+    '<h2 id="c9-review-start-title">'+
       (filtered.length?'Start with '+Math.min(filtered.length,size)+' original prompts':'No scheduled prompts match this focus')+'</h2>'+
     '<p class="c9-assessment-note">'+(filtered.length?'Review uses your original due cards. You choose each grade; opening this page does not record progress.':
        'Your review queue is clear for this focus. You can practise freely or study another original lesson.')+'</p>'+
@@ -107,7 +107,7 @@ export function renderC9Review({
  if(paused&&queue.length){
   const next=cardInfo(queue[0]);
   return '<div class="c9-assessment c9-review-paused">'+
-   title('REVIEW · PAUSED IN THIS TAB','Your queue is still here','This is an in-tab pause, not persistent session storage. A browser reload discards only the remaining ungraded queue; native graded history stays saved.')+
+   title('REVIEW · PAUSED IN THIS TAB','Review paused','This is an in-tab pause, not persistent session storage. A browser reload discards only the remaining ungraded queue; native graded history stays saved.')+
    '<div class="c9-assessment-stats">'+stat(queue.length,'Prompts remaining')+
     stat(done,'Graded in this session')+stat(skipped,'Skipped, not graded')+'</div>'+
    '<section class="c9-assessment-panel c9-unified-card c9-review-resume"><p class="c9-eyebrow">NEXT ORIGINAL PROMPT</p>'+
@@ -178,7 +178,7 @@ export function renderC9PracticeHeader(state,action,esc){
  const guide=state.practiceSession,drill=practiceSummary(state);
  const recent=[...(state.drillEvents||[])].reverse().slice(0,3);
  const guideActive=Boolean(guide&&guide.cursor<guide.limit);
- return title('PRACTICE LAB · SUPPLEMENTARY','Practise with purpose',
+ return title('PRACTICE LAB · SUPPLEMENTARY','Practice',
   'Choose an original exercise or return to a saved guided checkpoint. Supplemental answers never change scheduled-review intervals.')+
  '<div class="c9-assessment-stats">'+stat(drill.attempts,'Recorded standalone attempts')+
   stat(drill.independentCorrect,'Independent correct drills')+
@@ -202,13 +202,13 @@ export function renderC9PracticeHeader(state,action,esc){
 export function renderC9PracticePaths(state,action){
  if(state.practiceSession)return '';
  return '<section class="c9-practice-paths" aria-label="Choose a genuine practice activity">'+
- '<div><p class="c9-eyebrow">CHOOSE YOUR WORKSPACE</p><h2>Three ways to practise</h2></div>'+
+ '<div><h2>Practice modes</h2></div>'+
  '<div class="c9-practice-path-grid">'+
- '<article class="c9-unified-card"><span class="c9-eyebrow">01 · CONTINUOUS</span><h3>Guided mixed session</h3><p>Make multiple decisions, receive immediate feedback, and resume after an app restart from the saved checkpoint.</p>'+
+ '<article class="c9-unified-card"><h3>Guided mixed session</h3><p>Make multiple decisions, receive immediate feedback, and resume after an app restart from the saved checkpoint.</p>'+
  action('c9-practice-jump','Choose guided focus →','c9-button c9-button--primary','data-target="c9-native-guided"')+'</article>'+
- '<article class="c9-unified-card"><span class="c9-eyebrow">02 · FOCUSED</span><h3>Standalone original drills</h3><p>Practise meanings, tones, word order, and sentence choices. Attempts are recorded separately from scheduled review.</p>'+
+ '<article class="c9-unified-card"><h3>Standalone original drills</h3><p>Practise meanings, tones, word order, and sentence choices. Attempts are recorded separately from scheduled review.</p>'+
  action('c9-practice-jump','Find an exercise →','c9-button c9-button--secondary','data-target="c9-native-drills"')+'</article>'+
- '<article class="c9-unified-card"><span class="c9-eyebrow">03 · DUE FIRST</span><h3>Scheduled recall</h3><p>Review genuinely due cards using the original grading and scheduling authority, not these supplemental exercises.</p>'+
+ '<article class="c9-unified-card"><h3>Scheduled recall</h3><p>Review genuinely due cards using the original grading and scheduling authority, not these supplemental exercises.</p>'+
  link('review','Review due cards →')+'</article></div></section>';
 }
 export function renderC9GuidedStep(state,esc){

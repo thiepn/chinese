@@ -64,8 +64,8 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const observed=(state.events||[]).filter(e=>ids.includes(e.cardId)&&e.correct===true&&!e.assisted).length;
  const words=wordLinks(lesson),related=sourceCharacterLinks(lesson.id),contrasts=sourceCharacterComparisonSet(lesson.id),trails=sourceCharacterContextTrails(lesson.id),sentences=sourceSentences(lesson);
  const heading='<header class="c9-character-heading"><div><a href="#/learn" class="c9-character-back">← Learn / Character lessons</a>'+
-  '<p class="c9-eyebrow">CHARACTER STUDY · ORIGINAL SOURCE</p><h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
-  '<p>Understand pronunciation, meaning, whole words and contextual examples before choosing independent recall.</p></div>'+
+  '<h1><span lang="zh-Hans">'+txt(lesson.hanzi,esc)+'</span><span>'+txt(lesson.meaning,esc)+'</span></h1>'+
+  '</div>'+
   '<div class="c9-character-neighbors">'+
   (before?act('c9-character-open','← Previous','c9-button c9-button--secondary c9-button--small','data-id="'+txt(before.id,esc)+'"'):'<span>First lesson</span>')+
   (after?act('c9-character-open','Next →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(after.id,esc)+'"'):'<span>Final lesson</span>')+
@@ -100,14 +100,14 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   act('c9-character-jump',icon('book')+' Read example sentences →','c9-button c9-button--secondary','data-section="sentences" aria-controls="c9-sentences"')+
   '</div>'+sourceSample+sourceAudio+'</div></section>';
  const evidence='<aside class="c9-character-evidence" aria-label="Source metadata and learner evidence">'+
-  '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">SOURCE INFORMATION</p><h3>Character details</h3>'+
+  '<section class="c9-character-info c9-unified-card"><h3>Character details</h3>'+
   row('Original lesson',''+(index+1)+' / '+DEMO_LESSONS.length)+
   row('Authored study unit',group?txt(group.name,esc):'Unassigned')+
   row('Official HSK level','Not supplied')+
   row('Radical and stroke count','Unverified / unavailable')+
   row('Stroke-order data','Not installed')+
   (p31?row('Original P31 category',txt(p31.category,esc)):'')+'</section>'+
-  '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">YOUR ACTUAL EVIDENCE</p><h3>Learning record</h3>'+
+  '<section class="c9-character-info c9-unified-card"><h3>Learning record</h3>'+
   row('Introduction',introduced?'Introduced':'Not introduced')+
   row('Registered recall targets',ids.filter(id=>Boolean(state.cards?.[id])).length+' / '+ids.length)+
   row('Due for review',String(lessonDue))+
@@ -122,7 +122,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '<div><span>Understand</span><span>Write freely</span><span>Study words</span><span>Read in context</span></div>'+
   '<small>Teaching and ungraded writing are not mastery checkpoints.</small></div>';
  const writing='<section class="c9-character-section" id="c9-writing" aria-labelledby="c9-writing-title">'+
-  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">ORIGINAL CHARACTER WRITING</p><h2 id="c9-writing-title">Copy, trace, then recall</h2></div><span class="c9-badge">Ungraded</span></header>'+
+  '<header class="c9-character-section-head"><div><h2 id="c9-writing-title">Copy, trace, then recall</h2></div><span class="c9-badge">Ungraded</span></header>'+
   '<p>Choose a guided writing task, draw using touch, mouse or keyboard, then compare repeated attempts. All ink and comparisons stay in this mounted tab, without assessment credit or stored handwriting.</p>'+
   '<div class="c9-writing-modes" role="group" aria-label="Choose writing exercise">'+
    '<button type="button" class="c9-button c9-button--secondary" data-writing-mode="copy" aria-pressed="true">1 · Copy</button>'+
@@ -140,7 +140,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   '</div></div>'+
   '<div class="c9-character-caution"><strong>Stroke-order limitation.</strong> No verified stroke sequence, stroke count, radical decomposition or handwriting recognition source is installed. Tracing uses only the existing printed source glyph. Copying, recalling and comparing do not create grades, study events or evidence of canonical stroke order.</div></section>';
  const grammar='<section class="c9-character-section" id="c9-overview" aria-labelledby="c9-overview-title">'+
-  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">TEACHING NOTES</p><h2 id="c9-overview-title">Meaning and usage</h2></div></header>'+
+  '<header class="c9-character-section-head"><div><h2 id="c9-overview-title">Meaning and usage</h2></div></header>'+
   '<div class="c9-character-guidance"><div><span class="c9-eyebrow">CHARACTER INSIGHT</span><h3>'+txt(guide.topic,esc)+'</h3><p>'+txt(guide.explanation,esc)+'</p><p>'+txt(guide.comparison,esc)+'</p></div>'+
   (p31?'<div><span class="c9-eyebrow">ADDITIONAL ORIGINAL GUIDANCE</span><h3>'+txt(p31.grammarTitle,esc)+'</h3>'+
     '<p>'+txt(p31.grammarExplanation,esc)+'</p>'+
@@ -148,7 +148,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
     '<p><strong>Pronunciation note:</strong> '+txt(p31.pronunciation,esc)+'</p></div>':'')+
   '</div><p class="c9-character-provenance c9-unified-source-note">These are authored learning explanations, not verified paleographic etymologies or decomposition metadata.</p></section>';
  const vocabulary='<section class="c9-character-section" id="c9-vocabulary" aria-labelledby="c9-vocabulary-title">'+
-  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WHOLE-WORD MEANINGS</p><h2 id="c9-vocabulary-title">Words containing '+txt(lesson.hanzi,esc)+'</h2></div><span class="c9-badge">'+words.length+' shown</span></header>'+
+  '<header class="c9-character-section-head"><div><h2 id="c9-vocabulary-title">Words containing '+txt(lesson.hanzi,esc)+'</h2></div><span class="c9-badge">'+words.length+' shown</span></header>'+
   '<p>Shared writing is a discovery link, not proof that every compound has the same meaning. Study the complete word.</p>'+
   (words.length?'<div class="c9-character-word-list">'+words.map(word=>{
    const current=lesson.words.some(w=>w.hanzi===word.hanzi);
@@ -162,7 +162,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   }).join('')+'</div>':'<p>No additional indexed words are available for this character.</p>')+
   '</section>';
  const examples='<section class="c9-character-section" id="c9-sentences" aria-labelledby="c9-sentences-title"><header class="c9-character-section-head">'+
-  '<div><p class="c9-eyebrow">LANGUAGE IN CONTEXT</p><h2 id="c9-sentences-title">Example sentences</h2></div>'+
+  '<div><h2 id="c9-sentences-title">Example sentences</h2></div>'+
   act('c9-character-support',showTranslations?'Hide translations':'Show translations','c9-button c9-button--secondary c9-button--small','aria-pressed="'+showTranslations+'"')+'</header>'+
   '<p>These are existing authored source sentences, not generated or newly certified examples.</p>'+
   '<p class="c9-character-example-summary">'+sentences.length+' distinct original sentence'+(sentences.length===1?'':'s')+' available</p><div class="c9-character-example-list">'+sentences.map(({s,source},i)=>
@@ -225,7 +225,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
    (item.link.sourceType==='sentence'?act('sentence-select','Open source sentence →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(item.link.sourceId,esc)+'"'):
     act('c9-source-open-story-line','Read passage source →','c9-button c9-button--secondary c9-button--small','data-id="'+txt(item.link.sourceId,esc)+'" data-index="'+item.link.lineIndex+'"'))+'</div></article>').join('')+'</div></section>':'';
  const connections='<section class="c9-character-section" id="c9-connections" aria-labelledby="c9-connections-title">'+
-  '<header class="c9-character-section-head"><div><p class="c9-eyebrow">WRITTEN LINKS</p><h2 id="c9-connections-title">Related characters</h2></div></header>'+
+  '<header class="c9-character-section-head"><div><h2 id="c9-connections-title">Related characters</h2></div></header>'+
   '<p>Relationships below only indicate that both characters occur in the same indexed whole word; no radical, etymological or semantic relationship is asserted.</p>'+
   authoredContrast+guidedComparisons+characterTrails+
   (related.length?'<div class="c9-character-related">'+related.map(({lesson:other,words:via})=>

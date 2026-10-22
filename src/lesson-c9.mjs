@@ -64,7 +64,7 @@ function evidencePanel(l,state,act,esc){
  const independent=history.filter(e=>e.correct===true&&e.assisted!==true).length;
  const introduced=(state.learned||[]).includes(l.id);
  return '<section class="c9-lesson-context-card c9-unified-card" aria-labelledby="c9-lesson-record-title">'+
-  '<p class="c9-eyebrow">YOUR ACTUAL LEARNING RECORD</p><h3 id="c9-lesson-record-title">Lesson status</h3>'+
+  '<h3 id="c9-lesson-record-title">Lesson status</h3>'+
   '<div class="c9-lesson-evidence"><div><span>Introduction</span><strong>'+(introduced?'Introduced':'Not introduced')+'</strong></div>'+
   '<div><span>Registered review targets</span><strong>'+registered.length+' / '+active+'</strong></div>'+
   '<div><span>Due from this lesson</span><strong>'+thisDue+'</strong></div>'+
@@ -156,7 +156,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const words=(lesson.words||[]).filter(w=>w?.hanzi&&w?.english).slice(0,2);
  const example=lesson.sentence?.hanzi&&lesson.sentence?.english?lesson.sentence:null;
  const preview='<section class="c9-lesson-source-preview" aria-labelledby="c9-lesson-source-title">'+
-  '<div class="c9-lesson-preview-title"><div><p class="c9-eyebrow">BEFORE YOU BEGIN · ORIGINAL CONTENT</p><h2 id="c9-lesson-source-title">What you will learn</h2></div><div class="c9-lesson-preview-toolbar"><span class="c9-badge">Read-only preview</span>'+act('c9-lesson-jump','Start teaching ↓','c9-button c9-button--primary c9-button--small','data-section="overview" aria-controls="c9-lesson-overview"')+'</div></div>'+
+  '<div class="c9-lesson-preview-title"><div><h2 id="c9-lesson-source-title">What you will learn</h2></div><div class="c9-lesson-preview-toolbar"><span class="c9-badge">Read-only preview</span>'+act('c9-lesson-jump','Start teaching ↓','c9-button c9-button--primary c9-button--small','data-section="overview" aria-controls="c9-lesson-overview"')+'</div></div>'+
   '<div class="c9-lesson-preview-grid">'+
    '<article class="c9-lesson-preview-character"><span>01 · CHARACTER</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><small>'+(showPinyin?esc(lesson.pinyin):'Pinyin hidden')+'</small><p>'+esc(lesson.meaning)+'</p>'+
    act('c9-lesson-jump','Study the character →','c9-button c9-button--secondary c9-button--small','data-section="overview" aria-controls="c9-lesson-overview"')+'</article>'+
@@ -194,7 +194,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
  const teaching=composeNativeSections(nativeMarkup,act,esc,selected,focused);
  const activeIndex=C9_LESSON_SECTIONS.findIndex(s=>s.id===selected);
  const stagebar='<div class="c9-lesson-flow" aria-label="Teaching sequence">'+
-   '<div class="c9-lesson-flow-heading"><span class="c9-eyebrow">FOLLOW THE LESSON IN ORDER</span>'+
+   '<div class="c9-lesson-flow-heading">'+
    '<strong id="c9-lesson-flow-label">Step '+(activeIndex+1)+' of '+C9_LESSON_SECTIONS.length+' · '+esc(C9_LESSON_SECTIONS[activeIndex].name)+'</strong>'+
    '<p>These are teaching steps, not completion or mastery grades.</p></div>'+
    act('c9-lesson-mode',focused?'Show all sections':'Focus on one step','c9-button c9-button--secondary c9-button--small','aria-pressed="'+focused+'"')+

@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {freshState} from '../src/study.mjs';
+import {renderC9Review,renderC9PracticePaths} from '../src/review-practice-c9.mjs';
+import {renderC9ProgressOverview,renderC9SettingsIntro} from '../src/utilities-c9.mjs';
+import {renderC9CharacterStudy} from '../src/character-c9.mjs';
+import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
+const esc=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const action=(name,label,cls='',attr='')=>'<button type="button" data-action="'+name+'" class="'+cls+'" '+attr+'>'+label+'</button>';
+const read=(p)=>readFileSync(new URL(p,import.meta.url),'utf8');
+test('Review and practice keep separate native evidence engines without decorative mode numbering',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const setup=renderC9Review({state,action,esc,reviewWorkspace:()=>''});
+ const paths=renderC9PracticePaths(state,action);
+ assert.match(setup,/<h1>Scheduled review<\/h1>/);
+ assert.match(setup,/Only the original grade buttons reschedule cards/);
+ assert.match(setup,/Review now|Practise without scheduling/);
+ assert.match(paths,/<h2>Practice modes<\/h2>/);
+ assert.doesNotMatch(paths,/01 · CONTINUOUS|02 · FOCUSED|03 · DUE FIRST|CHOOSE YOUR WORKSPACE/);
+ assert.match(paths,/Attempts are recorded separately from scheduled review/);
+ assert.equal(JSON.stringify(state),before);
+});
+test('Progress and settings retain real learner evidence, sessions and local storage cautions',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const progress=renderC9ProgressOverview(state,action,esc);
+ const settings=renderC9SettingsIntro(state,true,action,esc);
+ assert.match(progress,/<h1>Progress<\/h1>/);
+ assert.match(progress,/official HSK certification/);
+ assert.match(progress,/Introduced characters by unit/);
+ assert.match(settings,/<h1>Settings<\/h1>/);
+ assert.match(settings,/no cloud account or sync implied/);
+ assert.match(settings,/original backup preview/);
+ assert.doesNotMatch(progress,/Progress without guesswork|SAVED CONTINUITY/);
+ assert.equal(JSON.stringify(state),before);
+});
+test('Character source metadata and ungraded writing remain explicit without duplicated headings',()=>{
+ const state=freshState(),before=JSON.stringify(state);
+ const html=renderC9CharacterStudy({lesson:DEMO_LESSONS[0],state,act:action,esc});
+ for(const name of ['Character details','Learning record','Copy, trace, then recall','Example sentences','Related characters','Stroke-order data'])assert.match(html,new RegExp(name));
+ assert.match(html,/not a mastery percentage/);
+ assert.match(html,/No verified stroke sequence/);
+ assert.match(html,/no grades|do not create grades/i);
+ assert.doesNotMatch(html,/YOUR ACTUAL EVIDENCE|SOURCE INFORMATION|ORIGINAL CHARACTER WRITING|CHARACTER STUDY · ORIGINAL SOURCE/);
+ assert.equal(JSON.stringify(state),before);
+});
+test('Review and progress labels are readable in the existing stylesheets',()=>{
+ const css=[read('../src/styles-c9-review-practice.css'),read('../src/styles-c9-utilities.css')];
+ assert.match(css[0],/\.c9-assessment-stat span\{[^}]*font-size:14px/);
+ assert.match(css[0],/\.c9-assessment-disclaimer\{[^}]*font-size:14px/);
+ assert.match(css[1],/\.c9-utility-metric>small\{[^}]*font-size:14px/);
+ assert.match(css[1],/\.c9-utility-truth\{[^}]*font-size:14px/);
+});
