@@ -152,7 +152,7 @@ export function renderC9LearnHub(state,ui,act,esc){
       '<span class="c9-guided-step-body"><strong><span lang="zh-Hans">'+esc(l.hanzi)+'</span> '+esc(l.meaning)+'</strong>'+
       '<small>'+esc(l.pinyin)+' · '+((state.learned||[]).includes(l.id)?'Introduced':'Not yet introduced')+'</small></span>'+
       '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
- return '<div class="c9-discovery">'+intro+renderC9HSKTargets(state,ui.level,act,esc)+
+ return '<div class="c9-discovery">'+intro+renderC9HSKTargets(state,ui.level,act,esc,{pane:ui.pane})+
   (ui.level&&ui.level!=='all'?'':featured)+
   '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons by unit</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
   '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
