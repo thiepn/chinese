@@ -519,7 +519,7 @@
 .c9-level-continuation{display:flex;gap:13px;align-items:center;flex-wrap:wrap}
 .c9-level-continuation>strong{font-size:15px}
 .c9-level-tabs{display:flex;gap:3px;border-bottom:1px solid var(--c9-line);margin:3px 0 17px}
-.c9-level-tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 19px;font:600 15px/1.4 inherit;color:var(--c9-sub);cursor:pointer}
+.c9-level-tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 19px;font-size:15px;font-weight:600;line-height:1.4;font-family:inherit;color:var(--c9-sub);cursor:pointer}
 .c9-level-tab.is-selected{border-bottom-color:var(--c9-accent);color:var(--c9-ink)}
 .c9-level-tab:focus-visible{outline:2px solid var(--c9-accent);outline-offset:-3px}
 .c9-level-chapters{margin-top:20px;display:grid;gap:12px}
