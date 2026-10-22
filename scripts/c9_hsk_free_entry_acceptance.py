@@ -37,8 +37,8 @@ with sync_playwright() as p:
 
         # HSK 6 is honest advanced original practice, not a fabricated mapped course.
         page.locator('[data-action="c9-hsk-select"][data-level="6"]').click()
-        expect(page.locator(".c9-level-selected [data-action='c9-media-open-story']")).to_have_count(5)
-        page.locator(".c9-level-selected [data-action='c9-media-open-story']").first.click()
+        expect(page.locator(".c9-level-lesson-list [data-action='c9-media-open-story']")).to_have_count(5)
+        page.locator(".c9-level-lesson-list [data-action='c9-media-open-story']").first.click()
         expect(page.locator("#c9-native-reading")).to_be_visible()
         assert "#/stories" in page.url
 
