@@ -74,7 +74,7 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   renderC9ListeningDeck([{label:'Next source sentence',hanzi:lesson.sentence.hanzi}],act,esc,{title:'Hear the next sentence',compact:true})+
   '</details><div class="c9-home-source-actions" role="group" aria-label="Continue this exact original Chinese example">'+act('hub-lesson','Open complete lesson →','c9-button c9-button--primary c9-button--small','data-id="'+esc(lesson.id)+'"')+act('c9-character-open','Explore this character','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div></div>':'';
  const courseCaption=lesson?'LESSON '+String(lesson.order).padStart(3,'0')+' OF '+overview.total:'ORIGINAL CHARACTER COURSE';
- const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy"><span class="c9-home-kicker">START HERE · CHARACTER COURSE</span>'+
+ const hero='<section class="c9-home-hero" aria-labelledby="c9-home-next"><div class="c9-home-hero-copy">'+
   '<h2 id="c9-home-next">'+(lesson?'Lesson '+String(lesson.order).padStart(3,'0')+' · <span lang="zh-Hans">'+esc(lesson.hanzi)+'</span> · '+esc(lesson.meaning):esc(primary.label))+'</h2>'+
   '<p>'+(lesson?'Study the character first, then its pronunciation, vocabulary, sentences and guided practice.':esc(primary.detail))+'</p>'+
   '<div class="c9-home-hero-actions">'+
@@ -83,36 +83,36 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
   '<a class="c9-button c9-button--secondary" href="#/review">Review · '+overview.due+' due</a>'+
   (hub.sessions.length?act('hub-primary','Resume unfinished activity','c9-button c9-button--quiet'):'')+
   '</div>'+nextSource+'</div><div class="c9-home-art">'+scenery+'<span class="c9-home-hero-seal" lang="zh-Hans">'+(lesson?esc(lesson.hanzi):'学')+'</span><span class="c9-home-art-caption">'+courseCaption+'</span></div></section>';
- const greeting='<header class="c9-home-heading"><div><p class="c9-home-kicker">THIEPN CHINESE · TODAY</p><h1>'+(hasActivity?'Continue learning, one step at a time.':'A quiet place to begin Chinese.')+'</h1><p>Original characters, complete words and source sentences. Your next action is ready below.</p></div><span class="c9-home-date" aria-label="Local learning status">'+overview.introduced+' introduced · '+overview.due+' due</span></header>';
+ const greeting='<header class="c9-home-heading"><div><h1>Today</h1></div><span class="c9-home-date" aria-label="Local learning status">'+overview.introduced+' introduced · '+overview.due+' due</span></header>';
  const metrics='<section class="c9-home-metrics" aria-label="Your actual learning records">'+
   metric(overview.due,'Due for review','Scheduled recall prompts')+
   metric(overview.introduced+' / '+overview.total,'Lessons introduced','Original demonstration lessons')+
   metric(overview.scheduled.independent,'Independent recall','Correct scheduled attempts')+
   metric(overview.savedWords,'Saved vocabulary','Words in your wordbook')+'</section>';
- const today='<section class="c9-home-panel c9-unified-card c9-home-plan" aria-labelledby="c9-home-plan-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">STUDY ROUTINE</p><h2 id="c9-home-plan-title">Today’s study plan</h2></div><span class="c9-home-plan-time">'+icon('time')+esc(String(plan.minutes))+' min target</span></div><p class="c9-home-panel-desc">Suggested activities, not required tasks. A recorded attempt is not proof of mastery.</p><ol class="c9-home-tasks">'+hub.cards.map(t=>taskRow(t,act,esc)).join('')+'</ol><div class="c9-home-footer-link"><a href="#/plan">Edit workload and view the seven-day plan '+icon('arrow')+'</a></div></section>';
- const studyProgress='<section class="c9-home-panel c9-unified-card c9-home-learning" aria-labelledby="c9-home-progress-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">YOUR COURSE</p><h2 id="c9-home-progress-title">Learning progress</h2></div><a href="#/progress" class="c9-home-small-link">Details '+icon('arrow')+'</a></div>'+
+ const today='<section class="c9-home-panel c9-unified-card c9-home-plan" aria-labelledby="c9-home-plan-title"><div class="c9-home-panel-heading"><div><h2 id="c9-home-plan-title">Today’s study plan</h2></div><span class="c9-home-plan-time">'+icon('time')+esc(String(plan.minutes))+' min target</span></div><p class="c9-home-panel-desc">Suggested activities, not required tasks. A recorded attempt is not proof of mastery.</p><ol class="c9-home-tasks">'+hub.cards.map(t=>taskRow(t,act,esc)).join('')+'</ol><div class="c9-home-footer-link"><a href="#/plan">Edit workload and view the seven-day plan '+icon('arrow')+'</a></div></section>';
+ const studyProgress='<section class="c9-home-panel c9-unified-card c9-home-learning" aria-labelledby="c9-home-progress-title"><div class="c9-home-panel-heading"><div><h2 id="c9-home-progress-title">Learning progress</h2></div><a href="#/progress" class="c9-home-small-link">Details '+icon('arrow')+'</a></div>'+
   progress(overview.introduced,overview.total,'Original character lessons introduced')+
   '<p class="c9-home-progress-note">Introduced does not mean mastered. This original curriculum is not an official HSK syllabus.</p>'+
   (last?'<div class="c9-home-last"><span>Last introduced lesson</span><strong lang="zh-Hans">'+esc(last.hanzi)+'</strong><span>'+esc(last.pinyin)+' · '+esc(last.meaning)+'</span>'+act('hub-lesson','Revisit','c9-button c9-button--secondary c9-button--small','data-id="'+esc(last.id)+'"')+'</div>':
-   '<div class="c9-home-quiet-state">'+icon('book')+'<div><strong>Your course starts here.</strong><p>Open an original lesson and introduce its character before building scheduled recall.</p></div></div>')+
+   '<div class="c9-home-quiet-state">'+icon('book')+'<div><strong>No lessons introduced</strong><p>Open an original lesson and introduce its character before building scheduled recall.</p></div></div>')+
   (lesson?'<div class="c9-home-next-lesson"><div><span>Next unintroduced lesson</span><strong lang="zh-Hans">'+esc(lesson.hanzi)+'</strong><span>'+esc(lesson.pinyin)+' · '+esc(lesson.meaning)+'</span></div>'+act('hub-lesson','Open lesson','c9-button c9-button--secondary c9-button--small','data-id="'+esc(lesson.id)+'"')+'</div>':
   '<p class="c9-home-progress-note">All original demonstration lessons have been introduced. Scheduled review and contextual study remain available.</p>')+
   '</section>';
- const quick='<section class="c9-home-panel c9-unified-card c9-home-shortcuts" aria-labelledby="c9-home-actions-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">QUICK ACCESS</p><h2 id="c9-home-actions-title">Study a skill</h2></div></div><div class="c9-home-shortcut-grid">'+
+ const quick='<section class="c9-home-panel c9-unified-card c9-home-shortcuts" aria-labelledby="c9-home-actions-title"><div class="c9-home-panel-heading"><div><h2 id="c9-home-actions-title">Study a skill</h2></div></div><div class="c9-home-shortcut-grid">'+
   routeLink('learn','Lessons','book')+
   routeLink('review','Review','repeat')+
   routeLink('explore','Vocabulary','browse')+
   routeLink('stories','Reading','character')+'</div>'+
   '<div class="c9-home-footer-link"><a href="#/find">Find characters, grammar and more '+icon('arrow')+'</a></div></section>';
  const continuation=hub.sessions.length?
-  '<section class="c9-home-panel c9-unified-card c9-home-continuation" aria-labelledby="c9-home-cont-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">RECOVERABLE WORK</p><h2 id="c9-home-cont-title">Unfinished sessions</h2></div><span class="c9-badge">'+hub.sessions.length+' saved</span></div><div class="c9-home-resume-list">'+hub.sessions.slice(0,3).map(s=>'<div class="c9-home-resume-item"><div><strong>'+esc(s.label)+'</strong><span>'+esc(s.detail)+'</span></div>'+act('hub-resume','Resume','c9-button c9-button--secondary c9-button--small','data-kind="'+esc(s.kind)+'"')+'</div>').join('')+'</div></section>':
-  '<section class="c9-home-panel c9-unified-card c9-home-continuation" aria-labelledby="c9-home-cont-title"><div class="c9-home-panel-heading"><div><p class="c9-home-kicker">CONTINUITY</p><h2 id="c9-home-cont-title">Continue in context</h2></div></div><p class="c9-home-panel-desc">Choose your next activity from the existing course. Browsing does not award review credit.</p><div class="c9-home-context-links">'+shortcuts.filter(s=>s.kind!=='review').slice(0,3).map(s=>'<a href="#/'+esc(s.route)+'"><span><strong>'+esc(s.label)+'</strong><small>'+esc(s.description)+'</small></span>'+icon('arrow')+'</a>').join('')+'</div></section>';
+  '<section class="c9-home-panel c9-unified-card c9-home-continuation" aria-labelledby="c9-home-cont-title"><div class="c9-home-panel-heading"><div><h2 id="c9-home-cont-title">Unfinished sessions</h2></div><span class="c9-badge">'+hub.sessions.length+' saved</span></div><div class="c9-home-resume-list">'+hub.sessions.slice(0,3).map(s=>'<div class="c9-home-resume-item"><div><strong>'+esc(s.label)+'</strong><span>'+esc(s.detail)+'</span></div>'+act('hub-resume','Resume','c9-button c9-button--secondary c9-button--small','data-kind="'+esc(s.kind)+'"')+'</div>').join('')+'</div></section>':
+  '<section class="c9-home-panel c9-unified-card c9-home-continuation" aria-labelledby="c9-home-cont-title"><div class="c9-home-panel-heading"><div><h2 id="c9-home-cont-title">Continue in context</h2></div></div><p class="c9-home-panel-desc">Choose your next activity from the existing course. Browsing does not award review credit.</p><div class="c9-home-context-links">'+shortcuts.filter(s=>s.kind!=='review').slice(0,3).map(s=>'<a href="#/'+esc(s.route)+'"><span><strong>'+esc(s.label)+'</strong><small>'+esc(s.description)+'</small></span>'+icon('arrow')+'</a>').join('')+'</div></section>';
  const units=lessonGroups(),introducedSet=new Set(state.learned||[]);
  const openUnits=units.filter(u=>u.lessons.some(l=>!introducedSet.has(l.id)));
  const suggestedUnits=(openUnits.length?openUnits:units).slice(0,3);
  const roadmap='<section class="c9-home-panel c9-unified-card c9-home-roadmap" aria-labelledby="c9-home-roadmap-title">'+
-  '<div class="c9-home-panel-heading"><div><p class="c9-home-kicker">CHARACTER FOUNDATIONS</p><h2 id="c9-home-roadmap-title">Your course units</h2></div><a class="c9-home-small-link" href="#/learn">Browse all '+units.length+' units '+icon('arrow')+'</a></div>'+
-  '<p class="c9-home-panel-desc">Continue from introduced lessons. Unit counts represent your local learning record, not mastery.</p>'+
+  '<div class="c9-home-panel-heading"><div><h2 id="c9-home-roadmap-title">Your course units</h2></div><a class="c9-home-small-link" href="#/learn">Browse all '+units.length+' units '+icon('arrow')+'</a></div>'+
+  '<p class="c9-home-panel-desc">Unit counts show introductions from your local learning record, not mastery.</p>'+
   '<div class="c9-home-roadmap-grid">'+suggestedUnits.map(u=>{
    const completed=u.lessons.filter(l=>introducedSet.has(l.id)).length;
    const next=u.lessons.find(l=>!introducedSet.has(l.id))||u.lessons[0];
@@ -123,8 +123,8 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
     act('hub-lesson',completed===u.lessons.length?'Revisit':'Study next','c9-button c9-button--secondary c9-button--small','data-id="'+esc(next.id)+'"')+'</div></article>';
   }).join('')+'</div></section>';
  const connected='<section class="c9-home-panel c9-unified-card c9-home-source-paths" aria-labelledby="c9-home-source-paths-title">'+
-  '<div class="c9-home-panel-heading"><div><p class="c9-home-kicker">LEARN BEYOND FLASHCARDS</p><h2 id="c9-home-source-paths-title">Study Chinese in context</h2></div><a class="c9-home-small-link" href="#/find">Search sources '+icon('arrow')+'</a></div>'+
-  '<p class="c9-home-panel-desc">Return to original reading, conversations, grammar and pronunciation. These independent activities never award scheduled-review grades.</p>'+
+  '<div class="c9-home-panel-heading"><div><h2 id="c9-home-source-paths-title">Study Chinese in context</h2></div><a class="c9-home-small-link" href="#/find">Search sources '+icon('arrow')+'</a></div>'+
+  '<p class="c9-home-panel-desc">These activities do not award scheduled-review grades.</p>'+
   '<div class="c9-home-source-grid">'+[
     ['stories','Connected reading',overview.library.readings+' source readings','book'],
     ['dialogues','Everyday conversations',overview.library.dialogues+' source dialogues','activity'],

@@ -14,20 +14,20 @@
 }
 .c9-discovery-lead>div:first-child {padding:clamp(22px,2.5vw,32px);min-width:0;}
 .c9-discovery-lead h2 {font:600 clamp(22px,2vw,29px)/1.25 var(--c9-display);margin:10px 0;}
-.c9-discovery-lead p {font-size:13px;line-height:1.7;color:var(--c9-sub);margin:0 0 16px;}
+.c9-discovery-lead p {font-size:14px;line-height:1.7;color:var(--c9-sub);margin:0 0 16px;}
 .c9-discovery-lead-stats {
   display:flex;flex-direction:column;justify-content:center;gap:12px;
   border-left:1px solid var(--c9-line);background:var(--c9-green-soft);
   padding:24px 20px;min-width:0;
 }
 .c9-discovery-lead-stats .c9-discovery-progress {margin:0 0 3px;}
-.c9-discovery-lead-stats p {margin:0;font-size:12px;}
+.c9-discovery-lead-stats p {margin:0;font-size:14px;}
 .c9-discovery-lead-stats>strong {font-size:30px;letter-spacing:-.04em;font-weight:650;}
-.c9-discovery-lead-stats>span {font-size:13px;font-weight:600;}
-.c9-discovery-lead-stats>small {font-size:11px;line-height:1.65;color:var(--c9-sub);}
+.c9-discovery-lead-stats>span {font-size:14px;font-weight:600;}
+.c9-discovery-lead-stats>small {font-size:14px;line-height:1.65;color:var(--c9-sub);}
 .c9-discovery-progress {min-width:0;}
-.c9-discovery-progress-meta {display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:9px;font-size:12px;color:var(--c9-sub);}
-.c9-discovery-progress-meta strong {color:var(--c9-ink);font-size:12px;white-space:nowrap;}
+.c9-discovery-progress-meta {display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:9px;font-size:14px;color:var(--c9-sub);}
+.c9-discovery-progress-meta strong {color:var(--c9-ink);font-size:14px;white-space:nowrap;}
 .c9-discovery-progress .c9-progress {height:6px;}
 .c9-discovery-progress .c9-progress>span {background:var(--c9-sage);}
 .c9-discovery-section {
@@ -39,9 +39,9 @@
   gap:10px;margin-bottom:17px;
 }
 .c9-discovery-section-head h2 {font:600 clamp(21px,2vw,27px)/1.22 var(--c9-display);margin:4px 0 0;}
-.c9-discovery-section-head>a {font-size:12px;font-weight:650;text-decoration:none;color:var(--c9-accent);}
+.c9-discovery-section-head>a {font-size:14px;font-weight:650;text-decoration:none;color:var(--c9-accent);}
 .c9-discovery-section-head>a:hover,.c9-discovery-browser-heading a:hover {text-decoration:underline;text-underline-offset:3px;}
-.c9-discovery-note {font-size:12px;color:var(--c9-sub);line-height:1.6;margin:0 0 19px;}
+.c9-discovery-note {font-size:14px;color:var(--c9-sub);line-height:1.6;margin:0 0 19px;}
 .c9-skill-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
 .c9-skill-card {
   display:flex;align-items:start;gap:11px;min-width:0;position:relative;
@@ -56,38 +56,38 @@
   font:500 19px/1 var(--c9-hanzi-display);
 }
 .c9-skill-content {display:grid;gap:6px;min-width:0;flex:1;}
-.c9-skill-content strong {font-size:13px;line-height:1.4;}
-.c9-skill-content span {font-size:11px;color:var(--c9-sub);line-height:1.5;}
-.c9-skill-content small {font-size:10px;color:var(--c9-muted);line-height:1.4;}
+.c9-skill-content strong {font-size:14px;line-height:1.4;}
+.c9-skill-content span {font-size:14px;color:var(--c9-sub);line-height:1.5;}
+.c9-skill-content small {font-size:14px;color:var(--c9-muted);line-height:1.4;}
 .c9-skill-card>span:last-child {color:var(--c9-muted);font-size:13px;}
 .c9-unit-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
 .c9-unit-card {display:flex;flex-direction:column;gap:13px;min-width:0;padding:17px;border:1px solid var(--c9-line);border-radius:var(--c9-r-sm);}
-.c9-unit-header {display:flex;justify-content:space-between;gap:8px;color:var(--c9-muted);font-size:11px;line-height:1.4;}
+.c9-unit-header {display:flex;justify-content:space-between;gap:8px;color:var(--c9-muted);font-size:14px;line-height:1.4;}
 .c9-unit-index {color:var(--c9-accent);font-weight:700;letter-spacing:.055em;}
 .c9-unit-card h3 {font:600 17px/1.3 var(--c9-display);letter-spacing:-.015em;margin:0;}
 .c9-unit-footer {display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:12px;border-top:1px solid var(--c9-line);}
-.c9-unit-footer>span {font-size:11px;line-height:1.5;color:var(--c9-sub);}
+.c9-unit-footer>span {font-size:14px;line-height:1.5;color:var(--c9-sub);}
 .c9-unit-footer>span strong {font:500 19px/1.3 var(--c9-hanzi-display);color:var(--c9-ink);}
 .c9-unit-footer>span small {display:block;}
 .c9-unit-footer .c9-button {white-space:nowrap;}
 .c9-discovery-filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0 17px;}
-.c9-discovery-filters label {display:grid;gap:6px;font-size:12px;color:var(--c9-sub);font-weight:600;}
-.c9-discovery-search-label {display:block;font-size:12px;color:var(--c9-sub);font-weight:650;margin:0 0 6px;}
+.c9-discovery-filters label {display:grid;gap:6px;font-size:14px;color:var(--c9-sub);font-weight:600;}
+.c9-discovery-search-label {display:block;font-size:14px;color:var(--c9-sub);font-weight:650;margin:0 0 6px;}
 .c9-discovery-browser-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;margin:13px 0 10px;flex-wrap:wrap;}
 .c9-discovery-browser-heading>div {display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
-.c9-discovery-browser-heading strong {font-size:12px;font-weight:700;}
-.c9-discovery-browser-heading span {font-size:11px;color:var(--c9-sub);}
+.c9-discovery-browser-heading strong {font-size:14px;font-weight:700;}
+.c9-discovery-browser-heading span {font-size:14px;color:var(--c9-sub);}
 .c9-discovery-browser-heading>a,.c9-discovery-more a {font-size:12px;color:var(--c9-accent);text-decoration:none;}
 .c9-lesson-results {display:grid;border-top:1px solid var(--c9-line);}
 .c9-lesson-row {
   display:grid;grid-template-columns:30px 47px minmax(0,1fr) auto auto;gap:11px;
   align-items:center;padding:12px 2px;border-bottom:1px solid var(--c9-line);min-width:0;
 }
-.c9-lesson-index {color:var(--c9-muted);font-size:11px;}
+.c9-lesson-index {color:var(--c9-muted);font-size:14px;}
 .c9-lesson-character {font:500 33px/1.2 var(--c9-hanzi-display);color:var(--c9-ink);text-align:center;}
 .c9-lesson-copy {display:grid;gap:5px;min-width:0;}
-.c9-lesson-copy strong {font-size:13px;line-height:1.4;overflow-wrap:anywhere;}
-.c9-lesson-copy>span {color:var(--c9-sub);font-size:11px;line-height:1.4;}
+.c9-lesson-copy strong {font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
+.c9-lesson-copy>span {color:var(--c9-sub);font-size:14px;line-height:1.4;}
 .c9-lesson-row .c9-badge {white-space:nowrap;justify-self:start;}
 .c9-lesson-row .c9-button {white-space:nowrap;}
 .c9-discovery-pagination {
@@ -112,16 +112,16 @@
   color:var(--c9-ink);background:var(--c9-surface);cursor:pointer;
 }
 .c9-discovery-result:hover {background:var(--c9-surface-2);border-color:var(--c9-line-strong);}
-.c9-discovery-result-type {grid-column:1/-1;font-size:10px;text-transform:uppercase;color:var(--c9-accent);letter-spacing:.07em;font-weight:700;}
+.c9-discovery-result-type {grid-column:1/-1;font-size:14px;text-transform:uppercase;color:var(--c9-accent);letter-spacing:.07em;font-weight:700;}
 .c9-discovery-result-title {font-size:15px;font-weight:650;line-height:1.4;overflow-wrap:anywhere;}
 .c9-discovery-result-title[lang="zh-Hans"] {font-family:var(--c9-hanzi);}
-.c9-discovery-result small {grid-column:1/-1;color:var(--c9-sub);line-height:1.5;font-size:11px;overflow-wrap:anywhere;}
+.c9-discovery-result small {grid-column:1/-1;color:var(--c9-sub);line-height:1.5;font-size:14px;overflow-wrap:anywhere;}
 .c9-discovery-result-arrow {grid-column:2;grid-row:2;color:var(--c9-muted);}
 .c9-discovery-empty {margin-top:10px;text-align:left;}
 .c9-discovery-empty strong {color:var(--c9-ink);font-size:13px;}
-.c9-discovery-empty p {font-size:12px;color:var(--c9-sub);margin:7px 0 0;}
+.c9-discovery-empty p {font-size:14px;color:var(--c9-sub);margin:7px 0 0;}
 .c9-discovery-more {font-size:12px;color:var(--c9-sub);margin:13px 0 0;}
-.c9-discovery-disclaimer {font-size:11px;line-height:1.6;color:var(--c9-sub);margin:0;}
+.c9-discovery-disclaimer {font-size:14px;line-height:1.6;color:var(--c9-sub);margin:0;}
 .c9-lesson-heading {display:grid;gap:11px;margin-bottom:24px;}
 .c9-lesson-heading>.c9-button {justify-self:start;}
 .c9-lesson-heading h1 [lang="zh-Hans"] {font:500 1.24em/1.25 var(--c9-hanzi-display);}

@@ -20,7 +20,7 @@ const n=s=>plain(String(s??'')).toLowerCase();
 const tiny=(text)=>String(text??'');
 const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(done/total*100))):0;
 const summaryText=(count,noun)=>count+' '+noun+(count===1?'':'s');
-const title=(name,subtitle)=>'<header class="c9-discovery-head"><p class="c9-eyebrow">THIEPN CHINESE · ORIGINAL STUDY MATERIAL</p><h1>'+name+'</h1><p>'+subtitle+'</p></header>';
+const title=(name,subtitle)=>'<header class="c9-discovery-head"><h1>'+name+'</h1>'+(subtitle?'<p>'+subtitle+'</p>':'')+'</header>';
 const progress=(done,total,label)=>'<div class="c9-discovery-progress"><div class="c9-discovery-progress-meta"><span>'+label+'</span><strong class="c9-tabular">'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
 const empty=renderC9EmptyState;
 const lessonCount=(group,learned)=>group.lessons.filter(l=>learned.has(l.id)).length;
@@ -121,30 +121,30 @@ export function renderC9LearnHub(state,ui,act,esc){
  const o=courseOverview(state),hub=learningHub(state);
  const unit=lessonGroups().find(x=>String(x.index)===String(ui.unit));
  const status=ui.status||'all',kind=isKnownKind(ui.kind)?ui.kind:'all';
- const intro=title('Learn Chinese','Start with your next lesson, follow the numbered course, or open a review session.');
+ const intro=title('Learn Chinese','');
  if(ui.view==='lesson'){
   const chosen=DEMO_LESSONS.find(l=>l.id===ui.selectedId)||DEMO_LESSONS[0];
   return '<section class="c9-lesson-heading">'+
    act('c9-learn-back','← All lessons','c9-button c9-button--quiet c9-button--small')+
    '<div><span class="c9-eyebrow">UNIT '+String(lessonGroups().find(g=>g.lessons.some(l=>l.id===chosen.id))?.index||1).padStart(2,'0')+' · ORIGINAL DEMO LESSON</span>'+
    '<h1><span lang="zh-Hans">'+esc(chosen.hanzi)+'</span> '+esc(chosen.meaning)+'</h1>'+
-   '<p>'+esc(chosen.pinyin)+' · Learn through examples and native practice. Introduction is recorded only by the existing lesson workflow.</p></div></section>';
+   '<p>'+esc(chosen.pinyin)+' · Introduction is recorded only by the existing lesson workflow.</p></div></section>';
  }
  const next=o.nextLesson||DEMO_LESSONS[0];
  const nextIndex=DEMO_LESSONS.findIndex(l=>l.id===next.id);
  const nextFour=DEMO_LESSONS.slice(nextIndex,nextIndex+4);
  const first=DEMO_LESSONS[0];
  const featured='<section class="c9-guided-course" aria-labelledby="c9-guided-title">'+
-  '<div class="c9-guided-main"><p class="c9-eyebrow">YOUR NEXT LESSON · ORIGINAL MANDARIN COURSE</p>'+
+  '<div class="c9-guided-main">'+
   '<span class="c9-guided-number">LESSON '+String(next.order).padStart(3,'0')+' / '+DEMO_LESSONS.length+'</span>'+
   '<h2 id="c9-guided-title"><span lang="zh-Hans">'+esc(next.hanzi)+'</span> · '+esc(next.meaning)+'</h2>'+
-  '<p class="c9-guided-desc">Learn this character, hear its pronunciation, use its words and understand its example sentence. Follow the teaching sections in order.</p>'+
+  ''+
   '<div class="c9-guided-actions">'+
   act('c9-lesson-open',(o.nextLesson?(nextIndex===0?'Start lesson 1':'Continue with lesson '+next.order):'Revisit lesson '+next.order)+' →','c9-button c9-button--primary','data-id="'+esc(next.id)+'"')+
   '<a class="c9-button c9-button--secondary" href="#/review">Review · '+o.due+' due</a>'+
   (nextIndex>0?act('c9-lesson-open','Go to lesson 1','c9-button c9-button--quiet','data-id="'+esc(first.id)+'"'):'')+
   '</div><p class="c9-guided-note">'+o.introduced+' / '+o.total+' lessons introduced. Introduction is not a mastery grade; scheduled review is tracked separately.</p></div>'+
-  '<div class="c9-guided-sequence"><div class="c9-guided-sequence-head"><h3>Lessons in order</h3><span>Open any lesson</span></div>'+
+  '<div class="c9-guided-sequence"><div class="c9-guided-sequence-head"><h3>Lessons in order</h3></div>'+
   '<ol class="c9-guided-list">'+nextFour.map((l,i)=>
     '<li>'+act('c9-lesson-open','<span class="c9-guided-step">'+String(l.order).padStart(3,'0')+'</span>'+
       '<span class="c9-guided-step-body"><strong><span lang="zh-Hans">'+esc(l.hanzi)+'</span> '+esc(l.meaning)+'</strong>'+
@@ -152,7 +152,7 @@ export function renderC9LearnHub(state,ui,act,esc){
       '<span aria-hidden="true">→</span>','c9-guided-lesson','data-id="'+esc(l.id)+'"')+'</li>').join('')+'</ol></div></section>';
  return '<div class="c9-discovery">'+intro+featured+
   '<details class="c9-discovery-catalog"><summary><strong>Browse all lessons by unit</strong><span>'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original lessons, plus grammar, words and reading</span></summary><div class="c9-discovery-catalog-body">'+
-  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LESSON DISCOVERY</p><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-browse-title"><div class="c9-discovery-section c9-unified-card-head"><div><h2 id="c9-browse-title">Find a character lesson</h2></div></div>'+
   '<div class="c9-discovery-search-heading"><label class="c9-discovery-search-label" for="c9-learn-query">Search Chinese characters, Pinyin, meanings or unit names</label>'+
  '<span class="c9-meta">Filters affect original lessons; they do not change your progress.</span></div>'+
   '<input id="c9-learn-query" class="c9-input" type="search" autocomplete="off" spellcheck="false" placeholder="Try 学, xué, family, food…" value="'+esc(ui.query)+'">'+
@@ -161,11 +161,11 @@ export function renderC9LearnHub(state,ui,act,esc){
    '<label for="c9-learn-status">Learning evidence<select id="c9-learn-status" class="c9-select">'+[['all','All lessons'],['new','Not introduced'],['introduced','Introduced']].map(([v,label])=>
     '<option value="'+v+'"'+(status===v?' selected':'')+'>'+label+'</option>').join('')+'</select></label></div>'+
   '<div id="c9-lesson-browser" aria-live="polite">'+renderC9LessonBrowser(state,ui,act,esc)+'</div></section>'+
-  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-units-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">ORIGINAL LESSON UNITS</p><h2 id="c9-units-title">Browse original lesson units</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
-  '<p class="c9-discovery-note">Select a unit to see its numbered lessons above. You can open any authored lesson directly; introduction counts represent actual saved history, not mastery or official HSK levels.</p>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-units-title"><div class="c9-discovery-section c9-unified-card-head"><div><h2 id="c9-units-title">Units</h2></div><span class="c9-meta">'+lessonGroups().length+' units · '+DEMO_LESSONS.length+' original character lessons</span></div>'+
+  '<p class="c9-discovery-note">Select a unit to filter lessons. Introduction counts are saved history, not mastery or official HSK levels.</p>'+
   unitCards(state,act,esc)+'</section>'+
   '<details class="c9-catalog-optional"><summary><strong>Other learning activities</strong><span>Grammar, words, reading, skills and optional learning paths</span></summary><div class="c9-catalog-optional-body">'+
-  '<section class="c9-discovery-lead"><div><span class="c9-eyebrow">CONTINUE YOUR COURSE</span><h2>'+esc(hub.primary.label)+'</h2><p>'+esc(hub.primary.detail)+'</p>'+
+  '<section class="c9-discovery-lead"><div><h2>'+esc(hub.primary.label)+'</h2><p>'+esc(hub.primary.detail)+'</p>'+
   '<div class="c9-inline">'+act('hub-primary','Continue learning →','c9-button c9-button--primary')+
   '<a class="c9-button c9-button--secondary" href="#/pathway">Explore nine-band pathway</a></div></div>'+
   '<div class="c9-discovery-lead-stats">'+progress(o.introduced,o.total,'Demo lessons introduced')+
@@ -179,8 +179,8 @@ export function renderC9LearnHub(state,ui,act,esc){
    '<button type="button" data-action="c9-learn-jump" data-target="c9-content-title">Words &amp; sources</button>'+
    '<button type="button" data-action="c9-learn-jump" data-target="c9-original-curriculum-title">Extended course</button>'+
    '</div></nav>'+
-  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-skills-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">LEARNING AREAS</p><h2 id="c9-skills-title">Choose what to study</h2></div><a href="#/find">Search all content →</a></div>'+skillCards(esc)+'</section>'+
-  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-content-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">CONNECTED CONTENT</p><h2 id="c9-content-title">Discover words and explanations</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-skills-title"><div class="c9-discovery-section c9-unified-card-head"><div><h2 id="c9-skills-title">Choose what to study</h2></div><a href="#/find">Search all content →</a></div>'+skillCards(esc)+'</section>'+
+  '<section class="c9-discovery-section c9-unified-card c9-discovery-finder" aria-labelledby="c9-content-title"><div class="c9-discovery-section c9-unified-card-head"><div><h2 id="c9-content-title">Discover words and explanations</h2></div></div>'+
   '<p class="c9-discovery-note">Source categories preserve where the teaching comes from. Selecting a result opens its original character, word, grammar, sentence, reading or dialogue activity.</p>'+
   '<div class="c9-discovery-category-list" role="group" aria-label="Filter original course content">'+FIND_CATEGORIES.map(([id,label])=>
    act('c9-content-kind',esc(label),'c9-discovery-chip'+(kind===id?' is-selected':''),'data-kind="'+id+'" aria-pressed="'+(kind===id)+'"')).join('')+'</div>'+
@@ -199,11 +199,11 @@ export function renderC9PathwayHub(state,act,esc){
  const events=state.sentenceEvents||[];
  const intro=title('Nine-band study pathway','Original connected Mandarin missions, arranged from first interactions to advanced exploration. All bands remain accessible.');
  return '<div class="c9-discovery c9-pathway-hub">'+intro+
-  '<section class="c9-discovery-lead"><div><p class="c9-eyebrow">PICK UP YOUR ORIGINAL PATHWAY</p><h2>Band '+m.band+' · '+esc(m.title)+'</h2><p>'+esc(m.purpose)+'</p>'+
+  '<section class="c9-discovery-lead"><div><h2>Band '+m.band+' · '+esc(m.title)+'</h2><p>'+esc(m.purpose)+'</p>'+
   '<div class="c9-inline">'+act('pathway-select','Continue last attempted mission →','c9-button c9-button--primary','data-id="'+esc(m.id)+'"')+
   '<a class="c9-button c9-button--secondary" href="#/learn">Browse character lessons</a></div></div>'+
   '<div class="c9-discovery-lead-stats"><strong>'+PATHWAY_MISSIONS.length+'</strong><span>Original missions across nine authored bands</span><p>No locked levels or official HSK certificate claims.</p></div></section>'+
-  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-pathway-bands-title"><div class="c9-discovery-section c9-unified-card-head"><div><p class="c9-eyebrow">COURSE STRUCTURE</p><h2 id="c9-pathway-bands-title">Explore every band</h2></div></div>'+
+  '<section class="c9-discovery-section c9-unified-card" aria-labelledby="c9-pathway-bands-title"><div class="c9-discovery-section c9-unified-card-head"><div><h2 id="c9-pathway-bands-title">Explore every band</h2></div></div>'+
   '<div class="c9-band-grid">'+PATHWAY_BANDS.map(b=>{
     const stats=pathwayStats(state,b.number);
     const missions=PATHWAY_MISSIONS.filter(x=>x.band===b.number);
