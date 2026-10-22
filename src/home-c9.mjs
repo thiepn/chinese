@@ -5,6 +5,7 @@
 import {courseOverview,courseShortcuts} from './course-overview.mjs';
 import {learningHub} from './learning-hub.mjs';
 import {lessonGroups} from './study-groups.mjs';
+import {hskTargetLessons,hskTargetPractice,HSK_TARGETS} from './hsk-targets-c9.mjs';
 import {renderC9ListeningDeck} from './ui-c9.mjs';
 
 const ICONS=Object.freeze({
@@ -42,7 +43,7 @@ function taskRow(task,act,esc){
  * The renderer is deliberately pure. Online and storage flags are display-only:
  * the existing mutate()/IndexedDB pathway is still sole authority for writes.
  */
-export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offlineShell='checking',showPinyin=true}={}){
+export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offlineShell='checking',showPinyin=true,selectedLevel='all'}={}){
  const overview=courseOverview(state),hub=learningHub(state);
  const plan=hub.plan,primary=hub.primary;
  const hasActivity=overview.introduced>0||overview.scheduled.attempts>0||overview.supplementary>0||hub.sessions.length>0;
@@ -146,16 +147,21 @@ export function renderC9Home(state,act,esc,{storageReady=true,offline=false,offl
  offlineShell==='outdated'?'Previous offline version active':
  offlineShell==='installing'?'Preparing offline content':'Offline shell not ready')+
  '</span><span>Progress stored only in this browser</span></div>';
- const nextLessonSource=lesson||last||lessonGroups()[0].lessons[0];
- const firstAction=primary.kind==='resume'?
-  act('hub-primary','Resume saved activity →','c9-button c9-button--primary'):
-  '<a class="c9-button c9-button--primary" href="#/learn/'+esc(nextLessonSource.id)+'">'+
-  (hasActivity?'Continue lesson ':'Start lesson ')+String(nextLessonSource.order).padStart(3,'0')+' →</a>';
+ const lastId=(state.introductions||[]).at(-1)?.id||last?.id;
+ const inferred=HSK_TARGETS.find(t=>hskTargetLessons(t.id).some(l=>l.id===lastId))?.id||'1';
+ const level=HSK_TARGETS.some(t=>t.id===selectedLevel)?selectedLevel:inferred;
+ const available=hskTargetLessons(level);
+ const next=available.find(l=>!(state.learned||[]).includes(l.id))||available[0]||null;
+ const levelTitle=HSK_TARGETS.find(t=>t.id===level)?.name||'HSK 1';
+ const firstAction=hub.sessions.length?act('hub-primary','Resume saved activity →','c9-button c9-button--primary'):
+ next?'<a class="c9-button c9-button--primary" href="#/learn/'+esc(next.id)+'">'+
+ (hasActivity?'Continue':'Start')+' · '+esc(levelTitle)+' · Lesson '+next.order+' →</a>':
+ '<a class="c9-button c9-button--primary" href="#/learn/level/'+esc(level)+'">'+esc(levelTitle)+' · Open course →</a>';
  return '<div class="c9-home">'+storageNotice+offlineNotice+offlineRecovery+offlineUpgrade+
   '<section class="c9-home-course-launch"><h1>Learn Chinese</h1>'+
-  '<p>Study a level through its lessons, vocabulary, grammar, reading and listening.</p>'+
+  ''+
   '<div class="c9-home-course-actions">'+firstAction+
-  '<a class="c9-button c9-button--secondary" href="#/learn">Choose a level</a></div></section>'+
+  '<a class="c9-button c9-button--secondary" href="#/learn">Change level</a></div></section>'+
   (overview.due?'<section class="c9-course-review"><strong>'+overview.due+' review cards due</strong>'+
    '<a href="#/review" class="c9-button c9-button--secondary">Review now</a></section>':'')+
   '<details class="c9-home-explore-more"><summary><strong>Progress and other resources</strong></summary>'+

@@ -98,7 +98,7 @@ let c9ApprovedDeparture=null;
 // C9-39 offline-readiness protocol: report version AND full source manifest
 // must match the app revision. An older controller's successful old cache is
 // not evidence that this revision's original lessons will work offline.
-const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v99-course-first-level-journey';
+const C9_EXPECTED_OFFLINE_CACHE='character-study-working-v100-course-first-navigation';
 const C9_EXPECTED_OFFLINE_ASSETS=8;
 let c9OfflineShell='checking'; // UI readiness only; never a learner-data authority.
 let c9OfflineCoverage=null; // Readable shell responses reported by the controlling SW, never learner data.
@@ -611,7 +611,7 @@ function renderToday(){
  // are now visible in Home. Legacy supplementary teaching remains accessible
  // without duplicating the primary P31–P34 course catalogs shown on Learn.
  return renderC9Home(state,action,esc,{storageReady:Boolean(db),offline:navigator.onLine===false,
-   offlineShell:c9OfflineShell,showPinyin:state.settings.showPinyin})+
+   offlineShell:c9OfflineShell,showPinyin:state.settings.showPinyin,selectedLevel:c9LearnLevel})+
   '<section class="c9-skills-home-cta" aria-label="Continue language skills"><div>'+
   '<strong>Connect characters, reading, dialogue and writing</strong>'+
   '<p>Choose one learning skill, continue with source-backed material, and return to the original native practice.</p></div>'+
