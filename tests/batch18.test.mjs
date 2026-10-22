@@ -50,7 +50,7 @@ test('existing 206 fluency question IDs and official HSK restrictions remain unc
 test('plan route, keyboard actions, mobile link, browser cache and no external data sources',()=>{
  const read=name=>readFileSync(new URL(`../src/${name}`,import.meta.url),'utf8');const app=read('app.mjs'),html=read('index.html'),css=read('styles.css'),sw=read('sw.js');
  for(const id of ['renderPlan','plan-source','plan-pin','plan-minutes','plan-focus','plan-launch','nextConnectedMaterial','mistakeCollections','planSummaryPanel'])assert.ok(app.includes(id),id);
- assert.match(html,/href="#\/plan"/);assert.match(html,/More learning tools/);assert.match(css,/\.plan-task/);assert.match(sw,/character-study-working-v98/);assert.match(sw,/daily-plan\.mjs/);assert.ok(!sw.includes('official-hsk-2025.json'));
+ assert.match(html,/href="#\/plan"/);assert.match(html,/More learning tools/);assert.match(css,/\.plan-task/);assert.match(sw,/character-study-working-v99/);assert.match(sw,/daily-plan\.mjs/);assert.ok(!sw.includes('official-hsk-2025.json'));
 });
 import {toneRepairSteps} from '../src/tone-coach.mjs';
 test('written-tone repair provides specific location, contour and retry steps without speech claims',()=>{
