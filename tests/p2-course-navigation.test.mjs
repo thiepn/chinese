@@ -12,6 +12,11 @@ test('P2 keeps four visible destinations and 27 legacy routes',()=>{
  assert.equal((html.match(/<nav class="desktop-nav c9-primary-four"/g)||[]).length,1);
  assert.ok(html.includes('aria-label="Course resources"'));
 });
+test('P2 renders a true four-column mobile bar and no desktop-only drawer trigger',()=>{
+ const shell=readFileSync(new URL('../src/styles-c9-shell.css',import.meta.url),'utf8');
+ assert.match(shell,/\.c9-mobile-nav\.mobile-nav\s*\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(shell,/#c9-more-toggle\{display:none!important\}/);
+});
 test('P2 selected level directly resumes native authored source and does not mutate state',()=>{
  const state=freshState(),before=JSON.stringify(state);
  for(const level of ['1','2','3','4','5']){
@@ -28,7 +33,7 @@ test('P2 selected level directly resumes native authored source and does not mut
 });
 test('P2 keeps app/worker cache paired and historical backup compatibility',()=>{
  const src=name=>readFileSync(new URL('../src/'+name,import.meta.url),'utf8');
- for(const file of ['app.mjs','sw.js'])assert.ok(src(file).includes('character-study-working-v100-course-first-navigation'));
+ for(const file of ['app.mjs','sw.js'])assert.ok(src(file).includes('character-study-working-v101-course-first-mobile-grid'));
  assert.ok(src('study-storage.mjs').includes('character-study-demo-backup'));
  assert.ok(src('app.mjs').includes('selectedLevel:c9LearnLevel'));
 });

@@ -82,7 +82,7 @@ test('Mobile navigation and static cache include all new app modules with no off
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../src/sw.js',import.meta.url),'utf8');
  assert.ok((html.match(/href="#\/plan" data-route="plan"/g)||[]).length>=1);
- assert.match(html,/Course resources/);assert.match(sw,/character-study-working-v100/);
+ assert.match(html,/Course resources/);assert.match(sw,/character-study-working-v101/);
  assert.match(sw,/learning-hub\.mjs/);assert.match(sw,/context-continuity\.mjs/);
  assert.ok(!sw.includes('official-hsk-2025.json'));
 });
