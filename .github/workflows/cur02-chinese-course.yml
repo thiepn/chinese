@@ -1,0 +1,35 @@
+name: CUR-02 Chinese Course Navigation
+on:
+  push:
+    branches: [feature/cur02-six-level-chinese-course-20261026]
+permissions:
+  contents: read
+jobs:
+  course:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+      - name: Run existing canonical course plus new CUR-02 regression
+        run: node --test tests/cur02-course.test.mjs tests/course*.test.mjs
+      - name: Install original public build dependency
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Build original Chinese app without deployment
+        run: npm run build
+      - name: Verify built source and offline assets
+        run: npm run verify
+      - name: Install isolated browser runner
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.63.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify actual mobile course navigation in Chromium
+        run: |
+          node scripts/serve.mjs &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break || sleep 1; done
+          node tests/cur02-browser.mjs
+ 

@@ -4,6 +4,7 @@
  * No new route, store, progress engine, assessment or official HSK claims.
  */
 import {DEMO_LESSONS} from './demo-lessons.mjs';
+import {renderChineseCourseLevels} from './cur02-course-view.mjs';
 import {renderC9EmptyState} from './ui-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {plain} from './lexicon.mjs';
@@ -121,7 +122,7 @@ export function renderC9LearnHub(state,ui,act,esc){
  const o=courseOverview(state),hub=learningHub(state);
  const unit=lessonGroups().find(x=>String(x.index)===String(ui.unit));
  const status=ui.status||'all',kind=isKnownKind(ui.kind)?ui.kind:'all';
- const intro=title('Learn Chinese','Start with your next lesson, follow the numbered course, or open a review session.');
+ const intro=renderChineseCourseLevels(state,act,esc,location.hash);
  if(ui.view==='lesson'){
   const chosen=DEMO_LESSONS.find(l=>l.id===ui.selectedId)||DEMO_LESSONS[0];
   return '<section class="c9-lesson-heading">'+
