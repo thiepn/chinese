@@ -6,7 +6,7 @@
  */
 const META=Object.freeze({
  today:{label:'Home',area:'Study',parent:'today',group:'study'},
- learn:{label:'Learn',area:'Course',parent:'learn',group:'course'},
+ learn:{label:'Course',area:'Course',parent:'learn',group:'course'},
  character:{label:'Character Study',area:'Course',parent:'learn',group:'course'},
  review:{label:'Review',area:'Practice',parent:'review',group:'practice'},
  explore:{label:'Explore',area:'Discover',parent:'explore',group:'discover'},

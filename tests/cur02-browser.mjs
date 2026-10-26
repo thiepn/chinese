@@ -6,6 +6,7 @@ try{
  await page.goto('http://127.0.0.1:4173/#/learn/level/C2');
  await page.locator('.cur02-ch-levels').waitFor({timeout:30000});
  assert.equal(await page.locator('.cur02-ch-level').count(),6);
+ assert.equal(await page.locator('.c9-mobile-nav [data-c9-primary="learn"]').innerText(),'Course');
  assert.match(await page.locator('.cur02-ch-course').innerText(),/No original lessons have an independently verified C2/);
  await page.locator('.cur02-ch-unmapped').click();
  await page.locator('.cur02-ch-list [data-action="c9-lesson-open"]').first().waitFor();
