@@ -23,4 +23,13 @@ jobs:
         run: npm run build
       - name: Verify built source and offline assets
         run: npm run verify
+      - name: Install isolated browser runner
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund @playwright/test@1.63.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify actual mobile course navigation in Chromium
+        run: |
+          node scripts/serve.mjs &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break || sleep 1; done
+          node tests/cur02-browser.mjs
  
