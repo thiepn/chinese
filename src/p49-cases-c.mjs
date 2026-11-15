@@ -4,7 +4,7 @@ T|Writer|我已经把报名人数和实际参加人数分开了，可以马上�
 T|Editor|你做对了修改，但这份年度报告还需要负责人审核。|Nǐ zuò duì le xiūgǎi, dàn zhè fèn niándù bàogào hái xūyào fùzérén shěnhé.|The correction is right, but this annual report still needs managerial review.
 T|Writer|我还核对了签到表和报名表，也说明了两种数字的来源。|Wǒ hái héduì le qiāndàobiǎo hé bàomíngbiǎo, yě shuōmíng le liǎng zhǒng shùzì de láiyuán.|I also checked sign-in and registration forms and explained the sources.
 T|Editor|很好，核对内容和批准公开是两个不同的步骤。|Hěn hǎo, héduì nèiróng hé pīzhǔn gōngkāi shì liǎng ge bùtóng de bùzhòu.|Good. Verifying content and authorizing publication are distinct steps.
-T|Writer|我会附上记录，先提交修改稿，不会把审核中的文件公开。|Wǒ huì fù shàng jìlù, xiān tíjiāo xiūgǎogǎo, bú huì bǎ shěnhé zhōng de wénjiàn gōngkāi.|I'll attach the records and submit the revised draft without publishing a document under review.
+T|Writer|我会附上记录，先提交修改稿，不会把审核中的文件公开。|Wǒ huì fù shàng jìlù, xiān tíjiāo xiūgǎigǎo, bú huì bǎ shěnhé zhōng de wénjiàn gōngkāi.|I'll attach the records and submit the revised draft without publishing a document under review.
 T|Editor|只有正式审核通过以后，这份报告才能对外公布。|Zhǐyǒu zhèngshì shěnhé tōngguò yǐhòu, zhè fèn bàogào cái néng duìwài gōngbù.|Only after formal approval can this report be made public.
 Q|What correction has been completed?|Separating registration and attendance counts.|Approving publication.|Creating a new community event.|2|The writer has already checked source numbers.
 Q|What remains pending?|Managerial review for publication.|Whether sign-in and registration are different sources.|Whether a revised draft exists.|1|An accurate draft isn't automatically approved.

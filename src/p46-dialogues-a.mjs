@@ -23,7 +23,7 @@ A revised draft is not a published report|p46-03|Organization and document integ
 D|A|年度报告已经写好了，我们今天就放到网站上吧。|Niándù bàogào yǐjīng xiě hǎo le, wǒmen jīntiān jiù fàng dào wǎngzhàn shàng ba.|The annual report is written; let's put it on the website today.
 D|B|先别发布，编辑发现报名人数和实际出席人数不一样。|Xiān bié fābù, biānjí fāxiàn bàomíng rénshù hé shíjì chūxí rénshù bù yíyàng.|Don't publish it yet. The editor found the registration count differed from actual attendance.
 D|A|我已经核对了签到表，也把这两个数字分开写了。|Wǒ yǐjīng héduì le qiāndàobiǎo, yě bǎ zhè liǎng ge shùzì fēnkāi xiě le.|I've checked attendance sheets and separated those two figures.
-D|B|很好，但是修改稿还需要负责人审核。|Hěn hǎo, dànshì xiūgǎogǎo hái xūyào fùzérén shěnhé.|Good, but the revised draft still needs review by the manager.
+D|B|很好，但是修改稿还需要负责人审核。|Hěn hǎo, dànshì xiūgǎigǎo hái xūyào fùzérén shěnhé.|Good, but the revised draft still needs review by the manager.
 D|A|那我把原始记录附上，请负责人检查。|Nà wǒ bǎ yuánshǐ jìlù fù shàng, qǐng fùzérén jiǎnchá.|Then I'll attach the original records and ask the manager to check.
 D|B|只有审核通过，才能把报告正式公开。|Zhǐyǒu shěnhé tōngguò, cái néng bǎ bàogào zhèngshì gōngkāi.|Only after approval can the report be published.
 Q|Which mistake did the editor identify?|Registrations and actual attendees were treated as the same count.|The company had never held events.|All reports had already been certified.|1|The editor contrasted sign-ups with actual attendance.
