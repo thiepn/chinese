@@ -131,3 +131,48 @@ test('preservation: backup and storage contracts are unchanged',()=>{
  assert.deepEqual(restored.learned,state.learned);
  assert.deepEqual(Object.keys(restored.cards).sort(),Object.keys(state.cards).sort());
 });
+
+test('review corrections: fixed entries are pinned and old defects stay gone',()=>{
+ const entry=hanzi=>DEEP_NOTES[hanzi].join(' ');
+ // demo-18 (天): 很好 recognized as adjective predicate; the old rule/evidence
+ // mismatch ("Time expressions come before the verb" over a verbless sentence)
+ // is gone; the canonical lesson translation is quoted verbatim.
+ const t18=entry('天');
+ assert.ok(t18.includes('The weather will be good tomorrow.'),'demo-18 must quote the canonical translation verbatim');
+ assert.ok(t18.includes('no verb'),'demo-18 must recognize the verbless adjective predicate');
+ assert.doesNotMatch(t18,/Time expressions come before the verb/,'demo-18 must not state a verb rule over a verbless example');
+ // demo-05 (人): restricted, non-obligatory 们 replaces the overbroad plural claim.
+ const t5=entry('人');
+ assert.ok(t5.includes('There are many people here.'),'demo-05 must quote the canonical translation verbatim');
+ assert.ok(t5.includes('们'),'demo-05 must mention 们 as restricted plural marking');
+ assert.doesNotMatch(t5,/do not change form for plural/,'demo-05 must not claim nouns never take plural marking');
+ // demo-19 (日): gloss matches the canonical lesson translation.
+ const t19=entry('日');
+ assert.ok(t19.includes('I write in a diary every day.'),'demo-19 must quote the canonical translation verbatim');
+ assert.doesNotMatch(t19,/my diary/,'demo-19 must not reword the canonical translation');
+ // demo-08 (学) and demo-11 (看): no references to vocabulary taught later.
+ const t8=entry('学');
+ assert.ok(t8.includes('在学校'),'demo-08 keeps its own-sentence example');
+ assert.doesNotMatch(t8,/在书店/,'demo-08 must not cite 书店 (first taught in demo-10)');
+ const t11=entry('看');
+ assert.ok(t11.includes('看见'),'demo-11 keeps its own-word teaching');
+ assert.doesNotMatch(t11,/听见/,'demo-11 must not cite 听见 (first taught in demo-22)');
+ // demo-10 (书): 看 reconciled as a verb with the conventional phrase 看书.
+ const t10=entry('书');
+ assert.ok(t10.includes('看书'),'demo-10 keeps its verb-object teaching');
+ assert.ok(t10.includes('look'),'demo-10 states 看 own meaning');
+ assert.doesNotMatch(t10,/看 "read"/,'demo-10 must not gloss 看 alone as "read"');
+ assert.doesNotMatch(t10,/turns 看/,'demo-10 must not claim the object changes the verb meaning');
+});
+
+test('review corrections: quoted sentence glosses stay consistent with canonical translations',()=>{
+ const strip=s=>String(s).replace(/[。？！.!?]$/,'');
+ const norm=s=>String(s).toLowerCase().replace(/[。？！.!?]$/,'').trim();
+ for(const lesson of BEGINNER){
+  const text=DEEP_NOTES[lesson.hanzi].join(' ');
+  const quoted=new RegExp(strip(lesson.sentence.hanzi).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s+"([^"]+)"').exec(text);
+  if(!quoted)continue; // entry does not quote a gloss directly after its sentence
+  assert.ok(norm(lesson.sentence.english).includes(norm(quoted[1])),
+   lesson.id+' quote "'+quoted[1]+'" diverges from canonical "'+lesson.sentence.english+'"');
+ }
+});
