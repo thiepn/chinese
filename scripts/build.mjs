@@ -1,8 +1,8 @@
 import { access, mkdir, readdir, copyFile, rm, readFile, writeFile } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
 import { build as bundle } from 'esbuild';
+import { srcDigest,hashBytes } from './dist-gate.mjs';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const src = join(root, 'src'); const out = join(root,'dist');
 // Check the actual offline contract before destroying or rewriting dist.
@@ -76,6 +76,12 @@ if(productionHtml===sourceHtml||productionHtml.includes('href="./styles.css"')||
 await writeFile(join(out,'index.html'),productionHtml);
 files.push('startup.mjs','styles-startup.css');
 const hashes={};
-for(const name of files.sort())hashes[name]=createHash('sha256').update(await readFile(join(out,name))).digest('hex');
+for(const name of files.sort())hashes[name]=hashBytes(await readFile(join(out,name)));
 await writeFile(join(root,'docs','DIST_SHA256.json'),JSON.stringify(hashes,null,2)+'\n');
+// Record which source tree produced this dist/. The serve/start gate compares
+// this digest before serving, so an edited src/ can never silently run against
+// an older build. Deterministic: identical sources produce an identical stamp.
+await writeFile(join(root,'docs','BUILD_STAMP.json'),JSON.stringify({
+ cache:currentCache,srcDigest:await srcDigest(src)
+},null,2)+'\n');
 console.log(`Built ${files.length} static assets in dist/. SHA-256 manifest: docs/DIST_SHA256.json`);

@@ -1,15 +1,15 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
 import { DEMO_LESSONS } from '../src/demo-lessons.mjs';
+import { distGateProblems } from './dist-gate.mjs';
 const root=dirname(dirname(fileURLToPath(import.meta.url)));
 const dist=join(root,'dist');
+// Delivery gate: dist/ must match its manifest, must be built from the current
+// src/ tree, and must carry the contracted service-worker cache identity.
+const gateProblems=await distGateProblems({root});
+if(gateProblems.length)throw new Error('Stale or unverified dist/:\n - '+gateProblems.join('\n - '));
 const manifest=JSON.parse(await readFile(join(root,'docs/DIST_SHA256.json'),'utf8'));
-for(const [file,expected] of Object.entries(manifest)){
- const actual=createHash('sha256').update(await readFile(join(dist,file))).digest('hex');
- if(expected!==actual)throw new Error(`Dist hash mismatch ${file}`);
-}
 const html=await readFile(join(dist,'index.html'),'utf8');
 if(!html.includes('No official HSK corpus')&&!html.includes('No official HSK curriculum')){
  // Permit exact assertion in description, including lowercase form.
