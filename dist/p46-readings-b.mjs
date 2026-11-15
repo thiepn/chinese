@@ -1,0 +1,51 @@
+/** P46 original upper-intermediate three-paragraph readings B. */
+export const P46_READINGS_B=String.raw`An unfamiliar museum label|Culture and responsible interpretation|Compare an old historical description with a revised one without inventing details.|g112,g115,g132|记载~jìzǎi~record in writing|A newer source can revise a historical claim without revealing an exact replacement year.|Explain why the label changed and what evidence remains incomplete.
+L|周末，小吴参观了一家介绍城市交通历史的博物馆。|Zhōumò, Xiǎo Wú cānguān le yì jiā jièshào chéngshì jiāotōng lìshǐ de bówùguǎn.|At the weekend, Xiao Wu visited a museum about the history of urban transport.
+L|她看到一幅地图，旁边放着新旧两个不同的说明。|Tā kàn dào yì fú dìtú, pángbiān fàngzhe xīn jiù liǎng ge bùtóng de shuōmíng.|She saw a map with two different descriptions, old and new, placed nearby.
+L|旧标签说地图是大约一百年前画的。|Jiù biāoqiān shuō dìtú shì dàyuē yì bǎi nián qián huà de.|The old label said the map had been drawn roughly one hundred years earlier.
+L|新说明却指出，历史档案表明地图的年代可能更早。|Xīn shuōmíng què zhǐchū, lìshǐ dàng'àn biǎomíng dìtú de niándài kěnéng gèng zǎo.|The new description stated that historical archives suggested the map might be older.
+L|小吴想知道准确的年份，于是向工作人员请教。|Xiǎo Wú xiǎng zhīdào zhǔnquè de niánfèn, yúshì xiàng gōngzuò rényuán qǐngjiào.|Xiao Wu wanted to know the precise year, so she asked a staff member.
+L|工作人员解释说，研究人员重新审核了几份以前没有使用过的记录。|Gōngzuò rényuán jiěshì shuō, yánjiū rényuán chóngxīn shěnhé le jǐ fèn yǐqián méiyǒu shǐyòng guo de jìlù.|The staff member said researchers had reexamined several previously unused records.
+L|这些记录提供了新的线索，但还没有确定唯一的具体日期。|Zhèxiē jìlù tígōng le xīn de xiànsuǒ, dàn hái méiyǒu quèdìng wéiyī de jùtǐ rìqī.|These records offered new clues but had not established a single precise date.
+L|因此，新的说明只修改了大致的年代，没有写出某一年。|Yīncǐ, xīn de shuōmíng zhǐ xiūgǎi le dàzhì de niándài, méiyǒu xiě chū mǒu yì nián.|So the new description revised only the approximate period and did not specify a year.
+L|小吴原来想在作业中加入一个数字，让内容显得更详细。|Xiǎo Wú yuánlái xiǎng zài zuòyè zhōng jiārù yí ge shùzì, ràng nèiróng xiǎnde gèng xiángxì.|Xiao Wu had intended to add a number to her assignment to make it more detailed.
+L|不过，她意识到详细并不意味着准确，没有来源的数字反而会误导读者。|Búguò, tā yìshí dào xiángxì bìng bù yìwèizhe zhǔnquè, méiyǒu láiyuán de shùzì fǎn'ér huì wùdǎo dúzhě.|But she realized detail does not equal accuracy; an unsourced number could mislead readers.
+L|最后，她在报告里比较了两个标签，并说明新的证据仍有局限。|Zuìhòu, tā zài bàogào lǐ bǐjiào le liǎng ge biāoqiān, bìng shuōmíng xīn de zhèngjù réng yǒu júxiàn.|Finally, she compared both labels in her report and noted the new evidence's limitations.
+L|她认为，承认不知道什么，也是认真研究的一部分。|Tā rènwéi, chéngrèn bù zhīdào shénme, yě shì rènzhēn yánjiū de yí bùfen.|She felt acknowledging what is unknown is part of responsible research.
+Q|What was the basis for the changed museum description?|Previously unused archival records were reexamined.|An exact date was invented by a student.|The map was newly painted for the exhibition.|5|Researchers revised source evidence rather than taking a vote.
+Q|Why was no exact year added?|The records did not establish a single precise date.|The museum had lost all maps.|The student was asked not to write dates at all.|6|The material supplied clues, not a proven unique year.
+Q|What did Xiao Wu eventually include?|A comparison of both labels with evidence limitations.|A fabricated date she found convincing.|Only the old label as unquestionable truth.|10|Her conclusion preserves uncertainty.
+
+Choosing a realistic community plan|Community services and coordination|Weigh volunteer capacity, weather, and conditional alternatives without exaggerating completed tasks.|g105,g108,g125|权衡~quánhéng~weigh alternatives|An unapproved indoor backup and postponed yard work cannot be recorded as completed.|Tell the team what is done, what remains, and which new permission is still needed.
+L|社区小组计划在周末帮助两位老人整理院子，并准备在下午举行交流活动。|Shèqū xiǎozǔ jìhuà zài zhōumò bāngzhù liǎng wèi lǎorén zhěnglǐ yuànzi, bìng zhǔnbèi zài xiàwǔ jǔxíng jiāoliú huódòng.|The neighborhood group planned to tidy two older residents' yards and hold an afternoon exchange event.
+L|开始报名时，有人估计至少会有十名志愿者参加。|Kāishǐ bàomíng shí, yǒu rén gūjì zhìshǎo huì yǒu shí míng zhìyuànzhě cānjiā.|At the beginning, someone estimated at least ten volunteers would participate.
+L|但是星期五晚上，只有六个人正式确认了时间。|Dànshì Xīngqīwǔ wǎnshang, zhǐyǒu liù ge rén zhèngshì quèrèn le shíjiān.|But by Friday evening, only six had formally confirmed availability.
+L|负责人决定调整任务顺序，让大家先一起完成第一个院子。|Fùzérén juédìng tiáozhěng rènwu shùnxù, ràng dàjiā xiān yìqǐ wánchéng dì yī ge yuànzi.|The organizer revised the task order so everyone could finish the first yard together.
+L|到了中午，天气预报又提醒大家，下午可能会有大雨。|Dào le zhōngwǔ, tiānqì yùbào yòu tíxǐng dàjiā, xiàwǔ kěnéng huì yǒu dà yǔ.|By noon, the forecast warned that heavy rain was possible in the afternoon.
+L|小组一方面需要保证安全，另一方面也不想直接取消交流活动。|Xiǎozǔ yì fāngmiàn xūyào bǎozhèng ānquán, lìng yì fāngmiàn yě bù xiǎng zhíjiē qǔxiāo jiāoliú huódòng.|The group had to ensure safety while also hoping not to cancel the exchange event.
+L|他们联系社区中心，询问是否可以使用里面的大厅。|Tāmen liánxì shèqū zhōngxīn, xúnwèn shìfǒu kěyǐ shǐyòng lǐmiàn de dàtīng.|They contacted the community center to ask if they could use the hall.
+L|在场地得到确认以前，负责人没有对外宣布活动已经搬进去。|Zài chǎngdì dédào quèrèn yǐqián, fùzérén méiyǒu duìwài xuānbù huódòng yǐjīng bān jìnqù.|Before the venue was confirmed, the organizer did not announce that the event had moved indoors.
+L|第一个院子在下午两点以前整理完毕，第二个仍然留到下周。|Dì yī ge yuànzi zài xiàwǔ liǎng diǎn yǐqián zhěnglǐ wánbì, dì èr ge réngrán liú dào xià zhōu.|The first yard was finished before two, while the second remained for the next week.
+L|随后，社区中心通知小组，大厅可以在下午使用。|Suíhòu, shèqū zhōngxīn tōngzhī xiǎozǔ, dàtīng kěyǐ zài xiàwǔ shǐyòng.|Later the community center told the group the hall was available that afternoon.
+L|志愿者按照新的确认信息修改通知，保留了交流活动的时间和内容。|Zhìyuànzhě ànzhào xīn de quèrèn xìnxī xiūgǎi tōngzhī, bǎoliú le jiāoliú huódòng de shíjiān hé nèiróng.|Volunteers amended the announcement based on the new confirmation while retaining the event's time and content.
+L|这次活动说明，综合考虑人数、天气和场地，比坚持最初的计划更有帮助。|Zhè cì huódòng shuōmíng, zōnghé kǎolǜ rénshù, tiānqì hé chǎngdì, bǐ jiānchí zuìchū de jìhuà gèng yǒu bāngzhù.|The event showed that considering attendance, weather, and venue together was more helpful than rigidly keeping the initial plan.
+Q|How many volunteers had actually confirmed?|Six.|At least ten.|Everyone who initially registered.|2|Initial estimates must not replace confirmed participation.
+Q|When was the indoor move authorized?|When the community center confirmed the hall was available.|Immediately when the weather forecast changed.|As soon as the organizer suggested the idea.|9|A question to the center was not an approval.
+Q|Which yard was completed?|The first, not the second.|Both were completed.|Only the second was completed.|8|The first was completed and the second postponed.
+
+The budget decision that required two checks|Household plans and careful comparison|Develop a reasoned decision that distinguishes price from actual suitability and future cost.|g107,g109,g129|综合~zōnghé~consider together|An attractive price does not offset a table that cannot fit the measured room.|Explain the constraints and justify what the family finally chose.
+L|林家准备给客厅换一张桌子，希望新桌子既方便使用，又不超过预算。|Lín jiā zhǔnbèi gěi kètīng huàn yì zhāng zhuōzi, xīwàng xīn zhuōzi jì fāngbiàn shǐyòng, yòu bú chāoguò yùsuàn.|The Lin family planned a new living-room table that would be convenient without exceeding the budget.
+L|父亲建议先确定放桌子的地方，而不是马上比较价格。|Fùqīn jiànyì xiān quèdìng fàng zhuōzi de dìfang, ér bú shì mǎshàng bǐjiào jiàgé.|The father suggested identifying the space before comparing prices.
+L|大家测量以后发现，客厅里能使用的长度比原来想的短。|Dàjiā cèliáng yǐhòu fāxiàn, kètīng lǐ néng shǐyòng de chángdù bǐ yuánlái xiǎng de duǎn.|After measuring, they found the available space shorter than expected.
+L|商店里的第一张桌子比较便宜，但是尺寸超过了这个长度。|Shāngdiàn lǐ de dì yī zhāng zhuōzi bǐjiào piányi, dànshì chǐcùn chāoguò le zhège chángdù.|The first table in the shop was cheaper but exceeded that length.
+L|第二张桌子贵一些，不过大小正好，桌面也比较容易清洁。|Dì èr zhāng zhuōzi guì yìxiē, búguò dàxiǎo zhènghǎo, zhuōmiàn yě bǐjiào róngyì qīngjié.|The second was more expensive, but fitted well and had an easier-to-clean surface.
+L|姐姐认为不能只看价格，因为尺寸不合适会带来新的问题。|Jiějie rènwéi bù néng zhǐ kàn jiàgé, yīnwèi chǐcùn bù héshì huì dài lái xīn de wèntí.|The older sister argued price alone was insufficient because unsuitable dimensions would cause problems.
+L|与此同时，母亲提醒大家，商店标出的价格还没有包括送货费用。|Yǔ cǐ tóngshí, mǔqīn tíxǐng dàjiā, shāngdiàn biāo chū de jiàgé hái méiyǒu bāokuò sònghuò fèiyòng.|Meanwhile, the mother reminded them that the displayed price did not include delivery.
+L|于是，他们把送货费用和其他计划内的开支放在一起比较。|Yúshì, tāmen bǎ sònghuò fèiyòng hé qítā jìhuà nèi de kāizhī fàng zài yìqǐ bǐjiào.|So they compared delivery costs with other planned expenses.
+L|为了避免超出预算，全家同意这个月先减少不重要的购买。|Wèile bìmiǎn chāochū yùsuàn, quánjiā tóngyì zhège yuè xiān jiǎnshǎo bù zhòngyào de gòumǎi.|To avoid exceeding the budget, the family agreed to reduce less important purchases this month.
+L|核对总费用以后，他们确认第二张桌子仍然负担得起。|Héduì zǒng fèiyòng yǐhòu, tāmen quèrèn dì èr zhāng zhuōzi réngrán fùdān de qǐ.|After checking the total, they confirmed they could still afford the second table.
+L|最后，他们选择了第二张，而没有因为第一张更便宜就忽视尺寸问题。|Zuìhòu, tāmen xuǎnzé le dì èr zhāng, ér méiyǒu yīnwèi dì yī zhāng gèng piányi jiù hūshì chǐcùn wèntí.|They chose the second rather than overlook size just because the first was cheaper.
+L|这个决定并不是寻找最低的价格，而是寻找符合实际需要的选择。|Zhège juédìng bìng bú shì xúnzhǎo zuì dī de jiàgé, érshì xúnzhǎo fúhé shíjì xūyào de xuǎnzé.|The decision was not about the lowest price but about meeting actual needs.
+Q|Why was the first table rejected?|It exceeded the measured available space.|It was too expensive.|The shop offered no table at all.|3|Dimensions, not price, ruled it out.
+Q|Which additional expense had to be included?|Delivery.|Museum tickets.|Tuition fees.|6|The displayed price excluded delivery.
+Q|What did the family ultimately choose?|The second table after checking its total cost.|The first table because it was cheapest.|Neither table because both were oversized.|10|The choice reflected both size and budget.`;
