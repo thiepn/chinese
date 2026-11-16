@@ -7,32 +7,45 @@ import { studiedHanzi,storyReadiness } from '../src/reading-readiness.mjs';
 import { MEANING_RADICALS,SEMANTIC_OF,radicalOf,semanticOf } from '../src/meaning-radicals.mjs';
 import { PHONETIC_FAMILIES } from '../src/phonetic-families.mjs';
 import { DRILL_MODES,buildDrill,validateDrills } from '../src/drills.mjs';
-import { freshState,addLesson,scheduleWord } from '../src/study.mjs';
+import { freshState,addLesson,scheduleWord,gradeCard } from '../src/study.mjs';
+import { addWordPracticeEvent } from '../src/wordbook-lab.mjs';
 import { STORIES } from '../src/stories.mjs';
 import { WORDS,findWord } from '../src/lexicon.mjs';
 import { DEMO_LESSONS } from '../src/demo-lessons.mjs';
 
-test('reading readiness: studied set derives from every real source',()=>{
+test('reading readiness: studied set follows evidence, not intent',()=>{
  const empty=studiedHanzi(freshState());
  assert.equal(empty.size,0);
  let s=addLesson(freshState(),'demo-01',1000);
  const known=studiedHanzi(s);
- assert.ok(known.has('我')&&known.has('我们')&&known.has('我的'),'learned lesson characters and words count');
+ assert.ok(known.has('我')&&known.has('我们')&&known.has('我的'),'introduced lesson words are taught');
  s=scheduleWord(s,'打包|dabao',1000);
- assert.ok(studiedHanzi(s).has('打包'),'scheduled deck words count');
+ assert.ok(!studiedHanzi(s).has('打包'),'scheduled-but-unstudied words are NOT knowledge');
+ s=addWordPracticeEvent(s,{id:'wp-1',key:'打包|dabao',mode:'meaning',correct:true,assisted:false});
+ assert.ok(studiedHanzi(s).has('打包'),'an independent-correct practice answer is demonstrated knowledge');
+ const assisted=freshState();
+ const withAssist=addWordPracticeEvent(scheduleWord(assisted,'打包|dabao',1000),{id:'wp-2',key:'打包|dabao',mode:'meaning',correct:true,assisted:true});
+ assert.ok(!studiedHanzi(withAssist).has('打包'),'assisted answers never demonstrate knowledge');
+ const reviewed=gradeCard(scheduleWord(freshState(),'打包|dabao',1000),'word:打包|dabao:meaning',2,1000,'wp-3',{correct:true,assisted:false});
+ assert.ok(studiedHanzi(reviewed).has('打包'),'independent-correct review cards count too');
 });
 
 test('reading readiness: coverage math is honest and counts each word once',()=>{
  const story=STORIES.find(x=>x.beginner?.source==='original-everyday-reading');
  const base=storyReadiness(freshState(),story);
  assert.ok(base.used>0&&base.percent===0,'a fresh learner knows none of the words');
+ // Scheduling the pre-study words alone changes nothing: queued, not learned.
  let s=freshState();
  for(const w of base.unknown.slice(0,5))s=scheduleWord(s,w.key);
+ const queued=storyReadiness(s,story);
+ assert.equal(queued.percent,0,'scheduling without answers is not knowledge');
+ assert.equal(queued.queued.length,5,'queued words are reported separately');
+ // Demonstrating them raises readiness.
+ for(const w of base.unknown.slice(0,5))s=addWordPracticeEvent(s,{id:'wp-'+w.key,mode:'meaning',key:w.key,correct:true,assisted:false});
  const after=storyReadiness(s,story);
  assert.equal(after.percent,Math.round(100*after.covered/after.used));
- assert.ok(after.percent>base.percent,'studying words raises readiness');
+ assert.ok(after.percent>base.percent,'demonstrated words raise readiness');
  assert.equal(after.unknown.length,base.unknown.length-5);
- // No word contained inside another matched word is counted separately.
  for(const w of after.unknown)assert.ok(!after.unknown.some(o=>o!==w&&o.hanzi.includes(w.hanzi)),'no substring double counting: '+w.hanzi);
  for(const w of base.unknown)assert.ok(findWord(w.key),'unknown entries are real lexicon words');
  // Labels follow measured coverage: fully covered vs untouched.

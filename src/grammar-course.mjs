@@ -3,6 +3,7 @@
  * an HSK affiliation. Exact writing practice feeds the existing Sentence
  * Workshop source IDs and event writer; no duplicate mastery or progress store.
  */
+import {composeCheck} from './compose-feedback.mjs';
 import {GRAMMAR_ROWS_A} from './grammar-course-data-a.mjs';
 import {GRAMMAR_ROWS_B} from './grammar-course-data-b.mjs';
 import {P32_GRAMMAR_ROWS_A} from './p32-grammar-a.mjs';
@@ -102,8 +103,7 @@ export function gradeGrammarQuestion(q,response){
  if(q.kind==='choice')return evaluateAnswer(response,q.answer,'choice');
  const normalized=text=>String(text||'').normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
  const correct=normalized(response)===normalized(q.answer);
- return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':
-  'Your sentence differs from the taught model. Compare word order and particles; valid alternatives may exist.'};
+ return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':composeCheck(q.answer,response).message};
 }
 export function shuffleGrammarChunks(chunks,index){
  return chunks.map((text,i)=>({text,i})).sort((a,b)=>
