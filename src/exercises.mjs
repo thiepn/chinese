@@ -6,7 +6,7 @@ const initials=['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','
 const finals=['iang','iong','uang','ueng','ang','eng','ing','ong','iao','ian','uan','uen','uai','uei','ao','ai','ei','ou','ia','ie','iu','in','un','ui','ua','uo','ue','ve','an','en','er','uo','a','o','e','i','u','v','m','n','ng'];
 const syllables=new Set(initials.flatMap(i=>finals.map(f=>i+f)));
 // Less common syllables are safe for input matching, while invented syllables are rejected.
-for(const special of ['zhi','chi','shi','ri','zi','ci','si','yuan','yun','yue','yin','ying','wu','yi','you','ye','ya','yo','yong','yong','wen','wang','weng','nue','lue','lv','nv','hm'])syllables.add(special);
+for(const special of ['zhi','chi','shi','ri','zi','ci','si','yuan','yun','yue','yin','ying','wu','yi','you','ye','ya','yo','yong','yong','wen','wang','weng','nue','lue','lv','nv','hm','r'])syllables.add(special);
 function cleanPinyin(text){let base='',tones=new Map(),digits=new Map();for(const ch of String(text).trim().toLowerCase().replaceAll('u:','v')){
  const current=marks[ch];if(current){if(current[1])tones.set(base.length,current[1]);base+=current[0];}
  else if(ch==='v'||/[a-z]/.test(ch))base+=ch;

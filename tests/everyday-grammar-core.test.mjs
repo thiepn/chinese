@@ -33,7 +33,7 @@ test('everyday grammar: 17 audited hole-filling lessons exist in difficulty orde
   const expectedAnchor=DEMO_LESSONS.find(l=>l.hanzi===lesson.anchor)?.id||null;
   assert.equal(lesson.characterLessonId,expectedAnchor,id+' anchor linkage');
  }
- assert.equal(GRAMMAR_LESSONS.length,181);
+ assert.equal(GRAMMAR_LESSONS.length,190,'reviewed total: 164 historical + 17 everyday + 9 colloquial');
  // Difficulty progression: staples before advanced structures.
  assert.ok(NEW_IDS.indexOf('g165')<NEW_IDS.indexOf('g178')&&NEW_IDS.indexOf('g178')<NEW_IDS.indexOf('g181'));
 });
