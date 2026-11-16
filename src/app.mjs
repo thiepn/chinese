@@ -47,6 +47,7 @@ import { watchBlockedInlineStyles } from './csp-styles.mjs';
 import { familyOf } from './phonetic-families.mjs';
 import { semanticOf } from './meaning-radicals.mjs';
 import { storyReadiness } from './reading-readiness.mjs';
+import { addProductionEvent,productionStats } from './production-log.mjs';
 import {addDrillRecord,toggleStoryBookmark,practiceSummary} from './practice-records.mjs';
 import {lessonRecommendations} from './recommendations.mjs';
 import {createGuidedSession,guidedQuestion,recordGuidedAnswer,advanceGuidedSession,abandonGuidedSession} from './guided-session.mjs';
@@ -255,7 +256,7 @@ function renderDialogues(){
  return '<div class="c9-media-workspace c9-media-dialogues">'+
   renderC9DialogueHub(state,dialogue,action,esc,{query:c9DialogueQuery,filter:c9DialogueFilter,page:c9DialoguePage})+
   renderC9ConversationCircuit(dialogue,state,action,esc)+
-  renderC9DialogueRoleplay(dialogue,c9RoleplayUi,action,esc)+
+  renderC9DialogueRoleplay(dialogue,{...c9RoleplayUi,practice:productionStats(state)},action,esc)+
   '<div class="c9-media-native">'+renderDialoguesNative()+'</div></div>';
 }
 function renderReader(){
@@ -856,7 +857,7 @@ function renderProgressNative(){const m=summary(state),r=storySummary(state),ana
  <h3>Practice needs by skill</h3><div class="coach-skills">${skillDiagnostics(state).map(s=>`<div><strong>${esc(s.label)}</strong><span>${s.reviewAttempts} scheduled · ${s.practiceAttempts} extra · ${s.reviewedErrors+s.practiceErrors} missed</span></div>`).join('')}</div>${remediationPlan(state).length?action('coach-practice','Work on observed mistakes →','button primary'):''}
  </section>
  <section class="simple-panel"><h2>Guided practice</h2><p>Mixed-session answers are saved in existing supplemental drill and reading histories, never in scheduled-review mastery.</p>${state.practiceSession?`<p><strong>${state.practiceSession.cursor}/${state.practiceSession.limit}</strong> questions completed · ${state.practiceSession.correct} independent correct.</p><div class="button-row">${action('open-practice','Resume guided session →','button primary')}</div>`:'<p class="muted">No active guided session.</p>'}</section>
- <section class="simple-panel"><h2>Connected reading</h2><p>${r.storiesRead} of ${STORIES.length} stories have a correct unassisted attempt; ${r.attempts} supplementary reading exercises recorded. ${practice.bookmarked} readings saved for later.</p><div class="button-row">${action('open-stories','Continue reading →','button outline')}</div></section><section class="simple-panel"><h2>Practice by skill</h2><p class="muted">Counts are correct independent attempts, not an estimated memory probability.</p><div class="skill-breakdown">${breakdown.map(([name,types,custom])=>`<div><strong>${custom?custom():observed(types)}</strong><span>${name}</span></div>`).join('')}</div></section>
+ <section class="simple-panel"><h2>Connected reading</h2><p>${r.storiesRead} of ${STORIES.length} stories have a correct unassisted attempt; ${r.attempts} supplementary reading exercises recorded. ${practice.bookmarked} readings saved for later.</p><div class="button-row">${action('open-stories','Continue reading →','button outline')}</div></section><section class="simple-panel"><h2>Practice by skill</h2><p class="muted">Counts are correct independent attempts, not an estimated memory probability.</p><div class="skill-breakdown">${breakdown.map(([name,types,custom])=>`<div><strong>${custom?custom():observed(types)}</strong><span>${name}</span></div>`).join('')}</div><p class="muted">${productionStats(state).total} self-reported production practice lines (speaking aloud and typed replies) — a practice log, not grades or pronunciation proof.</p></section>
  <section class="simple-panel progress-panel"><div class="panel-heading"><h2>Original demo curriculum</h2><span>${m.learned}/${m.total}</span></div><p class="muted">This is not official HSK attainment.</p><div class="unit-progress">${lessonGroups().map(g=>`<div><span>${g.name}</span><div class="progress-rail"><span data-csp-style="width:${g.lessons.filter(l=>state.learned.includes(l.id)).length/g.lessons.length*100}%"></span></div><span>${g.lessons.filter(l=>state.learned.includes(l.id)).length}/${g.lessons.length}</span></div>`).join('')}</div>
  <div class="character-grid">${DEMO_LESSONS.map(l=>`<button type="button" data-action="open-lesson" data-id="${l.id}" class="character-chip ${state.learned.includes(l.id)?'done':''}" title="${esc(l.meaning)}"><span lang="zh-Hans">${esc(l.hanzi)}</span><small>${state.learned.includes(l.id)?'✓':'—'}</small></button>`).join('')}</div></section>
  ${finishOverviewPanel()}<section class="simple-panel"><h2>What the results mean</h2><p><strong>Introduced</strong> means the native lesson-introduction action was recorded. <strong>Independent correct</strong> means an answer passed the conservative automatic checker without an answer reveal. <strong>Mastery</strong> requires delayed validation and is not certified by this demo.</p><p class="muted">Your history is stored locally. Export a backup if you need to preserve it across browsers or devices.</p></section>`;
@@ -1694,8 +1695,12 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   render();root.querySelector('#c9-roleplay-studio')?.scrollIntoView({block:'start'});return true;
  }
  if(name==='c9-roleplay-spoke'){
-  if(!c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi).reply||c9RoleplayUi.revealed)return false;
-  c9RoleplayUi.spoken=!c9RoleplayUi.spoken;render();return true;
+  const source=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi);
+  if(!source.reply||c9RoleplayUi.revealed)return false;
+  c9RoleplayUi.spoken=!c9RoleplayUi.spoken;
+  if(c9RoleplayUi.spoken){const prodId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+   return Boolean(await mutate(st=>addProductionEvent(st,{id:prodId,kind:'shadow',targetId:`${dialogueId}:${source.index}`})));}
+  render();return true;
  }
  if(name==='c9-roleplay-hear-cue'){
   const cue=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi).cue;
@@ -1709,6 +1714,11 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   c9RoleplayUi.revealed=true;c9RoleplayUi.referenceSeen=true;dialogueSupport=true;
   if(findDialogue(dialogueId)?.p34)p34TranscriptViewed=true;
   if(missionActive)missionSupport=true;
+  if(name==='c9-roleplay-reveal'&&c9RoleplayUi.typed.trim()){
+   const prodId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+   const matched=c9RoleplayUi.typed.normalize('NFC').trim()===source.reply.hanzi.normalize('NFC').trim();
+   await mutate(st=>addProductionEvent(st,{id:prodId,kind:'typed',targetId:`${dialogueId}:${source.index}`,matched}),{renderAfter:false});
+  }
   render();
   if(name==='c9-roleplay-listen-reply')return speak(source.reply.hanzi,demoSpeechRate);
   announceC9Interaction('Original scripted reply revealed. Native checks using this source are assisted.');

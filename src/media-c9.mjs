@@ -1,3 +1,4 @@
+import {composeCheck} from './compose-feedback.mjs';
 import {P75_DIALOGUES} from './p75-dialogues.mjs';
 import {renderP76CaseLab} from './p76-case-lab.mjs';
 /**
@@ -596,7 +597,7 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
  return '<section class="c9-source-rehearsal c9-unified-card" id="c9-roleplay-studio" tabindex="-1" aria-labelledby="c9-roleplay-title">'+
   '<header><div><span class="c9-eyebrow">ORIGINAL CONVERSATION · UNGRADED REHEARSAL</span>'+
   '<h2 id="c9-roleplay-title">Take a speaking role</h2><p>Hear the previous turn, answer aloud as a speaker, then compare with the original script. You may also type your reply. No microphone recording, speech recognition or automatic pronunciation grade is used.</p></div>'+
-  '<span class="c9-badge">Turn '+(source.position+1)+' / '+source.indices.length+'</span></header>'+
+  '<span class="c9-badge">Turn '+(source.position+1)+' / '+source.indices.length+'</span></header>'+(ui.practice&&ui.practice.total?'<p class="c9-rehearsal-log">Self-reported practice: '+ui.practice.spoken+' spoken aloud \u00b7 '+ui.practice.typed+' typed replies'+(ui.practice.matched?' \u00b7 '+ui.practice.matched+' exactly matched the written model':'')+' \u2014 a practice log, not grades.</p>':'')+
   '<div class="c9-rehearsal-roles" role="group" aria-label="Choose your original speaking role">'+buttons+'</div>'+
   '<div class="c9-rehearsal-context"><p class="c9-eyebrow">YOUR CUE · SOURCE TURN '+(source.index+1)+'</p>'+
   '<strong>Reply as Speaker '+esc(source.role)+'</strong>'+
@@ -614,15 +615,15 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
   (displayed?'<div class="c9-rehearsal-reference" role="status"><span class="c9-eyebrow">SOURCE-EXACT REFERENCE · ASSISTED</span>'+
    '<p lang="zh-Hans">'+esc(source.reply.hanzi)+'</p><small>'+esc(source.reply.pinyin)+'</small>'+
    '<p>'+esc(source.reply.english)+'</p>'+
-   (hasDraft?'<p>'+(exact?'Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.':
-    'Compare your typed wording with the original. No correctness grade was assigned.')+'</p>':'')+
+   (hasDraft?(exact?'<p>Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.</p>':
+    '<p>'+esc(composeCheck(source.reply.hanzi,entry).message)+'</p><p>No correctness grade was assigned \u2014 the comparison above is guidance for your next attempt.</p>'):'')+
    '<p>Opening this reference makes pending native comprehension or mission answers assisted.</p></div>':'')+
   '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
   act('c9-roleplay-move','← Previous reply','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(!source.position?'disabled':''))+
   act('c9-roleplay-retry','Try this reply again','c9-button c9-button--secondary c9-button--small')+
   act('c9-roleplay-move','Next reply →','c9-button c9-button--primary c9-button--small','data-delta="1" '+(source.position===source.indices.length-1?'disabled':''))+
   '</nav>'+
-  '<div class="c9-rehearsal-native"><p>To record actual question evidence, use the original contextual listening assessment. This rehearsal never writes a grade.</p>'+
+  '<div class="c9-rehearsal-native"><p>To record actual question evidence, use the original contextual listening assessment. This rehearsal writes no grades — only an optional self-reported practice log.</p>'+
   act('c9-media-focus-native','Open native listening assessment →','c9-button c9-button--secondary c9-button--small','data-target="c9-native-dialogue"')+
   (d.p34?act('p34-write-listening','Original listening-to-writing task →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(d.p34.id)+'"'):'')+
   '</div></section>';
