@@ -8,6 +8,9 @@ import { DEMO_LESSONS,findLesson } from '../src/demo-lessons.mjs';
 import { GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_PRACTICE_TASKS,findGrammarLesson } from '../src/grammar-course.mjs';
 import { EVERYDAY_GRAMMAR_ROWS } from '../src/everyday-grammar.mjs';
 import { parsePinyin,evaluateMeaning,evaluatePinyin } from '../src/exercises.mjs';
+import { gradeCard,addLesson,freshState,validateState,baseInterval,leechCards,DAY } from '../src/study.mjs';
+import { reviewPlan } from '../src/review-strategy.mjs';
+import { backupDocument,importBackup } from '../src/study-storage.mjs';
 
 const NEW_IDS=['g165','g166','g167','g168','g169','g170','g171','g172','g173','g174','g175','g176','g177','g178','g179','g180','g181'];
 const CHAPTERS=new Set(['Foundations','Questions','Nouns & classifiers','Time & location','Actions & aspect','Connections & comparisons']);
@@ -79,4 +82,109 @@ test('everyday grammar: five practice modes generate for each new lesson',()=>{
  }
  assert.ok(GRAMMAR_CHAPTERS.some(ch=>ch.lessons.includes('g165')));
  assert.ok(GRAMMAR_CHAPTERS.some(ch=>ch.lessons.includes('g181')));
+});
+
+// ---- Meaning grading: conservative, zero false accepts ----
+test('meaning grading: approved answers accept case, articles and curated variants',()=>{
+ assert.equal(evaluateMeaning('the book','a book').correct,true);
+ assert.equal(evaluateMeaning('Hi','hello').correct,true);
+ assert.equal(evaluateMeaning('mandarin','Chinese (language)').correct,true);
+ assert.equal(evaluateMeaning('a bit','a little').correct,true);
+ assert.equal(evaluateMeaning('purchase','to buy').correct,true);
+ assert.equal(evaluateMeaning('phone','telephone').correct,true);
+ assert.equal(evaluateMeaning('to speak','to speak; say').correct,true);
+ assert.equal(evaluateMeaning('talk','to speak; say').correct,true);
+ assert.equal(evaluateMeaning('student','student').correct,true);
+});
+test('meaning grading: near-miss input never earns automatic credit',()=>{
+ for(const [input,ref] of [['hell0','hello'],['spek','to speak'],['there','three'],['form','from'],['books','book'],['buy book','buy books']]){
+  const r=evaluateMeaning(input,ref);
+  assert.equal(r.correct,false,input+' vs '+ref+' must not pass');
+ }
+ assert.equal(evaluateMeaning('hell0','hello').reason,'near-miss');
+ assert.equal(evaluateMeaning('teacher','student').reason,'meaning');
+ assert.equal(evaluateMeaning('','hello').reason,'empty');
+});
+test('meaning grading: pinyin grading is unchanged by this work',()=>{
+ assert.equal(evaluatePinyin('ni3','nǐ').correct,true);
+ assert.equal(evaluatePinyin('nǐ','ní').reason,'tone');
+ assert.equal(evaluatePinyin('xyz','nǐ').correct,false);
+});
+
+// ---- Review scheduler v3 ----
+test('scheduler v3: default ease reproduces the legacy interval formula exactly',()=>{
+ for(const prev of [0,1,3,10,50,200]){
+  assert.equal(baseInterval(prev,0,2.5),2/1440,'grade 0');
+  assert.equal(baseInterval(prev,1,2.5),Math.max(1,prev*1.25),'grade 1');
+  assert.equal(baseInterval(prev,2,2.5),Math.max(3,prev*2.2),'grade 2');
+  assert.equal(baseInterval(prev,3,2.5),Math.max(7,prev*2.8),'grade 3');
+ }
+});
+test('scheduler v3: short intervals stay exact and legacy due dates are preserved',()=>{
+ const base=addLesson(freshState(),'demo-01',1000);
+ const good=gradeCard(base,'demo-01:meaning',2,1000,'evt-g2');
+ assert.equal(good.cards['demo-01:meaning'].due,1000+3*DAY);
+ assert.equal(good.cards['demo-01:meaning'].interval,3);
+ const again=gradeCard(base,'demo-01:meaning',0,5000,'evt-g0');
+ assert.equal(again.cards['demo-01:meaning'].due,5000+2*60000);
+ const easy=gradeCard(base,'demo-01:meaning',3,1000,'evt-g3');
+ assert.equal(easy.cards['demo-01:meaning'].due,1000+7*DAY);
+ const twin=gradeCard(base,'demo-01:meaning',2,1000,'evt-g2b');
+ assert.equal(twin.cards['demo-01:meaning'].due,good.cards['demo-01:meaning'].due);
+});
+test('scheduler v3: fuzz is deterministic and bounded on mature intervals only',()=>{
+ const s=addLesson(freshState(),'demo-01',0);
+ s.cards['demo-01:meaning'].interval=30;
+ const graded=gradeCard(s,'demo-01:meaning',2,1000,'evt-fuzz');
+ const interval=graded.cards['demo-01:meaning'].interval;
+ assert.ok(interval>=66*0.95-1e-9&&interval<=66*1.05+1e-9,'fuzz bounds: '+interval);
+ const again=gradeCard(s,'demo-01:meaning',2,1000,'evt-fuzz2');
+ assert.equal(again.cards['demo-01:meaning'].interval,interval,'fuzz is deterministic per card and attempt');
+});
+test('scheduler v3: interval cap and per-card ease adapt to performance',()=>{
+ const s=addLesson(freshState(),'demo-01',0);
+ s.cards['demo-01:meaning'].interval=200;
+ const capped=gradeCard(s,'demo-01:meaning',3,1000,'evt-cap');
+ assert.equal(capped.cards['demo-01:meaning'].interval,365);
+ const hard=gradeCard(addLesson(freshState(),'demo-01',0),'demo-01:meaning',1,1000,'evt-hard');
+ assert.equal(hard.cards['demo-01:meaning'].ease,2.35);
+ assert.ok(baseInterval(10,2,1.3)<baseInterval(10,2,2.5),'lower ease shortens intervals');
+ let clamped=addLesson(freshState(),'demo-01',0);
+ for(let i=0;i<20;i++)clamped=gradeCard(clamped,'demo-01:meaning',1,1000,'evt-clamp-'+i);
+ assert.equal(clamped.cards['demo-01:meaning'].ease,1.3);
+});
+test('scheduler v3: lapses accumulate, leeches surface, nothing is suspended',()=>{
+ let s=addLesson(freshState(),'demo-01',0);
+ for(let i=0;i<7;i++){s=gradeCard(s,'demo-01:meaning',0,1000+i,'evt-lap-'+i);assert.equal(leechCards(s).length,0);}
+ assert.equal(s.cards['demo-01:meaning'].lapses,7);
+ s=gradeCard(s,'demo-01:meaning',0,2000,'evt-lap-8');
+ assert.deepEqual(leechCards(s),['demo-01:meaning']);
+ assert.equal(s.cards['demo-01:meaning'].leech,true);
+ assert.ok(s.learned.includes('demo-01'),'leech is flagged, never suspended');
+ assert.doesNotThrow(()=>validateState(s));
+ const plan=reviewPlan(s,{now:2000+2*60000+1});
+ assert.ok(plan.some(r=>r.reason==='Repeated lapse target (leech)'),'leech surfaces in the review priority');
+});
+test('scheduler v3: pre-v3 card shapes validate and backups round-trip',()=>{
+ const old=addLesson(freshState(),'demo-01',1000);
+ old.cards['demo-01:meaning']={due:1000,interval:3,repetitions:1,lastGrade:2};
+ assert.doesNotThrow(()=>validateState(old));
+ const graded=gradeCard(old,'demo-01:meaning',2,2000,'evt-old');
+ assert.doesNotThrow(()=>validateState(graded));
+ assert.deepEqual(importBackup(backupDocument(graded)),graded);
+ for(const badCard of [
+  {due:1,interval:1,repetitions:0,lastGrade:null,ease:'high'},
+  {due:1,interval:1,repetitions:0,lastGrade:null,lapses:-1},
+  {due:1,interval:1,repetitions:0,lastGrade:null,leech:'yes'}]){
+  assert.throws(()=>validateState({...old,cards:{'demo-01:meaning':badCard}}),/Invalid/);
+ }
+});
+test('scheduler v3: grading invariants and event idempotency are unchanged',()=>{
+ const s=addLesson(freshState(),'demo-01',0);
+ assert.throws(()=>gradeCard(s,'demo-01:meaning',2,1000,'x1',{correct:false}),/passing credit/);
+ assert.throws(()=>gradeCard(s,'demo-01:meaning',2,1000,'x2',{assisted:true}),/independent credit/);
+ const graded=gradeCard(s,'demo-01:meaning',2,1000,'x3',{correct:true,assisted:false});
+ assert.equal(graded.events[0].policy,'review-v3');
+ const dup=gradeCard(graded,'demo-01:meaning',2,1000,'x3');
+ assert.equal(dup.events.length,1);
 });
