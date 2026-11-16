@@ -8,6 +8,7 @@ import { DEMO_LESSONS,findLesson } from '../src/demo-lessons.mjs';
 import { GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_PRACTICE_TASKS,findGrammarLesson } from '../src/grammar-course.mjs';
 import { EVERYDAY_GRAMMAR_ROWS } from '../src/everyday-grammar.mjs';
 import { parsePinyin,evaluateMeaning,evaluatePinyin } from '../src/exercises.mjs';
+import { renderGrammarScreen } from '../src/grammar-screen.mjs';
 import { gradeCard,addLesson,freshState,validateState,baseInterval,leechCards,DAY } from '../src/study.mjs';
 import { reviewPlan } from '../src/review-strategy.mjs';
 import { backupDocument,importBackup } from '../src/study-storage.mjs';
@@ -187,4 +188,54 @@ test('scheduler v3: grading invariants and event idempotency are unchanged',()=>
  assert.equal(graded.events[0].policy,'review-v3');
  const dup=gradeCard(graded,'demo-01:meaning',2,1000,'x3');
  assert.equal(dup.events.length,1);
+});
+
+// ---- Lesson-to-exercise connections ----
+test('everyday grammar: rows carry library match tokens for real sentence linkage',()=>{
+ for(const row of EVERYDAY_GRAMMAR_ROWS){
+  assert.ok(Array.isArray(row[12]),row[0]+' matchTokens');
+ }
+ assert.deepEqual(EVERYDAY_GRAMMAR_ROWS.find(r=>r[0]==='g165')[12],['是不是','有没有']);
+ assert.deepEqual(EVERYDAY_GRAMMAR_ROWS.find(r=>r[0]==='g181')[12],[],'g181 relies on example fallback by design');
+});
+test('grammar screen: new lessons link to real practice sentences without dead ends',()=>{
+ const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const act=(n,label)=>`<button>${label}</button>`;
+ const base={mode:'meaning',typed:'',order:[],feedback:null,assisted:false,sentenceEvents:[],showEnglish:true,chapter:'all',query:''};
+ const g165=renderGrammarScreen({...base,lessonId:'g165'},act,esc,()=>'',()=>'');
+ assert.ok(g165.includes('有没有小一点的袋子'),'g165 must show a real library sentence using the pattern');
+ assert.ok(!g165.includes('Browse all sentences with this pattern'),'no dead library filter for untagged lessons');
+ const g181=renderGrammarScreen({...base,lessonId:'g181'},act,esc,()=>'',()=>'');
+ assert.ok(g181.includes('这本书我看过。'),'g181 falls back to its own examples');
+ assert.ok(g181.includes('Zhè běn shū'),'fallback examples keep pinyin');
+ const legacy=renderGrammarScreen({...base,lessonId:'g01'},act,esc,()=>'',()=>'');
+ assert.ok(legacy.includes('Browse all sentences with this pattern'),'tagged legacy lessons keep the library browse CTA');
+});
+
+// ---- Long-interval and near-miss contract probes ----
+test('scheduler v3: long review chains grow monotonically and stay under the cap',()=>{
+ let s=addLesson(freshState(),'demo-01',0);
+ let prevDue=0;
+ for(let i=0;i<12;i++){
+  s=gradeCard(s,'demo-01:meaning',2,1000+i,'evt-chain-'+i);
+  const c=s.cards['demo-01:meaning'];
+  assert.ok(c.interval<=365,'interval capped: '+c.interval);
+  assert.ok(c.interval>=3,'interval floor: '+c.interval);
+  assert.ok(c.due>prevDue,'due grows monotonically');
+  prevDue=c.due;
+ }
+ assert.equal(s.cards['demo-01:meaning'].interval,365,'chain reaches the cap');
+ const hard=gradeCard(s,'demo-01:meaning',1,99000,'evt-chain-hard');
+ assert.equal(hard.cards['demo-01:meaning'].interval,365,'hard grade keeps legacy growth but the cap holds');
+ const again=gradeCard(s,'demo-01:meaning',0,100000,'evt-chain-again');
+ assert.equal(again.cards['demo-01:meaning'].interval,2/1440,'grade 0 resets a capped card to the 2-minute relearn');
+});
+test('near-miss meaning answers cannot earn passing review grades',()=>{
+ const verdict=evaluateMeaning('hell0','hello');
+ assert.equal(verdict.correct,false);
+ assert.equal(verdict.reason,'near-miss');
+ const s=addLesson(freshState(),'demo-01',0);
+ assert.throws(()=>gradeCard(s,'demo-01:meaning',2,1000,'evt-near',{correct:verdict.correct,assisted:false}),/passing credit/);
+ const graded=gradeCard(s,'demo-01:meaning',0,1000,'evt-near-0',{correct:verdict.correct,assisted:false});
+ assert.equal(graded.cards['demo-01:meaning'].repetitions,0,'a near-miss resets progress like any other miss');
 });

@@ -40,6 +40,15 @@ function linksPanel(id,action,esc){
  ${links.readings.length?`<div class="p25-linkrow"><strong>Related readings</strong>${links.readings.map(r=>action('open-story-link',esc(r.title)+' →','button outline small',`data-id="${esc(r.id)}"`)).join('')}</div>`:''}
  ${links.dialogues.length?`<div class="p25-linkrow"><strong>Related conversations</strong>${links.dialogues.map(d=>action('hub-dialogue',esc(d.title)+' →','button outline small',`data-id="${esc(d.id)}"`)).join('')}</div>`:''}</section>`;
 }
+function matchesToken(hanzi,tokens){return tokens.some(t=>t.length>2&&t.startsWith('/')&&t.endsWith('/')?new RegExp(t.slice(1,-1)).test(hanzi):hanzi.includes(t));}
+function usagePanel(l,action,esc){
+ const tagged=SENTENCE_LIBRARY.filter(s=>s.grammarIds.includes(l.id));
+ const pattern=SENTENCE_LIBRARY.filter(s=>!s.grammarIds.includes(l.id)&&matchesToken(s.hanzi,l.matchTokens||[]));
+ const shown=[...tagged,...pattern].slice(0,6);
+ const items=shown.length?shown.map(s=>action('sentence-select',`<strong lang="zh-Hans">${esc(s.hanzi)}</strong><small>${esc(s.english)}</small>`,'p26-mini-sentence',`data-id="${s.id}"`)).join(''):
+  l.examples.map(e=>`<article class="p26-mini-sentence"><strong lang="zh-Hans">${esc(e.hanzi)}</strong><small>${esc(e.pinyin)} — ${esc(e.english)}</small></article>`).join('');
+ return `<section class="simple-panel p26-grammar-examples"><h3>Use this grammar in complete sentences</h3><div>${items}</div>${tagged.length?action('sentence-grammar-filter','Browse all sentences with this pattern ��','button outline small',`data-id="${l.id}"`):''}</section>`;
+}
 export function renderGrammarScreen(s,action,esc,title,gated){
  const l=findGrammarLesson(s.lessonId)||GRAMMAR_LESSONS[0];
  const events=(s.sentenceEvents||[]).filter(e=>e.taskId.startsWith('grammar:'));
@@ -59,5 +68,5 @@ export function renderGrammarScreen(s,action,esc,title,gated){
  ${p32RepairPanel(l.id,action,esc)}${p36TeachingExtension(l,action,esc,{showModel:!!s.p36ShowModel})}${p40TeachingExtension(l,action,esc,{showModel:!!s.p40ShowModel})}
  ${practicePanel(s,l,action,esc)}
  <div class="p25-navigation">${action('grammar-previous','← Previous grammar lesson','button outline')}${action('grammar-next','Next grammar lesson →','button primary')}${action('grammar-pinyin','Pinyin & Sounds','button outline small')}${action('grammar-workshop','Sentence Workshop','button outline small')}</div></article></div>
- ${linksPanel(l.id,action,esc)}<section class="simple-panel p26-grammar-examples"><h3>Use this grammar in complete original sentences</h3><div>${SENTENCE_LIBRARY.filter(s=>s.grammarIds.includes(l.id)).slice(0,5).map(s=>action('sentence-select',`<strong lang="zh-Hans">${esc(s.hanzi)}</strong><small>${esc(s.english)}</small>`,'p26-mini-sentence',`data-id="${s.id}"`)).join('')}</div>${action('sentence-grammar-filter','Browse all sentences with this pattern →','button outline small',`data-id="${l.id}"`)}</section>`;
+ ${linksPanel(l.id,action,esc)}${usagePanel(l,action,esc)}`;
 }

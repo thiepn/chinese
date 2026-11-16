@@ -46,6 +46,10 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "学生",
         "？"
       ]
+    ],
+    [
+      "是不是",
+      "有没有"
     ]
   ],
   [
@@ -88,6 +92,9 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "好",
         "？"
       ]
+    ],
+    [
+      "/([\\u4e00-\\u9fff])不\\1/"
     ]
   ],
   [
@@ -130,6 +137,9 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "吗",
         "？"
       ]
+    ],
+    [
+      "吧"
     ]
   ],
   [
@@ -173,6 +183,12 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "手机",
         "。"
       ]
+    ],
+    [
+      "/别[^人的]/",
+      "不用",
+      "不必",
+      "不要"
     ]
   ],
   [
@@ -216,6 +232,16 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "书",
         "。"
       ]
+    ],
+    [
+      "看看",
+      "看一看",
+      "试一试",
+      "尝尝",
+      "试试",
+      "想一想",
+      "听一听",
+      "说一说"
     ]
   ],
   [
@@ -256,6 +282,11 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "一点儿",
         "。"
       ]
+    ],
+    [
+      "有点儿",
+      "有点",
+      "一点儿"
     ]
   ],
   [
@@ -299,6 +330,11 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "书",
         "。"
       ]
+    ],
+    [
+      "一些",
+      "这些",
+      "那些"
     ]
   ],
   [
@@ -341,6 +377,12 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "人",
         "。"
       ]
+    ],
+    [
+      "百",
+      "千",
+      "万",
+      "第"
     ]
   ],
   [
@@ -383,6 +425,10 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "多少钱",
         "？"
       ]
+    ],
+    [
+      "多少钱",
+      "块钱"
     ]
   ],
   [
@@ -424,6 +470,14 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "的",
         "。"
       ]
+    ],
+    [
+      "买的",
+      "吃的",
+      "喝的",
+      "穿的",
+      "用的",
+      "做的"
     ]
   ],
   [
@@ -469,6 +523,11 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "打电话",
         "。"
       ]
+    ],
+    [
+      "以前",
+      "以后",
+      "的时候"
     ]
   ],
   [
@@ -510,6 +569,10 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "了",
         "。"
       ]
+    ],
+    [
+      "起来",
+      "下去"
     ]
   ],
   [
@@ -554,6 +617,14 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "书",
         "。"
       ]
+    ],
+    [
+      "让",
+      "叫他",
+      "叫你",
+      "叫我",
+      "叫她",
+      "叫我们"
     ]
   ],
   [
@@ -596,6 +667,9 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "关了",
         "。"
       ]
+    ],
+    [
+      "把"
     ]
   ],
   [
@@ -639,6 +713,9 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "喝了",
         "。"
       ]
+    ],
+    [
+      "被"
     ]
   ],
   [
@@ -681,6 +758,15 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "很近",
         "。"
       ]
+    ],
+    [
+      "往",
+      "离",
+      "向他",
+      "向我",
+      "向你",
+      "向她",
+      "向老师"
     ]
   ],
   [
@@ -724,6 +810,7 @@ export const EVERYDAY_GRAMMAR_ROWS=[
         "看完了",
         "。"
       ]
-    ]
+    ],
+    []
   ]
 ];

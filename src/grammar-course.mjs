@@ -33,7 +33,8 @@ export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,
    options:Object.freeze([r[10][1],r[10][2],r[10][3]]),
    completed:example(r[10].slice(4,7))}),
  transformation:Object.freeze({prompt:r[11][0],model:example(r[11].slice(1,4)),
-   chunks:Object.freeze([...r[11][4]])})
+   chunks:Object.freeze([...r[11][4]])}),
+ matchTokens:Object.freeze([...(r[12]||[])])
 })));
 export const GRAMMAR_CHAPTERS=Object.freeze(chapters.map(ch=>Object.freeze({...ch,
  lessons:Object.freeze(GRAMMAR_LESSONS.filter(lesson=>lesson.chapter===ch.name).map(l=>l.id))})));
