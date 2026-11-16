@@ -9,6 +9,7 @@ import {WORDS} from './lexicon.mjs';
 import {SENTENCE_LIBRARY} from './sentence-library.mjs';
 import {findP31Guide} from './p31-foundations.mjs';
 import {guideFor,DEEP_NOTES} from './lesson-guides.mjs';
+import {familyOf} from './phonetic-families.mjs';
 import {sourceCharacterLinks,sourceCharacterComparisonSet,sourceCharacterContextTrails} from './source-bridges-c9.mjs';
 import {lessonGroups} from './study-groups.mjs';
 import {cardsForLesson,dueCards} from './study.mjs';
@@ -56,6 +57,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
  const index=DEMO_LESSONS.findIndex(l=>l.id===lesson.id);
  const before=DEMO_LESSONS[index-1],after=DEMO_LESSONS[index+1];
  const group=lessonGroups().find(g=>g.lessons.some(l=>l.id===lesson.id));
+ const family=familyOf(lesson.hanzi);
  const guide=guideFor(lesson),p31=findP31Guide(lesson.id);
  const introduced=(state.learned||[]).includes(lesson.id);
  const ids=cardsForLesson(lesson.id);
@@ -106,7 +108,7 @@ export function renderC9CharacterStudy({lesson,state,act,esc,showTranslations=tr
   row('Official HSK level','Not supplied')+
   row('Radical and stroke count','Unverified / unavailable')+
   row('Stroke-order data','Not installed')+
-  (p31?row('Original P31 category',txt(p31.category,esc)):'')+'</section>'+
+  (p31?row('Original P31 category',txt(p31.category,esc)):'')+(family?'<h3>Sound family (phonetic series)</h3><p class="muted">'+txt(family.note,esc)+'</p>'+family.members.map(m=>row(m.hanzi+' '+m.pinyin,m.gloss)).join(''):'')+'</section>'+
   '<section class="c9-character-info c9-unified-card"><p class="c9-eyebrow">YOUR ACTUAL EVIDENCE</p><h3>Learning record</h3>'+
   row('Introduction',introduced?'Introduced':'Not introduced')+
   row('Registered recall targets',ids.filter(id=>Boolean(state.cards?.[id])).length+' / '+ids.length)+

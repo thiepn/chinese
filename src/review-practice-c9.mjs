@@ -33,7 +33,7 @@ const experienceNote=(info,result,esc)=>{
   'Use the source explanation and the reference to identify the mismatch.';
  return '<div class="c9-review-source-context"><p class="c9-eyebrow">SOURCE-BASED REPAIR</p>'+
   '<p>'+esc(correction)+'</p>'+
-  '<dl><div><dt>Original lesson</dt><dd>'+esc(info.lesson.hanzi)+' · '+esc(info.lesson.pinyin)+' · '+esc(info.lesson.meaning)+'</dd></div>'+
+  '<dl><div><dt>'+(info.lesson.id?'Original lesson':'Scheduled word')+'</dt><dd>'+esc(info.lesson.hanzi)+' · '+esc(info.lesson.pinyin)+' · '+esc(info.lesson.meaning)+'</dd></div>'+
   '<div><dt>Teaching context</dt><dd>'+esc(info.lesson.note||'Use the source lesson to review the character in context.')+'</dd></div>'+
   (info.type==='sentence'?'<div><dt>Original translation</dt><dd>'+esc(info.lesson.sentence.english)+'</dd></div>':'')+
   '</dl></div>';

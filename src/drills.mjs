@@ -2,22 +2,53 @@
 import {DEMO_LESSONS,findLesson} from './demo-lessons.mjs';
 import {evaluateAnswer,parsePinyin} from './exercises.mjs';
 import {toneExplanation} from './tone-coach.mjs';
-export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear']);
+import {toneName,isolatedReadingUnsafe} from './spoken-readings.mjs';
+import {PHONETIC_FAMILIES,familyOf} from './phonetic-families.mjs';
+export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family']);
 const TONE_NAMES=Object.freeze({1:'First tone',2:'Second tone',3:'Third tone',4:'Fourth tone',5:'Neutral tone'});
 function unique(a){return [...new Set(a)];}
 function rotateOptions(answer, distractors,seed){const options=unique([answer,...distractors.filter(x=>x!==answer)]).slice(0,4);const shift=seed%options.length;return [...options.slice(shift),...options.slice(0,shift)];}
 // Listening-first drills: the prompt never shows the hanzi or pinyin; the
 // device voice plays the lesson character and the learner maps sound to
 // meaning, spelling or tone. Supplemental like every other drill.
-function listeningDrill(l,mode,seed){const others=DEMO_LESSONS.filter(x=>x.id!==l.id);
- if(mode==='listen-meaning')return {mode,kind:'choice',listen:true,speak:l.hanzi,prompt:'Listen and choose the meaning of what you hear.',answer:l.meaning,options:rotateOptions(l.meaning,others.filter(x=>x.meaning!==l.meaning).map(x=>x.meaning),seed+3),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
- if(mode==='listen-pinyin')return {mode,kind:'pinyin',listen:true,speak:l.hanzi,prompt:'Listen and type the complete pinyin of what you hear, with tones.',answer:l.pinyin,explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
- const parsed=parsePinyin(l.pinyin);const tone=(parsed&&parsed.length===1?parsed[0].tone:5)||5;
- const answer=TONE_NAMES[tone];const pool=Object.values(TONE_NAMES).filter(n=>n!==answer);
- return {mode,kind:'choice',listen:true,speak:l.hanzi,prompt:'Listen and choose the tone of the syllable you hear.',answer,options:rotateOptions(answer,pool,seed+4),explanation:`${l.hanzi} is read ${l.pinyin} · ${answer.toLowerCase()}.`};
+// Sound-family drill: characters sharing a phonetic component hint at a
+// shared pronunciation. The exercise asks for a sibling of the family, never
+// promising exact readings — tones and initials drift.
+function soundFamilyDrill(l,seed){
+ const own=familyOf(l.hanzi);
+ const family=own||PHONETIC_FAMILIES[seed%PHONETIC_FAMILIES.length];
+ const candidates=family.members.filter(m=>m.hanzi!==l.hanzi);
+ const answer=candidates[seed%candidates.length];
+ const others=[];
+ for(const f of PHONETIC_FAMILIES){if(f===family)continue;const pick=f.members[(seed+others.length)%f.members.length];if(pick&&pick.hanzi!==answer.hanzi)others.push(pick.hanzi);}
+ return {mode:'sound-family',kind:'choice',prompt:`Which character belongs to the same sound family as ${own?l.hanzi:family.anchor}?`,answer:answer.hanzi,options:rotateOptions(answer.hanzi,others,seed+5),explanation:`${family.note} ${family.members.map(m=>`${m.hanzi} ${m.pinyin} ${m.gloss}`).join('; ')}.`};
 }
-export function buildDrill(lessonId,mode){const l=findLesson(lessonId);if(!l||!DRILL_MODES.includes(mode))return null;
+function spokenContext(l){
+ const parsed=parsePinyin(l.pinyin);const taught=parsed&&parsed.length===1?parsed[0]:null;
+ const tone=taught?taught.tone:5;
+ if(!isolatedReadingUnsafe(l.hanzi,tone)||!taught)return {speak:l.hanzi,syllableIndex:0,word:null,tone};
+ for(const w of l.words){
+  const wp=parsePinyin(w.pinyin);if(!wp)continue;
+  const idx=wp.findIndex(s=>s.syllable===taught.syllable&&s.tone===tone);
+  if(idx>=0)return {speak:w.hanzi,syllableIndex:idx,word:w,tone};
+ }
+ return {speak:l.hanzi,syllableIndex:0,word:null,tone};
+}
+function listeningDrill(l,mode,seed){const others=DEMO_LESSONS.filter(x=>x.id!==l.id);const ctx=spokenContext(l);
+ if(mode==='listen-meaning'){
+  if(ctx.word)return {mode,kind:'choice',listen:true,speak:ctx.word.hanzi,prompt:'Listen and choose the meaning of the word you hear.',answer:ctx.word.english,options:rotateOptions(ctx.word.english,others.flatMap(x=>x.words.map(w=>w.english)).filter(x=>x!==ctx.word.english),seed+3),explanation:`${ctx.word.hanzi} · ${ctx.word.pinyin} · ${ctx.word.english} (context for ${l.hanzi} · ${l.pinyin})`};
+  return {mode,kind:'choice',listen:true,speak:l.hanzi,prompt:'Listen and choose the meaning of what you hear.',answer:l.meaning,options:rotateOptions(l.meaning,others.filter(x=>x.meaning!==l.meaning).map(x=>x.meaning),seed+3),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
+ }
+ if(mode==='listen-pinyin'){
+  if(ctx.word)return {mode,kind:'pinyin',listen:true,speak:ctx.word.hanzi,prompt:'Listen and type the complete pinyin of the word you hear, with tones.',answer:ctx.word.pinyin,explanation:`${ctx.word.hanzi} · ${ctx.word.pinyin} · ${ctx.word.english} (context for ${l.hanzi} · ${l.pinyin})`};
+  return {mode,kind:'pinyin',listen:true,speak:l.hanzi,prompt:'Listen and type the complete pinyin of what you hear, with tones.',answer:l.pinyin,explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
+ }
+ const name=toneName(ctx.tone);
+ const ordinal=['first','second','third','fourth','fifth'][ctx.syllableIndex]||'first';
+ return {mode,kind:'choice',listen:true,speak:ctx.speak,spokenPinyin:ctx.word?ctx.word.pinyin:l.pinyin,toneIndex:ctx.syllableIndex,prompt:`Listen and choose the tone of the ${ordinal} syllable you hear.`,answer:name,options:rotateOptions(name,Object.values(TONE_NAMES).filter(n=>n!==name),seed+4),explanation:`${l.hanzi} is read ${l.pinyin} · ${name.toLowerCase()}${ctx.word?`, heard in ${ctx.word.hanzi} (${ctx.word.pinyin})`:''}.`};
+}export function buildDrill(lessonId,mode){const l=findLesson(lessonId);if(!l||!DRILL_MODES.includes(mode))return null;
  const others=DEMO_LESSONS.filter(x=>x.id!==lessonId);const seed=l.order;
+ if(mode==='sound-family')return soundFamilyDrill(l,seed);
  if(['listen-meaning','listen-pinyin','tone-ear'].includes(mode))return listeningDrill(l,mode,seed);
  if(mode==='recognition')return {mode,kind:'choice',prompt:`Select the character meaning “${l.meaning}”.`,answer:l.hanzi,options:rotateOptions(l.hanzi,others.filter(x=>x.meaning!==l.meaning).slice((seed*3)%Math.max(1,others.length-5)).map(x=>x.hanzi),seed),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
  if(mode==='word-meaning'){const w=l.words[1];return {mode,kind:'choice',prompt:`What does ${w.hanzi} mean?`,hanzi:w.hanzi,answer:w.english,options:rotateOptions(w.english,others.flatMap(x=>x.words.map(w=>w.english)).filter(x=>x!==w.english),seed),explanation:`${w.hanzi} (${w.pinyin}) means ${w.english}.`};}

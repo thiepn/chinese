@@ -18,6 +18,7 @@ import {validateTrail} from './context-trail.mjs';
 import {validateFluency} from './fluency-studio.mjs';
 import {validatePlanExtensions} from './daily-plan.mjs';
 import {lessonGroups as sharedLessonGroups} from './study-groups.mjs';
+import {findWord} from './lexicon.mjs';
 export const STATE_VERSION=1;
 const originalKinds=['meaning','reading','word0','word1','wordread0','sentence'];
 export const DAY=86400000;
@@ -36,13 +37,22 @@ function fuzzFactor(cardId,grade,repetitions){let n=2166136261;const key=`${card
 export function baseInterval(prevInterval,grade,ease=EASE_DEFAULT){const prev=Math.max(0,prevInterval),factor=clampEase(ease)/EASE_DEFAULT;
  const growth=[2/1440,prev*1.25*factor,prev*2.2*factor,prev*2.8*factor][grade];
  return Math.max(GRADE_FLOORS[grade],growth);}
-export function freshState(){return {version:STATE_VERSION,revision:0,learned:[],cards:{},events:[],readingEvents:[],drillEvents:[],bookmarkedStories:[],bookmarkedWords:[],bookmarkedSentences:[],dialogueEvents:[],wordPracticeEvents:[],vocabularyIntroduced:[],vocabularyJourney:null,senseEvents:[],sentenceEvents:[],missionEvents:[],practiceSession:null,courseJourney:null,courseEvents:[],courseRepairSession:null,courseRepairEvents:[],ladderSession:null,ladderEvents:[],studyBlock:null,studyBlockEvents:[],blockTrail:null,blockTrailEvents:[],fluencySession:null,fluencyEvents:[],fluencyCompletions:[],dailyPlan:{minutes:15,focus:'balanced'},mistakePins:[],placement:null,introductions:[],settings:{dailyNew:5,showPinyin:true,dark:false,readingLarge:false,hanziLarge:false},updatedAt:null};}
+export function freshState(){return {version:STATE_VERSION,revision:0,learned:[],cards:{},events:[],readingEvents:[],drillEvents:[],bookmarkedStories:[],bookmarkedWords:[],bookmarkedSentences:[],dialogueEvents:[],wordPracticeEvents:[],vocabularyIntroduced:[],vocabularyJourney:null,senseEvents:[],sentenceEvents:[],missionEvents:[],practiceSession:null,courseJourney:null,courseEvents:[],courseRepairSession:null,courseRepairEvents:[],ladderSession:null,ladderEvents:[],studyBlock:null,studyBlockEvents:[],blockTrail:null,blockTrailEvents:[],fluencySession:null,fluencyEvents:[],fluencyCompletions:[],dailyPlan:{minutes:15,focus:'balanced'},mistakePins:[],placement:null,introductions:[],scheduledWords:[],settings:{dailyNew:5,showPinyin:true,dark:false,readingLarge:false,hanziLarge:false},updatedAt:null};}
 export function cardsForLesson(id){const lesson=findLesson(id);if(!lesson)return [];
  // Existing Batch 20 lessons retain their exact six card identities.
  const extended=lesson.order<=74?[]:[...lesson.words.slice(2).map((_,i)=>`word${i+2}`),...lesson.words.slice(1).map((_,i)=>`wordread${i+1}`)];
  return [...originalKinds,...extended].map(kind=>`${id}:${kind}`);}
+// Opt-in vocabulary deck: scheduled lexicon words own exactly two cards in a
+// namespace of their own, so lesson card identities never move.
+export function wordCardsFor(key){return ['word:'+key+':meaning','word:'+key+':reading'];}
 
-export function cardInfo(id){const match=/^(demo-\d{2,3}):(meaning|reading|word[0-9]+|wordread[0-9]+|sentence)$/.exec(String(id));if(!match||!cardsForLesson(match[1]).includes(id))return null;
+export function cardInfo(id){const wordMatch=/^word:(.+):(meaning|reading)$/.exec(String(id));
+ if(wordMatch){const word=findWord(wordMatch[1]);if(!word)return null;const isMeaning=wordMatch[2]==='meaning';
+  return {id:String(id),type:isMeaning?'meaning':'reading',wordKey:word.key,
+   lesson:{id:null,hanzi:word.hanzi,pinyin:word.pinyin,meaning:word.senses.join('; '),note:word.notes[0]||''},
+   prompt:word.hanzi,question:isMeaning?'What does this word mean?':'Type the word’s complete pinyin.',
+   answer:isMeaning?word.senses.join('; '):word.pinyin,kind:isMeaning?'meaning':'pinyin',reading:isMeaning?word.pinyin:null};}
+ const match=/^(demo-\d{2,3}):(meaning|reading|word[0-9]+|wordread[0-9]+|sentence)$/.exec(String(id));if(!match||!cardsForLesson(match[1]).includes(id))return null;
  const lesson=findLesson(match[1]);if(!lesson)return null;const type=match[2];
  if(type==='meaning')return {id,type,lesson,prompt:lesson.hanzi,question:'What does this character mean?',answer:lesson.meaning,kind:'meaning',reading:lesson.pinyin};
  if(type==='reading')return {id,type,lesson,prompt:lesson.hanzi,question:'Type the pinyin, including its tone.',answer:lesson.pinyin,kind:'pinyin',reading:null};
@@ -55,16 +65,25 @@ export function validateState(input){if(!input||input.version!==STATE_VERSION||!
  if(!input.settings||!Number.isInteger(input.settings.dailyNew)||input.settings.dailyNew<1||input.settings.dailyNew>30||typeof input.settings.showPinyin!=='boolean'||typeof input.settings.dark!=='boolean')throw new Error('Invalid settings');
  if('hanziLarge' in input.settings && typeof input.settings.hanziLarge!=='boolean')throw new Error('Invalid Hanzi text-size preference');
  if(!Number.isSafeInteger(input.revision)||input.revision<0)throw new Error('Invalid data revision');
- for(const [id,c] of Object.entries(input.cards)){if(!cardInfo(id)||!c||!Number.isFinite(c.due)||!Number.isFinite(c.interval)||c.interval<0||!Number.isInteger(c.repetitions)||c.repetitions<0||c.repetitions>100000||!input.learned.includes(id.split(':')[0]))throw new Error('Invalid review-card data');
+ if('scheduledWords'in input&&(!Array.isArray(input.scheduledWords)||input.scheduledWords.length>5000||new Set(input.scheduledWords).size!==input.scheduledWords.length||input.scheduledWords.some(k=>typeof k!=='string'||!findWord(k))))throw new Error('Invalid scheduled-word history');
+ for(const [id,c] of Object.entries(input.cards)){const info=cardInfo(id);if(!info||!c||!Number.isFinite(c.due)||!Number.isFinite(c.interval)||c.interval<0||!Number.isInteger(c.repetitions)||c.repetitions<0||c.repetitions>100000)throw new Error('Invalid review-card data');
+   if(info.wordKey){if(!Array.isArray(input.scheduledWords)||!input.scheduledWords.includes(info.wordKey))throw new Error('Invalid review-card data');}
+   else if(!input.learned.includes(id.split(':')[0]))throw new Error('Invalid review-card data');
    if('ease'in c&&(!Number.isFinite(c.ease)||c.ease<1||c.ease>3))throw new Error('Invalid review-card data');
    if('lapses'in c&&(!Number.isInteger(c.lapses)||c.lapses<0||c.lapses>100000))throw new Error('Invalid review-card data');
    if('leech'in c&&typeof c.leech!=='boolean')throw new Error('Invalid review-card data');}
  const seen=new Set();for(const ev of input.events){if(!ev||typeof ev.id!=='string'||ev.id.length>100||seen.has(ev.id)||!cardInfo(ev.cardId)||!Number.isFinite(ev.at)||![0,1,2,3].includes(ev.grade)||('correct'in ev&&typeof ev.correct!=='boolean')||('assisted'in ev&&typeof ev.assisted!=='boolean'))throw new Error('Invalid review-history event');seen.add(ev.id);}return true;}
 export function upgradedState(input,now=Date.now()){validateState(input);const result=structuredClone(input);let changed=false;
+ if(!result.scheduledWords){result.scheduledWords=[];changed=true}
  for(const id of result.learned)for(const cid of cardsForLesson(id))if(!result.cards[cid]){result.cards[cid]={due:now,interval:0,repetitions:0,lastGrade:null};changed=true}
+ for(const key of result.scheduledWords)for(const cid of wordCardsFor(key))if(!result.cards[cid]){result.cards[cid]={due:now,interval:0,repetitions:0,lastGrade:null};changed=true}
  return changed?result:null;}
 export function addLesson(state,id,now=Date.now()){if(!findLesson(id))throw new Error('Only approved, original demo lessons are available');const next=structuredClone(state);if(!next.learned.includes(id)){next.learned.push(id);next.introductions??=[];next.introductions.push({id,at:now});}
  for(const cardId of cardsForLesson(id))if(!next.cards[cardId])next.cards[cardId]={due:now,interval:0,repetitions:0,lastGrade:null};next.updatedAt=new Date(now).toISOString();return next;}
+export function scheduleWord(state,key,now=Date.now()){if(!findWord(key))throw new Error('Only canonical vocabulary words can be scheduled');const next=structuredClone(state);next.scheduledWords??=[];if(!next.scheduledWords.includes(key))next.scheduledWords.push(key);
+ for(const cardId of wordCardsFor(key))if(!next.cards[cardId])next.cards[cardId]={due:now,interval:0,repetitions:0,lastGrade:null};next.updatedAt=new Date(now).toISOString();return next;}
+export function unscheduleWord(state,key){const next=structuredClone(state);next.scheduledWords=(next.scheduledWords||[]).filter(k=>k!==key);
+ for(const cardId of wordCardsFor(key))delete next.cards[cardId];next.updatedAt=new Date().toISOString();return next;}
 export function gradeCard(state,id,grade,now=Date.now(),eventId,metadata={}){if(!cardInfo(id)||!state.cards[id])throw new Error('Review target unavailable');if(![0,1,2,3].includes(grade))throw new Error('Invalid review grade');if(!eventId||typeof eventId!=='string'||eventId.length>100)throw new Error('Missing review event identity');if(state.events.some(e=>e.id===eventId))return structuredClone(state);
  if(metadata.correct===false&&grade>0)throw new Error('Incorrect answers cannot receive passing credit');if(metadata.assisted===true&&grade>0)throw new Error('Revealed answers cannot receive independent credit');
  const next=structuredClone(state),c=next.cards[id],prev=Math.max(0,c.interval);

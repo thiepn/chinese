@@ -11,6 +11,7 @@ import { DIALOGUES } from '../src/dialogues.mjs';
 import { GRAMMAR_LESSONS,findGrammarLesson } from '../src/grammar-course.mjs';
 import { WORDS } from '../src/lexicon.mjs';
 import { DRILL_MODES,buildDrill,gradeDrill,validateDrills } from '../src/drills.mjs';
+import * as spokenReadings from '../src/spoken-readings.mjs';
 import { parsePinyin,evaluatePinyin } from '../src/exercises.mjs';
 
 const clean=p=>String(p).replace(/[^\p{L}\p{N}\s'’\-·]/gu,' ');
@@ -83,7 +84,7 @@ test('everyday readings: characters are corpus-traceable or declared new',()=>{
 });
 
 test('listening drills: three audio-first modes build and grade correctly',()=>{
- assert.deepEqual(DRILL_MODES,['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear']);
+ assert.deepEqual(DRILL_MODES,['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family']);
  assert.equal(validateDrills(),true);
  const meaning=buildDrill('demo-01','listen-meaning');
  assert.equal(meaning.kind,'choice');
@@ -111,6 +112,52 @@ test('listening drills: tone coverage spans the whole lesson corpus',()=>{
   const expected={1:'First tone',2:'Second tone',3:'Third tone',4:'Fourth tone',5:'Neutral tone'}[parsed[0].tone];
   assert.equal(d.answer,expected,l.id+' tone target');
  }
+});
+
+test('listening drills: ambiguous isolated readings speak a disambiguating word',()=>{
+ const huan=buildDrill('demo-253','tone-ear');
+ assert.equal(huan.speak,'还书','还 huán must not be spoken in isolation (TTS says hái)');
+ assert.equal(huan.answer,'Second tone');
+ assert.ok(huan.prompt.includes('first syllable'));
+ const dictation=buildDrill('demo-253','listen-pinyin');
+ assert.equal(dictation.speak,'还书');
+ assert.equal(dictation.answer,'huán shū','dictation target is the spoken word, not the bare character');
+ const de=buildDrill('demo-78','tone-ear');
+ assert.equal(de.speak,'我的','的 must be heard in context');
+ assert.ok(de.prompt.includes('second syllable'));
+ assert.equal(de.answer,'Neutral tone');
+ const jue=buildDrill('demo-93','listen-pinyin');
+ assert.equal(jue.speak,'觉得','觉 jué must be heard in a word');
+ const meMeaning=buildDrill('demo-36','listen-meaning');
+ assert.equal(meMeaning.speak,'什么');
+ assert.equal(meMeaning.answer,'what');
+ const safe=buildDrill('demo-02','listen-pinyin');
+ assert.equal(safe.speak,'你','safe characters stay isolated and short');
+ assert.equal(safe.answer,'nǐ');
+});
+
+test('listening drills: the spoken syllable under test always matches the taught reading',()=>{
+ const {isolatedReadingUnsafe}=spokenReadings;
+ for(const l of DEMO_LESSONS){
+  const d=buildDrill(l.id,'tone-ear');
+  const taught=parsePinyin(l.pinyin)[0];
+  if(isolatedReadingUnsafe(l.hanzi,taught.tone)){
+   const spoken=parsePinyin(d.spokenPinyin);
+   assert.ok(spoken.length>1,l.id+' unsafe reading should speak a word context');
+   const target=spoken[d.toneIndex??0];
+   assert.equal(target.syllable,taught.syllable,l.id+' spoken syllable matches taught syllable');
+   assert.equal(target.tone,taught.tone,l.id+' spoken tone matches taught tone');
+  }else{
+   assert.equal(d.speak,l.hanzi,l.id+' safe reading speaks the character alone');
+  }
+ }
+});
+
+test('listening drills: polyphone table flags the known misleading cases',()=>{
+ assert.ok(spokenReadings.POLYPHONE_READINGS['还'].includes('hái'));
+ assert.ok(spokenReadings.POLYPHONE_READINGS['调'].includes('diào'));
+ assert.ok(spokenReadings.isolatedReadingUnsafe('了',5));
+ assert.equal(spokenReadings.isolatedReadingUnsafe('你',3),false);
 });
 
 test('preservation: core catalogs and learner identities are untouched',()=>{
