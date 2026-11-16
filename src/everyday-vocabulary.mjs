@@ -63,5 +63,16 @@ export const EVERYDAY_VOCABULARY=[
  {hanzi:'适合',pinyin:'shìhé',meaning:'to suit; to be right for',note:'适合我 "suits me" — for clothes, plans and jobs alike.',collocations:['很适合你','不适合我']},
  {hanzi:'点单',pinyin:'diǎn dān',meaning:'to place an order',note:'Cafés and counters: 扫码点单 "scan to order".',collocations:['扫码点单','点单了吗']},
  {hanzi:'打包盒',pinyin:'dǎbāohé',meaning:'takeout box',note:'The box itself; the action stays 打包.',collocations:['要个打包盒']},
- {hanzi:'差一点',pinyin:'chà yìdiǎn',meaning:'almost; nearly',note:'差一点迟到 "almost late" — the bad thing almost happened.',collocations:['差一点迟到','差一点忘了']}
+ {hanzi:'差一点',pinyin:'chà yìdiǎn',meaning:'almost; nearly',note:'差一点迟到 "almost late" — the bad thing almost happened.',collocations:['差一点迟到','差一点忘了']},
+ {hanzi:'适应',pinyin:'shìyìng',meaning:'to adjust; to get used to',note:'For new cities and new jobs: 慢慢适应 "adjust slowly".',collocations:['适应新生活','不太适应']},
+ {hanzi:'省',pinyin:'shěng',meaning:'to save (money); to economize',note:'省钱 is saving money; 省 also names provinces (山东省).',collocations:['省钱','省下一点']},
+ {hanzi:'摊位',pinyin:'tānwèi',meaning:'market stall',note:'Where a vendor sells: 熟人的摊位 "a familiar stall".',collocations:['市场摊位','摆摊']},
+ {hanzi:'拦',pinyin:'lán',meaning:'to flag down; to stop (a vehicle)',note:'拦出租车 "hail a cab"; 拦下来 "stop (someone) in passing".',collocations:['拦出租车','拦下来']},
+ {hanzi:'达人',pinyin:'dárén',meaning:'expert; hand (at something)',note:'Modern spoken praise: 运动达人 "a real fitness person".',collocations:['运动达人','美食达人']},
+ {hanzi:'步骤',pinyin:'bùzhòu',meaning:'step; procedure',note:'For instructions: 第一个步骤 "the first step".',collocations:['一步一步','按步骤来']},
+ {hanzi:'字条',pinyin:'zìtiáo',meaning:'(handwritten) note',note:'Spoken for a short paper message; 留字条 "leave a note".',collocations:['留字条','字条上写着']},
+ {hanzi:'收件人',pinyin:'shōujiànrén',meaning:'addressee; recipient',note:'Delivery talk: check the 收件人 before signing.',collocations:['收件人姓名','写错收件人']},
+ {hanzi:'拿手',pinyin:'náshǒu',meaning:'good at; one\'s specialty',note:'最拿手的菜 "best dish"; 拿手好戏 "one\'s signature move".',collocations:['拿手菜','最拿手']},
+ {hanzi:'配方',pinyin:'pèifāng',meaning:'recipe; formula',note:'Cooking and medicine alike; 改配方 "adjust the recipe".',collocations:['改配方','保密配方']},
+ {hanzi:'风景',pinyin:'fēngjǐng',meaning:'scenery; view',note:'风景好 "nice view"; 风景哪里都一样 plays on scenery vs company.',collocations:['风景好','看风景']}
 ];

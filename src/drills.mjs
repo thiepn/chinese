@@ -1,12 +1,24 @@
 /** Original demonstration drills. Never score these as official HSK attainment or scheduled-review mastery. */
 import {DEMO_LESSONS,findLesson} from './demo-lessons.mjs';
-import {evaluateAnswer} from './exercises.mjs';
+import {evaluateAnswer,parsePinyin} from './exercises.mjs';
 import {toneExplanation} from './tone-coach.mjs';
-export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice']);
+export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear']);
+const TONE_NAMES=Object.freeze({1:'First tone',2:'Second tone',3:'Third tone',4:'Fourth tone',5:'Neutral tone'});
 function unique(a){return [...new Set(a)];}
 function rotateOptions(answer, distractors,seed){const options=unique([answer,...distractors.filter(x=>x!==answer)]).slice(0,4);const shift=seed%options.length;return [...options.slice(shift),...options.slice(0,shift)];}
+// Listening-first drills: the prompt never shows the hanzi or pinyin; the
+// device voice plays the lesson character and the learner maps sound to
+// meaning, spelling or tone. Supplemental like every other drill.
+function listeningDrill(l,mode,seed){const others=DEMO_LESSONS.filter(x=>x.id!==l.id);
+ if(mode==='listen-meaning')return {mode,kind:'choice',listen:true,speak:l.hanzi,prompt:'Listen and choose the meaning of what you hear.',answer:l.meaning,options:rotateOptions(l.meaning,others.filter(x=>x.meaning!==l.meaning).map(x=>x.meaning),seed+3),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
+ if(mode==='listen-pinyin')return {mode,kind:'pinyin',listen:true,speak:l.hanzi,prompt:'Listen and type the complete pinyin of what you hear, with tones.',answer:l.pinyin,explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
+ const parsed=parsePinyin(l.pinyin);const tone=(parsed&&parsed.length===1?parsed[0].tone:5)||5;
+ const answer=TONE_NAMES[tone];const pool=Object.values(TONE_NAMES).filter(n=>n!==answer);
+ return {mode,kind:'choice',listen:true,speak:l.hanzi,prompt:'Listen and choose the tone of the syllable you hear.',answer,options:rotateOptions(answer,pool,seed+4),explanation:`${l.hanzi} is read ${l.pinyin} · ${answer.toLowerCase()}.`};
+}
 export function buildDrill(lessonId,mode){const l=findLesson(lessonId);if(!l||!DRILL_MODES.includes(mode))return null;
  const others=DEMO_LESSONS.filter(x=>x.id!==lessonId);const seed=l.order;
+ if(['listen-meaning','listen-pinyin','tone-ear'].includes(mode))return listeningDrill(l,mode,seed);
  if(mode==='recognition')return {mode,kind:'choice',prompt:`Select the character meaning “${l.meaning}”.`,answer:l.hanzi,options:rotateOptions(l.hanzi,others.filter(x=>x.meaning!==l.meaning).slice((seed*3)%Math.max(1,others.length-5)).map(x=>x.hanzi),seed),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};
  if(mode==='word-meaning'){const w=l.words[1];return {mode,kind:'choice',prompt:`What does ${w.hanzi} mean?`,hanzi:w.hanzi,answer:w.english,options:rotateOptions(w.english,others.flatMap(x=>x.words.map(w=>w.english)).filter(x=>x!==w.english),seed),explanation:`${w.hanzi} (${w.pinyin}) means ${w.english}.`};}
  if(mode==='word-pinyin'){const w=l.words[1];return {mode,kind:'pinyin',prompt:`Type the pinyin for ${w.hanzi}, including tones.`,hanzi:w.hanzi,answer:w.pinyin,explanation:`${w.hanzi} · ${w.pinyin} · ${w.english}`};}
