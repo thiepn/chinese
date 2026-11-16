@@ -4,7 +4,8 @@ import {evaluateAnswer,parsePinyin} from './exercises.mjs';
 import {toneExplanation} from './tone-coach.mjs';
 import {toneName,isolatedReadingUnsafe} from './spoken-readings.mjs';
 import {PHONETIC_FAMILIES,familyOf} from './phonetic-families.mjs';
-export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family']);
+import {MEANING_RADICALS} from './meaning-radicals.mjs';
+export const DRILL_MODES=Object.freeze(['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family','radical-clue']);
 const TONE_NAMES=Object.freeze({1:'First tone',2:'Second tone',3:'Third tone',4:'Fourth tone',5:'Neutral tone'});
 function unique(a){return [...new Set(a)];}
 function rotateOptions(answer, distractors,seed){const options=unique([answer,...distractors.filter(x=>x!==answer)]).slice(0,4);const shift=seed%options.length;return [...options.slice(shift),...options.slice(0,shift)];}
@@ -14,6 +15,14 @@ function rotateOptions(answer, distractors,seed){const options=unique([answer,..
 // Sound-family drill: characters sharing a phonetic component hint at a
 // shared pronunciation. The exercise asks for a sibling of the family, never
 // promising exact readings — tones and initials drift.
+// Radical-clue drill: meaning components as honest hints (never guarantees).
+function radicalClueDrill(l,seed){
+ const pick=MEANING_RADICALS[seed%MEANING_RADICALS.length];
+ const pool=[];for(const r of MEANING_RADICALS){if(r===pick||r.name===pick.name||pool.some(x=>x.name===r.name))continue;pool.push(r);}
+ const explain=pick.glyph+' ('+pick.name+') hints at '+pick.meaning+': '+pick.examples.join(', ')+'. Hints, not guarantees.';
+ if(seed%2===0)return {mode:'radical-clue',kind:'choice',prompt:'Which meaning does the component '+pick.glyph+' hint at?',answer:pick.meaning,options:rotateOptions(pick.meaning,pool.map(r=>r.meaning),seed+6),explanation:explain};
+ return {mode:'radical-clue',kind:'choice',prompt:'Which component hints at \u201c'+pick.meaning+'\u201d?',answer:pick.glyph,options:rotateOptions(pick.glyph,pool.map(r=>r.glyph),seed+6),explanation:explain};
+}
 function soundFamilyDrill(l,seed){
  const own=familyOf(l.hanzi);
  const family=own||PHONETIC_FAMILIES[seed%PHONETIC_FAMILIES.length];
@@ -48,6 +57,7 @@ function listeningDrill(l,mode,seed){const others=DEMO_LESSONS.filter(x=>x.id!==
  return {mode,kind:'choice',listen:true,speak:ctx.speak,spokenPinyin:ctx.word?ctx.word.pinyin:l.pinyin,toneIndex:ctx.syllableIndex,prompt:`Listen and choose the tone of the ${ordinal} syllable you hear.`,answer:name,options:rotateOptions(name,Object.values(TONE_NAMES).filter(n=>n!==name),seed+4),explanation:`${l.hanzi} is read ${l.pinyin} · ${name.toLowerCase()}${ctx.word?`, heard in ${ctx.word.hanzi} (${ctx.word.pinyin})`:''}.`};
 }export function buildDrill(lessonId,mode){const l=findLesson(lessonId);if(!l||!DRILL_MODES.includes(mode))return null;
  const others=DEMO_LESSONS.filter(x=>x.id!==lessonId);const seed=l.order;
+ if(mode==='radical-clue')return radicalClueDrill(l,seed);
  if(mode==='sound-family')return soundFamilyDrill(l,seed);
  if(['listen-meaning','listen-pinyin','tone-ear'].includes(mode))return listeningDrill(l,mode,seed);
  if(mode==='recognition')return {mode,kind:'choice',prompt:`Select the character meaning “${l.meaning}”.`,answer:l.hanzi,options:rotateOptions(l.hanzi,others.filter(x=>x.meaning!==l.meaning).slice((seed*3)%Math.max(1,others.length-5)).map(x=>x.hanzi),seed),explanation:`${l.hanzi} · ${l.pinyin} · ${l.meaning}`};

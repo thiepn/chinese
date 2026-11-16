@@ -84,7 +84,7 @@ test('everyday readings: characters are corpus-traceable or declared new',()=>{
 });
 
 test('listening drills: three audio-first modes build and grade correctly',()=>{
- assert.deepEqual(DRILL_MODES,['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family']);
+ assert.deepEqual(DRILL_MODES,['recognition','word-meaning','word-pinyin','word-build','sentence-cloze','reading-choice','listen-meaning','listen-pinyin','tone-ear','sound-family','radical-clue']);
  assert.equal(validateDrills(),true);
  const meaning=buildDrill('demo-01','listen-meaning');
  assert.equal(meaning.kind,'choice');

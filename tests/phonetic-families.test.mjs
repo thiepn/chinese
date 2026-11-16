@@ -55,5 +55,5 @@ test('phonetic families: character detail surfaces the family (wiring)',()=>{
 
 test('phonetic families: nothing else moved',()=>{
  assert.equal(DEMO_LESSONS.length,428);
- assert.equal(DRILL_MODES.length,10);
+ assert.equal(DRILL_MODES.length,11);
 });

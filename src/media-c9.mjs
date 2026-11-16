@@ -58,6 +58,7 @@ function catalogPager(kind,page,pages,total,act){
   'data-kind="'+kind+'" data-delta="1" '+(page===pages-1?'disabled':''))+
  '</div></div>';
 }
+import {storyReadiness} from './reading-readiness.mjs';
 export function renderC9ReadingCatalog(state,currentId,options,act,esc){
  const histories=state.readingEvents||[],saved=new Set(state.bookmarkedStories||[]);
  const mode=modeReading.includes(options.filter)?options.filter:'all',term=clean(options.query);
@@ -74,6 +75,7 @@ export function renderC9ReadingCatalog(state,currentId,options,act,esc){
  (visible.length?'<div class="c9-media-entry-grid">'+visible.map(s=>{
   const history=histories.filter(e=>e.storyId===s.id);
   const status=stateFor(history),current=s.id===currentId;
+  const ready=storyReadiness(state,s);
   return '<article class="c9-media-entry'+(current?' is-current':'')+'">'+
    '<div class="c9-media-entry-meta"><span class="c9-media-entry-type">'+esc(passageKind(s))+'</span>'+
     (saved.has(s.id)?'<span>Saved</span>':'')+'</div>'+
@@ -81,6 +83,8 @@ export function renderC9ReadingCatalog(state,currentId,options,act,esc){
    '<div class="c9-media-entry-example"><p lang="zh-Hans">'+esc(s.lines[0]?.hanzi||'')+'</p>'+
     '<small>Source excerpt · read in original workspace</small></div>'+
    '<p class="c9-media-entry-history">'+esc(status)+'</p>'+
+   '<p class="c9-media-entry-readiness">Readiness: '+ready.percent+'% of indexed words studied \u00b7 '+esc(ready.label)+'</p>'+
+   
    act('c9-media-open-story',current?'Return to selected passage →':'Open original passage →',
       'c9-button '+(current?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
       'data-id="'+esc(s.id)+'"')+'</article>';
@@ -130,7 +134,7 @@ export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=f
   '<h3>Words in this reading</h3><p>'+items.length+' distinct indexed written form'+(items.length===1?'':'s')+
   ' shown from the existing lexicon, not newly imported material. Reading these hints makes an unanswered native exercise assisted.</p></div>';
  if(!revealed)return '<section class="c9-reading-vocabulary" aria-label="Optional reading vocabulary support">'+heading+
-  '<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
+  (function(){const ready=storyReadiness(state,story);return '<p class="c9-reading-readiness-note"><strong>Reading readiness: '+ready.percent+'%</strong> of '+ready.used+' indexed words are in your studied set \u00b7 '+esc(ready.label)+(ready.unknown.length?' \u00b7 '+ready.unknown.length+' to pre-study':'')+'</p>';})()+'<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
   act('c9-reading-vocabulary-help','Study original word meanings · assisted','c9-button c9-button--secondary c9-button--small')+
   '</div></section>';
  const saved=new Set(state?.bookmarkedWords||[]);
@@ -154,6 +158,7 @@ export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=f
  }).join('');
  return '<section class="c9-reading-vocabulary" aria-label="Original reading vocabulary support">'+heading+
   '<p class="c9-reading-vocabulary-caveat" role="status">'+(answered?'Source help opened after checking. Your previously recorded response and its independent/assisted status are unchanged.':'Assisted source support is visible. The current unsubmitted answer will be recorded as assisted.')+' Written-form matches do not certify the correct lexical sense.</p>'+
+  (function(){const ready=storyReadiness(state,story);const pre=ready.unknown.slice(0,8);return '<div class="c9-reading-readiness"><p><strong>Reading readiness: '+ready.percent+'%</strong> of '+ready.used+' indexed words studied \u00b7 '+esc(ready.label)+'</p>'+(pre.length?'<p>Pre-study these before reading:</p><div class="p23-word-family">'+pre.map(w=>act('lookup-word','<span lang="zh-Hans">'+esc(w.hanzi)+'</span><small>'+esc(w.pinyin)+' \u00b7 '+esc(w.senses[0])+'</small>','word-ref','data-id="'+esc(w.key)+'"')).join('')+'</div>'+act('readiness-deck','Schedule these words for review','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'<p>Every indexed word is already in your studied set.</p>')+'</div>';})()+
   '<div class="c9-reading-vocabulary-grid">'+list+'</div>'+
   (items.length>=24?'<small>Showing at most 24 original written forms. The passage and native exercises are unchanged.</small>':'')+
   '</section>';
