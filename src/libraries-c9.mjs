@@ -11,7 +11,7 @@ const count=(n,label)=>n+' '+label+(n===1?'':'s');
 const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(100*done/total))):0;
 const heading=(type,name,desc)=>'<div class="c9-library-heading"><p class="c9-eyebrow">'+type+' · ORIGINAL SOURCE</p><h2>'+name+'</h2><p>'+desc+'</p></div>';
 const metrics=(items)=>'<div class="c9-library-metrics">'+items.map(([value,label])=>'<div><strong>'+value+'</strong><span>'+label+'</span></div>').join('')+'</div>';
-const bar=(done,total,label)=>'<div class="c9-library-bar"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
+const bar=(done,total,label)=>'<div class="c9-library-bar"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span data-csp-style="width:'+pct(done,total)+'%"></span></div></div>';
 const paragraph=(text)=>'<p class="c9-library-disclaimer c9-unified-source-note">'+text+'</p>';
 const PAGE=12;
 

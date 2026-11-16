@@ -121,7 +121,7 @@ export function learnWorkspace(state,act,esc,coach){
  <p>${next?`${esc(next.pinyin)} · ${esc(next.meaning)}. Learn its meaning, compare related words, then continue the existing six-stage lesson player.`:'All existing character lessons have been introduced. Reading, production and scheduled recall remain separate.'}</p>
  <div class="button-row">${next?act('course-lesson','Begin this guided lesson →','button primary',`data-id="${next.id}"`):act('hub-go','See your reviews →','button primary','data-route="review"')}
  ${act('pathway-open','Original nine-band pathway →','button outline')}</div></div>
- <div class="p30-learn-count"><strong>${o.introduced} / ${o.total}</strong><span>Characters introduced, not certified mastered</span><div class="p30-rail"><i style="width:${o.total?Math.min(100,100*o.introduced/o.total):0}%"></i></div></div></section>
+ <div class="p30-learn-count"><strong>${o.introduced} / ${o.total}</strong><span>Characters introduced, not certified mastered</span><div class="p30-rail"><i data-csp-style="width:${o.total?Math.min(100,100*o.introduced/o.total):0}%"></i></div></div></section>
  ${courseMap(act,esc)}${coachingPanel(coach,act,esc)}`;
 }
 export function reviewWorkspace(state,act,esc){
@@ -148,7 +148,7 @@ export function progressWorkspace(state,act,esc){
  <div class="p30-evidence-numbers"><article><strong>${o.introduced}</strong><span>Introduced character lessons</span></article>
  <article><strong>${o.scheduled.independent}</strong><span>Independent correct scheduled attempts</span></article>
  <article><strong>${o.scheduled.assisted}</strong><span>Assisted scheduled attempts</span></article><article><strong>${path}</strong><span>Independent correct pathway responses</span></article></div>
- <div class="p30-evidence-lower"><div><h3>Collection exposure</h3>${measures.map(([label,n,total,route])=>`<a href="#/${route}" class="p30-evidence-row"><span>${esc(label)}</span><strong>${n} / ${total}</strong><div class="p30-rail"><i style="width:${total?Math.min(100,100*n/total):0}%"></i></div></a>`).join('')}</div>
+ <div class="p30-evidence-lower"><div><h3>Collection exposure</h3>${measures.map(([label,n,total,route])=>`<a href="#/${route}" class="p30-evidence-row"><span>${esc(label)}</span><strong>${n} / ${total}</strong><div class="p30-rail"><i data-csp-style="width:${total?Math.min(100,100*n/total):0}%"></i></div></a>`).join('')}</div>
  <div><h3>Supplementary event types</h3>${o.types.filter(k=>k.key!=='events').sort((a,b)=>b.count-a.count).slice(0,7).map(k=>`<div class="p30-evidence-type"><span>${esc(k.label)}</span><strong>${k.count}</strong></div>`).join('')}</div></div>
  <div class="button-row">${act('hub-go','Scheduled review →','button primary','data-route="review"')}${act('hub-go','Daily plan →','button outline','data-route="plan"')}${act('pathway-open','Connected pathway →','button outline')}</div></section>`;
 }

@@ -9,6 +9,8 @@ import { GRAMMAR_LESSONS,GRAMMAR_CHAPTERS,GRAMMAR_PRACTICE_TASKS,findGrammarLess
 import { EVERYDAY_GRAMMAR_ROWS } from '../src/everyday-grammar.mjs';
 import { parsePinyin,evaluateMeaning,evaluatePinyin } from '../src/exercises.mjs';
 import { renderGrammarScreen } from '../src/grammar-screen.mjs';
+import { parseStyleDeclarations } from '../src/csp-styles.mjs';
+import { readFileSync } from 'node:fs';
 import { gradeCard,addLesson,freshState,validateState,baseInterval,leechCards,DAY } from '../src/study.mjs';
 import { reviewPlan } from '../src/review-strategy.mjs';
 import { backupDocument,importBackup } from '../src/study-storage.mjs';
@@ -85,7 +87,23 @@ test('everyday grammar: five practice modes generate for each new lesson',()=>{
  assert.ok(GRAMMAR_CHAPTERS.some(ch=>ch.lessons.includes('g181')));
 });
 
+// ---- Deep-link id ranges (browser-acceptance finding) ----
+test('app deep links accept 3-digit grammar and 4-digit sentence ids',()=>{
+ const src=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+ assert.match(src,/#\\\/grammar\\\/\(g\\d\{2,3\}\)/,'grammar deep links must match g100-g181');
+ assert.match(src,/#\\\/sentences\\\/\(sent-\\d\{3,4\}\)/,'sentence deep links must match sent-1000+');
+ assert.ok(!/g\\d\{2\}(?!\,3)/.test(src.replace(/g\\d\{2,3\}/g,'')),'no truncated grammar id patterns remain');
+});
+
 // ---- Meaning grading: conservative, zero false accepts ----
+test('csp style normalizer parses declarations conservatively',()=>{
+ const parsed=parseStyleDeclarations('width:55%;height: 8px;color:red !important;bogus;:novalue');
+ assert.deepEqual(parsed.map(d=>d.prop),['width','height','color']);
+ assert.equal(parsed[2].priority,'important');
+ assert.equal(parsed[0].val,'55%');
+ assert.deepEqual(parseStyleDeclarations(''),[]);
+ assert.deepEqual(parseStyleDeclarations('width:100% !IMPORTANT').map(d=>d.priority),['important']);
+});
 test('meaning grading: approved answers accept case, articles and curated variants',()=>{
  assert.equal(evaluateMeaning('the book','a book').correct,true);
  assert.equal(evaluateMeaning('Hi','hello').correct,true);
