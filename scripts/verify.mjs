@@ -10,6 +10,23 @@ for(const [file,expected] of Object.entries(manifest)){
  const actual=createHash('sha256').update(await readFile(join(dist,file))).digest('hex');
  if(expected!==actual)throw new Error(`Dist hash mismatch ${file}`);
 }
+// Source parity: the shipped build must not drift from src/. The committed
+// dist/ was once 699 commits stale while every manifest check still passed.
+async function walk(dir,rel=''){const out=[];for(const e of await readdir(dir,{withFileTypes:true})){const r=rel?rel+'/'+e.name:e.name;if(e.isDirectory())out.push(...await walk(join(dir,e.name),r));else out.push(r);}return out;}
+const srcRoot=join(root,'src');
+const sourceFiles=await walk(srcRoot);
+const sourceSet=new Set(sourceFiles);
+const distFiles=new Set(await walk(dist));
+const compiled=new Set(['startup.mjs','styles-startup.css']);
+for(const rel of sourceFiles){
+ if(!distFiles.has(rel))throw new Error(`Missing dist copy of src/${rel}; run npm run build`);
+ if(rel==='index.html')continue; // the build rewrites the production shell
+ const a=createHash('sha256').update(await readFile(join(srcRoot,rel))).digest('hex');
+ const b=createHash('sha256').update(await readFile(join(dist,rel))).digest('hex');
+ if(a!==b)throw new Error(`Stale dist copy of src/${rel}; run npm run build`);
+}
+for(const rel of distFiles)if(!sourceSet.has(rel)&&!compiled.has(rel))
+ throw new Error(`Extra dist file without a source: ${rel}`);
 const html=await readFile(join(dist,'index.html'),'utf8');
 if(!html.includes('No official HSK corpus')&&!html.includes('No official HSK curriculum')){
  // Permit exact assertion in description, including lowercase form.
