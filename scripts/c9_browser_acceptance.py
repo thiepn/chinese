@@ -16,6 +16,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 def main():
+    # Windows consoles default to cp1252 and crash on Unicode check details.
+    if hasattr(sys.stdout,"reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8",errors="replace")
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url",default="http://127.0.0.1:4173")
     parser.add_argument("--chromium",default=os.getenv("CHROME_BIN"))

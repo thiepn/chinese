@@ -10,7 +10,7 @@ export function learningAnalytics(state,now=Date.now()){
  const bins=[];for(let i=13;i>=0;i--){const day=new Date(now-i*DAY);const key=day.toISOString().slice(0,10);bins.push({day:key,attempts:0,correct:0,assisted:0});}
  const byDay=new Map(bins.map(x=>[x.day,x]));
  for(const ev of state.events){const bin=byDay.get(new Date(ev.at).toISOString().slice(0,10));if(!bin)continue;bin.attempts++;if(ev.correct&&!ev.assisted)bin.correct++;if(ev.assisted)bin.assisted++;}
- const types=[['Character meaning',['meaning']],['Character reading',['reading']],['Word meaning',['word0','word1']],['Word pronunciation',['wordread0']],['Sentence comprehension',['sentence']]];
+ const types=[['Character meaning',['meaning']],['Character reading',['reading']],['Word meaning',['word0','word1','word2']],['Word pronunciation',['wordread0','wordread1','wordread2']],['Sentence comprehension',['sentence']]];
  const skills=types.map(([name,suffixes])=>{const events=state.events.filter(e=>suffixes.some(s=>e.cardId.endsWith(':'+s)));const tested=new Set(events.map(e=>e.cardId)).size;return {name,attempts:events.length,tested,independent:events.filter(e=>e.correct&&!e.assisted).length,errors:events.filter(e=>e.correct===false).length};});
  const struggling=Object.keys(state.cards).map(id=>({id,...cardEvidence(state,id),info:cardInfo(id)})).filter(x=>x.info&&x.failures>0).sort((a,b)=>b.failures-a.failures||Number(b.needsPractice)-Number(a.needsPractice)).slice(0,8);
  return {bins,skills,struggling,attempts14:bins.reduce((s,d)=>s+d.attempts,0),correct14:bins.reduce((s,d)=>s+d.correct,0)};

@@ -1,0 +1,66 @@
+/* P47 contextual upper-intermediate course. Original flat UI tokens, mobile-first
+ * and keyboard-usable. No new grading/progress state is represented here.
+ */
+.p47-overview,.p47-lesson{background:var(--surface);border:1px solid var(--line);padding:clamp(13px,2vw,23px);margin:16px 0;min-width:0}
+.p47-overview{border-top:3px solid var(--accent)}
+.p47-hero h2{font-size:clamp(22px,2.9vw,29px);margin:5px 0 10px;line-height:1.28}
+.p47-hero>p:not(.eyebrow){font-size:13px;line-height:1.65;max-width:860px;color:var(--sub)}
+.p47-stats{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}
+.p47-stats>span{display:flex;gap:7px;align-items:center;padding:11px;border:1px solid var(--line);font-size:11px;color:var(--sub)}
+.p47-stats strong{color:var(--ink);font-size:16px;font-variant-numeric:tabular-nums}
+.p47-overview>label{display:block;margin:14px 0 6px;font-size:12px;color:var(--sub)}
+#p47-search{font:inherit;color:var(--ink);background:var(--background);border:1px solid var(--line);padding:11px;width:100%;box-sizing:border-box}
+.p47-units{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.p47-unit{display:flex;flex-direction:column;align-items:start;gap:7px;text-align:left;border:1px solid var(--line);background:var(--background);padding:14px;color:var(--ink);min-width:0;cursor:pointer;font:inherit}
+.p47-unit.active,.p47-unit:hover{border-color:var(--accent)}
+.p47-unit small{font-size:10px;color:var(--accent)}.p47-unit strong{font-size:16px;line-height:1.35}
+.p47-unit span,.p47-unit em{font-size:11px;color:var(--sub);line-height:1.6}.p47-unit em{font-style:normal}
+.p47-heading{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:12px}
+.p47-heading h2{font-size:clamp(22px,2.8vw,28px);margin:6px 0;line-height:1.3}
+.p47-heading p:not(.eyebrow){color:var(--sub);font-size:13px;line-height:1.7}
+.p47-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:18px 0}
+.p47-step{padding:9px 6px;background:var(--background);border:1px solid var(--line);font:inherit;font-size:11px;min-height:44px;color:var(--sub);cursor:pointer}
+.p47-step.active,.p47-step:hover{border-color:var(--accent);background:var(--soft);color:var(--accent)}
+.p47-pane{border:1px solid var(--line);background:var(--background);padding:clamp(13px,2vw,20px)}
+.p47-pane h3{font-size:17px;margin:0 0 10px}.p47-pane>p{font-size:13px;line-height:1.65;color:var(--sub)}
+.p47-character-grid,.p47-grammar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.p47-character,.p47-grammar-grid article,.p47-paragraph{border:1px solid var(--line);padding:13px;background:var(--surface);min-width:0}
+.p47-hanzi{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.p47-hanzi>strong{font-size:36px;font-weight:600}
+.p47-hanzi div{display:flex;flex-direction:column;gap:3px}
+.p47-hanzi span{color:var(--accent);font-size:14px}
+.p47-hanzi small{font-size:12px;color:var(--sub)}
+.p47-character>p,.p47-grammar-grid p{font-size:12px;line-height:1.65;color:var(--sub)}
+.p47-pitfall{border-left:3px solid var(--accent);background:var(--soft);padding:10px 12px;color:var(--ink)!important;font-size:12px;line-height:1.65}
+.p47-term{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line)}
+.p47-term strong{font-size:17px}.p47-term span{color:var(--sub);font-size:11px;flex:1 1 128px}
+.p47-model{border-top:1px solid var(--line);padding:10px 0}
+.p47-model p[lang]{font-size:18px;line-height:1.75;color:var(--ink);margin:0}
+.p47-model small,.p47-model span{display:block;font-size:12px;line-height:1.55;margin:3px 0;color:var(--sub)}
+.p47-model small{color:var(--accent)}
+.p47-grammar-grid h4{font-size:15px;margin:0 0 9px;color:var(--ink)}
+.p47-pattern{font-size:16px!important;color:var(--accent)!important}
+.p47-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
+.p47-actions .button{white-space:normal;min-height:40px}
+.p47-paragraph{margin:12px 0}
+.p47-paragraph h4{font-size:13px;color:var(--sub);margin:0 0 9px}
+.p47-line,.p47-turn{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:9px;border-top:1px solid var(--line);padding:10px 0;align-items:start}
+.p47-line>span,.p47-turn>strong{font-size:11px;color:var(--accent);padding-top:7px}
+.p47-line p[lang],.p47-turn p[lang],.p47-feedback p[lang]{font-size:clamp(18px,2vw,22px);line-height:1.8;margin:0;color:var(--ink)}
+.p47-line small,.p47-line div>span,.p47-turn small,.p47-turn div>span{display:block;margin:5px 0;color:var(--sub);font-size:12px;line-height:1.65}
+.p47-line small,.p47-turn small{color:var(--accent)}
+.p47-turn p:not([lang]){font-size:12px;color:var(--sub);line-height:1.7}
+.p47-question{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.p47-question h4{font-size:15px}.p47-question>p{font-size:13px;line-height:1.6}
+.p47-answers{display:grid;gap:8px;margin:15px 0}
+.p47-answers .choice{text-align:left;white-space:normal;min-height:44px}
+.p47-feedback{border-left:3px solid var(--accent);background:var(--soft);padding:12px 15px;margin:13px 0}
+.p47-feedback p,.p47-feedback small{font-size:12px;line-height:1.7}
+.p47-evidence{border:1px solid var(--line);background:var(--background);padding:14px;margin:18px 0}
+.p47-evidence h3{font-size:15px;margin:0 0 9px}.p47-evidence p{font-size:12px;line-height:1.7;color:var(--sub)}
+.p47-disclosure{font-size:11px;line-height:1.65;color:var(--sub);border-top:1px solid var(--line);padding-top:12px}
+.p47-return-strip{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:9px;margin:11px 0;padding:12px;background:var(--soft);border-left:3px solid var(--accent);font-size:12px}
+.p47-unit:focus-visible,.p47-step:focus-visible,#p47-search:focus-visible,.p47-character button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:900px){.p47-steps{grid-template-columns:repeat(3,minmax(0,1fr))}.p47-character-grid,.p47-grammar-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.p47-overview,.p47-lesson{padding:12px}.p47-units{grid-template-columns:1fr}.p47-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.p47-line,.p47-turn{grid-template-columns:20px minmax(0,1fr)}.p47-line .button,.p47-turn .button{grid-column:2;justify-self:start}.p47-actions .button{flex:1 1 154px}}
+@media(prefers-reduced-motion:reduce){.p47-overview *,.p47-lesson *{transition:none!important;scroll-behavior:auto!important}}
