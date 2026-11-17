@@ -1,6 +1,6 @@
 {
-  "name": "Character Study — Mandarin Learning",
-  "short_name": "Character Study",
+  "name": "THIEPN Chinese — Mandarin Learning",
+  "short_name": "THIEPN Chinese",
   "description": "A local-first Mandarin learning application with an original demonstration curriculum, lessons, reviews and progress. Not official HSK content.",
   "id": "./",
   "start_url": "./#/today",

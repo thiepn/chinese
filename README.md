@@ -1,6 +1,6 @@
-# THIEPN Chinese (Character Study) — qualification status, 2026-11-17
+# THIEPN Chinese (Character Study) — Release Candidate 1 (1.0.0-rc1)
 
-**Local development build, verified locally. This is NOT a verified educational release. Public release remains NO GO** — the human gates listed below are open. The per-batch sections further down are historical snapshots (repository import 2026-10-12); their lesson and test counts describe those batch dates, not the current tree.
+**Feature-frozen release candidate for a private beta. This is NOT a verified educational release. Public release remains NO GO** — the human gates listed below are open. The per-batch sections further down are historical snapshots (repository import 2026-10-12); their lesson and test counts describe those batch dates, not the current tree. Release evidence and known limitations: `docs/RELEASE_CANDIDATE_1.md`.
 
 ## Current catalog (counted from source at build time)
 
@@ -10,7 +10,7 @@
 
 | Check | Result |
 | --- | --- |
-| `npm test` | 523/524 PASS (0 fail, 1 platform skip: `sh` launcher) |
+| `npm test` | 524/525 PASS (0 fail, 1 platform skip: `sh` launcher) |
 | `npm run build` | PASS · 344 static assets · portable SHA-256 manifest · build stamp |
 | `npm run verify` | PASS · delivery gate: portable hashes, source digest, SW cache identity, delivery completeness |
 | Browser acceptance (`scripts/c9_browser_acceptance.py`) | 140/140 PASS · 0 FAIL · 0 NOT_TESTED |

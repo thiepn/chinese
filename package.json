@@ -1,6 +1,6 @@
 {
   "name": "character-study-local-working-build",
-  "version": "1.24.0-local-qualification",
+  "version": "1.0.0-rc1",
   "private": true,
   "type": "module",
   "description": "Local-first Mandarin demo with 428 demo lessons, 176 graded readings, 202 dialogues, 190 grammar lessons, guided checkpointed sessions, personalized lesson paths, wordbook recall, evidence-based diagnostics, and diversified due review, contextual senses, dialogue missions and sentence reconstruction, connected guided study, written tone coaching, and checkpointed six-stage daily course journeys, contextual repair sessions and day-by-day continuation",
