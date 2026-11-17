@@ -67,9 +67,13 @@ def main():
         if not source_files or source_files|compiled!=dist_files:
             raise AssertionError("src/dist source inventory plus compiled assets differs")
         import hashlib
+        # Line-ending-invariant hashing, matching scripts/dist-gate.mjs:
+        # git checkout translation (autocrlf) must never read as tampering.
+        def _h(path):
+            b=path.read_bytes()
+            return hashlib.sha256(b if b"\0" in b else b.replace(b"\r\n",b"\n")).hexdigest()
         mismatched=[str(p) for p in source_files
-                    if p!=Path("index.html") and hashlib.sha256((src_root/p).read_bytes()).digest()!=
-                       hashlib.sha256((dist_root/p).read_bytes()).digest()]
+                    if p!=Path("index.html") and _h(src_root/p)!=_h(dist_root/p)]
         if mismatched:
             raise AssertionError("Stale dist files: "+", ".join(mismatched[:6]))
         record("Exact source versus local build","PASS",

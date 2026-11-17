@@ -10,9 +10,9 @@
 
 | Check | Result |
 | --- | --- |
-| `npm test` | 504/504 PASS (0 fail, 0 skip) |
-| `npm run build` | PASS · 344 static assets · SHA-256 manifest |
-| `npm run verify` | PASS · 344/344 assets · shell/offline guard · source-parity guard |
+| `npm test` | 523/524 PASS (0 fail, 1 platform skip: `sh` launcher) |
+| `npm run build` | PASS · 344 static assets · portable SHA-256 manifest · build stamp |
+| `npm run verify` | PASS · delivery gate: portable hashes, source digest, SW cache identity, delivery completeness |
 | Browser acceptance (`scripts/c9_browser_acceptance.py`) | 140/140 PASS · 0 FAIL · 0 NOT_TESTED |
 | Browser supplement (`scripts/qualification_supplement.py`) | 17/17 PASS · 0 FAIL · 0 NOT_TESTED |
 
