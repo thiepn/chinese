@@ -56,7 +56,7 @@ test('production log: practice records never carry grades',()=>{
  assert.throws(()=>addProductionEvent(s,{id:'',kind:'shadow',targetId:'x'}),/Invalid production/);
  assert.throws(()=>addProductionEvent(s,{id:'p9',kind:'grade',targetId:'x'}),/Invalid production/);
  assert.throws(()=>addProductionEvent(s,{id:'p9',kind:'typed',targetId:'x',matched:'yes'}),/Invalid production/);
- assert.deepEqual([...PRODUCTION_KINDS],['shadow','typed']);
+ assert.deepEqual([...PRODUCTION_KINDS],['shadow','typed','free']);
  assert.doesNotThrow(()=>validateProductionEvents(s.productionEvents));
  assert.throws(()=>validateProductionEvents([{id:'a',kind:'shadow',targetId:'x',at:1},{id:'a',kind:'shadow',targetId:'x',at:2}]),/Invalid production/);
  assert.throws(()=>validateProductionEvents([{id:'a',kind:'shadow',targetId:'x',at:1,grade:2}]),/Invalid production/);

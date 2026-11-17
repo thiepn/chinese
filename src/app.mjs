@@ -46,7 +46,8 @@ import { guideFor } from './lesson-guides.mjs';
 import { watchBlockedInlineStyles } from './csp-styles.mjs';
 import { familyOf } from './phonetic-families.mjs';
 import { semanticOf } from './meaning-radicals.mjs';
-import { storyReadiness } from './reading-readiness.mjs';
+import { storyReadiness,studiedHanzi } from './reading-readiness.mjs';
+import { renderFreeWritingPanel,analyzeComposition,FREE_PROMPTS } from './free-writing.mjs';
 import { addProductionEvent,productionStats } from './production-log.mjs';
 import {addDrillRecord,toggleStoryBookmark,practiceSummary} from './practice-records.mjs';
 import {lessonRecommendations} from './recommendations.mjs';
@@ -107,7 +108,7 @@ let c9OfflineCoverage=null; // Manifest keys reported by the controlling SW, nev
 // Short-lived, single successful route transition.
 let state=freshState(),db=null,storageError=null,displayLessonId=DEMO_LESSONS[0].id,activeReviewId=null,revealed=false,showLessonTranslation=true,searchQuery='',searchSelection=null,typedAnswer='',chosenOption='',checkResult=null,readerLessonId=DEMO_LESSONS[0].id,readerMode='meaning',readerResult=null,busy=false;
 const c9ReadingRecallUi={index:0,revealed:false,typed:'',referenceSeen:false}; // Tab-only, ungraded.
-const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false,referenceSeen:false}; // Tab-only, unrecorded.
+const c9RoleplayUi={role:null,position:0,revealed:false,typed:'',spoken:false,referenceSeen:false,mine:[]}; // Tab-only, unrecorded.
 let storyId=STORIES[0].id,storyMode='comprehension',storyResult=null,storyAssist=false,storyShowTranslation=false,storyGlossary=null,storySequence=[],storyTyped='',storyParagraph=0,storyParagraphOnly=false,storyParagraphTranslations=[];
 let c9StoryPinyin=false,c9StoryEnglish=false,c9DialogueTurn=0,c9DialogueSourceId=null;
 let c9DiscoveryTrail=null; // In-tab source handoff, never persisted and never an achievement.
@@ -115,6 +116,7 @@ let c9NativeTrail=null; // Source-scoped return for native P35–P51 and P43 act
 let c9ReturnFocus=null;
 const C9_ACTIVE_ANSWER_IDS=Object.freeze({
  review:['review-entry'],workshop:['workshop-entry'],
+ writing:['free-writing-entry'],
  grammar:['grammar-entry'],dialogues:['mission-entry'],sentences:['sentence-library-entry'],
  pinyin:['pinyin-answer-entry'],pathway:['pathway-write'],
  practice:['guided-entry','drill-entry','mission-entry'],
@@ -188,6 +190,7 @@ function resetP33Decision({newSource=false}={}){
 }
 let p34ShadowLine=0,p34TranscriptViewed=false;
 let wordbookIndex=0,wordbookMode='meaning',wordbookFocus='all',wordbookTyped='',wordbookFeedback=null,explorePage=0;
+let freePromptId=FREE_PROMPTS[0].id,freeTyped='',freeFeedback=null;
 let senseIndex=0,senseSupport=false,senseFeedback=null;
 let sentenceIndex=0,sentenceTyped='',sentenceSupport=false,sentenceFeedback=null;
 let c9WorkshopOrigin=null; // Validated in-tab source handoff, never a progress writer.
@@ -710,7 +713,7 @@ function renderReaderNative(){const l=readerLesson(),cloze=makeCloze(l),mode=rea
 }
 function resetDrill(){drillResult=null;drillPicked='';drillTyped='';drillOrder=[];drillAssisted=false;}
 function resetC9ReadingRecall(){c9ReadingRecallUi.index=0;c9ReadingRecallUi.revealed=false;c9ReadingRecallUi.typed='';c9ReadingRecallUi.referenceSeen=false;}
-function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;c9RoleplayUi.referenceSeen=false;}
+function resetC9Roleplay(){c9RoleplayUi.role=null;c9RoleplayUi.position=0;c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;c9RoleplayUi.referenceSeen=false;c9RoleplayUi.mine=[];}
 function resetReadingNavigation(){
  storyParagraph=0;storyParagraphOnly=false;storyParagraphTranslations=[];
  beginnerPart='all';beginnerWordShown=false;beginnerPartTip='';
@@ -958,7 +961,8 @@ function refreshC9AdvancedResults(){
 }
 function renderAdvanced(){return renderC9AdvancedWorkspace(state,c9AdvancedUi(),action,esc);}
 function renderSkills(){return renderC9SkillsWorkspace(state,c9SkillsUi,action,esc);}
-function renderWriting(){return (c9WriterMatchesSkillBridge(c9SkillWritingHandoff)?
+function renderWriting(){return renderFreeWritingPanel({promptId:freePromptId,typed:freeTyped,feedback:freeFeedback,stats:productionStats(state)},action,esc)+
+ (c9WriterMatchesSkillBridge(c9SkillWritingHandoff)?
  renderC9SkillWritingReturn(c9SkillWritingHandoff,action,esc):'')+
  renderC9WritingWorkspace(state,c9WritingState,action,esc);}
 function renderFind(){const ui=c9FindContext();return '<div class="c9-search-page">'+
@@ -1701,6 +1705,21 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   if(c9RoleplayUi.spoken){const prodId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
    return Boolean(await mutate(st=>addProductionEvent(st,{id:prodId,kind:'shadow',targetId:`${dialogueId}:${source.index}`})));}
   render();return true;
+ }
+ if(name==='c9-roleplay-continue'){
+  const source=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi);
+  if(!source.reply||c9RoleplayUi.revealed)return false;
+  const typed=c9RoleplayUi.typed.trim();
+  if(!typed&&!c9RoleplayUi.spoken)return false;
+  c9RoleplayUi.mine.push({turn:source.index+1,hanzi:typed,spokenOnly:!typed});
+  const prodId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+  const matched=typed?typed.normalize('NFC').trim()===source.reply.hanzi.normalize('NFC').trim():undefined;
+  const payload={id:prodId,kind:typed?'typed':'shadow',targetId:`${dialogueId}:${source.index}`};
+  if(matched!==undefined)payload.matched=matched;
+  await mutate(st=>addProductionEvent(st,payload),{renderAfter:false});
+  if(source.position+1<source.indices.length)c9RoleplayUi.position=source.position+1;
+  c9RoleplayUi.revealed=false;c9RoleplayUi.typed='';c9RoleplayUi.spoken=false;
+  render();root.querySelector('#c9-roleplay-studio')?.scrollIntoView({block:'start'});return true;
  }
  if(name==='c9-roleplay-hear-cue'){
   const cue=c9RoleplaySource(findDialogue(dialogueId),c9RoleplayUi).cue;
@@ -2709,6 +2728,11 @@ if(name==='c9-media-listen-turn'||name==='c9-media-listen-turn-slow'){
   c9WorkshopOrigin=null;sentenceIndex++;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;
   return render();
  }
+ if(name==='free-prompt'){freePromptId=FREE_PROMPTS.some(p=>p.id===button.dataset.id)?button.dataset.id:freePromptId;freeFeedback=null;return render();}
+ if(name==='free-check'){if(!freeTyped.trim())return false;freeFeedback=analyzeComposition(freeTyped,{known:studiedHanzi(state)});
+   const prodId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+   await mutate(st=>addProductionEvent(st,{id:prodId,kind:'free',targetId:freePromptId}),{renderAfter:false});render();return true;}
+ if(name==='free-clear'){freeTyped='';freeFeedback=null;return render();}
  if(name==='workshop-reply'){const idx=SENTENCE_TASKS.findIndex(t=>t.id===button.dataset.id&&t.kind==='reply');if(idx<0)return;sentenceIndex=idx;sentenceTyped='';sentenceFeedback=null;sentenceSupport=false;return render();}
  if(name==='workshop-support'){sentenceSupport=true;return render();}
  if(name==='workshop-check'||name==='workshop-reveal'){
@@ -3056,7 +3080,8 @@ root.addEventListener('input',e=>{
  const results=$('p30-results');if(results)results.innerHTML=courseSearchResults({query:p30Query,kind:p30Kind,saved:p30Saved,page:0,state},action,esc).html;
  refreshC9FindWorkbench();return;
 }if(e.target.id==='p29-transfer-draft'){pathwayTransferDraft=e.target.value;return;}if(e.target.id==='pathway-write'){pathwayTyped=e.target.value;const b=root.querySelector('[data-action="pathway-answer"]');if(b)b.disabled=!pathwayTyped.trim();return;}if(e.target.id==='restore-ack'){restoreAcknowledgement=e.target.value;const b=root.querySelector('[data-action="restore-confirm"]');if(b)b.disabled=!restoreRequiresAcknowledgement(pendingRestore?.preview,restoreAcknowledgement);return;}if(e.target.id==='fluency-entry'){fluencyTyped=e.target.value;const b=root.querySelector('[data-action="fluency-answer"]');if(b)b.disabled=!fluencyTyped.trim();return;}if(e.target.id==='trail-entry'){trailTyped=e.target.value;const b=root.querySelector('[data-action="trail-answer"]');if(b)b.disabled=!trailTyped.trim();return;}if(e.target.id==='block-entry'){blockTyped=e.target.value;const b=root.querySelector('[data-action="block-answer"]');if(b)b.disabled=!blockTyped.trim();return;}if(e.target.id==='ladder-entry'){ladderTyped=e.target.value;const b=root.querySelector('[data-action="ladder-answer"]');if(b)b.disabled=!ladderTyped.trim();return;}if(e.target.id==='repair-entry'){repairTyped=e.target.value;const b=root.querySelector('[data-action="repair-answer"]');if(b)b.disabled=!repairTyped.trim();return;}if(e.target.id==='course-entry'){courseTyped=e.target.value;const b=root.querySelector('[data-action="course-answer"]');if(b)b.disabled=!courseTyped.trim();return;}if(e.target.id==='p33-decision-entry'){p33DecisionUi.typed=e.target.value;return;}
- if(e.target.id==='c9-roleplay-entry'){c9RoleplayUi.typed=e.target.value;return;}
+ if(e.target.id==='c9-roleplay-entry'){c9RoleplayUi.typed=e.target.value;const b=root.querySelector('[data-action="c9-roleplay-continue"]');if(b)b.disabled=!(c9RoleplayUi.typed.trim()||c9RoleplayUi.spoken);return;}
+ if(e.target.id==='free-writing-entry'){freeTyped=e.target.value;const b=root.querySelector('[data-action="free-check"]');if(b)b.disabled=!freeTyped.trim();return;}
 if(e.target.id==='c9-reading-recall-entry'){c9ReadingRecallUi.typed=e.target.value;return;}
 if(e.target.id==='mission-entry'){missionTyped=e.target.value;const b=root.querySelector('[data-action="mission-answer"]');if(b)b.disabled=!missionTyped.trim();return;}if(e.target.id==='workshop-entry'){sentenceTyped=e.target.value;const b=root.querySelector('[data-action="workshop-check"]');if(b)b.disabled=!sentenceTyped.trim();return;}if(e.target.id==='lesson-check-entry'){lessonCheckpoint.response=e.target.value;const b=root.querySelector('[data-action="lesson-check-submit"]');if(b)b.disabled=!lessonCheckpoint.response.trim();return;}if(e.target.id==='sentence-library-entry'){
  libraryTyped=e.target.value;

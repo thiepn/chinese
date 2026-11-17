@@ -609,7 +609,8 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
   '<textarea id="c9-roleplay-entry" rows="2" maxlength="500" lang="zh-Hans" spellcheck="false" placeholder="Speak aloud, or type the Chinese sentence from memory"'+(displayed?' disabled':'')+'>'+esc(entry)+'</textarea>'+
   '<div class="c9-rehearsal-actions">'+
   (!displayed?act('c9-roleplay-spoke',ui.spoken?'Spoken aloud · self-reported':'I spoke the line aloud','c9-button c9-button--secondary c9-button--small','aria-pressed="'+Boolean(ui.spoken)+'"')+
-   act('c9-roleplay-reveal','Compare with original script','c9-button c9-button--primary c9-button--small'):
+   act('c9-roleplay-reveal','Compare with original script','c9-button c9-button--primary c9-button--small')+
+   act('c9-roleplay-continue','Use my reply and continue \u2192','c9-button c9-button--secondary c9-button--small',(hasDraft||ui.spoken)?'':'disabled'):
    act('c9-roleplay-listen-reply','Hear original reply','c9-button c9-button--secondary c9-button--small'))+
   '</div>'+
   (displayed?'<div class="c9-rehearsal-reference" role="status"><span class="c9-eyebrow">SOURCE-EXACT REFERENCE · ASSISTED</span>'+
@@ -618,7 +619,8 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
    (hasDraft?(exact?'<p>Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.</p>':
     '<p>'+esc(composeCheck(source.reply.hanzi,entry).message)+'</p><p>No correctness grade was assigned \u2014 the comparison above is guidance for your next attempt.</p>'):'')+
    '<p>Opening this reference makes pending native comprehension or mission answers assisted.</p></div>':'')+
-  '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
+  ((ui.mine&&ui.mine.length)?'<div class="c9-rehearsal-mine"><p class="c9-eyebrow">YOUR VERSION SO FAR</p><ol>'+ui.mine.map(x=>'<li><strong>Turn '+x.turn+':</strong> '+(x.hanzi?esc(x.hanzi):'spoken aloud \u2014 not typed')+'</li>').join('')+'</ol><p class="c9-rehearsal-caveat">The authored script continues from its own wording. Your line may deserve a different reply \u2014 read each next cue as one possibility.</p></div>':'')+
+ '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
   act('c9-roleplay-move','← Previous reply','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(!source.position?'disabled':''))+
   act('c9-roleplay-retry','Try this reply again','c9-button c9-button--secondary c9-button--small')+
   act('c9-roleplay-move','Next reply →','c9-button c9-button--primary c9-button--small','data-delta="1" '+(source.position===source.indices.length-1?'disabled':''))+

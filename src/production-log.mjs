@@ -4,7 +4,7 @@
  * one factual observation — whether a typed reply exactly matched the written
  * form of the model line (character equality only). Never feeds review.
  */
-export const PRODUCTION_KINDS=Object.freeze(['shadow','typed']);
+export const PRODUCTION_KINDS=Object.freeze(['shadow','typed','free']);
 export function addProductionEvent(state,{id,kind,targetId,matched,at=Date.now()}={}){
  if(typeof id!=='string'||!id||id.length>100)throw new Error('Invalid production practice record');
  if(!PRODUCTION_KINDS.includes(kind))throw new Error('Invalid production practice record');
@@ -34,5 +34,6 @@ export function productionStats(state){
  return {total:events.length,
   spoken:events.filter(e=>e.kind==='shadow').length,
   typed:events.filter(e=>e.kind==='typed').length,
+  free:events.filter(e=>e.kind==='free').length,
   matched:events.filter(e=>e.matched===true).length};
 }
