@@ -1,5 +1,5 @@
 /* Offline app shell. No official HSK corpus, network API or third-party assets. */
-const CACHE='character-study-working-v75-p77-consequence-dialogues';
+const CACHE='character-study-working-v75-p77-consequence-dialogues-visual-lexicon-v1';
 /* Explicit asset groups keep the offline install in step with C9 styles. */
 const SHELL_ASSETS=[
   './',
@@ -30,6 +30,7 @@ const CONCEPT9_ASSETS=[
   './character-c9.mjs',
   './styles-c9-libraries.css',
   './libraries-c9.mjs',
+  './visual-lexicon-c9.mjs',
   './styles-c9-review-practice.css',
   './review-practice-c9.mjs',
   './styles-c9-media.css',
@@ -342,7 +343,10 @@ const ADVANCED_SOURCE_ASSETS=[
 const RUNTIME_ASSETS=[
  './','./index.html','./startup.mjs','./styles-startup.css',
  './manifest.webmanifest','./icons/icon.svg',
- './icons/icon-192.png','./icons/icon-512.png'
+ './icons/icon-192.png','./icons/icon-512.png',
+ './visual-lexicon/assets/shop.svg',
+ './visual-lexicon/assets/tea.svg',
+ './visual-lexicon/assets/winter.svg',
 ];
 const ASSETS=[...new Set(RUNTIME_ASSETS)];
 const PRECACHE_BATCH_SIZE=24;
