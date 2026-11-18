@@ -1,4 +1,5 @@
 import {renderC9EmptyState} from './ui-c9.mjs';
+import {c9VisualMarkup} from './visual-lexicon-c9.mjs';
 /** C9-07: Read-only library discovery; original routes and writers own all study actions. */
 import {WORDS,plain,sourceWordComparisons} from './lexicon.mjs';
 import {sourceWordUsage,sourceWordCoverage,sourceWordContextPairs} from './source-bridges-c9.mjs';
@@ -42,6 +43,7 @@ export function c9WordCatalogResults(state,{query='',filter='all',context='all',
    '<span class="c9-library-pinyin">'+esc(w.pinyin)+'</span></div><div class="c9-library-word-badges">'+
    '<span class="c9-badge'+(intro?' c9-badge--success':'')+'">'+(intro?'Introduced':'Not introduced')+'</span>'+
    (savedHere?'<span class="c9-badge">Saved</span>':'')+'</div></div>'+
+   c9VisualMarkup(w.key,esc)+
    '<p class="c9-library-word-meaning">'+esc(w.senses.slice(0,3).join(' / '))+'</p>'+
    (w.collocations.length?'<div class="c9-library-collocations"><span class="c9-eyebrow">AUTHORED COMBINATIONS</span><div>'+
     w.collocations.slice(0,3).map(c=>'<span lang="zh-Hans">'+esc(c)+'</span>').join('')+'</div></div>':'')+
