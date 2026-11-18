@@ -15,7 +15,7 @@ test('P71 adds five genuinely different ten-line bilingual source manuscripts wi
  assert.equal(P71_MANUSCRIPTS.length,5);assert.equal(P71_SOURCE_READINGS.length,5);assert.equal(P71_READING_ROWS.length,5);
  const passages=STORIES.filter(s=>s.beginner?.source==='original-p71');
  assert.deepEqual(passages.map(s=>s.title),P71_MANUSCRIPTS.map(b=>b.title));
- assert.deepEqual(STORIES.slice(-5),passages);
+ assert.deepEqual(STORIES.slice(159,164),passages);
  const old=STORIES.slice(0,-5);for(let i=0;i<old.length;i++)assert.equal(old[i].id,'story-'+String(i+1).padStart(2,'0'));
  assert.equal(P71_SOURCE_READINGS.reduce((n,s)=>n+s.lines.length,0),50);
  assert.equal(P71_SOURCE_READINGS.reduce((n,s)=>n+s.questions.length,0),15);

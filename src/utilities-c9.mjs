@@ -21,7 +21,7 @@ const intro=(eyebrow,title,desc)=>'<header class="c9-utility-heading"><p class="
 const metric=(num,label,detail='')=>'<div class="c9-utility-metric"><strong>'+num+'</strong><span>'+label+'</span>'+
  (detail?'<small>'+detail+'</small>':'')+'</div>';
 const progress=(done,total,label)=>'<div class="c9-utility-progress"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div>'+
- '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+(total?Math.min(100,Math.round(done/total*100)):0)+'%"></span></div></div>';
+ '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span data-csp-style="width:'+(total?Math.min(100,Math.round(done/total*100)):0)+'%"></span></div></div>';
 const localLink=(route,label,extra='')=>'<a href="#/'+route+'" class="c9-button c9-button--secondary '+extra+'">'+label+'</a>';
 const evidence=(title,caption,amount,route,label)=>'<article class="c9-progress-evidence"><span class="c9-eyebrow">'+title+'</span><strong>'+amount+'</strong><p>'+caption+'</p>'+localLink(route,label,'c9-button--small')+'</article>';
 const saved=(state,field)=>Array.isArray(state[field])?state[field].length:0;
@@ -232,7 +232,7 @@ export function renderC9ProgressInsights(state,act,esc){
   '<div class="c9-progress-day-bars" role="group" aria-label="Fourteen days of genuine recorded activity">'+
    days.map(r=>'<div class="c9-progress-day" aria-label="'+esc(r.label+': '+r.total+' responses, '+r.independent+' independent correct')+'">'+
     '<span class="c9-progress-day-number">'+r.total+'</span>'+
-    '<div class="c9-progress-day-track"><span style="height:'+(r.total?Math.max(5,Math.round(r.total/peak*100)):0)+'%"></span></div>'+
+    '<div class="c9-progress-day-track"><span data-csp-style="height:'+(r.total?Math.max(5,Math.round(r.total/peak*100)):0)+'%"></span></div>'+
     '<small>'+esc(new Date(r.date).toLocaleDateString(undefined,{weekday:'short'}))+'</small></div>').join('')+
   '</div><div class="c9-progress-day-legend">'+sums.map(r=>
   '<a href="#/'+r.route+'"><strong>'+r.total+'</strong><span>'+r.label+'</span></a>').join('')+'</div>'+

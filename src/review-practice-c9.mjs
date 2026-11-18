@@ -33,7 +33,7 @@ const experienceNote=(info,result,esc)=>{
   'Use the source explanation and the reference to identify the mismatch.';
  return '<div class="c9-review-source-context"><p class="c9-eyebrow">SOURCE-BASED REPAIR</p>'+
   '<p>'+esc(correction)+'</p>'+
-  '<dl><div><dt>Original lesson</dt><dd>'+esc(info.lesson.hanzi)+' · '+esc(info.lesson.pinyin)+' · '+esc(info.lesson.meaning)+'</dd></div>'+
+  '<dl><div><dt>'+(info.lesson.id?'Original lesson':'Scheduled word')+'</dt><dd>'+esc(info.lesson.hanzi)+' · '+esc(info.lesson.pinyin)+' · '+esc(info.lesson.meaning)+'</dd></div>'+
   '<div><dt>Teaching context</dt><dd>'+esc(info.lesson.note||'Use the source lesson to review the character in context.')+'</dd></div>'+
   (info.type==='sentence'?'<div><dt>Original translation</dt><dd>'+esc(info.lesson.sentence.english)+'</dd></div>':'')+
   '</dl></div>';
@@ -41,7 +41,7 @@ const experienceNote=(info,result,esc)=>{
 const progress=(done,total,label)=>{
  const value=total?Math.min(100,Math.round(100*done/total)):0;
  return '<div class="c9-assessment-progress"><div><span>'+label+'</span><strong>'+done+' / '+total+'</strong></div>'+
- '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(total,Math.max(0,done))+'"><span style="width:'+value+'%"></span></div></div>';
+ '<div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(total,Math.max(0,done))+'"><span data-csp-style="width:'+value+'%"></span></div></div>';
 };
 const stat=(n,label)=>'<div class="c9-assessment-stat"><strong>'+count(n)+'</strong><span>'+label+'</span></div>';
 const title=(eyebrow,name,desc)=>'<header class="c9-assessment-title"><p class="c9-eyebrow">'+eyebrow+'</p>'+
@@ -222,7 +222,7 @@ export function renderC9GuidedStep(state,esc){
   '<div><span class="c9-eyebrow">AUTHENTIC LEARNER CHECKPOINT</span><strong>'+
   (done>=g.limit?'All saved questions answered':'Question '+(done+1)+' / '+g.limit)+'</strong></div>'+
   '<div class="c9-guided-checkpoint-track" role="progressbar" aria-label="Questions with saved answers" aria-valuemin="0" aria-valuemax="'+g.limit+'" aria-valuenow="'+done+'">'+
-   '<span style="width:'+percent+'%"></span></div>'+
+   '<span data-csp-style="width:'+percent+'%"></span></div>'+
   '<div class="c9-guided-checkpoint-detail"><span>'+saved+' recorded answers</span>'+
   '<span>'+correct+' independently correct</span><span>'+assisted+' assisted</span></div>'+
   '<p>Responses persist only after the original check is saved; unfinished input is local to this open screen. A hint or reveal marks the next response assisted.</p>'+

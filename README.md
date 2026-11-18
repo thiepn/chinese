@@ -1,3 +1,31 @@
+# THIEPN Chinese (Character Study) — Release Candidate 1 (1.0.0-rc1)
+
+**Feature-frozen release candidate for a private beta. This is NOT a verified educational release. Public release remains NO GO** — the human gates listed below are open. The per-batch sections further down are historical snapshots (repository import 2026-10-12); their lesson and test counts describe those batch dates, not the current tree. Release evidence and known limitations: `docs/RELEASE_CANDIDATE_1.md`.
+
+## Current catalog (counted from source at build time)
+
+428 original demonstration character lessons · 176 graded readings (1,550 glossary entries) · 202 dialogues · 190 grammar lessons in 6 chapters (950 practice tasks) plus 17 everyday and 9 colloquial lessons · 1,130 canonical words · 1,020-sentence library (4,127 tasks, 102 topics) · 11 drill modes · 12 free-composition prompts · 24 real-situation reply tasks. **No official HSK content is included.** All material is author-written demonstration content and is not certified linguistic teaching data.
+
+## Consolidated verification (2026-11-17, Node 24.16.0, Windows, headless Microsoft Edge)
+
+| Check | Result |
+| --- | --- |
+| `npm test` | 524/525 PASS (0 fail, 1 platform skip: `sh` launcher) |
+| `npm run build` | PASS · 344 static assets · portable SHA-256 manifest · build stamp |
+| `npm run verify` | PASS · delivery gate: portable hashes, source digest, SW cache identity, delivery completeness |
+| Browser acceptance (`scripts/c9_browser_acceptance.py`) | 140/140 PASS · 0 FAIL · 0 NOT_TESTED |
+| Browser supplement (`scripts/qualification_supplement.py`) | 17/17 PASS · 0 FAIL · 0 NOT_TESTED |
+
+Real browser evidence now covers workflows previously listed as NOT TESTED: IndexedDB grading and persistence across reload, service-worker offline shell and stale-cache migration, dark-mode persistence, keyboard dialog handling, CSP-clean startup, and 320/390/1440px learner journeys. Data integrity: transactional multi-tab writes with cross-tab refresh, and the safe backup export/preview/`REPLACE`-acknowledged restore round trip, are browser-verified. Exact evidence: `docs/QUALIFICATION_2026-11-17.md` and the adjacent `QUALIFICATION_2026-11-17_*.json` result files.
+
+**NOT_TESTED — requires physical devices or people, and no automated run claims otherwise:** screen-reader and assistive-technology acceptance on real AT; device audio/TTS quality and audio rights; independent human linguistic review of the Mandarin content; owner visual approval (light/dark, desktop/mobile); official HSK rights; production deployment.
+
+---
+
+# Historical batch notes (imported 2026-10-12)
+
+The sections below are preserved verbatim as per-batch records. Counts and qualification statements inside them (lessons, assets, test totals) are historical.
+
 # Character Study — Batch 20 · Feature Freeze Candidate
 
 **This is a local-only feature freeze, NOT a verified educational release.**

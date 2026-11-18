@@ -13,9 +13,9 @@ const current=DIALOGUES.filter(d=>d.p77);
 test('P77 appends exactly five distinct eight-turn original follow-up dialogues while retaining P75 IDs',()=>{
  assert.equal(P77_DIALOGUES.length,5);
  assert.equal(P77_DIALOGUE_ROWS.length,5);
- assert.deepEqual(DIALOGUES.slice(-5),current);
+ assert.deepEqual(DIALOGUES.slice(185,190),current);
  assert.equal(current.length,5);
- assert.equal(DIALOGUES.slice(-10,-5).filter(d=>d.p75).length,5);
+ assert.equal(DIALOGUES.filter(d=>d.p75).length,5);
  assert.equal(DIALOGUES.reduce((n,d)=>n+d.p77?.turns.length||n,0)>=40,true);
  const titles=new Set(),hanzi=new Set(),refs=new Set();
  for(let i=0;i<current.length;i++){
@@ -52,7 +52,7 @@ test('P77 appends exactly five distinct eight-turn original follow-up dialogues 
  }
  assert.equal(hanzi.size,40);
  assert.equal(current.reduce((n,d)=>n+d.questions.length,0),15);
- const historical=DIALOGUES.slice(0,-5);
+ const historical=DIALOGUES.slice(0,185);
  for(let i=0;i<historical.length;i++)assert.equal(historical[i].id,'dialogue-'+String(i+1).padStart(2,'0'));
 });
 test('native dialogue owns P77 answer events, without inventing listening skill or losing assisted provenance',()=>{

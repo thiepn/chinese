@@ -32,7 +32,7 @@ function progress(value,max,label){
  const count=Number.isFinite(value)?Math.max(0,value):0;
  const total=Number.isFinite(max)?Math.max(0,max):0;
  const pct=total?Math.min(100,Math.round(count/total*100)):0;
- return '<div class="c9-home-progress" role="group" aria-label="'+label+'"><div class="c9-home-progress-head"><span>'+label+'</span><strong class="c9-tabular">'+count+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(count,total)+'"><span style="width:'+pct+'%"></span></div></div>';
+ return '<div class="c9-home-progress" role="group" aria-label="'+label+'"><div class="c9-home-progress-head"><span>'+label+'</span><strong class="c9-tabular">'+count+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+Math.min(count,total)+'"><span data-csp-style="width:'+pct+'%"></span></div></div>';
 }
 function taskRow(task,act,esc){
  const recorded=task.done===true;

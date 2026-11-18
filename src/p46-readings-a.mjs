@@ -41,9 +41,9 @@ L|编辑发现两个表格里的数字不一致，于是要求补充原始资料
 L|第二天，工作人员把签到表和报名表交给了小黄。|Dì èr tiān, gōngzuò rényuán bǎ qiāndàobiǎo hé bàomíngbiǎo jiāo gěi le Xiǎo Huáng.|The next day, staff gave Xiao Huang attendance sheets and registration forms.
 L|他核对以后才知道，有些报名者并没有真正参加活动。|Tā héduì yǐhòu cái zhīdào, yǒuxiē bàomíngzhě bìng méiyǒu zhēnzhèng cānjiā huódòng.|After checking, he learned that some registrants had not actually participated.
 L|因此，报告不能把报名人数直接写成实际参加人数。|Yīncǐ, bàogào bù néng bǎ bàomíng rénshù zhíjiē xiě chéng shíjì cānjiā rénshù.|Therefore, the report could not simply treat registrations as actual attendance.
-L|小黄在修改稿中把这两种数字分开，并说明了计算的方法。|Xiǎo Huáng zài xiūgǎogǎo zhōng bǎ zhè liǎng zhǒng shùzì fēnkāi, bìng shuōmíng le jìsuàn de fāngfǎ.|Xiao Huang distinguished the two kinds of figures in the revised draft and explained the calculation.
+L|小黄在修改稿中把这两种数字分开，并说明了计算的方法。|Xiǎo Huáng zài xiūgǎigǎo zhōng bǎ zhè liǎng zhǒng shùzì fēnkāi, bìng shuōmíng le jìsuàn de fāngfǎ.|Xiao Huang distinguished the two kinds of figures in the revised draft and explained the calculation.
 L|编辑认为内容现在更清楚，但是仍然需要负责人的最后审核。|Biānjí rènwéi nèiróng xiànzài gèng qīngchu, dànshì réngrán xūyào fùzérén de zuìhòu shěnhé.|The editor found the content clearer but said the manager's final review was still required.
-L|小黄没有把修改稿立刻发到社区网站上。|Xiǎo Huáng méiyǒu bǎ xiūgǎogǎo lìkè fā dào shèqū wǎngzhàn shàng.|Xiao Huang did not immediately publish the revised draft on the community website.
+L|小黄没有把修改稿立刻发到社区网站上。|Xiǎo Huáng méiyǒu bǎ xiūgǎigǎo lìkè fā dào shèqū wǎngzhàn shàng.|Xiao Huang did not immediately publish the revised draft on the community website.
 L|他先附上有关证据，再把文章提交给负责人。|Tā xiān fù shàng yǒuguān zhèngjù, zài bǎ wénzhāng tíjiāo gěi fùzérén.|He attached supporting evidence and submitted the article to the manager.
 L|只有审核通过以后，这份报告才能正式公布。|Zhǐyǒu shěnhé tōngguò yǐhòu, zhè fèn bàogào cái néng zhèngshì gōngbù.|Only after the review passes can the report be officially published.
 Q|Why was the first report unreliable?|Registrations were mixed with actual attendance.|The community had no volunteers.|The report was approved immediately.|6|People signing up are not necessarily participants.

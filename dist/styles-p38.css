@@ -1,0 +1,65 @@
+/* P38. Editorial-grade mobile reading interface; no duplicate progress widgets. */
+.p38-overview,.p38-study{margin:16px 0;background:var(--surface);border:1px solid var(--line);padding:clamp(14px,2vw,22px);min-width:0}
+.p38-overview{border-top:3px solid var(--accent)}
+.p38-summary{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:19px}
+.p38-summary h2{font-size:clamp(21px,2.5vw,29px);line-height:1.25;margin:7px 0}
+.p38-summary p{font-size:12px;line-height:1.65;color:var(--sub);max-width:780px}
+.p38-source-note{color:var(--sub);font-size:11px!important;line-height:1.65;border-left:2px solid var(--line);padding-left:10px;margin-top:15px}
+.p38-metrics{border-left:1px solid var(--line);padding-left:17px;display:flex;flex-direction:column;align-items:start;gap:5px}
+.p38-metrics strong{font-size:23px;line-height:1.25;font-variant-numeric:tabular-nums}
+.p38-metrics span{font-size:11px;color:var(--sub);line-height:1.5;margin-bottom:8px}
+.p38-metrics .button{min-height:40px;white-space:normal;text-align:left}
+.p38-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.p38-filter{font:inherit;font-size:11px;padding:9px 12px;min-height:36px;cursor:pointer;background:var(--background);color:var(--ink);border:1px solid var(--line);border-radius:2px}
+.p38-filter.active,.p38-filter:hover,.p38-filter:focus-visible{border-color:var(--accent);color:var(--accent);background:var(--soft)}
+.p38-overview>label{display:block;color:var(--sub);font-size:11px;margin:13px 0 6px}
+#p38-search{box-sizing:border-box;width:100%;padding:10px 12px;background:var(--background);color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px}
+.p38-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.p38-passage-card{display:flex;flex-direction:column;gap:6px;align-items:start;text-align:left;min-width:0;min-height:116px;padding:12px;color:var(--ink);background:var(--background);border:1px solid var(--line);border-radius:2px;cursor:pointer}
+.p38-passage-card:hover,.p38-passage-card.selected{border-color:var(--accent);background:var(--soft)}
+.p38-passage-card span{font-size:10px;color:var(--accent)}
+.p38-passage-card strong{font-size:14px;line-height:1.4}
+.p38-passage-card small{font-size:11px;color:var(--sub);line-height:1.5}
+.p38-passage-card em{font-style:normal;font-size:10px;color:var(--sub);margin-top:auto}
+.p38-pagination{display:flex;gap:12px;align-items:center;justify-content:space-between;font-size:11px;color:var(--sub)}
+.p38-catalog{border:1px solid var(--line);background:var(--surface);margin:15px 0}
+.p38-catalog>summary{padding:15px;min-height:45px;box-sizing:border-box;cursor:pointer;font-size:13px;font-weight:700}
+.p38-catalog[open]>summary{border-bottom:1px solid var(--line)}
+.p38-catalog>.p38-overview{border:0;margin:0}
+.p38-study{border-top:3px solid var(--accent)}
+.p38-study-head{display:flex;align-items:start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.p38-study-head h3{font-size:clamp(20px,2.2vw,26px);margin:7px 0}
+.p38-study-head p:not(.eyebrow){font-size:12px;line-height:1.65;color:var(--sub);max-width:810px}
+.p38-study-head>span{font-size:11px;color:var(--sub)}
+.p38-section-controls{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.p38-section-button{background:var(--background);border:1px solid var(--line);padding:10px 12px;font:inherit;font-size:12px;color:var(--ink);border-radius:2px;cursor:pointer}
+.p38-section-button.active,.p38-section-button:hover{background:var(--soft);border-color:var(--accent);color:var(--accent)}
+.p38-section-preview{background:var(--background);border:1px solid var(--line);padding:clamp(12px,2vw,18px)}
+.p38-section-preview>h4{font-size:13px;margin:0 0 16px}
+.p38-paragraph{padding:0 0 15px;margin:0 0 15px;border-bottom:1px solid var(--line)}
+.p38-paragraph:last-child{margin-bottom:0;padding-bottom:0;border-bottom:0}
+.p38-paragraph h5{font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--sub);margin:0 0 12px}
+.p38-paragraph-line{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:start;gap:12px;padding:10px 0}
+.p38-paragraph-line+.p38-paragraph-line{border-top:1px solid var(--line)}
+.p38-line-number{color:var(--sub);font-size:10px;margin-top:8px}
+.p38-paragraph-line p[lang]{font-size:clamp(17px,2vw,22px);line-height:1.8;letter-spacing:.008em;margin:0;overflow-wrap:anywhere}
+.p38-paragraph-line small{display:block;line-height:1.65;margin-top:4px;font-size:12px}
+.p38-pinyin{color:var(--accent)}
+.p38-english{color:var(--sub)}
+.p38-paragraph-line>.button{min-height:36px;align-self:start}
+.p38-support-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:13px 0}
+.p38-support-controls>.button{min-height:40px}
+.p38-support-controls>span{color:var(--sub);font-size:11px;line-height:1.45}
+.p38-teaching{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:18px 0}
+.p38-teaching article{border:1px solid var(--line);background:var(--background);padding:13px}
+.p38-teaching h4,.p38-links h4{font-size:13px;margin:0 0 9px}
+.p38-teaching p{font-size:12px;color:var(--sub);line-height:1.65}
+.p38-links{border-top:1px solid var(--line);padding-top:17px;margin-top:16px}
+.p38-links .button{white-space:normal;min-height:36px}
+.p38-grammar-links,.p38-vocabulary-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.p38-writing-cover{border:1px solid var(--line);background:var(--background);padding:15px;margin:18px 0}
+.p38-writing-cover strong{font-size:14px}
+.p38-writing-cover p{font-size:12px;color:var(--sub);line-height:1.6}
+@media(max-width:800px){.p38-summary{grid-template-columns:1fr}.p38-metrics{border-left:0;border-top:1px solid var(--line);padding:12px 0 0}.p38-teaching{grid-template-columns:1fr}}
+@media(max-width:620px){.p38-grid{grid-template-columns:1fr}.p38-paragraph-line{grid-template-columns:18px minmax(0,1fr)}.p38-paragraph-line>.button{grid-column:2;justify-self:start}.p38-support-controls>.button{flex:1 1 160px}.p38-section-controls>.button{flex:1 1 125px}.p38-overview,.p38-study{padding:12px}}
+@media(prefers-reduced-motion:reduce){.p38-overview *,.p38-study *{transition:none!important;scroll-behavior:auto!important}}

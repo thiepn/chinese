@@ -180,7 +180,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
   (lessonDue?'<span class="c9-badge c9-lesson-due">'+lessonDue+' due</span>':'')+'</div></div>'+
   '<p>Study the character, useful complete words, original grammar and contextual sentences. Only the explicit introduction and graded assessment record progress.</p>'+
   '<div class="c9-lesson-course-position" role="group" aria-label="Lesson order in the original course"><div><span>Course position</span><strong>'+position+' / '+DEMO_LESSONS.length+' lessons</strong></div>'+
-  '<div class="c9-progress" role="progressbar" aria-label="Lesson order, not mastery" aria-valuemin="0" aria-valuemax="'+DEMO_LESSONS.length+'" aria-valuenow="'+position+'"><span style="width:'+positionPercent+'%"></span></div>'+
+  '<div class="c9-progress" role="progressbar" aria-label="Lesson order, not mastery" aria-valuemin="0" aria-valuemax="'+DEMO_LESSONS.length+'" aria-valuenow="'+position+'"><span data-csp-style="width:'+positionPercent+'%"></span></div>'+
   '<small>Curriculum position · not mastery or completion</small></div></div>'+
   '<div class="c9-lesson-header-actions c9-unified-actions"><div class="c9-lesson-pager">'+lessonMove(lesson,-1,act,esc)+lessonMove(lesson,1,act,esc)+'</div>'+
   act('c9-lesson-jump','Start at step 1 ↓','c9-button c9-button--primary','data-section="overview" aria-controls="c9-lesson-overview"')+
@@ -199,7 +199,7 @@ export function renderC9LessonWorkspace({lesson,state,nativeMarkup,section='over
    '<p>These are teaching steps, not completion or mastery grades.</p></div>'+
    act('c9-lesson-mode',focused?'Show all sections':'Focus on one step','c9-button c9-button--secondary c9-button--small','aria-pressed="'+focused+'"')+
    '<div class="c9-lesson-flow-progress" role="progressbar" aria-label="Current teaching step, not mastery" aria-valuemin="1" aria-valuemax="'+C9_LESSON_SECTIONS.length+'" aria-valuenow="'+(activeIndex+1)+'">'+
-   '<span style="width:'+((activeIndex+1)/C9_LESSON_SECTIONS.length*100)+'%"></span></div></div>';
+   '<span data-csp-style="width:'+((activeIndex+1)/C9_LESSON_SECTIONS.length*100)+'%"></span></div></div>';
  const stageFooters='<nav class="c9-lesson-stage-footers" aria-label="Continue through this lesson">'+
   C9_LESSON_SECTIONS.map((stage,i)=>'<div class="c9-lesson-step-footer" data-section="'+stage.id+'"'+(stage.id!==selected?' hidden':'')+'>'+
    '<span>STEP '+(i+1)+' / '+C9_LESSON_SECTIONS.length+' · '+esc(stage.name)+'</span>'+

@@ -1,11 +1,12 @@
 /** Deterministic demo exercise generator and conservative evaluation. Does not make HSK claims. */
 import { DEMO_LESSONS } from './demo-lessons.mjs';
+import { ANSWER_VARIANTS } from './answer-variants.mjs';
 const marks={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],ě:['e',3],è:['e',4],ī:['i',1],í:['i',2],ǐ:['i',3],ì:['i',4],ō:['o',1],ó:['o',2],ǒ:['o',3],ò:['o',4],ū:['u',1],ú:['u',2],ǔ:['u',3],ù:['u',4],ǖ:['v',1],ǘ:['v',2],ǚ:['v',3],ǜ:['v',4],ü:['v',0],ń:['n',2],ň:['n',3],ǹ:['n',4]};
 const initials=['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s','y','w',''];
 const finals=['iang','iong','uang','ueng','ang','eng','ing','ong','iao','ian','uan','uen','uai','uei','ao','ai','ei','ou','ia','ie','iu','in','un','ui','ua','uo','ue','ve','an','en','er','uo','a','o','e','i','u','v','m','n','ng'];
 const syllables=new Set(initials.flatMap(i=>finals.map(f=>i+f)));
 // Less common syllables are safe for input matching, while invented syllables are rejected.
-for(const special of ['zhi','chi','shi','ri','zi','ci','si','yuan','yun','yue','yin','ying','wu','yi','you','ye','ya','yo','yong','yong','wen','wang','weng','nue','lue','lv','nv','hm'])syllables.add(special);
+for(const special of ['zhi','chi','shi','ri','zi','ci','si','yuan','yun','yue','yin','ying','wu','yi','you','ye','ya','yo','yong','yong','wen','wang','weng','nue','lue','lv','nv','hm','r'])syllables.add(special);
 function cleanPinyin(text){let base='',tones=new Map(),digits=new Map();for(const ch of String(text).trim().toLowerCase().replaceAll('u:','v')){
  const current=marks[ch];if(current){if(current[1])tones.set(base.length,current[1]);base+=current[0];}
  else if(ch==='v'||/[a-z]/.test(ch))base+=ch;
@@ -33,9 +34,23 @@ export function parsePinyin(text){const src=cleanPinyin(text);if(!src)return nul
  return output.length?output:null;
 }
 export function normalizeMeaning(text){return String(text).normalize('NFKC').toLowerCase().replace(/[’']/g,"'").replace(/[^\p{L}\p{N}'\s]/gu,' ').replace(/\s+/g,' ').trim().replace(/^(to |a |an |the )/,'');}
+function meaningParts(reference){return String(reference).split(/;|\/(?!\/)/).map(s=>s.toLowerCase().replace(/[^\p{L}\p{N}'\s]/gu,' ').replace(/\s+/g,' ').trim()).filter(Boolean);}
+// Optimal-string-alignment distance (edits + adjacent transposition), capped early.
+function editDistance(a,b,cap=2){if(Math.abs(a.length-b.length)>cap)return cap+1;const d=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);
+ for(let i=1;i<=a.length;i++){let row=Infinity;for(let j=1;j<=b.length;j++){const cost=a[i-1]===b[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+cost);
+  if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);row=Math.min(row,d[i][j]);}if(row>cap)return cap+1;}
+ return d[a.length][b.length];}
+function nearMiss(got,accepted){for(const cand of accepted){if(!cand)continue;
+ if(got.includes(' ')||cand.includes(' ')){const g=got.split(' '),c=cand.split(' ');if(g.length===c.length&&g.every((t,i)=>editDistance(t,c[i],1)<=1))return cand;}
+ else if(editDistance(got,cand,1)<=1)return cand;}return null;}
 export function evaluateMeaning(input,reference){const got=normalizeMeaning(input);if(!got)return {correct:false,reason:'empty',message:'Enter an answer before checking.'};
- const meanings=String(reference).split(/;|\/(?!\/)/).map(normalizeMeaning).filter(Boolean);
- const correct=meanings.some(m=>m===got);return {correct,reason:correct?'correct':'meaning',message:correct?'Meaning accepted.':'The meaning does not match the approved demo answers. Review the reference.'};}
+ const parts=meaningParts(reference);
+ const accepted=new Set();
+ for(const part of parts){accepted.add(normalizeMeaning(part));accepted.add(part);
+  for(const variant of ANSWER_VARIANTS[part]||[]){accepted.add(normalizeMeaning(variant));accepted.add(variant);}}
+ if(accepted.has(got))return {correct:true,reason:'correct',message:'Meaning accepted.'};
+ const near=nearMiss(got,[...accepted]);
+ return {correct:false,reason:near?'near-miss':'meaning',message:near?'Close spelling or wording, but not an approved answer for this card. This check counts as a miss.':'The meaning does not match the approved demo answers. Review the reference.'};}
 export function evaluatePinyin(input,reference){const got=parsePinyin(input),want=parsePinyin(reference);
  if(!got)return {correct:false,reason:'format',message:'Use tone-marked pinyin or numbers (for example, nǐ or ni3).'};
  if(!want)return {correct:false,reason:'source',message:'Reference pinyin cannot be checked; this prompt is unavailable.'};

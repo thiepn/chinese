@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DEMO_LESSONS} from '../src/demo-lessons.mjs';
@@ -11,7 +11,7 @@ import {backupDocument,importBackup} from '../src/study-storage.mjs';
 
 const now=Date.parse('2026-10-12T12:00:00Z');
 test('prior curriculum and readings retained, no official HSK memberships',()=>{
- assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.equal(DRILL_MODES.length,6);
+ assert.ok(DEMO_LESSONS.length>=74);assert.ok(STORIES.length>=12);assert.equal(DRILL_MODES.length,11);
  assert.ok(DEMO_LESSONS.slice(0,74).every(l=>l.words.length===2));
  assert.ok(DEMO_LESSONS.every(l=>l.officialHskLevel===null||l.officialHskLevel===undefined));
 });

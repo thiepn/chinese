@@ -2,7 +2,18 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join,normalize,dirname,extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { distGateProblems } from './dist-gate.mjs';
 const root=dirname(dirname(fileURLToPath(import.meta.url))),dir=join(root,'dist');
+// Refuse to serve a stale or unverified dist/. A fresh checkout that was never
+// built, or a tree whose src/ advanced past its last build, must fail loudly
+// with an actionable message instead of silently serving an outdated app.
+const gateProblems=await distGateProblems({root});
+if(gateProblems.length){
+ console.error('Refusing to serve: dist/ is not a verified build of the current source.');
+ for(const problem of gateProblems)console.error(' - '+problem);
+ console.error('Run "npm run build" to rebuild dist/, then "npm start" again.');
+ process.exit(1);
+}
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png'};
 const server=createServer(async(req,res)=>{
  const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);

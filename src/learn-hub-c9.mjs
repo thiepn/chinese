@@ -21,7 +21,7 @@ const tiny=(text)=>String(text??'');
 const pct=(done,total)=>total?Math.max(0,Math.min(100,Math.round(done/total*100))):0;
 const summaryText=(count,noun)=>count+' '+noun+(count===1?'':'s');
 const title=(name,subtitle)=>'<header class="c9-discovery-head"><p class="c9-eyebrow">THIEPN CHINESE · ORIGINAL STUDY MATERIAL</p><h1>'+name+'</h1><p>'+subtitle+'</p></header>';
-const progress=(done,total,label)=>'<div class="c9-discovery-progress"><div class="c9-discovery-progress-meta"><span>'+label+'</span><strong class="c9-tabular">'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct(done,total)+'%"></span></div></div>';
+const progress=(done,total,label)=>'<div class="c9-discovery-progress"><div class="c9-discovery-progress-meta"><span>'+label+'</span><strong class="c9-tabular">'+done+' / '+total+'</strong></div><div class="c9-progress" role="progressbar" aria-label="'+label+'" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span data-csp-style="width:'+pct(done,total)+'%"></span></div></div>';
 const empty=renderC9EmptyState;
 const lessonCount=(group,learned)=>group.lessons.filter(l=>learned.has(l.id)).length;
 const nextLesson=(group,learned)=>group.lessons.find(l=>!learned.has(l.id))||group.lessons[0];

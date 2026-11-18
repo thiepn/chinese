@@ -1,3 +1,4 @@
+import {composeCheck} from './compose-feedback.mjs';
 import {P75_DIALOGUES} from './p75-dialogues.mjs';
 import {renderP76CaseLab} from './p76-case-lab.mjs';
 /**
@@ -58,6 +59,7 @@ function catalogPager(kind,page,pages,total,act){
   'data-kind="'+kind+'" data-delta="1" '+(page===pages-1?'disabled':''))+
  '</div></div>';
 }
+import {storyReadiness} from './reading-readiness.mjs';
 export function renderC9ReadingCatalog(state,currentId,options,act,esc){
  const histories=state.readingEvents||[],saved=new Set(state.bookmarkedStories||[]);
  const mode=modeReading.includes(options.filter)?options.filter:'all',term=clean(options.query);
@@ -74,6 +76,7 @@ export function renderC9ReadingCatalog(state,currentId,options,act,esc){
  (visible.length?'<div class="c9-media-entry-grid">'+visible.map(s=>{
   const history=histories.filter(e=>e.storyId===s.id);
   const status=stateFor(history),current=s.id===currentId;
+  const ready=storyReadiness(state,s);
   return '<article class="c9-media-entry'+(current?' is-current':'')+'">'+
    '<div class="c9-media-entry-meta"><span class="c9-media-entry-type">'+esc(passageKind(s))+'</span>'+
     (saved.has(s.id)?'<span>Saved</span>':'')+'</div>'+
@@ -81,6 +84,8 @@ export function renderC9ReadingCatalog(state,currentId,options,act,esc){
    '<div class="c9-media-entry-example"><p lang="zh-Hans">'+esc(s.lines[0]?.hanzi||'')+'</p>'+
     '<small>Source excerpt · read in original workspace</small></div>'+
    '<p class="c9-media-entry-history">'+esc(status)+'</p>'+
+   '<p class="c9-media-entry-readiness">Readiness: '+ready.percent+'% of indexed words studied \u00b7 '+esc(ready.label)+'</p>'+
+   
    act('c9-media-open-story',current?'Return to selected passage →':'Open original passage →',
       'c9-button '+(current?'c9-button--primary':'c9-button--secondary')+' c9-button--small',
       'data-id="'+esc(s.id)+'"')+'</article>';
@@ -130,7 +135,7 @@ export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=f
   '<h3>Words in this reading</h3><p>'+items.length+' distinct indexed written form'+(items.length===1?'':'s')+
   ' shown from the existing lexicon, not newly imported material. Reading these hints makes an unanswered native exercise assisted.</p></div>';
  if(!revealed)return '<section class="c9-reading-vocabulary" aria-label="Optional reading vocabulary support">'+heading+
-  '<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
+  (function(){const ready=storyReadiness(state,story);return '<p class="c9-reading-readiness-note"><strong>Reading readiness: '+ready.percent+'%</strong> of '+ready.used+' indexed words are in your studied set \u00b7 '+esc(ready.label)+(ready.unknown.length?' \u00b7 '+ready.unknown.length+' not yet studied'+(ready.queued.length?' ('+ready.queued.length+' scheduled for review but not demonstrated)':''):'')+'</p>';})()+'<div class="c9-reading-vocabulary-gate"><p>Try the native comprehension question first for an independent result. Open indexed word support only if needed.</p>'+
   act('c9-reading-vocabulary-help','Study original word meanings · assisted','c9-button c9-button--secondary c9-button--small')+
   '</div></section>';
  const saved=new Set(state?.bookmarkedWords||[]);
@@ -154,6 +159,7 @@ export function renderC9OriginalStoryWordSupport(story,state,act,esc,{revealed=f
  }).join('');
  return '<section class="c9-reading-vocabulary" aria-label="Original reading vocabulary support">'+heading+
   '<p class="c9-reading-vocabulary-caveat" role="status">'+(answered?'Source help opened after checking. Your previously recorded response and its independent/assisted status are unchanged.':'Assisted source support is visible. The current unsubmitted answer will be recorded as assisted.')+' Written-form matches do not certify the correct lexical sense.</p>'+
+  (function(){const ready=storyReadiness(state,story);const pre=ready.unknown.slice(0,8);return '<div class="c9-reading-readiness"><p><strong>Reading readiness: '+ready.percent+'%</strong> of '+ready.used+' indexed words studied \u00b7 '+esc(ready.label)+(ready.queued.length?' \u00b7 '+ready.queued.length+' scheduled for review but not demonstrated':'')+'</p>'+(pre.length?'<p>Pre-study these before reading:</p><div class="p23-word-family">'+pre.map(w=>act('lookup-word','<span lang="zh-Hans">'+esc(w.hanzi)+'</span><small>'+esc(w.pinyin)+' \u00b7 '+esc(w.senses[0])+'</small>','word-ref','data-id="'+esc(w.key)+'"')).join('')+'</div>'+act('readiness-deck','Schedule these words for review','c9-button c9-button--secondary c9-button--small','data-id="'+esc(story.id)+'"'):'<p>Every indexed word is already in your studied set.</p>')+'</div>';})()+
   '<div class="c9-reading-vocabulary-grid">'+list+'</div>'+
   (items.length>=24?'<small>Showing at most 24 original written forms. The passage and native exercises are unchanged.</small>':'')+
   '</section>';
@@ -591,7 +597,7 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
  return '<section class="c9-source-rehearsal c9-unified-card" id="c9-roleplay-studio" tabindex="-1" aria-labelledby="c9-roleplay-title">'+
   '<header><div><span class="c9-eyebrow">ORIGINAL CONVERSATION · UNGRADED REHEARSAL</span>'+
   '<h2 id="c9-roleplay-title">Take a speaking role</h2><p>Hear the previous turn, answer aloud as a speaker, then compare with the original script. You may also type your reply. No microphone recording, speech recognition or automatic pronunciation grade is used.</p></div>'+
-  '<span class="c9-badge">Turn '+(source.position+1)+' / '+source.indices.length+'</span></header>'+
+  '<span class="c9-badge">Turn '+(source.position+1)+' / '+source.indices.length+'</span></header>'+(ui.practice&&ui.practice.total?'<p class="c9-rehearsal-log">Self-reported practice: '+ui.practice.spoken+' spoken aloud \u00b7 '+ui.practice.typed+' typed replies'+(ui.practice.matched?' \u00b7 '+ui.practice.matched+' exactly matched the written model':'')+' \u2014 a practice log, not grades.</p>':'')+
   '<div class="c9-rehearsal-roles" role="group" aria-label="Choose your original speaking role">'+buttons+'</div>'+
   '<div class="c9-rehearsal-context"><p class="c9-eyebrow">YOUR CUE · SOURCE TURN '+(source.index+1)+'</p>'+
   '<strong>Reply as Speaker '+esc(source.role)+'</strong>'+
@@ -603,21 +609,23 @@ export function renderC9DialogueRoleplay(d,ui,act,esc){
   '<textarea id="c9-roleplay-entry" rows="2" maxlength="500" lang="zh-Hans" spellcheck="false" placeholder="Speak aloud, or type the Chinese sentence from memory"'+(displayed?' disabled':'')+'>'+esc(entry)+'</textarea>'+
   '<div class="c9-rehearsal-actions">'+
   (!displayed?act('c9-roleplay-spoke',ui.spoken?'Spoken aloud · self-reported':'I spoke the line aloud','c9-button c9-button--secondary c9-button--small','aria-pressed="'+Boolean(ui.spoken)+'"')+
-   act('c9-roleplay-reveal','Compare with original script','c9-button c9-button--primary c9-button--small'):
+   act('c9-roleplay-reveal','Compare with original script','c9-button c9-button--primary c9-button--small')+
+   act('c9-roleplay-continue','Use my reply and continue \u2192','c9-button c9-button--secondary c9-button--small',(hasDraft||ui.spoken)?'':'disabled'):
    act('c9-roleplay-listen-reply','Hear original reply','c9-button c9-button--secondary c9-button--small'))+
   '</div>'+
   (displayed?'<div class="c9-rehearsal-reference" role="status"><span class="c9-eyebrow">SOURCE-EXACT REFERENCE · ASSISTED</span>'+
    '<p lang="zh-Hans">'+esc(source.reply.hanzi)+'</p><small>'+esc(source.reply.pinyin)+'</small>'+
    '<p>'+esc(source.reply.english)+'</p>'+
-   (hasDraft?'<p>'+(exact?'Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.':
-    'Compare your typed wording with the original. No correctness grade was assigned.')+'</p>':'')+
+   (hasDraft?(exact?'<p>Your typed Chinese exactly matches the original written form. This does not assess pronunciation or communicative fluency.</p>':
+    '<p>'+esc(composeCheck(source.reply.hanzi,entry).message)+'</p><p>No correctness grade was assigned \u2014 the comparison above is guidance for your next attempt.</p>'):'')+
    '<p>Opening this reference makes pending native comprehension or mission answers assisted.</p></div>':'')+
-  '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
+  ((ui.mine&&ui.mine.length)?'<div class="c9-rehearsal-mine"><p class="c9-eyebrow">YOUR VERSION SO FAR</p><ol>'+ui.mine.map(x=>'<li><strong>Turn '+x.turn+':</strong> '+(x.hanzi?esc(x.hanzi):'spoken aloud \u2014 not typed')+'</li>').join('')+'</ol><p class="c9-rehearsal-caveat">The authored script continues from its own wording. Your line may deserve a different reply \u2014 read each next cue as one possibility.</p></div>':'')+
+ '<nav class="c9-rehearsal-steps" aria-label="Move between source-authored speaking turns">'+
   act('c9-roleplay-move','← Previous reply','c9-button c9-button--secondary c9-button--small','data-delta="-1" '+(!source.position?'disabled':''))+
   act('c9-roleplay-retry','Try this reply again','c9-button c9-button--secondary c9-button--small')+
   act('c9-roleplay-move','Next reply →','c9-button c9-button--primary c9-button--small','data-delta="1" '+(source.position===source.indices.length-1?'disabled':''))+
   '</nav>'+
-  '<div class="c9-rehearsal-native"><p>To record actual question evidence, use the original contextual listening assessment. This rehearsal never writes a grade.</p>'+
+  '<div class="c9-rehearsal-native"><p>To record actual question evidence, use the original contextual listening assessment. This rehearsal writes no grades — only an optional self-reported practice log.</p>'+
   act('c9-media-focus-native','Open native listening assessment →','c9-button c9-button--secondary c9-button--small','data-target="c9-native-dialogue"')+
   (d.p34?act('p34-write-listening','Original listening-to-writing task →','c9-button c9-button--secondary c9-button--small','data-id="'+esc(d.p34.id)+'"'):'')+
   '</div></section>';

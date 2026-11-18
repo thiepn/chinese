@@ -3,6 +3,7 @@
  * an HSK affiliation. Exact writing practice feeds the existing Sentence
  * Workshop source IDs and event writer; no duplicate mastery or progress store.
  */
+import {composeCheck} from './compose-feedback.mjs';
 import {GRAMMAR_ROWS_A} from './grammar-course-data-a.mjs';
 import {GRAMMAR_ROWS_B} from './grammar-course-data-b.mjs';
 import {P32_GRAMMAR_ROWS_A} from './p32-grammar-a.mjs';
@@ -13,6 +14,8 @@ import {P46_GRAMMAR_ROWS} from './p46-grammar.mjs';
 import {P47_GRAMMAR_ROWS} from './p47-grammar.mjs';
 import {P50_GRAMMAR_ROWS} from './p50-grammar.mjs';
 import {P51_GRAMMAR_ROWS} from './p51-grammar.mjs';
+import {EVERYDAY_GRAMMAR_ROWS} from './everyday-grammar.mjs';
+import {COLLOQUIAL_GRAMMAR_ROWS} from './colloquial-grammar.mjs';
 import {DEMO_LESSONS} from './demo-lessons.mjs';
 import {WORDS} from './lexicon.mjs';
 import {STORIES} from './stories.mjs';
@@ -23,7 +26,7 @@ const groups=['Foundations','Questions','Nouns & classifiers','Time & location',
 const chapters=Object.freeze(groups.map((name,i)=>Object.freeze({id:'chapter-'+(i+1),name,number:i+1})));
 const lessonByChar=new Map(DEMO_LESSONS.map(lesson=>[lesson.hanzi,lesson.id]));
 function example(data){return Object.freeze({hanzi:data[0],pinyin:data[1],english:data[2]});}
-export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,...P32_GRAMMAR_ROWS_A,...P32_GRAMMAR_ROWS_B,...P36_GRAMMAR_ROWS,...P40_GRAMMAR_ROWS,...P46_GRAMMAR_ROWS,...P47_GRAMMAR_ROWS,...P50_GRAMMAR_ROWS,...P51_GRAMMAR_ROWS].map((r,index)=>Object.freeze({
+export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,...P32_GRAMMAR_ROWS_A,...P32_GRAMMAR_ROWS_B,...P36_GRAMMAR_ROWS,...P40_GRAMMAR_ROWS,...P46_GRAMMAR_ROWS,...P47_GRAMMAR_ROWS,...P50_GRAMMAR_ROWS,...P51_GRAMMAR_ROWS,...EVERYDAY_GRAMMAR_ROWS,...COLLOQUIAL_GRAMMAR_ROWS].map((r,index)=>Object.freeze({
  id:r[0],chapter:r[1],chapterNumber:groups.indexOf(r[1])+1,
  order:index+1,title:r[2],pattern:r[3],explanation:r[4],contrast:r[5],
  pitfall:r[6],anchor:r[7],characterLessonId:lessonByChar.get(r[7])||null,
@@ -32,7 +35,8 @@ export const GRAMMAR_LESSONS=Object.freeze([...GRAMMAR_ROWS_A,...GRAMMAR_ROWS_B,
    options:Object.freeze([r[10][1],r[10][2],r[10][3]]),
    completed:example(r[10].slice(4,7))}),
  transformation:Object.freeze({prompt:r[11][0],model:example(r[11].slice(1,4)),
-   chunks:Object.freeze([...r[11][4]])})
+   chunks:Object.freeze([...r[11][4]])}),
+ matchTokens:Object.freeze([...(r[12]||[])])
 })));
 export const GRAMMAR_CHAPTERS=Object.freeze(chapters.map(ch=>Object.freeze({...ch,
  lessons:Object.freeze(GRAMMAR_LESSONS.filter(lesson=>lesson.chapter===ch.name).map(l=>l.id))})));
@@ -99,8 +103,7 @@ export function gradeGrammarQuestion(q,response){
  if(q.kind==='choice')return evaluateAnswer(response,q.answer,'choice');
  const normalized=text=>String(text||'').normalize('NFC').replace(/[\s\u3000。，！？.!?,;；、]/gu,'');
  const correct=normalized(response)===normalized(q.answer);
- return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':
-  'Your sentence differs from the taught model. Compare word order and particles; valid alternatives may exist.'};
+ return {correct,reason:correct?'correct':'exact-form',message:correct?'Model sentence reconstructed.':composeCheck(q.answer,response).message};
 }
 export function shuffleGrammarChunks(chunks,index){
  return chunks.map((text,i)=>({text,i})).sort((a,b)=>
